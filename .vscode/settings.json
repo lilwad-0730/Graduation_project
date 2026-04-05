@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "unity-shouyi.slnx",
+    "dotnet.defaultSolution": "Graduation_project.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
