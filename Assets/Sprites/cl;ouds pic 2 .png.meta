@@ -1,0 +1,598 @@
+fileFormatVersion: 2
+guid: 1c4602fe632fb5148a0c488b68bfd960
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4808255514033858876
+    second: cl;ouds pic 2 _0
+  - first:
+      213: -1030885224623573834
+    second: cl;ouds pic 2 _1
+  - first:
+      213: 4026972879402957187
+    second: cl;ouds pic 2 _2
+  - first:
+      213: -2412821834145331499
+    second: cl;ouds pic 2 _3
+  - first:
+      213: -6883474512701145080
+    second: cl;ouds pic 2 _4
+  - first:
+      213: 1111261364764039241
+    second: cl;ouds pic 2 _5
+  - first:
+      213: -4368410742076204345
+    second: cl;ouds pic 2 _6
+  - first:
+      213: 6810601311407766500
+    second: cl;ouds pic 2 _7
+  - first:
+      213: 2097558508929685672
+    second: cl;ouds pic 2 _8
+  - first:
+      213: 7262984719706757880
+    second: cl;ouds pic 2 _9
+  - first:
+      213: -8672903312785897643
+    second: cl;ouds pic 2 _10
+  - first:
+      213: 7937659350314703618
+    second: cl;ouds pic 2 _11
+  - first:
+      213: -1290875604920757644
+    second: cl;ouds pic 2 _12
+  - first:
+      213: -458839371135817686
+    second: cl;ouds pic 2 _13
+  - first:
+      213: -1537333266072147437
+    second: cl;ouds pic 2 _14
+  - first:
+      213: 2539181006131535065
+    second: cl;ouds pic 2 _15
+  - first:
+      213: -1241424590029924064
+    second: cl;ouds pic 2 _16
+  - first:
+      213: 7444840361708006340
+    second: cl;ouds pic 2 _17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _0
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 79
+        width: 1487
+        height: 750
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c392d4f2aea5ab240800000000000000
+      internalID: 4808255514033858876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _1
+      rect:
+        serializedVersion: 2
+        x: 1712
+        y: 541
+        width: 22
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b4fc1e995f81b1f0800000000000000
+      internalID: -1030885224623573834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _2
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 386
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 389f1fc7f7ea2e730800000000000000
+      internalID: 4026972879402957187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _3
+      rect:
+        serializedVersion: 2
+        x: 1769
+        y: 280
+        width: 89
+        height: 193
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d60675535fe38ed0800000000000000
+      internalID: -2412821834145331499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _4
+      rect:
+        serializedVersion: 2
+        x: 1833
+        y: 378
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8004ef1a66cf870a0800000000000000
+      internalID: -6883474512701145080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _5
+      rect:
+        serializedVersion: 2
+        x: 1830
+        y: 311
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9485063d25efb6f00800000000000000
+      internalID: 1111261364764039241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _6
+      rect:
+        serializedVersion: 2
+        x: 1826
+        y: 288
+        width: 13
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ca1c8d23994063c0800000000000000
+      internalID: -4368410742076204345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _7
+      rect:
+        serializedVersion: 2
+        x: 1762
+        y: 215
+        width: 71
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ebf4410fcd148e50800000000000000
+      internalID: 6810601311407766500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _8
+      rect:
+        serializedVersion: 2
+        x: 1818
+        y: 264
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a81a5cb9560c1d10800000000000000
+      internalID: 2097558508929685672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _9
+      rect:
+        serializedVersion: 2
+        x: 1597
+        y: 142
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fa16332f1e4bc460800000000000000
+      internalID: 7262984719706757880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _10
+      rect:
+        serializedVersion: 2
+        x: 1609
+        y: 140
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55786165368a3a780800000000000000
+      internalID: -8672903312785897643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _11
+      rect:
+        serializedVersion: 2
+        x: 1627
+        y: 139
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20bd093af1b382e60800000000000000
+      internalID: 7937659350314703618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _12
+      rect:
+        serializedVersion: 2
+        x: 1636
+        y: 138
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4721b770a73e51ee0800000000000000
+      internalID: -1290875604920757644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _13
+      rect:
+        serializedVersion: 2
+        x: 1643
+        y: 135
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a286c72e500e1a9f0800000000000000
+      internalID: -458839371135817686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _14
+      rect:
+        serializedVersion: 2
+        x: 1652
+        y: 138
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31ae0662a8b4aaae0800000000000000
+      internalID: -1537333266072147437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _15
+      rect:
+        serializedVersion: 2
+        x: 1662
+        y: 138
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9dc93e20cabfc3320800000000000000
+      internalID: 2539181006131535065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _16
+      rect:
+        serializedVersion: 2
+        x: 1671
+        y: 132
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 029d4d7a9e295cee0800000000000000
+      internalID: -1241424590029924064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cl;ouds pic 2 _17
+      rect:
+        serializedVersion: 2
+        x: 1682
+        y: 134
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cba8115dd2615760800000000000000
+      internalID: 7444840361708006340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      cl;ouds pic 2 _0: 4808255514033858876
+      cl;ouds pic 2 _1: -1030885224623573834
+      cl;ouds pic 2 _10: -8672903312785897643
+      cl;ouds pic 2 _11: 7937659350314703618
+      cl;ouds pic 2 _12: -1290875604920757644
+      cl;ouds pic 2 _13: -458839371135817686
+      cl;ouds pic 2 _14: -1537333266072147437
+      cl;ouds pic 2 _15: 2539181006131535065
+      cl;ouds pic 2 _16: -1241424590029924064
+      cl;ouds pic 2 _17: 7444840361708006340
+      cl;ouds pic 2 _2: 4026972879402957187
+      cl;ouds pic 2 _3: -2412821834145331499
+      cl;ouds pic 2 _4: -6883474512701145080
+      cl;ouds pic 2 _5: 1111261364764039241
+      cl;ouds pic 2 _6: -4368410742076204345
+      cl;ouds pic 2 _7: 6810601311407766500
+      cl;ouds pic 2 _8: 2097558508929685672
+      cl;ouds pic 2 _9: 7262984719706757880
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
