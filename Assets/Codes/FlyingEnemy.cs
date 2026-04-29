@@ -195,57 +195,45 @@ public class FlyingEnemy : MonoBehaviour
     }
 
     // ==========================================
-    // 擊中玩家：根據相對位置決定擊退方向
+    // 擊中玩家：觸發帶有轉場的直接重新刷新
     // ==========================================
     void HandlePlayerHit(GameObject playerObj)
     {
         currentState = BirdState.PostAttack;
         rb.linearVelocity = Vector3.zero; // 鳥撞到後停在原地
 
-        Rigidbody playerRb = playerObj.GetComponent<Rigidbody>();
-        MonoBehaviour playerScript = playerObj.GetComponent("PlayerMovement") as MonoBehaviour;
-
-        if (playerRb != null)
+        Debug.Log("被鳥攻擊，觸發轉場並重新刷新場景！");
+        
+        PlayerRespawnSystem respawnSys = playerObj.GetComponent<PlayerRespawnSystem>();
+        if (respawnSys != null)
         {
-            float xDifference = playerObj.transform.position.x - transform.position.x;
-            Vector3 knockbackDir;
-
-            float upForce = 3f; 
-            float sideForce = 50f; 
-
-            if (xDifference > 0)
+            // 特殊規則：如果是教學關卡的鳥，則強制傳送到教學重生點
+            if (this.gameObject.name == "TutorialBirdEnemy")
             {
-                knockbackDir = new Vector3(-sideForce, upForce, 0f);
+                GameObject tutorialPoint = GameObject.Find("TutorialRespawnPoint");
+                if (tutorialPoint != null)
+                {
+                    respawnSys.TriggerRespawn(tutorialPoint.transform.position);
+                }
+                else
+                {
+                    Debug.LogWarning("找不到 TutorialRespawnPoint 物件，退回一般重生點");
+                    respawnSys.TriggerRespawn();
+                }
             }
             else
             {
-                knockbackDir = new Vector3(-sideForce, upForce, 0f);
+                // 一般鳥：呼叫支援黑畫面與文字轉場的「無縫傳送重生」
+                respawnSys.TriggerRespawn();
             }
-
-            Debug.Log($"撞擊！鳥在玩家的 {(xDifference > 0 ? "左" : "右")} 邊，擊退方向: {knockbackDir}");
-
-            playerRb.linearVelocity = Vector3.zero;
-            StartCoroutine(ApplyKnockbackStun(playerRb, playerScript, knockbackDir));
+            
+            StartCoroutine(WaitThenHide(1f));
         }
-
-        StartCoroutine(WaitThenHide(1f));
-    }
-
-    // ==========================================
-    // 硬直擊退協程：暫時關閉玩家腳本，防止物理衝突
-    // ==========================================
-    IEnumerator ApplyKnockbackStun(Rigidbody targetRb, MonoBehaviour playerScript, Vector3 force)
-    {
-        if (playerScript != null) playerScript.enabled = false;
-
-        if (force != Vector3.zero)
+        else
         {
-            targetRb.AddForce(force, ForceMode.Impulse);
+            // 若沒有掛載重生系統，則作為備案直接重載場景（無轉場）
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
         }
-
-        yield return new WaitForSeconds(0.5f);
-
-        if (playerScript != null) playerScript.enabled = true;
     }
 
     IEnumerator WaitThenHide(float waitTime)

@@ -1,105 +1,363 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Cinemachine;
+using UnityEngine.UI;
 
-// Ensures this script runs correctly
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerRespawnSystem : MonoBehaviour
 {
-    [Header("存檔點設定 (User Setup)")]
-    public Transform currentSavePoint; // 拖入你手動設置好的存檔點 Transform (可選)
-    
-    [Header("相機設定 (Camera Setup)")]
-    // 當相機跟隨玩家時，你希望相機離玩家多遠？
-    // (例如 3D：(0, 5, -10), 2D：(0, 0, -10f))
-    public Vector3 cameraOffsetFromPlayer = new Vector3(0, 5, -10f);
+    [Header("擊退重置系統 (純數值偵測)")]
+    [Tooltip("當被往左擊飛多遠時判定失敗 (建議 15~20)")]
+    public float failKnockbackDistance = 15f;
+    [Tooltip("觸發擊飛判定的瞬間向左速度閾值 (小於 -8 代表絕對是被鳥衝撞而不是走路)")]
+    public float knockbackVelocityThreshold = -8f;
 
-    private bool _isRespawning = false; // 防止連續觸發的鎖
+    [Header("重生點設定")]
+    [Tooltip("在場景中建立 Cube 並打勾 IsTrigger，掛上這個 Tag 就可以當作存檔點！")]
+    public string respawnPointTag = "RespawnPoint";
+
+    [Header("相機與轉場")]
+    public Vector3 cameraOffsetFromPlayer = new Vector3(0, 5, -10f);
+    public float fadeDuration = 1.5f;
+    public float blackScreenTime = 2.5f;
+
+    // --- 內部狀態追蹤 ---
+    private bool _isRespawning = false; 
     private Rigidbody _playerRb;
     private Camera _mainCam;
+    
+    private bool _inKnockbackState = false;
+    private float _knockbackStartPosX;
+    private Vector3 _lastSafeGroundPos; // 安全踩在地上時的地點
+    
+    // --- UI 相關 ---
+    [Header("自訂 UI 物件 (若留空，系統會自動幫你生成)")]
+    public Image customFadeImage;
+    public Text customMessageText;
+    public CanvasGroup customMessageCanvasGroup;
+
+    private Text _messageText; 
+    private Image _fadeImage;
+    private CanvasGroup _messageCanvasGroup;
+    private bool _isWaitingForPlayerMove = false;
+    private Coroutine _textFadeCoroutine;
+
+    // 將字串改為全英文，避免 Arial 字體在您的 Unity 環境中不支援中文導致整行隱形！
+    private string[] encouragements = { 
+        "DON'T GIVE UP!", 
+        "KEEP GOING!", 
+        "ALMOST THERE!", 
+        "TRY AGAIN!" 
+    };
 
     void Start()
     {
         _playerRb = GetComponent<Rigidbody>();
         _mainCam = Camera.main;
 
-        if (_mainCam == null)
+        // 起始點即為最基礎的安全點
+        _lastSafeGroundPos = transform.position;
+
+        CreatePersistentUI();
+    }
+
+    void Update()
+    {
+
+        // ===================================
+        // 重生點紀錄 (已改為觸發器 Checkpoint 模式)
+        // 玩家的重生點現在只會在碰到帶有 RespawnPoint 標籤的方塊時更新
+        // 起始點為最一開始的出生點
+        // ===================================
+
+        // ===================================
+        // 擊飛失敗偵測 (距離與速度法)
+        // ===================================
+        if (_playerRb != null && !_isRespawning)
         {
-            Debug.LogError("PlayerRespawnSystem: 場景中找不到 Tag 為 'MainCamera' 的攝影機，請檢查！");
+            // 1. 如果突然承受巨大的向左速度 (小於 -8 代表絕對是被鳥衝撞而不是走路，因走路最快才 -5)
+            if (!_inKnockbackState && _playerRb.linearVelocity.x < knockbackVelocityThreshold)
+            {
+                _inKnockbackState = true;
+                _knockbackStartPosX = transform.position.x;
+                Debug.Log($"【擊飛偵測】受到撞擊！起始 X：{_knockbackStartPosX}");
+            }
+
+            // 2. 在被擊飛的狀態中持續檢查飛行距離
+            if (_inKnockbackState)
+            {
+                float currentDist = _knockbackStartPosX - transform.position.x;
+                
+                // A. 如果往左飛的距離超過了我們設定的容忍值
+                if (currentDist > failKnockbackDistance)
+                {
+                    Debug.Log($"【擊飛失敗】掉落超過容忍值！({currentDist} > {failKnockbackDistance}) 開始強制轉場！");
+                    _inKnockbackState = false;
+                    
+                    // 重點：傳送到剛剛踩穩的地方
+                    StartCoroutine(RespawnSequence(_lastSafeGroundPos));
+                }
+
+                // B. 如何平安解除狀態？當玩家往左的速度幾乎停止、或甚至往右走時，代表安全落地了
+                if (_playerRb.linearVelocity.x > -0.5f)
+                {
+                    _inKnockbackState = false;
+                }
+            }
+        }
+
+        // ===================================
+        // 文字消失判定 (偵測玩家左右移動)
+        // ===================================
+        if (_isWaitingForPlayerMove)
+        {
+            if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f || (_playerRb != null && Mathf.Abs(_playerRb.linearVelocity.x) > 0.5f))
+            {
+                _isWaitingForPlayerMove = false;
+                if (_textFadeCoroutine != null) StopCoroutine(_textFadeCoroutine);
+                _textFadeCoroutine = StartCoroutine(FadeOutText());
+            }
         }
     }
 
-    // ==========================================
-    // 核心邏輯：回答你的關鍵問題
-    // ==========================================
-    // 這個 OnTriggerExit 函數，就是「脫離 CameraBounds 就讓 tag: Camera, Player 一起更新」的地方。
-    // other 就是那個掛在相機下方的偵測框 (CameraBounds)
+    // 碰觸存檔點 (Cube) 的偵測
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag(respawnPointTag))
+        {
+            _lastSafeGroundPos = other.transform.position;
+            Debug.Log($"【紀錄存檔點】已更新重生點至 {other.gameObject.name} 的座標：{_lastSafeGroundPos}");
+
+            // 碰過之後就讓這個存檔點失效（關閉），確保玩家不會因為往回走而不小心踩到舊的存檔點！
+            other.gameObject.SetActive(false);
+        }
+    }
+
+    // 保留傳統鏡頭掉落偵測 (如 CameraBounds) 當作備用保險
     private void OnTriggerExit(Collider other)
     {
-        // 1. 檢查離開的是不是那個隱形的相機邊界偵測框
-        // (請確保該框框 Tag 叫 "CameraBounds")
-        if (other.CompareTag("CameraBounds") && !_isRespawning)
+        if (_isRespawning) return;
+
+        if (other.CompareTag("CameraBounds"))
         {
-            Debug.Log("偵測到脫離畫面！開始刷新程序...");
-            StopAllCoroutines(); // 確保不會重複執行
-            StartCoroutine(RespawnSequence());
+            StopAllCoroutines();
+            StartCoroutine(RespawnSequence(_lastSafeGroundPos));
         }
     }
 
-    IEnumerator RespawnSequence()
+    // ===================================
+    // 公開方法：觸發死亡重生轉場 (預設傳送到最後安全點)
+    // ===================================
+    public void TriggerRespawn()
+    {
+        if (!_isRespawning)
+        {
+            StartCoroutine(RespawnSequence(_lastSafeGroundPos));
+        }
+    }
+
+    // ===================================
+    // 公開方法：觸發強制傳送到「指定位置」的重生轉場
+    // ===================================
+    public void TriggerRespawn(Vector3 customSpawnPos)
+    {
+        if (!_isRespawning)
+        {
+            StartCoroutine(RespawnSequence(customSpawnPos));
+        }
+    }
+
+    // ===================================
+    // 原本的轉場演出 (僅傳送，不重載場景)
+    // ===================================
+    IEnumerator RespawnSequence(Vector3 spawnPos)
     {
         _isRespawning = true;
+        _isWaitingForPlayerMove = false; 
 
-        // 2. 確定瞬移目標位置 (這就是 SavePoint 的位置)
-        // 優先使用面板拖入的 currentSavePoint，如果沒有，就用 Tag "SavePoint" 找最近的
-        Vector3 spawnCenterPos;
-        if (currentSavePoint != null)
+        // 強制確保 UI 一定存在
+        if (_fadeImage == null || _messageText == null) CreatePersistentUI();
+        
+        if (_fadeImage != null)
         {
-            spawnCenterPos = currentSavePoint.position;
+            _fadeImage.gameObject.SetActive(true);
         }
         else
         {
-            GameObject sp = GameObject.FindGameObjectWithTag("SavePoint");
-            if (sp != null)
-            {
-                spawnCenterPos = sp.transform.position;
-            }
-            else
-            {
-                Debug.LogError("場景中找不到任何 'SavePoint' 物件或 Transform，無法刷新！");
-                _isRespawning = false;
-                yield break;
-            }
+            Debug.LogError("致命錯誤：無法生成或找到漸黑 UI，轉場將會失去視覺效果！");
         }
 
-        // --- 關鍵步驟 3：TELEPORT PLAYER ---
-        // 將玩家移動到存檔點的正中央
-        transform.position = spawnCenterPos;
-
-        // 【超級關鍵】立即清除玩家的速度慣性，防止刷新後直接噴出去
-        // 這裡使用的是 standard 物理寫法，適用所有版本
+        // 清除物理動力
         if (_playerRb != null)
         {
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
         }
 
-        // --- 關鍵步驟 4：TELEPORT CAMERA (這就是你要求的同步更新部分) ---
-        // 讓攝影機瞬間「也瞬移」到存檔點上方，畫面才不會看到攝影機滑過去的拉扯畫面
+        // 1. 漸黑
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime; // 使用不受時間暫停影響的真實時間
+            if (_fadeImage != null)
+            {
+                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, timer / fadeDuration));
+            }
+            yield return null;
+        }
+        
+        if (_fadeImage != null)
+            _fadeImage.color = new Color(0, 0, 0, 1f);
+
+        // --- 傳送至最後著陸的安全點 ---
+        transform.position = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
         if (_mainCam != null)
         {
-            // 將相機放在 SavePoint 中央，並且加上你設定好的 Offset 偏移量
-            _mainCam.transform.position = spawnCenterPos + cameraOffsetFromPlayer;
-            
-            Debug.Log($"已將 Player 與 Camera 同步更新於 SavePoint: {spawnCenterPos}");
-            
-            // --- 註意 (如果你有使用任何相機平滑跟隨腳本) ---
-            // 如果你原本就有寫一個 SimpleCameraFollow 腳本掛在相機上，
-            // 比如 cam.pos = player.pos + offset; 那它在 LateUpdate 裡
-            // 會自動幫你把相機定位。此步驟 4 只是確保畫面不會有「滑回去」的感覺。
+            _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            CinemachineVirtualCamera[] vcams = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcams) vcam.PreviousStateIsValid = false; 
         }
 
-        // 緩衝一段時間，防止物理系統穩定前再次連續觸發
-        yield return new WaitForSeconds(0.2f); 
+        // --- 強制顯示螢光鼓勵文字 (英文保證顯示) ---
+        if (_messageText != null && _messageCanvasGroup != null)
+        {
+            _messageText.text = encouragements[Random.Range(0, encouragements.Length)];
+            _messageCanvasGroup.alpha = 1f;
+            _messageText.gameObject.SetActive(true);
+        }
+
+        // 2. 黑屏延長維持
+        yield return new WaitForSeconds(blackScreenTime);
+
+        // 3. 漸亮
+        timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            if (_fadeImage != null)
+            {
+                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(1f, 0f, timer / fadeDuration));
+            }
+            yield return null;
+        }
+        if (_fadeImage != null)
+        {
+            _fadeImage.color = new Color(0, 0, 0, 0f);
+            _fadeImage.gameObject.SetActive(false); 
+        }
+
         _isRespawning = false;
+        _isWaitingForPlayerMove = true; 
+    }
+
+    IEnumerator FadeOutText()
+    {
+        float duration = 1.0f;
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            if (_messageCanvasGroup != null)
+                _messageCanvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
+            yield return null;
+        }
+        if (_messageText != null) _messageText.gameObject.SetActive(false);
+    }
+
+    // ===================================
+    // UI 建立 (修改為全英文與絕對安全層面)
+    // ===================================
+    private void CreatePersistentUI()
+    {
+        try 
+        {
+            // 如果玩家有拉自訂的 UI 元件，就優先使用它們
+            if (customFadeImage != null && customMessageText != null)
+            {
+                _fadeImage = customFadeImage;
+                _messageText = customMessageText;
+                _messageCanvasGroup = customMessageCanvasGroup;
+                
+                // 確保文字一開始是隱藏的
+                _messageText.gameObject.SetActive(false);
+                return;
+            }
+
+            if (GameObject.Find("RespawnCanvas_System") != null)
+            {
+                // 如果場景中已經有之前程式生成的 Canvas，就抓取下來用
+                Transform canvasTrans = GameObject.Find("RespawnCanvas_System").transform;
+                Transform fadeTrans = canvasTrans.Find("FadeBlackScreen");
+                Transform textTrans = canvasTrans.Find("MessageGlowText");
+                if (fadeTrans != null) _fadeImage = fadeTrans.GetComponent<Image>();
+                if (textTrans != null) 
+                {
+                    _messageText = textTrans.GetComponent<Text>();
+                    _messageCanvasGroup = textTrans.GetComponent<CanvasGroup>();
+                }
+                return;
+            }
+
+            // --- 以下是自動生成的後備方案 ---
+            GameObject canvasObj = new GameObject("RespawnCanvas_System");
+            Canvas canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 999; 
+            canvasObj.AddComponent<CanvasScaler>();
+
+            GameObject fadeObj = new GameObject("FadeBlackScreen");
+            fadeObj.transform.SetParent(canvasObj.transform, false);
+            _fadeImage = fadeObj.AddComponent<Image>();
+            _fadeImage.color = new Color(0, 0, 0, 0f); 
+            
+            RectTransform fadeRect = _fadeImage.GetComponent<RectTransform>();
+            fadeRect.anchorMin = Vector2.zero;
+            fadeRect.anchorMax = Vector2.one;
+            fadeRect.sizeDelta = Vector2.zero;
+            fadeRect.anchoredPosition = Vector2.zero;
+            _fadeImage.gameObject.SetActive(false);
+
+            GameObject textObj = new GameObject("MessageGlowText");
+            textObj.transform.SetParent(canvasObj.transform, false);
+            _messageCanvasGroup = textObj.AddComponent<CanvasGroup>();
+            _messageText = textObj.AddComponent<Text>();
+            
+            Font fallbackFont = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+            if (fallbackFont == null) fallbackFont = Font.CreateDynamicFontFromOSFont("Arial", 50);
+            if (fallbackFont != null) _messageText.font = fallbackFont;
+
+            _messageText.fontSize = 60; // 稍微調大一點
+            _messageText.color = new Color(0.2f, 1f, 0.2f, 1f); 
+            _messageText.alignment = TextAnchor.UpperRight;
+            _messageText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            _messageText.verticalOverflow = VerticalWrapMode.Overflow;
+
+            RectTransform textRect = _messageText.GetComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(1, 1); 
+            textRect.anchorMax = new Vector2(1, 1);
+            textRect.pivot = new Vector2(1, 1);     
+            textRect.sizeDelta = new Vector2(800, 150);
+            textRect.anchoredPosition = new Vector2(-50, -50); 
+            
+            Color glowColor = new Color(0.2f, 1f, 0.2f, 0.5f);
+            Vector2[] offsets = new Vector2[] { 
+                new Vector2(2, -2), new Vector2(-2, 2), 
+                new Vector2(2, 2), new Vector2(-2, -2),
+                new Vector2(0, 3), new Vector2(0, -3),
+                new Vector2(3, 0), new Vector2(-3, 0)
+            };
+            foreach (Vector2 offset in offsets)
+            {
+                Outline glow = textObj.AddComponent<Outline>();
+                glow.effectColor = glowColor;
+                glow.effectDistance = offset;
+            }
+
+            _messageText.gameObject.SetActive(false);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("生成 UI 當機: " + ex.Message);
+        }
     }
 }

@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour
     private GameObject pulledObject;
     private Vector3 facingDirection = Vector3.right; 
 
+    private Animator animator;
+
     [Header("狼群減速狀態 (可調整)")]
     [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
     public float maxWolvesToStop = 3f; // 【修改】改成 3 隻就完全停下，效果會超明顯！
@@ -22,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>(); // 自動往下抓取子物件(皮套)身上的 Animator
         currentSpeed = baseSpeed;
     }
 
@@ -30,6 +33,17 @@ public class PlayerMovement : MonoBehaviour
         float moveInput = Input.GetAxis("Horizontal"); 
         if (moveInput > 0.1f) facingDirection = Vector3.right;
         if (moveInput < -0.1f) facingDirection = Vector3.left;
+
+        // ==========================================
+        // 角色轉向與動畫控制
+        // ==========================================
+        if (animator != null)
+        {
+            // 讓皮套模型永遠面朝玩家當前的移動方向
+            animator.transform.rotation = Quaternion.LookRotation(facingDirection);
+            // 將玩家按下左右鍵的數值 (0 到 1) 傳給 Animator
+            animator.SetFloat("Speed", Mathf.Abs(moveInput));
+        }
 
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
