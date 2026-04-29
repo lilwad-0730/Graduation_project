@@ -145,9 +145,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 公開方法：觸發死亡重生轉場 (預設傳送到最後安全點)
-    // ===================================
+    // 觸發死亡重生轉場 (預設傳送到最後安全點)
     public void TriggerRespawn()
     {
         if (!_isRespawning)
@@ -156,9 +154,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
-    // ===================================
-    // 公開方法：觸發強制傳送到「指定位置」的重生轉場
-    // ===================================
+    // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
         if (!_isRespawning)
