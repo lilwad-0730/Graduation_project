@@ -223,7 +223,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // 2. 黑屏延長維持
-        yield return new WaitForSeconds(blackScreenTime);
+        yield return new WaitForSecondsRealtime(blackScreenTime);
 
         // 3. 漸亮
         timer = 0f;
@@ -252,7 +252,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         float timer = 0f;
         while (timer < duration)
         {
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime;
             if (_messageCanvasGroup != null)
                 _messageCanvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
             yield return null;
@@ -318,7 +318,7 @@ public class PlayerRespawnSystem : MonoBehaviour
             _messageCanvasGroup = textObj.AddComponent<CanvasGroup>();
             _messageText = textObj.AddComponent<Text>();
             
-            Font fallbackFont = (Font)Resources.GetBuiltinResource(typeof(Font), "Arial.ttf");
+            Font fallbackFont = (Font)Resources.GetBuiltinResource(typeof(Font), "LegacyRuntime.ttf");
             if (fallbackFont == null) fallbackFont = Font.CreateDynamicFontFromOSFont("Arial", 50);
             if (fallbackFont != null) _messageText.font = fallbackFont;
 
@@ -336,18 +336,9 @@ public class PlayerRespawnSystem : MonoBehaviour
             textRect.anchoredPosition = new Vector2(-50, -50); 
             
             Color glowColor = new Color(0.2f, 1f, 0.2f, 0.5f);
-            Vector2[] offsets = new Vector2[] { 
-                new Vector2(2, -2), new Vector2(-2, 2), 
-                new Vector2(2, 2), new Vector2(-2, -2),
-                new Vector2(0, 3), new Vector2(0, -3),
-                new Vector2(3, 0), new Vector2(-3, 0)
-            };
-            foreach (Vector2 offset in offsets)
-            {
-                Outline glow = textObj.AddComponent<Outline>();
-                glow.effectColor = glowColor;
-                glow.effectDistance = offset;
-            }
+            Outline glow = textObj.AddComponent<Outline>();
+            glow.effectColor = glowColor;
+            glow.effectDistance = new Vector2(3, -3);
 
             _messageText.gameObject.SetActive(false);
         }

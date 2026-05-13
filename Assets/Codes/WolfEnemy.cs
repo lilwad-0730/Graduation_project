@@ -94,8 +94,8 @@ public class WolfEnemy : MonoBehaviour
         isChasing = false;
 
         // 1. 關閉狼的物理作用，避免跟玩家的物理產生衝突亂飛
-        rb.isKinematic = true;
         rb.linearVelocity = Vector3.zero;
+        rb.isKinematic = true;
         
         // 把碰撞體設為 Trigger，這樣就不會卡住玩家，但還能感應 StopAttackObject
         col.isTrigger = true; 

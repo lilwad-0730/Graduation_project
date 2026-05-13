@@ -15,6 +15,7 @@ TagManager:
   - Floor
   - CameraBounds
   - WolfEnemy
+  - RespawnPoint
   layers:
   - Default
   - TransparentFX
