@@ -16,6 +16,8 @@ TagManager:
   - CameraBounds
   - WolfEnemy
   - RespawnPoint
+  - FallingBackground
+  - RuinedBackground
   layers:
   - Default
   - TransparentFX

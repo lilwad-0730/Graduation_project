@@ -66,7 +66,6 @@ public class WolfEnemy : MonoBehaviour
         rb.linearVelocity = new Vector3(directionX * chaseSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
     }
 
-    // 碰撞偵測
     private void OnCollisionEnter(Collision collision)
     {
         if (isStunned || isAttached) return;
@@ -74,6 +73,9 @@ public class WolfEnemy : MonoBehaviour
         // 咬到玩家 (接觸)
         if (collision.gameObject.CompareTag("Player"))
         {
+            // 【新增】碰到玩家瞬間，先把狼的速度清空，避免殘餘力量撞飛玩家
+            rb.linearVelocity = Vector3.zero; 
+            rb.angularVelocity = Vector3.zero;
             AttachToPlayer();
         }
     }

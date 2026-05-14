@@ -136,6 +136,7 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 保留傳統鏡頭掉落偵測 (如 CameraBounds) 當作備用保險
     private void OnTriggerExit(Collider other)
     {
+        if (!this.enabled) return; // 【新增】如果被 FallingBackground 關閉，就不准觸發重生！
         if (_isRespawning) return;
 
         if (other.CompareTag("CameraBounds"))
@@ -148,6 +149,7 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發死亡重生轉場 (預設傳送到最後安全點)
     public void TriggerRespawn()
     {
+        if (!this.enabled) return;
         if (!_isRespawning)
         {
             StartCoroutine(RespawnSequence(_lastSafeGroundPos));
@@ -157,6 +159,7 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
+        if (!this.enabled) return;
         if (!_isRespawning)
         {
             StartCoroutine(RespawnSequence(customSpawnPos));
@@ -211,7 +214,11 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
             CinemachineVirtualCamera[] vcams = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
-            foreach (var vcam in vcams) vcam.PreviousStateIsValid = false; 
+            foreach (var vcam in vcams) 
+            {
+                vcam.PreviousStateIsValid = false; 
+                vcam.Follow = this.transform; // 【新增】確保鏡頭重新綁定玩家
+            }
         }
 
         // --- 強制顯示螢光鼓勵文字 (英文保證顯示) ---
@@ -244,6 +251,13 @@ public class PlayerRespawnSystem : MonoBehaviour
 
         _isRespawning = false;
         _isWaitingForPlayerMove = true; 
+
+        // 【新增】確保重生後，玩家一定能恢復移動
+        PlayerMovement pm = GetComponent<PlayerMovement>();
+        if (pm != null)
+        {
+            pm.freezeHorizontal = false;
+        }
     }
 
     IEnumerator FadeOutText()
