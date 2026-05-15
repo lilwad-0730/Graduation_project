@@ -166,7 +166,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("FallingBackground"))
         {
-            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動與鏡頭，準備掉落！");
+            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，準備掉落！");
             freezeHorizontal = true;
 
             // 1. 關閉重生系統，避免掉落出畫面後被傳送回去
@@ -174,13 +174,6 @@ public class PlayerMovement : MonoBehaviour
             if (respawnSystem != null)
             {
                 respawnSystem.enabled = false;
-            }
-
-            // 2. 解除攝影機的跟隨，讓鏡頭停在原地
-            Unity.Cinemachine.CinemachineVirtualCamera vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
-            if (vcam != null)
-            {
-                vcam.Follow = null;
             }
         }
         else if (other.CompareTag("RuinedBackground"))
