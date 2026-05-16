@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ecde9a97b67a6f548a390ce917239bf2
+guid: abf688991e1e7c444af298fa1ab019d8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6937817954938267909
-    second: 2_0
+      213: 549802021224762824
+    second: furniture 8_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 2_0
+      name: furniture 8_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 2754
-        height: 1536
+        x: 17
+        y: 24
+        width: 343
+        height: 202
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 1218}
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5092c600ca4184060800000000000000
-      internalID: 6937817954938267909
+      spriteID: 8cdc4eb760a41a700800000000000000
+      internalID: 549802021224762824
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f4aded75b3aa20d44bbf9176da0b830c
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      2_0: 6937817954938267909
+      furniture 8_0: 549802021224762824
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
