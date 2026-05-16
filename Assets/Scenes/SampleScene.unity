@@ -3172,8 +3172,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -36.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.7625, y: 0.7546875, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.7, y: 0.6928278, z: 0.91803277}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1692111691}
   m_Father: {fileID: 0}
@@ -3949,7 +3949,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 4.5
+  orthographic size: 8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -3974,7 +3974,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -36.5, y: 1, z: -10}
+  m_LocalPosition: {x: -36.5, y: 2, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8435,7 +8435,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 64
+  m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!65 &1272999626
 BoxCollider:
@@ -12849,12 +12849,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1793853644}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 29.82, y: 4.36, z: 0}
-  m_LocalScale: {x: 3.5279, y: 3.5279, z: 3.5279}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 1.9000015, y: 0, z: 0.63000005}
+  m_LocalScale: {x: 0.47199774, y: 0.47199762, z: 0.47199762}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2049566478}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1821304067
 GameObject:
@@ -14022,7 +14022,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 4.5
+    OrthographicSize: 8
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -14049,7 +14049,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -36.5, y: 1, z: -10}
+  m_LocalPosition: {x: -36.5, y: 2, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14073,7 +14073,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 1, z: -10}
+  FollowOffset: {x: 0, y: 2, z: -10}
 --- !u!1 &2042525240
 GameObject:
   m_ObjectHideFlags: 0
@@ -14895,8 +14895,8 @@ ParticleSystem:
   ShapeModule:
     serializedVersion: 6
     enabled: 1
-    type: 0
-    angle: 25
+    type: 4
+    angle: 60
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -15101,7 +15101,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 80
+      scalar: 3
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -16920,7 +16920,7 @@ ParticleSystem:
     strength:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.5
+      scalar: 0.3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -19001,6 +19001,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1350498928}
+  - {fileID: 1793853647}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &2049566479
@@ -19022,9 +19023,9 @@ MonoBehaviour:
   - {fileID: 1081794023}
   - {fileID: 419984636}
   - {fileID: 564595669}
-  moveSpeed: 10
+  moveSpeed: 9
   waypointThreshold: 5
-  stopDistance: 10
+  stopDistance: 13
   resumeDistance: 6
   bobHeight: 0.3
   bobSpeed: 3
@@ -19809,4 +19810,3 @@ SceneRoots:
   - {fileID: 199294992}
   - {fileID: 1205002743}
   - {fileID: 485323646}
-  - {fileID: 1793853647}
