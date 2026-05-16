@@ -6,6 +6,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("基本移動設定")]
     public float baseSpeed = 5f;       
     public float pullRange = 2f;
+    [Tooltip("跳躍高度：數值越大跳越高（預設 5）")]
+    public float jumpForce = 5f;
     
     private Rigidbody rb;
     private GameObject pulledObject;
@@ -104,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
             // 每次跳躍前先消除往下的掉落速度，確保跳躍高度一致
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             // 改用 VelocityChange，無視質量 (mass = 10) 也能跳得一樣高
-            rb.AddForce(Vector3.up * 5f, ForceMode.VelocityChange);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
         }
     }
 
