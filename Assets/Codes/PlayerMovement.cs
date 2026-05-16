@@ -11,7 +11,9 @@ public class PlayerMovement : MonoBehaviour
     private GameObject pulledObject;
     private Vector3 facingDirection = Vector3.right; 
 
-    private Animator animator;
+    [Header("動畫控制")]
+    [Tooltip("請直接把有 PlayerAnimator Controller 的模型子物件拖曳到這裡！")]
+    public Animator animator; // 改成 public，讓你在 Inspector 手動指定！
     private Collider playerCollider;
 
     [Header("狼群減速狀態 (可調整)")]
@@ -20,8 +22,8 @@ public class PlayerMovement : MonoBehaviour
     
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
-    public float currentSpeed;          
-    [HideInInspector] public bool freezeHorizontal = false; // 【新增】當掉落特定背景時鎖死橫向移動
+    public float currentSpeed;      
+    [HideInInspector] public bool freezeHorizontal = false;
 
     void Start()
     {
@@ -33,7 +35,9 @@ public class PlayerMovement : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation; // 鎖定旋轉，永遠不會跌倒
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
-        animator = GetComponentInChildren<Animator>(); // 自動往下抓取子物件(皮套)身上的 Animator
+        // 如果沒有手動設定，才嘗試自動搜尋 (備用)
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
         
         // 強制重置所有狀態，避免卡死
         freezeHorizontal = false; 
@@ -49,52 +53,52 @@ public class PlayerMovement : MonoBehaviour
         if (moveInput < -0.1f) facingDirection = Vector3.left;
 
         // ==========================================
-        // 角色轉向與動畫控制
+        // 掉落偵測與動畫
         // ==========================================
-        if (animator != null)
+        bool isFalling = (rb.linearVelocity.y < -1f);
+
+        // 2. 簡化的地板判定 (為了跳躍用)
+        bool isGrounded = false;
+        if (!isFalling)
         {
-            // 讓皮套模型永遠面朝玩家當前的移動方向
-            animator.transform.rotation = Quaternion.LookRotation(facingDirection);
-            // 將玩家按下左右鍵的數值 (0 到 1) 傳給 Animator
-            animator.SetFloat("Speed", Mathf.Abs(moveInput));
+            if (playerCollider != null)
+            {
+                isGrounded = Physics.Raycast(playerCollider.bounds.center, Vector3.down, playerCollider.bounds.extents.y + 0.15f, ~0, QueryTriggerInteraction.Ignore);
+            }
         }
 
+        // 3. 動畫控制
+        if (animator != null)
+        {
+            animator.transform.rotation = Quaternion.LookRotation(facingDirection);
+
+            // 【診斷】確認程式碼操控的是哪個物件的 Animator
+            Debug.Log($"[診斷] Animator所在物件=[{animator.gameObject.name}] isFalling={isFalling} Y速度={rb.linearVelocity.y:F2}");
+
+            if (isFalling)
+            {
+                animator.SetBool("IsFalling", true);
+                animator.SetFloat("Speed", 0);
+                animator.Play("Falling", 0, 0f);
+                Debug.Log("[診斷] 已呼叫 animator.Play(Falling)");
+            }
+            else
+            {
+                animator.SetBool("IsFalling", false);
+                animator.SetFloat("Speed", Mathf.Abs(moveInput));
+            }
+        }
+        else
+        {
+            Debug.LogError("[診斷] animator 是 NULL！請確認皮套子物件上有 Animator 組件！");
+        }
+        // 4. 處理抓取與移動 (恢復原本的邏輯)
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
 
         float finalSpeed = (pulledObject != null) ? currentSpeed / 2f : currentSpeed;
         rb.linearVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
 
-        // 【修改】跳躍邏輯：改用動態射線偵測地板，無論 Pivot 在哪都能完美運作
-        // 從碰撞器中心向下發射射線，距離剛好是碰撞器的一半高度再加上 0.1 的寬容值
-        bool isGrounded = false;
-        if (playerCollider != null)
-        {
-            // 改用 RaycastAll 來取得所有被射線打到的東西，並且忽略 Trigger
-            RaycastHit[] hits = Physics.RaycastAll(playerCollider.bounds.center, Vector3.down, playerCollider.bounds.extents.y + 0.1f, ~0, QueryTriggerInteraction.Ignore);
-            foreach (var hit in hits)
-            {
-                // 最關鍵的防呆：如果打到的東西「不是」玩家自己，也「不是」掛在玩家身上的皮套或狼
-                if (hit.collider.transform.root != this.transform.root)
-                {
-                    isGrounded = true;
-                    break; // 只要踩到任何真正的外在物件，就算是在地上
-                }
-            }
-        }
-        else
-        {
-            isGrounded = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, 0.7f, ~0, QueryTriggerInteraction.Ignore); // 備案
-        }
-
-        // 【新增】將掉落狀態傳送給 Animator
-        if (animator != null)
-        {
-            // 當不在地面上，且速度是往下掉的，就判定為 Falling
-            bool isFalling = !isGrounded && rb.linearVelocity.y < -0.1f;
-            animator.SetBool("IsFalling", isFalling);
-        }
-        
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             // 每次跳躍前先消除往下的掉落速度，確保跳躍高度一致
@@ -166,10 +170,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("FallingBackground"))
         {
-            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，準備掉落！");
+            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始強制掉落！");
             freezeHorizontal = true;
 
-            // 1. 關閉重生系統，避免掉落出畫面後被傳送回去
+            // 【關鍵修復】把速度歸零後，直接施加一個向下的初始力，讓物理引擎「知道」你在掉落
+            rb.linearVelocity = Vector3.zero;
+            rb.AddForce(Vector3.down * 5f, ForceMode.VelocityChange);
+
+            // 關閉重生系統，避免掉落出畫面後被傳送回去
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem != null)
             {
@@ -181,14 +189,14 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("碰觸到 RuinedBackground！解除鎖定，恢復所有機能！");
             freezeHorizontal = false;
 
-            // 1. 重新啟動重生系統
+            // 重新啟動重生系統
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem != null)
             {
                 respawnSystem.enabled = true;
             }
 
-            // 2. 重新讓攝影機跟隨玩家
+            // 重新讓攝影機跟隨玩家
             Unity.Cinemachine.CinemachineVirtualCamera vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
             if (vcam != null)
             {
