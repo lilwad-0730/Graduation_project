@@ -1,0 +1,728 @@
+fileFormatVersion: 2
+guid: 6182e2b1665b1124094a5615385b95d1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4000783656923788399
+    second: furniture nobg_0
+  - first:
+      213: 5238354323375937228
+    second: furniture nobg_1
+  - first:
+      213: -821273197166457165
+    second: furniture nobg_2
+  - first:
+      213: -8989007129699064476
+    second: furniture nobg_3
+  - first:
+      213: 2265486052217701491
+    second: furniture nobg_4
+  - first:
+      213: 6683349897308612432
+    second: furniture nobg_5
+  - first:
+      213: -6138920394092105179
+    second: furniture nobg_6
+  - first:
+      213: -4371660572362129717
+    second: furniture nobg_7
+  - first:
+      213: 6505356434250416396
+    second: furniture nobg_8
+  - first:
+      213: -643489585293819255
+    second: furniture nobg_9
+  - first:
+      213: 7644434765636001488
+    second: furniture nobg_10
+  - first:
+      213: -696715717533102971
+    second: furniture nobg_11
+  - first:
+      213: 3566596395946378715
+    second: furniture nobg_12
+  - first:
+      213: 3680270388088235384
+    second: furniture nobg_13
+  - first:
+      213: -1222983491870911856
+    second: furniture nobg_14
+  - first:
+      213: -4004089732647744227
+    second: furniture nobg_15
+  - first:
+      213: -1338276007484249082
+    second: furniture nobg_16
+  - first:
+      213: -4862554998183452556
+    second: furniture nobg_17
+  - first:
+      213: -6821728621738784378
+    second: furniture nobg_18
+  - first:
+      213: 2327914211008429949
+    second: furniture nobg_19
+  - first:
+      213: -2814266808326844003
+    second: furniture nobg_20
+  - first:
+      213: -6819999618030526698
+    second: furniture nobg_21
+  - first:
+      213: -7031968584590756924
+    second: furniture nobg_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: furniture nobg_0
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 744
+        width: 206
+        height: 224
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19b8ed9067c5a78c0800000000000000
+      internalID: -4000783656923788399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_1
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 728
+        width: 305
+        height: 216
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc6547cc08f52b840800000000000000
+      internalID: 5238354323375937228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_2
+      rect:
+        serializedVersion: 2
+        x: 590
+        y: 736
+        width: 194
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3be0853e0604a94f0800000000000000
+      internalID: -821273197166457165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_3
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 732
+        width: 288
+        height: 214
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46565de24a1a04380800000000000000
+      internalID: -8989007129699064476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_4
+      rect:
+        serializedVersion: 2
+        x: 1142
+        y: 735
+        width: 143
+        height: 227
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 374c90abf8f907f10800000000000000
+      internalID: 2265486052217701491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_5
+      rect:
+        serializedVersion: 2
+        x: 1353
+        y: 737
+        width: 122
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05729ba525700cc50800000000000000
+      internalID: 6683349897308612432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_6
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 487
+        width: 273
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5223dbd4d6c2ecaa0800000000000000
+      internalID: -6138920394092105179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_7
+      rect:
+        serializedVersion: 2
+        x: 341
+        y: 472
+        width: 245
+        height: 209
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bce36c91fddb453c0800000000000000
+      internalID: -4371660572362129717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_8
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 468
+        width: 168
+        height: 224
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c014cc8c53ba74a50800000000000000
+      internalID: 6505356434250416396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_9
+      rect:
+        serializedVersion: 2
+        x: 843
+        y: 465
+        width: 254
+        height: 232
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98206eba1add117f0800000000000000
+      internalID: -643489585293819255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_10
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 452
+        width: 343
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0de516adaec761a60800000000000000
+      internalID: 7644434765636001488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_11
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 257
+        width: 317
+        height: 200
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58c020b0fb4c456f0800000000000000
+      internalID: -696715717533102971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_12
+      rect:
+        serializedVersion: 2
+        x: 379
+        y: 270
+        width: 298
+        height: 162
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd5829586881f7130800000000000000
+      internalID: 3566596395946378715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_13
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 241
+        width: 245
+        height: 183
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87563674b62f21330800000000000000
+      internalID: 3680270388088235384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_14
+      rect:
+        serializedVersion: 2
+        x: 1034
+        y: 255
+        width: 211
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0921ed86ef6170fe0800000000000000
+      internalID: -1222983491870911856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_15
+      rect:
+        serializedVersion: 2
+        x: 1300
+        y: 254
+        width: 193
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1d0ebc4a9d9e68c0800000000000000
+      internalID: -4004089732647744227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_16
+      rect:
+        serializedVersion: 2
+        x: 59
+        y: 58
+        width: 96
+        height: 205
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60c297acf0d7d6de0800000000000000
+      internalID: -1338276007484249082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_17
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 70
+        width: 119
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 470a978fdfbb48cb0800000000000000
+      internalID: -4862554998183452556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_18
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 65
+        width: 202
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 689052b26f95451a0800000000000000
+      internalID: -6821728621738784378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_19
+      rect:
+        serializedVersion: 2
+        x: 643
+        y: 83
+        width: 152
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7fbdbe14a96e4020800000000000000
+      internalID: 2327914211008429949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_20
+      rect:
+        serializedVersion: 2
+        x: 829
+        y: 71
+        width: 182
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d91918a9f37b1f8d0800000000000000
+      internalID: -2814266808326844003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_21
+      rect:
+        serializedVersion: 2
+        x: 1057
+        y: 74
+        width: 169
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61f9df63b7e7a51a0800000000000000
+      internalID: -6819999618030526698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture nobg_22
+      rect:
+        serializedVersion: 2
+        x: 1292
+        y: 72
+        width: 165
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c3f2cb44dd696e90800000000000000
+      internalID: -7031968584590756924
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      furniture nobg_0: -4000783656923788399
+      furniture nobg_1: 5238354323375937228
+      furniture nobg_10: 7644434765636001488
+      furniture nobg_11: -696715717533102971
+      furniture nobg_12: 3566596395946378715
+      furniture nobg_13: 3680270388088235384
+      furniture nobg_14: -1222983491870911856
+      furniture nobg_15: -4004089732647744227
+      furniture nobg_16: -1338276007484249082
+      furniture nobg_17: -4862554998183452556
+      furniture nobg_18: -6821728621738784378
+      furniture nobg_19: 2327914211008429949
+      furniture nobg_2: -821273197166457165
+      furniture nobg_20: -2814266808326844003
+      furniture nobg_21: -6819999618030526698
+      furniture nobg_22: -7031968584590756924
+      furniture nobg_3: -8989007129699064476
+      furniture nobg_4: 2265486052217701491
+      furniture nobg_5: 6683349897308612432
+      furniture nobg_6: -6138920394092105179
+      furniture nobg_7: -4371660572362129717
+      furniture nobg_8: 6505356434250416396
+      furniture nobg_9: -643489585293819255
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
