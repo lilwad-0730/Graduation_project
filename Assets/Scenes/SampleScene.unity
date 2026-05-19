@@ -949,7 +949,7 @@ Transform:
   m_GameObject: {fileID: 119172342}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 24.389433, y: -8.46, z: 0}
+  m_LocalPosition: {x: 23.04, y: -8.5, z: 0}
   m_LocalScale: {x: 2.81875, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3510,6 +3510,7 @@ MonoBehaviour:
   pullRange: 2
   jumpForce: 6
   animator: {fileID: 0}
+  fallVelocityThreshold: -6
   maxWolvesToStop: 10
   lockCameraY: 1
   attachedWolvesCount: 0
@@ -5423,7 +5424,7 @@ Transform:
   m_GameObject: {fileID: 654844965}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 23.58, y: 0.96, z: 0}
+  m_LocalPosition: {x: 27.23, y: 0.96, z: 0}
   m_LocalScale: {x: 1, y: 22.046875, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

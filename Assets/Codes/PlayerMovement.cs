@@ -16,6 +16,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("動畫控制")]
     [Tooltip("請直接把有 PlayerAnimator Controller 的模型子物件拖曳到這裡！")]
     public Animator animator; // 改成 public，讓你在 Inspector 手動指定！
+    [Tooltip("向下掉落速度超過多少才算 Falling？(預設 -4，數字越負越難觸發掉落動畫)")]
+    public float fallVelocityThreshold = -4f;
     private Collider playerCollider;
 
     [Header("狼群減速狀態 (可調整)")]
@@ -93,9 +95,8 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         // 掉落偵測與動畫
         // ==========================================
-        bool isFalling = (rb.linearVelocity.y < -1f);
 
-        // 2. 改進的地板判定 (改為 BoxCast 且不受 isFalling 限制，解決碰撞無法跳躍問題)
+        // 1. 改進的地板判定 (改為 BoxCast 且不受 isFalling 限制，解決碰撞無法跳躍問題)
         bool isGrounded = false;
         if (playerCollider != null)
         {
@@ -104,6 +105,10 @@ public class PlayerMovement : MonoBehaviour
             Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
             isGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.1f, ~0, QueryTriggerInteraction.Ignore);
         }
+
+        // 2. 更嚴謹的掉落偵測
+        // 必須「沒有踩在地上」且「向下墜落的速度夠快」，避免一般小跳躍剛往下掉就播掉落動畫
+        bool isFalling = (!isGrounded && rb.linearVelocity.y < fallVelocityThreshold);
 
         // 3. 動畫控制 (終極防呆版：程式完全接管，無視那些出問題的白色箭頭)
         if (animator != null)
