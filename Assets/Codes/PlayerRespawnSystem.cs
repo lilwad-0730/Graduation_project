@@ -186,7 +186,24 @@ public class PlayerRespawnSystem : MonoBehaviour
             Debug.LogError("致命錯誤：無法生成或找到漸黑 UI，轉場將會失去視覺效果！");
         }
 
-        // 清除物理動力
+        // 清除物理動力與釋放拖曳物件/附著狼群
+        PlayerMovement pm = GetComponent<PlayerMovement>();
+        if (pm != null)
+        {
+            pm.ReleaseObject();
+
+            // 處理所有附著在身上的狼群
+            WolfEnemy[] attachedWolves = GetComponentsInChildren<WolfEnemy>();
+            foreach (var wolf in attachedWolves)
+            {
+                wolf.SendMessage("DetachAndStun", SendMessageOptions.DontRequireReceiver);
+            }
+
+            // 強制重置計數與速度罰則
+            pm.attachedWolvesCount = 0;
+            pm.SendMessage("CalculateSpeed", SendMessageOptions.DontRequireReceiver);
+        }
+
         if (_playerRb != null)
         {
             _playerRb.linearVelocity = Vector3.zero;
@@ -213,11 +230,16 @@ public class PlayerRespawnSystem : MonoBehaviour
         if (_mainCam != null)
         {
             _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
-            CinemachineVirtualCamera[] vcams = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+            
+            // 取得正確的攝影機跟隨目標（相容 Y 軸鎖定設定）
+            PlayerMovement pmComponent = GetComponent<PlayerMovement>();
+            Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
+
+            CinemachineVirtualCameraBase[] vcams = FindObjectsByType<CinemachineVirtualCameraBase>(FindObjectsSortMode.None);
             foreach (var vcam in vcams) 
             {
                 vcam.PreviousStateIsValid = false; 
-                vcam.Follow = this.transform; // 【新增】確保鏡頭重新綁定玩家
+                vcam.Follow = targetFollow; 
             }
         }
 
@@ -253,7 +275,6 @@ public class PlayerRespawnSystem : MonoBehaviour
         _isWaitingForPlayerMove = true; 
 
         // 【新增】確保重生後，玩家一定能恢復移動
-        PlayerMovement pm = GetComponent<PlayerMovement>();
         if (pm != null)
         {
             pm.freezeHorizontal = false;

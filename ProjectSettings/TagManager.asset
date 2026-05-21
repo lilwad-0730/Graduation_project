@@ -18,6 +18,7 @@ TagManager:
   - RespawnPoint
   - FallingBackground
   - RuinedBackground
+  - Stairs
   layers:
   - Default
   - TransparentFX
