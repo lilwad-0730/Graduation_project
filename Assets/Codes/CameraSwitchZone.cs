@@ -4,7 +4,7 @@ using Unity.Cinemachine; // 注意：如果是舊版 Unity 可能是 using Cinem
 public class CameraSwitchZone : MonoBehaviour
 {
     [Header("要把哪台攝影機的權重提高？")]
-    public CinemachineVirtualCameraBase targetCamera;
+    public CinemachineVirtualCamera targetCamera;
     
     [Header("切換時的目標權重 (大於 10 就會搶走畫面)")]
     public int activePriority = 20;

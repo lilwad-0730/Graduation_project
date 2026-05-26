@@ -57,7 +57,7 @@ public class PlayerMovement : MonoBehaviour
             cameraTarget.position = transform.position;
             lockedYPosition = transform.position.y;
 
-            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCameraBase>();
+            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
             if (vcam != null && vcam.Follow == this.transform)
             {
                 vcam.Follow = cameraTarget;
@@ -191,25 +191,15 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void ReleaseObject()
+    void ReleaseObject()
     {
         if (pulledObject != null)
         {
             pulledObject.transform.SetParent(null);
-            Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
-            if (objRb != null)
-            {
-                objRb.isKinematic = false;
-            }
+            pulledObject.GetComponent<Rigidbody>().isKinematic = false;
             pulledObject = null;
         }
     }
-
-    public Transform GetCameraTarget()
-    {
-        return (lockCameraY && cameraTarget != null) ? cameraTarget : this.transform;
-    }
-
 
     // ==========================================
     // 觸發特定背景邏輯 (FallingBackground)
@@ -245,7 +235,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
             // 重新讓攝影機跟隨玩家 (若有鎖定 Y 軸則跟隨假目標)
-            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCameraBase>();
+            Unity.Cinemachine.CinemachineVirtualCamera vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
             if (vcam != null)
             {
                 vcam.Follow = (lockCameraY && cameraTarget != null) ? cameraTarget : this.transform;

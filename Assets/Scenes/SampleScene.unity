@@ -709,7 +709,7 @@ GameObject:
   - component: {fileID: 83046485}
   m_Layer: 0
   m_Name: stairs of heaven_0 (2)
-  m_TagString: Stairs
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3366,7 +3366,6 @@ GameObject:
   - component: {fileID: 385076163}
   - component: {fileID: 385076164}
   - component: {fileID: 385076165}
-  - component: {fileID: 385076166}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -3468,7 +3467,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -36.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.648125, y: 0.6414844, z: 0.85}
+  m_LocalScale: {x: 0.7, y: 0.6928278, z: 0.91803277}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1692111691}
@@ -3536,31 +3535,6 @@ MonoBehaviour:
   customFadeImage: {fileID: 0}
   customMessageText: {fileID: 0}
   customMessageCanvasGroup: {fileID: 0}
---- !u!114 &385076166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 385076157}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e85967559cb071e4ca126cae8a25ad52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StairsCameraZoom
-  zoomOutFactor: 1.2
-  maxZoomLayers: 5
-  restoreDelay: 1.5
-  fallThreshold: -1.5
-  overrideOriginalSize: 5
-  zoomLerpSpeed: 5
-  detectDistance: 1.2
-  detectWidth: 0.5
-  stairLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  stackByGameObject: 1
-  heightStepForStack: 1
 --- !u!1 &403150709
 GameObject:
   m_ObjectHideFlags: 0
@@ -4302,7 +4276,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5.000009
+  orthographic size: 7
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -9710,7 +9684,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1360495352}
   - component: {fileID: 1360495351}
-  - component: {fileID: 1360495354}
   - component: {fileID: 1360495353}
   m_Layer: 0
   m_Name: Cam_TopDown
@@ -9744,7 +9717,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 345.2498
+    OrthographicSize: 14.5738945
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -9791,20 +9764,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraSwitchZone
   targetCamera: {fileID: 0}
   activePriority: 20
---- !u!114 &1360495354
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1360495350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 715a9251275442048a4a85930db4e0c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CinemachineCameraConfiner3D
-  boundaryCollider: {fileID: 0}
-  autoFindBackground: 1
 --- !u!1 &1361562615
 GameObject:
   m_ObjectHideFlags: 0
@@ -14155,7 +14114,7 @@ GameObject:
   - component: {fileID: 2005541122}
   m_Layer: 0
   m_Name: stairs of heaven_0 (1)
-  m_TagString: Stairs
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -14736,7 +14695,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 5.000009
+    OrthographicSize: 7
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -19873,7 +19832,7 @@ GameObject:
   - component: {fileID: 2066209045}
   m_Layer: 0
   m_Name: stairs of heaven_0
-  m_TagString: Stairs
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -19925,7 +19884,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e823cd5b5d27c0f4b8256e7c12ee3e6d, type: 2}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
