@@ -27,6 +27,12 @@ public class PlayerMovement : MonoBehaviour
     public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
 
+    [Header("攝影機與物理優化設定")]
+    [Tooltip("是否鎖定攝影機的 Y 軸高度")]
+    public bool lockCameraY = true;
+    private Transform cameraTarget;
+    private float lockedYPosition;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
