@@ -235,28 +235,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             PlayerMovement pmComponent = GetComponent<PlayerMovement>();
             Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
 
-            // 尋找新版 CinemachineCamera
-            CinemachineCamera[] vcams3 = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
-            foreach (var vcam in vcams3)
+            CinemachineVirtualCameraBase[] vcams = FindObjectsByType<CinemachineVirtualCameraBase>(FindObjectsSortMode.None);
+            foreach (var vcam in vcams) 
             {
-                vcam.PreviousStateIsValid = false;
-                vcam.Follow = targetFollow;
-            }
-
-            // 尋找舊版 CinemachineVirtualCamera
-            CinemachineVirtualCamera[] vcamsLegacy = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
-            foreach (var vcam in vcamsLegacy)
-            {
-                vcam.PreviousStateIsValid = false;
-                vcam.Follow = targetFollow;
-            }
-
-            // 尋找 CinemachineVirtualCameraBase (防呆備用)
-            CinemachineVirtualCameraBase[] vcamsBase = FindObjectsByType<CinemachineVirtualCameraBase>(FindObjectsSortMode.None);
-            foreach (var vcam in vcamsBase)
-            {
-                vcam.PreviousStateIsValid = false;
-                vcam.Follow = targetFollow;
+                vcam.PreviousStateIsValid = false; 
+                vcam.Follow = targetFollow; 
             }
         }
 

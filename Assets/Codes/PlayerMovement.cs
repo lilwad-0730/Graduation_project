@@ -1,5 +1,4 @@
 using UnityEngine;
-using Unity.Cinemachine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -58,7 +57,11 @@ public class PlayerMovement : MonoBehaviour
             cameraTarget.position = transform.position;
             lockedYPosition = transform.position.y;
 
-            SetCameraFollow(cameraTarget);
+            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCameraBase>();
+            if (vcam != null && vcam.Follow == this.transform)
+            {
+                vcam.Follow = cameraTarget;
+            }
         }
 
         // 如果沒有手動設定，才嘗試自動搜尋 (備用)
@@ -136,36 +139,10 @@ public class PlayerMovement : MonoBehaviour
 
     void LateUpdate()
     {
-        // 讓攝影機追蹤點跟隨玩家 X 和 Z 軸，但 Y 軸鎖死（除非觸發 FallingBackground 開始墜落）
+        // 讓攝影機追蹤點跟隨玩家 X 和 Z 軸，但 Y 軸鎖死
         if (lockCameraY && cameraTarget != null)
         {
-            float targetY = freezeHorizontal ? transform.position.y : lockedYPosition;
-            cameraTarget.position = new Vector3(transform.position.x, targetY, transform.position.z);
-        }
-
-        if (freezeHorizontal)
-        {
-            // 當正在墜落時，強制 Cinemachine 消除所有阻尼（Damping），實現即時同步跟隨！
-            // 尋找新版 CinemachineCamera
-            var vcam3 = Object.FindAnyObjectByType<CinemachineCamera>();
-            if (vcam3 != null)
-            {
-                vcam3.PreviousStateIsValid = false;
-            }
-
-            // 尋找舊版 CinemachineVirtualCamera
-            var vcamLegacy = Object.FindAnyObjectByType<CinemachineVirtualCamera>();
-            if (vcamLegacy != null)
-            {
-                vcamLegacy.PreviousStateIsValid = false;
-            }
-
-            // 尋找 CinemachineVirtualCameraBase
-            var vcamBase = Object.FindAnyObjectByType<CinemachineVirtualCameraBase>();
-            if (vcamBase != null)
-            {
-                vcamBase.PreviousStateIsValid = false;
-            }
+            cameraTarget.position = new Vector3(transform.position.x, lockedYPosition, transform.position.z);
         }
     }
 
@@ -260,51 +237,19 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("碰觸到 RuinedBackground！解除鎖定，恢復所有機能！");
             freezeHorizontal = false;
 
+            // 重新啟動重生系統
+            PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+            if (respawnSystem != null)
+            {
+                respawnSystem.enabled = true;
+            }
+
             // 重新讓攝影機跟隨玩家 (若有鎖定 Y 軸則跟隨假目標)
-            SetCameraFollow((lockCameraY && cameraTarget != null) ? cameraTarget : this.transform);
-
-            // 延遲 0.3 秒再重新啟動重生系統，確保相機完全到位，防範任何假死重生！
-            StartCoroutine(EnableRespawnWithDelay());
-        }
-    }
-
-    private void SetCameraFollow(Transform target)
-    {
-        // 優先尋找新版 CinemachineCamera
-        var vcam3 = Object.FindAnyObjectByType<CinemachineCamera>();
-        if (vcam3 != null)
-        {
-            vcam3.Follow = target;
-            Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam3.name} 的 Follow 設為 {target.name}");
-            return;
-        }
-
-        // 備用尋找舊版 CinemachineVirtualCamera
-        var vcamLegacy = Object.FindAnyObjectByType<CinemachineVirtualCamera>();
-        if (vcamLegacy != null)
-        {
-            vcamLegacy.Follow = target;
-            Debug.Log($"[PlayerMovement] 已將 CinemachineVirtualCamera {vcamLegacy.name} 的 Follow 設為 {target.name}");
-            return;
-        }
-
-        // 最後備用尋找 CinemachineVirtualCameraBase
-        var vcamBase = Object.FindAnyObjectByType<CinemachineVirtualCameraBase>();
-        if (vcamBase != null)
-        {
-            vcamBase.Follow = target;
-            Debug.Log($"[PlayerMovement] 已將 CinemachineVirtualCameraBase {vcamBase.name} 的 Follow 設為 {target.name}");
-        }
-    }
-
-    private System.Collections.IEnumerator EnableRespawnWithDelay()
-    {
-        yield return new WaitForSeconds(0.3f);
-        PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
-        if (respawnSystem != null)
-        {
-            respawnSystem.enabled = true;
-            Debug.Log("【重生系統】已延遲重啟，安全防護生效。");
+            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCameraBase>();
+            if (vcam != null)
+            {
+                vcam.Follow = (lockCameraY && cameraTarget != null) ? cameraTarget : this.transform;
+            }
         }
     }
 }
