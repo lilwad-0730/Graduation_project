@@ -218,14 +218,14 @@ public class StairsCameraZoom : MonoBehaviour
             _waitingToRestore = false;
 
             // 精確判定是否為「向上攀爬/跳躍」：
-            // 1. 玩家當前 Y 軸速度 > 0.05f（正在向上走或向上跳躍中）
-            // 2. 玩家當前高度比上一次觸發縮放的高度高（解決「往上跳之後落地瞬間速度為負，但實際上是往上爬」的問題）
+            // 1. 玩家當前 Y 軸速度 > 0.01f（正在向上走或向上跳躍中）
+            // 2. 玩家當前高度比上一次觸發縮放的高度高 0.01f 以上（解決「往上跳之後落地瞬間速度為負，但實際上是往上爬」的問題）
             bool isClimbingUp = false;
-            if (_rigidbody != null && _rigidbody.linearVelocity.y > 0.05f)
+            if (_rigidbody != null && _rigidbody.linearVelocity.y > 0.01f)
             {
                 isClimbingUp = true;
             }
-            else if (transform.position.y > _lastZoomPlayerY + 0.1f)
+            else if (transform.position.y > _lastZoomPlayerY + 0.01f)
             {
                 isClimbingUp = true;
             }
@@ -287,7 +287,7 @@ public class StairsCameraZoom : MonoBehaviour
                 _onStairs = false;
                 _waitingToRestore = true;
                 _exitStairsTime = Time.time;
-                _lastStairsObject = null; // 離開後重置，確保下次踩上時重新起算
+                // 注意：這裡不重置 _lastStairsObject，保留至真正還原時重置，這樣在 restoreDelay 期間的快速往上跳就不會被判定為「全新階梯而重複放大」！
                 Debug.Log("[StairsCameraZoom] 離開階梯，啟動還原計時器...");
             }
         }
