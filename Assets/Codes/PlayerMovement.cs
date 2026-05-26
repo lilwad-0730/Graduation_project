@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Cinemachine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
@@ -15,12 +16,14 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("動畫控制")]
     [Tooltip("請直接把有 PlayerAnimator Controller 的模型子物件拖曳到這裡！")]
-    public Animator animator; // 改成 public，讓你在 Inspector 手動指定！
+    public Animator animator; 
+    
     private Collider playerCollider;
+    private string currentAnimState = ""; 
 
     [Header("狼群減速狀態 (可調整)")]
     [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
-    public float maxWolvesToStop = 3f; // 【修改】改成 3 隻就完全停下，效果會超明顯！
+    public float maxWolvesToStop = 3f; 
     
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
@@ -28,22 +31,30 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
 
     [Header("攝影機與物理優化設定")]
-    [Tooltip("是否鎖定攝影機的 Y 軸高度")]
-    public bool lockCameraY = true;
-    private Transform cameraTarget;
-    private float lockedYPosition;
+    [Tooltip("這將確保鏡頭無條件永遠跟隨玩家")]
+    public bool forceCameraFollowPlayer = true;
+    
+    [Header("跳躍與墜落動畫微調")]
+    [Tooltip("當角色懸空且【向下掉落的速度】大於這個數值時，才播放 Falling 動畫 (設為 0 代表只要往下掉就播，負數代表掉落有一定速度才播)")]
+    public float fallVelocityThreshold = -1.0f;
+    
+    [Tooltip("角色離開地面後，延遲幾秒才允許播放 Falling 動畫 (避免走過小顛簸時一直閃爍掉落動畫)")]
+    public float fallAnimationDelay = 0.15f;
+    
+    private float currentAirTime = 0f;
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
         
-        // 【新增】強化物理設定，避免被狼撞飛或穿模
+        // 強化物理設定，避免被狼撞飛或穿模
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.constraints = RigidbodyConstraints.FreezeRotation; // 鎖定旋轉，永遠不會跌倒
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
-        // 【新增】賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
+        // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
         if (playerCollider != null && (playerCollider.material == null || playerCollider.material.name == ""))
         {
             PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
@@ -55,19 +66,12 @@ public class PlayerMovement : MonoBehaviour
             playerCollider.material = noFriction;
         }
 
-        // 【新增】建立攝影機追蹤點
-        if (lockCameraY)
+        // ==========================================
+        // 確保所有攝影機無條件追蹤玩家！
+        // ==========================================
+        if (forceCameraFollowPlayer)
         {
-            GameObject targetObj = new GameObject("PlayerCameraTarget");
-            cameraTarget = targetObj.transform;
-            cameraTarget.position = transform.position;
-            lockedYPosition = transform.position.y;
-
-            var vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
-            if (vcam != null && vcam.Follow == this.transform)
-            {
-                vcam.Follow = cameraTarget;
-            }
+            SetCameraFollow(this.transform);
         }
 
         // 如果沒有手動設定，才嘗試自動搜尋 (備用)
@@ -82,57 +86,109 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // 【修改】如果碰到 FallingBackground，強制將水平輸入歸零
+        // 如果碰到 FallingBackground，強制將水平輸入歸零
         float moveInput = freezeHorizontal ? 0f : Input.GetAxis("Horizontal"); 
         if (moveInput > 0.1f) facingDirection = Vector3.right;
         if (moveInput < -0.1f) facingDirection = Vector3.left;
 
         // ==========================================
-        // 掉落偵測與動畫
+        // 1. 超穩定地面偵測 (使用 BoxCast 防止微小抖動)
         // ==========================================
-        bool isFalling = (rb.linearVelocity.y < -1f);
-
-        // 2. 簡化的地板判定 (為了跳躍用)
         bool isGrounded = false;
-        if (!isFalling)
+        if (playerCollider != null)
         {
-            if (playerCollider != null)
-            {
-                isGrounded = Physics.Raycast(playerCollider.bounds.center, Vector3.down, playerCollider.bounds.extents.y + 0.15f, ~0, QueryTriggerInteraction.Ignore);
-            }
+            Vector3 center = playerCollider.bounds.center;
+            // 寬度稍微縮小避免誤判牆壁，厚度加長偵測底部
+            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
+            // 改用更長的距離確保一定能掃到地面，並排除自身的 collider
+            isGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
         }
 
-        // 3. 動畫控制
+        if (isGrounded)
+        {
+            currentAirTime = 0f;
+        }
+        else
+        {
+            currentAirTime += Time.deltaTime;
+        }
+
+        // ==========================================
+        // 2. 動畫強行控制 (直接程式碼接管播放)
+        // ==========================================
         if (animator != null)
         {
-            animator.transform.rotation = Quaternion.LookRotation(facingDirection);
+            // 控制角色外觀模型轉向
+            if (facingDirection != Vector3.zero)
+            {
+                animator.transform.rotation = Quaternion.LookRotation(facingDirection);
+            }
 
-            // 【診斷】確認程式碼操控的是哪個物件的 Animator
-            Debug.Log($"[診斷] Animator所在物件=[{animator.gameObject.name}] isFalling={isFalling} Y速度={rb.linearVelocity.y:F2}");
+            string targetAnim = "Idle";
+
+            // 判斷是否應該播放墜落動畫 (加入了延遲時間與掉落速度的容錯閥值)
+            bool isFalling = !isGrounded && (currentAirTime >= fallAnimationDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
+
+            // 判斷是否有水平速度或輸入
+            bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
 
             if (isFalling)
             {
-                animator.SetBool("IsFalling", true);
-                animator.SetFloat("Speed", 0);
-                animator.Play("Falling", 0, 0f);
-                Debug.Log("[診斷] 已呼叫 animator.Play(Falling)");
+                // 只有在空中待夠久，且真的有往下掉的速度時，才播 FALLING 動畫
+                targetAnim = "Falling";
             }
             else
             {
-                animator.SetBool("IsFalling", false);
-                animator.SetFloat("Speed", Mathf.Abs(moveInput));
+                // 停在地上 (或剛跳起來還在上升時)
+                if (hasHorizontalSpeed)
+                {
+                    targetAnim = "Run";
+                }
+                else
+                {
+                    targetAnim = "Idle";
+                }
+            }
+
+            // 【強制接管播放】使用 Play 直接切換，捨棄 CrossFade 避免任何過渡卡頓或失敗
+            if (currentAnimState != targetAnim)
+            {
+                // 檢查該狀態是否存在，避免 Console 狂刷錯誤
+                if (animator.HasState(0, Animator.StringToHash(targetAnim)))
+                {
+                    animator.Play(targetAnim);
+                    currentAnimState = targetAnim;
+                    Debug.Log($"[動畫切換] 強制切換為：{targetAnim}");
+                }
+                else
+                {
+                    currentAnimState = targetAnim;
+                    Debug.LogError($"[動畫嚴重錯誤] 試圖播放 '{targetAnim}'，但您的 Animator 裡面「完全沒有」這個名字的方塊！");
+                }
             }
         }
         else
         {
-            Debug.LogError("[診斷] animator 是 NULL！請確認皮套子物件上有 Animator 組件！");
+            Debug.LogError("[動畫診斷] animator 是 NULL！請確認皮套子物件上有 Animator 組件，或在 Inspector 手動指定！");
         }
-        // 4. 處理抓取與移動 (恢復原本的邏輯)
+
+        // ==========================================
+        // 3. 處理抓取與移動 (恢復原本的邏輯)
+        // ==========================================
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
 
         float finalSpeed = (pulledObject != null) ? currentSpeed / 2f : currentSpeed;
-        rb.linearVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+        
+        if (freezeHorizontal)
+        {
+            // 在 FallingBackground 下墜時，嚴格鎖死 X 軸速度為 0，只允許 Y 軸掉落
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, rb.linearVelocity.z);
+        }
+        else
+        {
+            rb.linearVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -143,13 +199,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
     void LateUpdate()
     {
-        // 讓攝影機追蹤點跟隨玩家 X 和 Z 軸，但 Y 軸鎖死
-        if (lockCameraY && cameraTarget != null)
-        {
-            cameraTarget.position = new Vector3(transform.position.x, lockedYPosition, transform.position.z);
-        }
+        // 已經完全移除鎖定 Y 軸的邏輯。鏡頭現在會無條件 100% 跟隨玩家的真實位置。
     }
 
     // ==========================================
@@ -197,14 +250,23 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void ReleaseObject()
+    public void ReleaseObject()
     {
         if (pulledObject != null)
         {
             pulledObject.transform.SetParent(null);
-            pulledObject.GetComponent<Rigidbody>().isKinematic = false;
+            Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
+            if (objRb != null)
+            {
+                objRb.isKinematic = false;
+            }
             pulledObject = null;
         }
+    }
+
+    public Transform GetCameraTarget()
+    {
+        return this.transform; // 無條件回傳玩家本身
     }
 
     // ==========================================
@@ -217,7 +279,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始強制掉落！");
             freezeHorizontal = true;
 
-            // 【關鍵修復】把速度歸零後，直接施加一個向下的初始力，讓物理引擎「知道」你在掉落
+            // 把速度歸零後，直接施加一個向下的初始力，讓物理引擎「知道」你在掉落
             rb.linearVelocity = Vector3.zero;
             rb.AddForce(Vector3.down * 5f, ForceMode.VelocityChange);
 
@@ -233,19 +295,49 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("碰觸到 RuinedBackground！解除鎖定，恢復所有機能！");
             freezeHorizontal = false;
 
-            // 重新啟動重生系統
+            // 【關鍵修正】強制把「最後安全點」設為現在的位置！
+            // 否則系統會發現玩家跟一開始的天空比起來掉落了幾百公尺，一啟動就立刻把玩家當作墜崖殺死！
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem != null)
             {
-                respawnSystem.enabled = true;
+                respawnSystem.SetSafeGroundPosition(this.transform.position);
             }
 
-            // 重新讓攝影機跟隨玩家 (若有鎖定 Y 軸則跟隨假目標)
-            Unity.Cinemachine.CinemachineVirtualCamera vcam = Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineVirtualCamera>();
-            if (vcam != null)
-            {
-                vcam.Follow = (lockCameraY && cameraTarget != null) ? cameraTarget : this.transform;
-            }
+            // 確保攝影機依然鎖定在玩家身上
+            SetCameraFollow(this.transform);
+
+            // 延遲 0.3 秒再重新啟動重生系統，確保相機完全到位，防範任何假死重生！
+            StartCoroutine(EnableRespawnWithDelay());
+        }
+    }
+
+    private void SetCameraFollow(Transform target)
+    {
+        // 尋找「所有」新版 CinemachineCamera 並強制修改目標 (解決多鏡頭切換不跟隨的問題)
+        var vcams3 = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+        foreach(var vcam in vcams3)
+        {
+            vcam.Follow = target;
+            Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 Follow 設為 {target.name}");
+        }
+
+        // 尋找「所有」舊版 CinemachineVirtualCamera
+        var vcamsLegacy = Object.FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+        foreach(var vcam in vcamsLegacy)
+        {
+            vcam.Follow = target;
+            Debug.Log($"[PlayerMovement] 已將 CinemachineVirtualCamera {vcam.name} 的 Follow 設為 {target.name}");
+        }
+    }
+
+    private System.Collections.IEnumerator EnableRespawnWithDelay()
+    {
+        yield return new WaitForSeconds(0.3f);
+        PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+        if (respawnSystem != null)
+        {
+            respawnSystem.enabled = true;
+            Debug.Log("【重生系統】已延遲重啟，安全防護生效。");
         }
     }
 }

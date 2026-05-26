@@ -61,6 +61,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         CreatePersistentUI();
     }
 
+    // 允許外部系統 (如掉落背景切換) 強制更新安全點，避免因為合法長距離掉落而誤判死亡
+    public void SetSafeGroundPosition(Vector3 newPos)
+    {
+        _lastSafeGroundPos = newPos;
+    }
+
     void Update()
     {
 
@@ -69,6 +75,24 @@ public class PlayerRespawnSystem : MonoBehaviour
         // 玩家的重生點現在只會在碰到帶有 RespawnPoint 標籤的方塊時更新
         // 起始點為最一開始的出生點
         // ===================================
+
+        // ===================================
+        // 自動墜崖防護系統 (自動偵測掉出地圖)
+        // ===================================
+        if (!_isRespawning)
+        {
+            PlayerMovement pm = GetComponent<PlayerMovement>();
+            // 如果玩家不是在合法的 FallingBackground 墜落（freezeHorizontal = false）
+            // 且掉落高度低於安全點超過 25 單位，自動判定為墜崖並觸發重生！
+            if (pm != null && !pm.freezeHorizontal)
+            {
+                if (transform.position.y < _lastSafeGroundPos.y - 25f)
+                {
+                    Debug.Log("【墜崖防護】玩家掉出場外！自動觸發重生！");
+                    TriggerRespawn();
+                }
+            }
+        }
 
         // ===================================
         // 擊飛失敗偵測 (距離與速度法)
@@ -213,11 +237,32 @@ public class PlayerRespawnSystem : MonoBehaviour
         if (_mainCam != null)
         {
             _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
-            CinemachineVirtualCamera[] vcams = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
-            foreach (var vcam in vcams) 
+            // 取得正確的攝影機跟隨目標（相容 Y 軸鎖定設定）
+            PlayerMovement pmComponent = GetComponent<PlayerMovement>();
+            Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
+
+            // 尋找新版 CinemachineCamera
+            CinemachineCamera[] vcams3 = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcams3)
             {
-                vcam.PreviousStateIsValid = false; 
-                vcam.Follow = this.transform; // 【新增】確保鏡頭重新綁定玩家
+                vcam.PreviousStateIsValid = false;
+                vcam.Follow = targetFollow;
+            }
+
+            // 尋找舊版 CinemachineVirtualCamera
+            CinemachineVirtualCamera[] vcamsLegacy = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcamsLegacy)
+            {
+                vcam.PreviousStateIsValid = false;
+                vcam.Follow = targetFollow;
+            }
+
+            // 尋找 CinemachineVirtualCameraBase (防呆備用)
+            CinemachineVirtualCameraBase[] vcamsBase = FindObjectsByType<CinemachineVirtualCameraBase>(FindObjectsSortMode.None);
+            foreach (var vcam in vcamsBase)
+            {
+                vcam.PreviousStateIsValid = false;
+                vcam.Follow = targetFollow;
             }
         }
 
