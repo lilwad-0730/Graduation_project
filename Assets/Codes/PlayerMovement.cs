@@ -23,19 +23,10 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
     public float maxWolvesToStop = 3f; // 【修改】改成 3 隻就完全停下，效果會超明顯！
     
-    [Header("攝影機與物理優化設定")]
-    [Tooltip("是否鎖定攝影機的 Y 軸高度")]
-    public bool lockCameraY = true;
-    private Transform cameraTarget;
-    private float lockedYPosition;
-
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
     public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
-    
-    // 用來記錄目前正在播放的動畫，避免重複呼叫導致卡死
-    private string currentAnimState = "Idle";
 
     void Start()
     {
@@ -92,37 +83,35 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         bool isFalling = (rb.linearVelocity.y < -1f);
 
-        // 2. 改進的地板判定 (改為 BoxCast 且不受 isFalling 限制，解決碰撞無法跳躍問題)
+        // 2. 簡化的地板判定 (為了跳躍用)
         bool isGrounded = false;
-        if (playerCollider != null)
+        if (!isFalling)
         {
-            Vector3 center = playerCollider.bounds.center;
-            // 寬度稍微縮小避免誤判牆壁，厚度設薄偵測底部
-            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
-            isGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.1f, ~0, QueryTriggerInteraction.Ignore);
+            if (playerCollider != null)
+            {
+                isGrounded = Physics.Raycast(playerCollider.bounds.center, Vector3.down, playerCollider.bounds.extents.y + 0.15f, ~0, QueryTriggerInteraction.Ignore);
+            }
         }
 
-        // 3. 動畫控制 (終極防呆版：程式完全接管，無視那些出問題的白色箭頭)
+        // 3. 動畫控制
         if (animator != null)
         {
             animator.transform.rotation = Quaternion.LookRotation(facingDirection);
 
-            // 決定現在「應該」要播什麼動畫
-            string targetAnim = "Idle";
+            // 【診斷】確認程式碼操控的是哪個物件的 Animator
+            Debug.Log($"[診斷] Animator所在物件=[{animator.gameObject.name}] isFalling={isFalling} Y速度={rb.linearVelocity.y:F2}");
+
             if (isFalling)
             {
-                targetAnim = "Falling";
+                animator.SetBool("IsFalling", true);
+                animator.SetFloat("Speed", 0);
+                animator.Play("Falling", 0, 0f);
+                Debug.Log("[診斷] 已呼叫 animator.Play(Falling)");
             }
-            else if (Mathf.Abs(moveInput) > 0.1f)
+            else
             {
-                targetAnim = "Run";
-            }
-
-            // 只有當目標動畫跟現在不同時，才呼叫切換，這樣就不會每一幀重置導致卡死了！
-            if (currentAnimState != targetAnim)
-            {
-                animator.CrossFade(targetAnim, 0.1f);
-                currentAnimState = targetAnim;
+                animator.SetBool("IsFalling", false);
+                animator.SetFloat("Speed", Mathf.Abs(moveInput));
             }
         }
         else
