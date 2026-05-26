@@ -49,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation; // 鎖定旋轉，永遠不會跌倒
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
-        // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
+        // 【新增】賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
         if (playerCollider != null && (playerCollider.material == null || playerCollider.material.name == ""))
         {
             PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
@@ -112,7 +112,7 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.transform.rotation = Quaternion.LookRotation(facingDirection);
 
-            // 決定應要播什麼動畫
+            // 決定現在「應該」要播什麼動畫
             string targetAnim = "Idle";
             if (isFalling)
             {
@@ -123,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
                 targetAnim = "Run";
             }
 
-            // 只當目標動畫跟現在不同時，才呼叫切換，避免每一幀重置導致卡死
+            // 只有當目標動畫跟現在不同時，才呼叫切換，這樣就不會每一幀重置導致卡死了！
             if (currentAnimState != targetAnim)
             {
                 animator.CrossFade(targetAnim, 0.1f);
