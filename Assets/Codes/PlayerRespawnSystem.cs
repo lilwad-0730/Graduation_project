@@ -135,15 +135,15 @@ public class PlayerRespawnSystem : MonoBehaviour
     {
         if (other.CompareTag(respawnPointTag) || other.name.Contains("RespawnPoint"))
         {
-            // 【超級關鍵】必須記錄「玩家」當下的座標，而不是觸發器的座標！
-            // 否則如果觸發器放在半空中，系統會誤以為玩家從半空中掉下來，瞬間觸發墜崖死亡！
+            // 記錄「玩家」當下的座標
+            // 否則如果觸發器放在半空中，誤以為玩家從半空中掉下，觸發死亡
             _lastSafeGroundPos = transform.position;
             Debug.Log($"【紀錄存檔點】已更新重生點至 {other.gameObject.name} 的座標：{_lastSafeGroundPos}");
 
-            // 碰過之後就讓這個存檔點失效（關閉），確保玩家不會因為往回走而不小心踩到舊的存檔點！
+            // 碰過之後讓存檔點失效（關閉），確保玩家不會因為往回走而不小心踩到舊的存檔點
             other.gameObject.SetActive(false);
         }
-        // 【全新功能】：專門用來放坑洞底部的死亡判定區
+        // 放坑洞底部的死亡判定區
         else if (other.CompareTag("DeathZone") || other.name.Contains("DeathZone"))
         {
             if (!_isRespawning)

@@ -35,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     public int attachedWolvesCount = 0; 
     public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
+    [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
     [Header("攝影機緩衝與防震設定 (取代原本的 Y 軸鎖死)")]
     [Tooltip("開啟此選項，會讓攝影機平滑跟隨玩家的上下跳躍 (減震效果，防止跳躍時畫面跟著狂震)")]
@@ -138,7 +139,9 @@ public class PlayerMovement : MonoBehaviour
 
         // 【防呆機制】：只有在掉落背景且真的雙腳離地、並且「正在往下掉」時，才準備鎖定
         bool actuallyFreeze = isInDropZone && !preliminaryGrounded && rb.linearVelocity.y < 0f;
-        float moveInput = actuallyFreeze ? 0f : Input.GetAxis("Horizontal"); 
+        
+        // 如果被劇情鎖定，則無條件取消所有玩家輸入
+        float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : Input.GetAxis("Horizontal"); 
 
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -259,7 +262,8 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        // 支援 W 鍵或空白鍵跳躍 (必須沒有被劇情鎖定)
+        if (!isCutsceneFrozen && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
         {
             // 每次跳躍前先消除往下的掉落速度，確保跳躍高度一致
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);

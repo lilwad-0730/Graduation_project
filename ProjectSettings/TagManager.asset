@@ -19,6 +19,8 @@ TagManager:
   - FallingBackground
   - RuinedBackground
   - DeathZone
+  - Waypoint_WaitPlayer
+  - Waypoint_Touch
   layers:
   - Default
   - TransparentFX
