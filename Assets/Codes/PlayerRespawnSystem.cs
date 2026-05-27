@@ -44,10 +44,10 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     // 將字串改為全英文，避免 Arial 字體在您的 Unity 環境中不支援中文導致整行隱形！
     private string[] encouragements = { 
-        "DON'T GIVE UP!", 
-        "KEEP GOING!", 
-        "ALMOST THERE!", 
-        "TRY AGAIN!" 
+        "♥ Take a deep breath... ♥", 
+        "✿ You're doing great! ✿", 
+        "★ It's okay to fall. ★", 
+        "♪ You can do this! ♪" 
     };
 
     void Start()
@@ -77,22 +77,8 @@ public class PlayerRespawnSystem : MonoBehaviour
         // ===================================
 
         // ===================================
-        // 自動墜崖防護系統 (自動偵測掉出地圖)
-        // ===================================
-        if (!_isRespawning)
-        {
-            PlayerMovement pm = GetComponent<PlayerMovement>();
-            // 如果玩家不是在合法的 FallingBackground 墜落（freezeHorizontal = false）
-            // 且掉落高度低於安全點超過 25 單位，自動判定為墜崖並觸發重生！
-            if (pm != null && !pm.freezeHorizontal)
-            {
-                if (transform.position.y < _lastSafeGroundPos.y - 25f)
-                {
-                    Debug.Log("【墜崖防護】玩家掉出場外！自動觸發重生！");
-                    TriggerRespawn();
-                }
-            }
-        }
+        // 自動墜崖防護系統 (已移除，避免玩家走下坡或下樓梯時誤判死亡)
+        // 死亡判定交由 CameraBounds 或其他死亡觸發器來處理！
 
         // ===================================
         // 擊飛失敗偵測 (距離與速度法)
@@ -147,27 +133,39 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 碰觸存檔點 (Cube) 的偵測
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(respawnPointTag))
+        if (other.CompareTag(respawnPointTag) || other.name.Contains("RespawnPoint"))
         {
-            _lastSafeGroundPos = other.transform.position;
+            // 【超級關鍵】必須記錄「玩家」當下的座標，而不是觸發器的座標！
+            // 否則如果觸發器放在半空中，系統會誤以為玩家從半空中掉下來，瞬間觸發墜崖死亡！
+            _lastSafeGroundPos = transform.position;
             Debug.Log($"【紀錄存檔點】已更新重生點至 {other.gameObject.name} 的座標：{_lastSafeGroundPos}");
 
             // 碰過之後就讓這個存檔點失效（關閉），確保玩家不會因為往回走而不小心踩到舊的存檔點！
             other.gameObject.SetActive(false);
         }
+        // 【全新功能】：專門用來放坑洞底部的死亡判定區
+        else if (other.CompareTag("DeathZone") || other.name.Contains("DeathZone"))
+        {
+            if (!_isRespawning)
+            {
+                Debug.Log("【墜崖死亡】玩家碰到 DeathZone，觸發重生！");
+                TriggerRespawn();
+            }
+        }
     }
 
-    // 保留傳統鏡頭掉落偵測 (如 CameraBounds) 當作備用保險
+    // 已經依照要求註解掉！這會避免玩家走到畫面邊緣時被鏡頭框誤判死亡！
+    // 如果玩家掉出地圖邊緣需要死亡，請在洞口底部放一個 Tag 為 DeathZone 的 BoxCollider (IsTrigger = true)！
     private void OnTriggerExit(Collider other)
     {
-        if (!this.enabled) return; // 【新增】如果被 FallingBackground 關閉，就不准觸發重生！
+        if (!this.enabled) return; 
         if (_isRespawning) return;
 
-        if (other.CompareTag("CameraBounds"))
-        {
-            StopAllCoroutines();
-            StartCoroutine(RespawnSequence(_lastSafeGroundPos));
-        }
+        // if (other.CompareTag("CameraBounds"))
+        // {
+        //     StopAllCoroutines();
+        //     StartCoroutine(RespawnSequence(_lastSafeGroundPos));
+        // }
     }
 
     // 觸發死亡重生轉場 (預設傳送到最後安全點)
@@ -381,8 +379,9 @@ public class PlayerRespawnSystem : MonoBehaviour
             if (fallbackFont == null) fallbackFont = Font.CreateDynamicFontFromOSFont("Arial", 50);
             if (fallbackFont != null) _messageText.font = fallbackFont;
 
-            _messageText.fontSize = 60; // 稍微調大一點
-            _messageText.color = new Color(0.2f, 1f, 0.2f, 1f); 
+            _messageText.fontSize = 55; 
+            _messageText.fontStyle = FontStyle.Italic; // 柔和的斜體
+            _messageText.color = new Color(1f, 0.6f, 0.8f, 1f); // 溫馨顯眼的粉紅色
             _messageText.alignment = TextAnchor.UpperRight;
             _messageText.horizontalOverflow = HorizontalWrapMode.Overflow;
             _messageText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -394,10 +393,10 @@ public class PlayerRespawnSystem : MonoBehaviour
             textRect.sizeDelta = new Vector2(800, 150);
             textRect.anchoredPosition = new Vector2(-50, -50); 
             
-            Color glowColor = new Color(0.2f, 1f, 0.2f, 0.5f);
+            Color glowColor = new Color(1f, 0.4f, 0.6f, 0.5f); // 配合粉紅色的柔和外發光
             Outline glow = textObj.AddComponent<Outline>();
             glow.effectColor = glowColor;
-            glow.effectDistance = new Vector2(3, -3);
+            glow.effectDistance = new Vector2(2, -2);
 
             _messageText.gameObject.SetActive(false);
         }

@@ -18,6 +18,7 @@ TagManager:
   - RespawnPoint
   - FallingBackground
   - RuinedBackground
+  - DeathZone
   layers:
   - Default
   - TransparentFX

@@ -20,6 +20,12 @@ public class PlayerMovement : MonoBehaviour
     
     private Collider playerCollider;
     private string currentAnimState = ""; 
+    private bool isGrounded = false;
+    
+    [Header("最高層級防破圖與鎖死系統")]
+    [HideInInspector] public bool isStrictLockingX = false;
+    [HideInInspector] public float lockedXValue = 0f;
+    private Vector3 _lastFramePos;
 
     [Header("狼群減速狀態 (可調整)")]
     [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
@@ -30,10 +36,16 @@ public class PlayerMovement : MonoBehaviour
     public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
 
-    [Header("攝影機與物理優化設定")]
-    [Tooltip("這將確保鏡頭無條件永遠跟隨玩家")]
-    public bool forceCameraFollowPlayer = true;
+    [Header("攝影機緩衝與防震設定 (取代原本的 Y 軸鎖死)")]
+    [Tooltip("開啟此選項，會讓攝影機平滑跟隨玩家的上下跳躍 (減震效果，防止跳躍時畫面跟著狂震)")]
+    public bool smoothCameraY = true;
     
+    [Tooltip("Y 軸追蹤的平滑時間 (數值越大越慢跟上，0.2 ~ 0.5 最佳)")]
+    public float cameraYDamping = 0.25f; 
+    
+    private Transform cameraTarget;
+    private float _smoothYVelocity;
+
     [Header("跳躍與墜落動畫微調")]
     [Tooltip("當角色懸空且【向下掉落的速度】大於這個數值時，才播放 Falling 動畫 (設為 0 代表只要往下掉就播，負數代表掉落有一定速度才播)")]
     public float fallVelocityThreshold = -1.0f;
@@ -67,9 +79,18 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 確保所有攝影機無條件追蹤玩家！
+        // 攝影機防震假目標初始化
         // ==========================================
-        if (forceCameraFollowPlayer)
+        if (smoothCameraY)
+        {
+            GameObject targetObj = new GameObject("PlayerCameraTarget_SmoothY");
+            cameraTarget = targetObj.transform;
+            cameraTarget.position = this.transform.position;
+            
+            // 強制所有攝影機追蹤這個「有避震器」的假目標
+            SetCameraFollow(cameraTarget);
+        }
+        else
         {
             SetCameraFollow(this.transform);
         }
@@ -80,21 +101,52 @@ public class PlayerMovement : MonoBehaviour
         
         // 強制重置所有狀態，避免卡死
         freezeHorizontal = false; 
+        isStrictLockingX = false;
         attachedWolvesCount = 0;
         currentSpeed = baseSpeed;
+        _lastFramePos = transform.position;
     }
 
     void Update()
     {
-        // 如果碰到 FallingBackground，強制將水平輸入歸零
-        float moveInput = freezeHorizontal ? 0f : Input.GetAxis("Horizontal"); 
-        if (moveInput > 0.1f) facingDirection = Vector3.right;
-        if (moveInput < -0.1f) facingDirection = Vector3.left;
+        // ==========================================
+        // 【防卡死】偵測瞬間移動 (例如：重生系統觸發)
+        // ==========================================
+        if (Vector3.Distance(transform.position, _lastFramePos) > 5f)
+        {
+            Debug.Log("【重生防卡死】偵測到玩家瞬間移動，強制解除所有 X 軸與墜落鎖定！");
+            freezeHorizontal = false;
+            isStrictLockingX = false;
+        }
+        _lastFramePos = transform.position;
+
+        // 1. 偵測地面狀態 (極簡化版，後續由 BoxCast 決定精確的 isGrounded)
+        bool preliminaryGrounded = false;
+        if (playerCollider != null)
+        {
+            Vector3 center = playerCollider.bounds.center;
+            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
+            preliminaryGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
+        // ==========================================
+        // 處理水平移動與最高層級墜落鎖定 (必須先計算 moveInput 供後續動畫使用)
+        // ==========================================
+        
+        // 判斷是否處於掉落的背景中
+        bool isInDropZone = freezeHorizontal;
+
+        // 【防呆機制】：只有在掉落背景且真的雙腳離地、並且「正在往下掉」時，才準備鎖定
+        bool actuallyFreeze = isInDropZone && !preliminaryGrounded && rb.linearVelocity.y < 0f;
+        float moveInput = actuallyFreeze ? 0f : Input.GetAxis("Horizontal"); 
+
+        if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
+        if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
 
         // ==========================================
         // 1. 超穩定地面偵測 (使用 BoxCast 防止微小抖動)
         // ==========================================
-        bool isGrounded = false;
+        isGrounded = preliminaryGrounded;
         if (playerCollider != null)
         {
             Vector3 center = playerCollider.bounds.center;
@@ -150,6 +202,23 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
+            // 【最高層級】：如果正在播 Falling 動畫，且位於掉落區，啟動絕對 X 軸鎖死
+            if (isFalling && isInDropZone)
+            {
+                if (!isStrictLockingX)
+                {
+                    isStrictLockingX = true;
+                    lockedXValue = transform.position.x;
+                    Debug.Log($"【最高規則生效】開始絕對鎖死 X 座標於: {lockedXValue}");
+                }
+            }
+            else if (isGrounded)
+            {
+                // 落地解除鎖死
+                if (isStrictLockingX) Debug.Log("【最高規則解除】已落地，解除 X 軸鎖定。");
+                isStrictLockingX = false;
+            }
+
             // 【強制接管播放】使用 Play 直接切換，捨棄 CrossFade 避免任何過渡卡頓或失敗
             if (currentAnimState != targetAnim)
             {
@@ -180,9 +249,9 @@ public class PlayerMovement : MonoBehaviour
 
         float finalSpeed = (pulledObject != null) ? currentSpeed / 2f : currentSpeed;
         
-        if (freezeHorizontal)
+        if (actuallyFreeze || isStrictLockingX)
         {
-            // 在 FallingBackground 下墜時，嚴格鎖死 X 軸速度為 0，只允許 Y 軸掉落
+            // 嚴格鎖死 X 軸速度為 0，只允許 Y 軸掉落
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, rb.linearVelocity.z);
         }
         else
@@ -202,7 +271,37 @@ public class PlayerMovement : MonoBehaviour
 
     void LateUpdate()
     {
-        // 已經完全移除鎖定 Y 軸的邏輯。鏡頭現在會無條件 100% 跟隨玩家的真實位置。
+        // ==========================================
+        // 【最高層級防破圖系統】確保玩家絕對不出界
+        // ==========================================
+        Vector3 finalPos = transform.position;
+
+        // 1. 強制 X 軸墜落鎖定 (優先權最高)
+        if (isStrictLockingX)
+        {
+            finalPos.x = lockedXValue;
+        }
+
+        // 套用最終的防破圖位置
+        transform.position = finalPos;
+
+        // ==========================================
+        // 攝影機 Y 軸避震系統
+        // ==========================================
+        if (smoothCameraY && cameraTarget != null)
+        {
+            float targetX = transform.position.x;
+            float targetZ = transform.position.z;
+            
+            // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
+            float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
+
+            // X 和 Z 軸死死咬住玩家 (0 延遲)
+            // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
+            float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
+
+            cameraTarget.position = new Vector3(targetX, newY, targetZ);
+        }
     }
 
     // ==========================================
@@ -266,7 +365,7 @@ public class PlayerMovement : MonoBehaviour
 
     public Transform GetCameraTarget()
     {
-        return this.transform; // 無條件回傳玩家本身
+        return (smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform;
     }
 
     // ==========================================
@@ -303,8 +402,8 @@ public class PlayerMovement : MonoBehaviour
                 respawnSystem.SetSafeGroundPosition(this.transform.position);
             }
 
-            // 確保攝影機依然鎖定在玩家身上
-            SetCameraFollow(this.transform);
+            // 確保攝影機依然鎖定在玩家身上 (或避震假目標)
+            SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
 
             // 延遲 0.3 秒再重新啟動重生系統，確保相機完全到位，防範任何假死重生！
             StartCoroutine(EnableRespawnWithDelay());
