@@ -21,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private Collider playerCollider;
     private string currentAnimState = ""; 
     private bool isGrounded = false;
+    private bool isJumping = false;
     
     [Header("最高層級防破圖與鎖死系統")]
     [HideInInspector] public bool isStrictLockingX = false;
@@ -162,6 +163,8 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded)
         {
             currentAirTime = 0f;
+            // 如果落地且沒有明顯向上的速度，代表跳躍結束
+            if (rb.linearVelocity.y <= 0.1f) isJumping = false;
         }
         else
         {
@@ -259,12 +262,46 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.linearVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+            Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+            
+            // 【修復斜坡抖動與抽搐】：如果在地面且非跳躍中，計算斜坡法線並沿著斜坡移動
+            if (isGrounded && !isJumping)
+            {
+                RaycastHit hit;
+                Vector3 center = playerCollider.bounds.center;
+                // 向下打射線偵測斜坡表面
+                if (Physics.Raycast(center, Vector3.down, out hit, playerCollider.bounds.extents.y + 0.5f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    float angle = Vector3.Angle(Vector3.up, hit.normal);
+                    // 只有在稍微有坡度（>0.5度），且不至於太陡（<60度）的斜坡才介入
+                    if (angle > 0.5f && angle < 60f)
+                    {
+                        if (Mathf.Abs(moveInput) > 0.05f)
+                        {
+                            // 將原本的水平移動向量，投影到斜坡表面上
+                            Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
+                            Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, hit.normal).normalized;
+                            
+                            targetVelocity.x = slopeDir.x * finalSpeed * Mathf.Abs(moveInput);
+                            targetVelocity.y = slopeDir.y * finalSpeed * Mathf.Abs(moveInput);
+                        }
+                        else
+                        {
+                            // 沒有按鍵時，消除 Y 軸墜落速度（抗重力），防止在無摩擦力斜坡上往下滑
+                            targetVelocity.x = 0f;
+                            targetVelocity.y = 0f;
+                        }
+                    }
+                }
+            }
+            
+            rb.linearVelocity = targetVelocity;
         }
 
         // 支援 W 鍵或空白鍵跳躍 (必須沒有被劇情鎖定)
         if (!isCutsceneFrozen && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
         {
+            isJumping = true; // 標記為跳躍中，避免斜坡邏輯吃掉跳躍速度
             // 每次跳躍前先消除往下的掉落速度，確保跳躍高度一致
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             // 改用 VelocityChange，無視質量 (mass = 10) 也能跳得一樣高
