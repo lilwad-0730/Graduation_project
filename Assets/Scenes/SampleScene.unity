@@ -2892,7 +2892,7 @@ Transform:
   m_GameObject: {fileID: 300902026}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15.9, y: 10.94, z: 0}
+  m_LocalPosition: {x: 0.02, y: 18.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3853,7 +3853,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -63.28, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.6928278, z: 0.91803277}
+  m_LocalScale: {x: 1.14375, y: 1.1320312, z: 1.5}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1692111691}
@@ -3892,9 +3892,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 692fd559c102e3046a2a94600ea9ae98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  baseSpeed: 5
-  pullRange: 2
-  jumpForce: 10
+  baseSpeed: 6
+  pullRange: 1
+  jumpForce: 9
   animator: {fileID: 0}
   isStrictLockingX: 0
   lockedXValue: 0
@@ -3984,7 +3984,7 @@ Transform:
   m_GameObject: {fileID: 450232554}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 85.82, y: 8.85, z: 0}
+  m_LocalPosition: {x: 75.3, y: 19.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4551,7 +4551,7 @@ Transform:
   m_GameObject: {fileID: 564595668}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 57.27, y: 12.09, z: 0}
+  m_LocalPosition: {x: 61.05, y: 20.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6124,9 +6124,11 @@ GameObject:
   - component: {fileID: 710188426}
   - component: {fileID: 710188425}
   - component: {fileID: 710188424}
+  - component: {fileID: 710188428}
+  - component: {fileID: 710188429}
   m_Layer: 0
   m_Name: "ChatGPT Image 2026\u5E745\u670827\u65E5 \u4E0B\u534809_42_43_0 (1)"
-  m_TagString: Untagged
+  m_TagString: Pushable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6156,7 +6158,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 120
   m_CollisionDetection: 1
 --- !u!65 &710188425
 BoxCollider:
@@ -6248,11 +6250,55 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -18.85, y: -0.5, z: 0}
-  m_LocalScale: {x: 0.22567199, y: 0.22567199, z: 0.22567199}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &710188428
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710188423}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Radius: 4.8899994
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!136 &710188429
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710188423}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 4.8899994
+  m_Height: 9.679999
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &733639227
 GameObject:
   m_ObjectHideFlags: 0
@@ -6278,7 +6324,7 @@ Transform:
   m_GameObject: {fileID: 733639227}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.24, y: 9.04, z: 0}
+  m_LocalPosition: {x: -17.12, y: 10.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6492,7 +6538,7 @@ Transform:
   m_GameObject: {fileID: 759253135}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 45.98, y: -8.9064, z: 0}
+  m_LocalPosition: {x: 45.98, y: -8.3, z: 0}
   m_LocalScale: {x: 2.1125, y: 1.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8623,7 +8669,7 @@ Transform:
   m_GameObject: {fileID: 1081794022}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 21.96, y: 11.23, z: 0}
+  m_LocalPosition: {x: 16.1, y: 10.79, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10204,7 +10250,7 @@ GameObject:
   - component: {fileID: 1375842676}
   m_Layer: 0
   m_Name: "ChatGPT Image 2026\u5E745\u670827\u65E5 \u4E0B\u534809_42_43_0"
-  m_TagString: Untagged
+  m_TagString: Pushable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10234,7 +10280,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 120
   m_CollisionDetection: 1
 --- !u!65 &1375842677
 BoxCollider:
@@ -12009,7 +12055,7 @@ Transform:
   m_GameObject: {fileID: 1556149061}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 61.53, y: -9.029852, z: 0}
+  m_LocalPosition: {x: 61.53, y: -8.61, z: 0}
   m_LocalScale: {x: 2.3375, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12190,7 +12236,7 @@ Transform:
   m_GameObject: {fileID: 1580544559}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 92.6, y: -107.3, z: 0}
+  m_LocalPosition: {x: 92.6, y: -109.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14646,8 +14692,8 @@ Transform:
   m_GameObject: {fileID: 2013997464}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -21.48, y: -2.13, z: 0}
-  m_LocalScale: {x: 1.6530485, y: 1, z: 1}
+  m_LocalPosition: {x: -36.7, y: -2.13, z: 0}
+  m_LocalScale: {x: 1.2474018, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 372272423}
