@@ -490,16 +490,14 @@ public class PlayerRespawnSystem : MonoBehaviour
         txtShadow.effectDistance = new Vector2(1, -1);
     }
 
-    // 傳送回剛按下 PLAY 時的初始位置
+    // 傳送回剛按下 PLAY 時的初始位置 (測試用按鈕，改為直接重置整個場景)
     public void TriggerResetToStart()
     {
         if (!this.enabled) return;
         if (!_isRespawning)
         {
-            Debug.Log("【測試按鈕】玩家點擊回到起點！");
-            // 將最後安全點更新為初始位置，防呆
-            _lastSafeGroundPos = _initialPlayPos;
-            StartCoroutine(RespawnSequence(_initialPlayPos));
+            Debug.Log("【測試按鈕】玩家點擊回到起點！場景將重新載入！");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
         }
     }
 }
