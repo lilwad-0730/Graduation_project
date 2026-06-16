@@ -23,6 +23,7 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     // --- 內部狀態追蹤 ---
     private bool _isRespawning = false; 
+    private bool _isTeleporting = false;
     private Rigidbody _playerRb;
     private Camera _mainCam;
     
@@ -233,12 +234,20 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.color = new Color(0, 0, 0, 1f);
 
         // --- 傳送至最後著陸的安全點 ---
-        transform.position = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
+        PlayerMovement pmComponent = GetComponent<PlayerMovement>();
+        Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
+        if (pmComponent != null)
+        {
+            pmComponent.WarpTo(targetPos);
+        }
+        else
+        {
+            transform.position = targetPos;
+        }
+
         if (_mainCam != null)
         {
             _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
-            // 取得正確的攝影機跟隨目標（相容 Y 軸鎖定設定）
-            PlayerMovement pmComponent = GetComponent<PlayerMovement>();
             Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
 
             // 尋找新版 CinemachineCamera
@@ -488,6 +497,119 @@ public class PlayerRespawnSystem : MonoBehaviour
         Shadow txtShadow = textObj.AddComponent<Shadow>();
         txtShadow.effectColor = new Color(0, 0, 0, 0.5f);
         txtShadow.effectDistance = new Vector2(1, -1);
+    }
+
+    /// <summary>
+    /// 觸發玩家傳送過渡效果 (漸黑 -> 傳送與相機對齊 -> 漸亮)
+    /// </summary>
+    public void TriggerTeleport(Vector3 destinationPos)
+    {
+        if (!this.enabled) return;
+        if (!_isRespawning && !_isTeleporting)
+        {
+            StartCoroutine(TeleportSequence(destinationPos));
+        }
+    }
+
+    private IEnumerator TeleportSequence(Vector3 destPos)
+    {
+        _isTeleporting = true;
+
+        PlayerMovement pmComponent = GetComponent<PlayerMovement>();
+        if (pmComponent != null)
+        {
+            pmComponent.isCutsceneFrozen = true; // 立即定住玩家，鎖定所有輸入與移動
+        }
+
+        // 確保 UI 組件存在
+        if (_fadeImage == null || _messageText == null) CreatePersistentUI();
+
+        if (_fadeImage != null)
+        {
+            _fadeImage.gameObject.SetActive(true);
+        }
+
+        // 停止物理慣性
+        if (_playerRb != null)
+        {
+            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.angularVelocity = Vector3.zero;
+        }
+
+        // 1. 畫面漸黑
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            if (_fadeImage != null)
+            {
+                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, timer / fadeDuration));
+            }
+            yield return null;
+        }
+        if (_fadeImage != null)
+            _fadeImage.color = new Color(0, 0, 0, 1f);
+
+        // 2. 執行傳送 (同時處理玩家與攝影機跟隨點)
+        if (pmComponent != null)
+        {
+            pmComponent.WarpTo(destPos);
+        }
+        else
+        {
+            transform.position = destPos;
+        }
+
+        if (_mainCam != null)
+        {
+            _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
+
+            // 重置 Cinemachine
+            CinemachineCamera[] vcams3 = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcams3)
+            {
+                vcam.PreviousStateIsValid = false;
+                vcam.Follow = targetFollow;
+            }
+            CinemachineVirtualCamera[] vcamsLegacy = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcamsLegacy)
+            {
+                vcam.PreviousStateIsValid = false;
+                vcam.Follow = targetFollow;
+            }
+        }
+
+        // 同步更新安全重生點，避免在高空中死掉掉回下層
+        SetSafeGroundPosition(destPos);
+
+        // 額外等待 0.2 秒緩衝，讓物理與相機完成置位與防震快取更新
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        // 3. 畫面漸亮
+        timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            if (_fadeImage != null)
+            {
+                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(1f, 0f, timer / fadeDuration));
+            }
+            yield return null;
+        }
+        if (_fadeImage != null)
+        {
+            _fadeImage.color = new Color(0, 0, 0, 0f);
+            _fadeImage.gameObject.SetActive(false);
+        }
+
+        // 傳送轉場完成，恢復玩家控制
+        if (pmComponent != null)
+        {
+            pmComponent.isCutsceneFrozen = false;
+        }
+
+        _isTeleporting = false;
     }
 
     // 傳送回剛按下 PLAY 時的初始位置 (測試用按鈕，改為直接重置整個場景)

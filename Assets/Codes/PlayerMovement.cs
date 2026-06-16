@@ -409,6 +409,37 @@ public class PlayerMovement : MonoBehaviour
         return (smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform;
     }
 
+    /// <summary>
+    /// 瞬間傳送玩家並重置攝影機跟隨點，防止 Y 軸追蹤延遲與碎震
+    /// </summary>
+    public void WarpTo(Vector3 position)
+    {
+        transform.position = position;
+        if (cameraTarget != null)
+        {
+            cameraTarget.position = position;
+        }
+        _smoothYVelocity = 0f; // 重置 Y 軸平滑速度快取
+        
+        // 瞬間將主相機對齊，防止 Cinemachine 出現大跨度拉扯
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            // 重置 Cinemachine 狀態
+            CinemachineCamera[] vcams3 = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcams3)
+            {
+                vcam.PreviousStateIsValid = false;
+            }
+            CinemachineVirtualCamera[] vcamsLegacy = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
+            foreach (var vcam in vcamsLegacy)
+            {
+                vcam.PreviousStateIsValid = false;
+            }
+        }
+    }
+
+
     // ==========================================
     // 觸發特定背景邏輯 (FallingBackground)
     // ==========================================
