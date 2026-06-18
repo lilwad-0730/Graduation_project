@@ -177,4 +177,43 @@ public class GuidanceLight : MonoBehaviour
         float newY = logicPosition.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
         transform.position = new Vector3(logicPosition.x, newY, logicPosition.z);
     }
+
+    /// <summary>
+    /// 供傳送點 (TeleportTrigger) 呼叫：瞬間將光絮傳送到新區域並更新下一個目標路徑點
+    /// </summary>
+    /// <param name="targetPosition">光絮要傳送到的 3D 位置</param>
+    /// <param name="newWaypointIndex">下一個路徑點的索引值，-1 代表自動尋找最近點</param>
+    public void TeleportLight(Vector3 targetPosition, int newWaypointIndex)
+    {
+        logicPosition = targetPosition;
+        transform.position = targetPosition;
+        isWaitingForPlayerCatchup = false;
+        isLockingPlayer = false;
+
+        if (waypoints == null || waypoints.Length == 0) return;
+
+        if (newWaypointIndex >= 0 && newWaypointIndex < waypoints.Length)
+        {
+            currentWaypointIndex = newWaypointIndex;
+            Debug.Log($"【光絮】已同步傳送至 {targetPosition}，下一個目標點索引設定為：{newWaypointIndex}");
+        }
+        else
+        {
+            // 自動搜尋距離傳送目的地最近的路徑點
+            float minDistance = float.MaxValue;
+            int bestIndex = 0;
+            for (int i = 0; i < waypoints.Length; i++)
+            {
+                if (waypoints[i] == null) continue;
+                float dist = Vector3.Distance(waypoints[i].position, targetPosition);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    bestIndex = i;
+                }
+            }
+            currentWaypointIndex = bestIndex;
+            Debug.Log($"【光絮】已同步傳送至 {targetPosition}，自動匹配最近的目標點索引：{bestIndex}");
+        }
+    }
 }

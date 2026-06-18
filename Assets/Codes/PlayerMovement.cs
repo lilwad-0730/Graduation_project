@@ -23,6 +23,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded = false;
     private bool isJumping = false;
     
+    private float initialZ;
+    
     [Header("最高層級防破圖與鎖死系統")]
     [HideInInspector] public bool isStrictLockingX = false;
     [HideInInspector] public float lockedXValue = 0f;
@@ -63,9 +65,12 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
         
-        // 強化物理設定，避免被狼撞飛或穿模
+        // 儲存初始 Z 軸位置，作為 2.5D 移動的基準線
+        initialZ = transform.position.z;
+        
+        // 強化物理設定，鎖定旋轉與 Z 軸移動，避免被撞飛、偏移或穿模
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        rb.constraints = RigidbodyConstraints.FreezeRotation; // 鎖定旋轉，永遠不會跌倒
+        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; 
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
         // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
@@ -104,6 +109,7 @@ public class PlayerMovement : MonoBehaviour
         // 強制重置所有狀態，避免卡死
         freezeHorizontal = false; 
         isStrictLockingX = false;
+        isCutsceneFrozen = false; // 確保起始未被鎖定
         attachedWolvesCount = 0;
         currentSpeed = baseSpeed;
         _lastFramePos = transform.position;
@@ -323,6 +329,9 @@ public class PlayerMovement : MonoBehaviour
             finalPos.x = lockedXValue;
         }
 
+        // 強制鎖死 Z 軸位置，防止 3D 物理碰撞導致 Z 軸偏移
+        finalPos.z = initialZ;
+
         // 套用最終的防破圖位置
         transform.position = finalPos;
 
@@ -420,6 +429,11 @@ public class PlayerMovement : MonoBehaviour
             cameraTarget.position = position;
         }
         _smoothYVelocity = 0f; // 重置 Y 軸平滑速度快取
+        
+        // 瞬間解鎖玩家所有的移動/墜落鎖定與劇情鎖定，防止傳送後卡死
+        isStrictLockingX = false;
+        freezeHorizontal = false;
+        isCutsceneFrozen = false;
         
         // 瞬間將主相機對齊，防止 Cinemachine 出現大跨度拉扯
         Camera mainCam = Camera.main;

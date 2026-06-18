@@ -353,6 +353,31 @@ public class PlayerRespawnSystem : MonoBehaviour
             {
                 // 如果場景中已經有之前程式生成的 Canvas，就抓取下來用
                 GameObject existingCanvas = GameObject.Find("RespawnCanvas_System");
+                
+                // 【關鍵防護】確保 Canvas 絕對位於最外層 (Root)，不繼承任何玩家或其它物件的縮放與旋轉！
+                existingCanvas.transform.SetParent(null);
+                existingCanvas.transform.localScale = Vector3.one;
+                // 將 Canvas 移到極遠的坐標，使其在 Scene 視窗中飛走，不遮擋場景！
+                existingCanvas.transform.localPosition = new Vector3(-10000f, -10000f, 0f);
+                existingCanvas.transform.localRotation = Quaternion.identity;
+
+                Canvas canvas = existingCanvas.GetComponent<Canvas>();
+                if (canvas == null)
+                {
+                    canvas = existingCanvas.AddComponent<Canvas>();
+                }
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 999;
+
+                if (existingCanvas.GetComponent<CanvasScaler>() == null)
+                {
+                    existingCanvas.AddComponent<CanvasScaler>();
+                }
+                if (existingCanvas.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null)
+                {
+                    existingCanvas.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+                }
+
                 Transform canvasTrans = existingCanvas.transform;
                 Transform fadeTrans = canvasTrans.Find("FadeBlackScreen");
                 Transform textTrans = canvasTrans.Find("MessageGlowText");
@@ -369,9 +394,11 @@ public class PlayerRespawnSystem : MonoBehaviour
 
             // --- 以下是自動生成的後備方案 ---
             GameObject canvasObj = new GameObject("RespawnCanvas_System");
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 999; 
+            // 將 Canvas 移到極遠的坐標，使其在 Scene 視窗中飛走，不遮擋場景！
+            canvasObj.transform.localPosition = new Vector3(-10000f, -10000f, 0f);
+            Canvas canvasComp = canvasObj.AddComponent<Canvas>();
+            canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasComp.sortingOrder = 999; 
             canvasObj.AddComponent<CanvasScaler>();
             canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>(); // 【修復】加入圖形射線偵測，使按鈕能被點擊
 
