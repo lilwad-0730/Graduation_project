@@ -21,6 +21,7 @@ TagManager:
   - DeathZone
   - Waypoint_WaitPlayer
   - Waypoint_Touch
+  - Waypoint_Absorb
   layers:
   - Default
   - TransparentFX

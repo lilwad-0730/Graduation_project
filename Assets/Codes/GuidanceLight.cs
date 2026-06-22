@@ -37,10 +37,32 @@ public class GuidanceLight : MonoBehaviour
     [Tooltip("上下浮動的速度")]
     public float bobSpeed = 3f;
 
+    [Header("吸收模式設定 (Waypoint_Absorb)")]
+    [Tooltip("玩家要靠近到多少距離內才會觸發吸收？（建議設為 0.8 左右，代表實際碰到時才觸發）")]
+    public float absorbTriggerDistance = 0.8f;
+    [Tooltip("吸收過程淡出時間")]
+    public float fadeOutDuration = 1.0f;
+    [Tooltip("傳送後淡入時間")]
+    public float fadeInDuration = 1.0f;
+
+    // 狀態屬性，便於外部偵測
+    public bool IsAbsorbing { get; private set; } = false;
+
+    // 吸收完成的事件委派，供後續加成效果偵測
+    public event System.Action OnAbsorbed;
+
     private int currentWaypointIndex = 0;
     private bool isWaitingForPlayerCatchup = false;
     private Vector3 logicPosition; 
     private bool isLockingPlayer = false; // 是否正在鎖定玩家看動畫
+
+    // 視覺元件快取與原始參數
+    private SpriteRenderer[] spriteRenderers;
+    private Light[] lights;
+    private ParticleSystem[] particleSystems;
+    private Color[] originalSpriteColors;
+    private float[] originalLightIntensities;
+    private Coroutine absorbCoroutine;
 
     void Start()
     {
@@ -50,6 +72,23 @@ public class GuidanceLight : MonoBehaviour
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) player = p.transform;
         }
+
+        // 快取視覺元件與其原始數值以供漸變控制
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        lights = GetComponentsInChildren<Light>(true);
+        particleSystems = GetComponentsInChildren<ParticleSystem>(true);
+
+        originalSpriteColors = new Color[spriteRenderers.Length];
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            originalSpriteColors[i] = spriteRenderers[i].color;
+        }
+
+        originalLightIntensities = new float[lights.Length];
+        for (int i = 0; i < lights.Length; i++)
+        {
+            originalLightIntensities[i] = lights[i].intensity;
+        }
     }
 
     void Update()
@@ -57,6 +96,13 @@ public class GuidanceLight : MonoBehaviour
         if (waypoints == null || waypoints.Length == 0 || player == null) return;
         
         PlayerMovement pm = player.GetComponent<PlayerMovement>();
+
+        // 如果正在演出「被吸收」狀態，Update 只負責上下浮動
+        if (IsAbsorbing)
+        {
+            ApplyBobbing();
+            return;
+        }
 
         // 規則 4：如果正在演出「飛往下一個點」的劇情鎖定狀態，Update 只負責上下浮動
         if (isLockingPlayer)
@@ -78,8 +124,20 @@ public class GuidanceLight : MonoBehaviour
         float distToPlayer = Vector3.Distance(logicPosition, player.position);
         float distToWaypoint = Vector3.Distance(logicPosition, currentWP.position);
 
+        // 新增規則：被玩家吸收模式 (Waypoint_Absorb)
+        if (wpTag == "Waypoint_Absorb")
+        {
+            if (distToWaypoint > waypointThreshold)
+            {
+                FlyTowards(currentWP.position); // 先飛到這個點
+            }
+            else if (distToPlayer <= absorbTriggerDistance) // 等玩家靠近觸發吸收
+            {
+                StartAbsorbSequence(pm);
+            }
+        }
         // 規則 3：玩家必須真正碰到光絮 (極短距離)，且光絮不跑
-        if (wpTag == "Waypoint_Touch")
+        else if (wpTag == "Waypoint_Touch")
         {
             if (distToWaypoint > waypointThreshold)
             {
@@ -172,6 +230,140 @@ public class GuidanceLight : MonoBehaviour
         isLockingPlayer = false;
     }
 
+    private void StartAbsorbSequence(PlayerMovement pm)
+    {
+        if (absorbCoroutine != null) StopCoroutine(absorbCoroutine);
+        absorbCoroutine = StartCoroutine(AbsorbSequence(pm));
+    }
+
+    private IEnumerator AbsorbSequence(PlayerMovement pm)
+    {
+        IsAbsorbing = true;
+        if (pm != null) pm.isCutsceneFrozen = true;
+
+        // 1. 停止粒子發射
+        foreach (var ps in particleSystems)
+        {
+            if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        // 2. 漸漸淡出 (降低透明度與光源強度)
+        float elapsed = 0f;
+        while (elapsed < fadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / fadeOutDuration);
+            float alpha = Mathf.Lerp(1f, 0f, t);
+
+            SetVisualAlpha(alpha);
+            yield return null;
+        }
+
+        // 確保完全透明/關閉
+        SetVisualAlpha(0f);
+
+        // 3. 觸發吸收完成事件 (供外部/主角加成偵測使用)
+        OnAbsorbed?.Invoke();
+        Debug.Log("【光絮】已被玩家吸收！觸發 OnAbsorbed 事件。");
+
+        // 4. 切換到下一個路徑點
+        if (currentWaypointIndex + 1 < waypoints.Length)
+        {
+            currentWaypointIndex++;
+            Transform nextWP = waypoints[currentWaypointIndex];
+
+            // 瞬間跳到下一個點的邏輯位置與世界位置
+            logicPosition = nextWP.position;
+            transform.position = logicPosition;
+            Debug.Log($"【光絮】瞬間傳送至下一個路徑點：{nextWP.name}");
+
+            // 5. 播放粒子並漸漸淡入
+            foreach (var ps in particleSystems)
+            {
+                if (ps != null)
+                {
+                    ps.Clear();
+                    ps.Play();
+                }
+            }
+
+            elapsed = 0f;
+            while (elapsed < fadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / fadeInDuration);
+                float alpha = Mathf.Lerp(0f, 1f, t);
+
+                SetVisualAlpha(alpha);
+                yield return null;
+            }
+
+            // 恢復原始狀態
+            RestoreVisuals();
+        }
+        else
+        {
+            // 如果已經是最後一個點，我們在原地淡入回來以維持指引
+            elapsed = 0f;
+            while (elapsed < fadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / fadeInDuration);
+                float alpha = Mathf.Lerp(0f, 1f, t);
+
+                SetVisualAlpha(alpha);
+                yield return null;
+            }
+            RestoreVisuals();
+        }
+
+        // 6. 解凍玩家與結束狀態
+        if (pm != null) pm.isCutsceneFrozen = false;
+        IsAbsorbing = false;
+    }
+
+    private void SetVisualAlpha(float alpha)
+    {
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            if (spriteRenderers[i] != null)
+            {
+                Color c = originalSpriteColors[i];
+                c.a = originalSpriteColors[i].a * alpha;
+                spriteRenderers[i].color = c;
+            }
+        }
+        for (int i = 0; i < lights.Length; i++)
+        {
+            if (lights[i] != null)
+            {
+                lights[i].intensity = originalLightIntensities[i] * alpha;
+            }
+        }
+    }
+
+    private void RestoreVisuals()
+    {
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            if (spriteRenderers[i] != null)
+            {
+                spriteRenderers[i].color = originalSpriteColors[i];
+            }
+        }
+        for (int i = 0; i < lights.Length; i++)
+        {
+            if (lights[i] != null)
+            {
+                lights[i].intensity = originalLightIntensities[i];
+            }
+        }
+        foreach (var ps in particleSystems)
+        {
+            if (ps != null && !ps.isPlaying) ps.Play();
+        }
+    }
+
     private void ApplyBobbing()
     {
         float newY = logicPosition.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
@@ -185,6 +377,14 @@ public class GuidanceLight : MonoBehaviour
     /// <param name="newWaypointIndex">下一個路徑點的索引值，-1 代表自動尋找最近點</param>
     public void TeleportLight(Vector3 targetPosition, int newWaypointIndex)
     {
+        // 傳送時，如果正在進行吸收協程則將其停止並恢復顯示
+        if (absorbCoroutine != null)
+        {
+            StopCoroutine(absorbCoroutine);
+            IsAbsorbing = false;
+            RestoreVisuals();
+        }
+
         logicPosition = targetPosition;
         transform.position = targetPosition;
         isWaitingForPlayerCatchup = false;
