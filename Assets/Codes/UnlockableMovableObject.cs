@@ -12,6 +12,16 @@ public class UnlockableMovableObject : MonoBehaviour
     [Tooltip("解鎖時，是否自動將 Rigidbody 的 isKinematic 設為 false，使其可受重力與推力影響？")]
     public bool disableKinematicOnUnlock = true;
 
+    [Header("解鎖後物理煞車設定")]
+    [Tooltip("解鎖後，是否鎖定巨石的旋轉？(打勾可避免巨石滾動或發瘋似地旋轉)")]
+    public bool freezeRotationOnUnlock = true;
+
+    [Tooltip("解鎖後，巨石的阻力/煞車力 (值越大越有沉重感，玩家推才動，一放手就會迅速停下，建議值：5 ~ 15)")]
+    public float linearDampingOnUnlock = 10f;
+
+    [Tooltip("解鎖後，巨石的質量 (Mass，重物建議設高一點)")]
+    public float massOnUnlock = 50f;
+
     [Header("解鎖效果")]
     [Tooltip("解鎖時播放的特效 (可選)")]
     public GameObject unlockEffectPrefab;
@@ -29,6 +39,19 @@ public class UnlockableMovableObject : MonoBehaviour
         if (rb == null)
         {
             rb = GetComponentInParent<Rigidbody>();
+        }
+
+        // 初始化時即套用物理煞車與旋轉鎖定，確保無論是否觸發解鎖事件，測試時皆能生效
+        if (rb != null)
+        {
+            rb.mass = massOnUnlock;
+            rb.linearDamping = linearDampingOnUnlock;
+
+            if (freezeRotationOnUnlock)
+            {
+                // 鎖定旋轉與 Z 軸移動 (配合 2.5D)
+                rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+            }
         }
 
         if (targetLight == null)
@@ -68,9 +91,23 @@ public class UnlockableMovableObject : MonoBehaviour
         IsUnlocked = true;
         gameObject.tag = unlockedTag;
 
-        if (rb != null && disableKinematicOnUnlock)
+        if (rb != null)
         {
-            rb.isKinematic = false;
+            if (disableKinematicOnUnlock)
+            {
+                rb.isKinematic = false;
+            }
+
+            // 設定剛體質量與空氣阻力（達成煞車與推力延遲效果）
+            rb.mass = massOnUnlock;
+            rb.linearDamping = linearDampingOnUnlock;
+
+            if (freezeRotationOnUnlock)
+            {
+                // 鎖定旋轉與 Z 軸移動 (防止 3D 碰撞導致旋轉亂滾與偏離 2.5D 平面)
+                rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+            }
+
             rb.WakeUp(); // 喚醒物理碰撞
         }
 
