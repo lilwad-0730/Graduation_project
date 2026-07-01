@@ -5,7 +5,10 @@ using System.Collections;
 public class WolfEnemy : MonoBehaviour
 {
     [Header("追蹤設定")]
-    public float chaseSpeed = 6f;
+    [Tooltip("背對狼逃跑時，狼的追擊速度 (快速追擊)")]
+    public float fastChaseSpeed = 8f;
+    [Tooltip("回頭看狼時，狼的減速速度 (大於 0 仍會緩慢移動)")]
+    public float slowChaseSpeed = 1.5f;
     public float aggroDistanceX = 6f; // 靠近到 x=6 開始追蹤
     public float giveUpDistanceX = 12f; // 【新增】逃遠到 x=12 放棄追蹤
 
@@ -61,9 +64,23 @@ public class WolfEnemy : MonoBehaviour
 
     private void ChasePlayer()
     {
-        // 【修改】改用 Mathf.Sign 算出純粹的左右方向 (1 或 -1)，確保狼永遠是全速追擊，不會軟弱地減速
-        float directionX = Mathf.Sign(player.position.x - transform.position.x);
-        rb.linearVelocity = new Vector3(directionX * chaseSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+        // 算出狼到玩家的 X 軸方向與正負號值 (1 或 -1)
+        float dirToPlayerX = player.position.x - transform.position.x;
+        float directionX = Mathf.Sign(dirToPlayerX);
+
+        // 偵測玩家是否回頭看著狼 (玩家朝向與狼追擊方向相反)
+        bool isPlayerFacingWolf = false;
+        if (playerMovement != null)
+        {
+            float playerFacingX = playerMovement.FacingDirection.x;
+            // 如果玩家面朝方向與狼追擊方向相反，代表玩家正在看著狼
+            isPlayerFacingWolf = (directionX * playerFacingX < 0);
+        }
+
+        // 根據玩家朝向決定追擊速度
+        float currentSpeed = isPlayerFacingWolf ? slowChaseSpeed : fastChaseSpeed;
+
+        rb.linearVelocity = new Vector3(directionX * currentSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
     }
 
     private void OnCollisionEnter(Collision collision)

@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
     private GameObject pulledObject;
     private Vector3 facingDirection = Vector3.right; 
+    public Vector3 FacingDirection => facingDirection;
 
     [Header("動畫控制")]
     [Tooltip("請直接把有 PlayerAnimator Controller 的模型子物件拖曳到這裡！")]
