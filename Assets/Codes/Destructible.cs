@@ -1,3 +1,4 @@
+// Trigger compile 8
 using UnityEngine;
 
 public class Destructible : MonoBehaviour

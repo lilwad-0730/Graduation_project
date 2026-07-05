@@ -75,7 +75,7 @@ public class PlayerMovement : MonoBehaviour
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
         // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
-        if (playerCollider != null && (playerCollider.material == null || playerCollider.material.name == ""))
+        if (playerCollider != null)
         {
             PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
             noFriction.dynamicFriction = 0f;
