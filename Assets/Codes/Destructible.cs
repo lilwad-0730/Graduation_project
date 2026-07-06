@@ -1,7 +1,7 @@
 // Trigger compile 8
 using UnityEngine;
 
-public class Destructible : MonoBehaviour
+public class Destructible : MonoBehaviour, IResettable
 {
     [Header("Shattered Prefab to Spawn (Optional)")]
     public GameObject shatteredPrefab;
@@ -17,6 +17,20 @@ public class Destructible : MonoBehaviour
     public float explosionForce = 5f;
 
     private bool hasShattered = false;
+
+    // 儲存初始狀態以供重置
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
+    private Vector3 initialScale;
+    private bool isInitiallyActive;
+
+    private void Awake()
+    {
+        initialPosition = transform.position;
+        initialRotation = transform.rotation;
+        initialScale = transform.localScale;
+        isInitiallyActive = gameObject.activeSelf;
+    }
 
     // 可供外部調用（例如玩家攻擊、機關觸發）
     public void Shatter()
@@ -52,8 +66,20 @@ public class Destructible : MonoBehaviour
             }
         }
 
-        // 銷毀原完整物件
-        Destroy(gameObject);
+        // 改為隱藏物件而不是銷毀，這樣才能透過 IResettable 還原
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 當背景區域重置時，還原物件狀態
+    /// </summary>
+    public void ResetToInitialState()
+    {
+        gameObject.SetActive(isInitiallyActive);
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
+        transform.localScale = initialScale;
+        hasShattered = false;
     }
 
     private void ShatterSprite(SpriteRenderer sr)
