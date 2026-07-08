@@ -2134,7 +2134,6 @@ GameObject:
   - component: {fileID: 202909074}
   - component: {fileID: 202909073}
   - component: {fileID: 202909075}
-  - component: {fileID: 202909076}
   m_Layer: 0
   m_Name: loopable grounds_0 (1)
   m_TagString: Floor
@@ -2237,42 +2236,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 14.479999, y: 2.143507, z: 0.2}
   m_Center: {x: 0, y: -0.20324525, z: 0}
---- !u!328 &202909076
-VideoPlayer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 202909072}
-  m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 281661eda3624f74881d7c9c7740b0be, type: 3}
-  m_TargetCameraAlpha: 1
-  m_TargetCamera3DLayout: 0
-  m_TargetCamera: {fileID: 0}
-  m_TargetTexture: {fileID: 0}
-  m_TimeReference: 0
-  m_TargetMaterialRenderer: {fileID: 0}
-  m_TargetMaterialProperty: <noninit>
-  m_RenderMode: 3
-  m_AspectRatio: 2
-  m_DataSource: 0
-  m_TimeUpdateMode: 2
-  m_PlaybackSpeed: 1
-  m_AudioOutputMode: 2
-  m_TargetAudioSources:
-  - {fileID: 0}
-  m_DirectAudioVolumes:
-  - 1
-  m_Url: 
-  m_EnabledAudioTracks: 01
-  m_DirectAudioMutes: 00
-  m_ControlledAudioTrackCount: 1
-  m_PlayOnAwake: 1
-  m_SkipOnDrop: 1
-  m_Looping: 0
-  m_WaitForFirstFrame: 1
-  m_FrameReadyEventEnabled: 0
-  m_VideoShaders: []
 --- !u!1 &214232473
 GameObject:
   m_ObjectHideFlags: 0
