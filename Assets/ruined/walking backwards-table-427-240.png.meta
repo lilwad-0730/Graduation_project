@@ -1,0 +1,1118 @@
+fileFormatVersion: 2
+guid: 44b18215de955cb478b18318c121f2f9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4779456454867395481
+    second: walking backwards-table-427-240_0
+  - first:
+      213: 911417759903568317
+    second: walking backwards-table-427-240_1
+  - first:
+      213: 7902431032205938088
+    second: walking backwards-table-427-240_2
+  - first:
+      213: -8475495054505996906
+    second: walking backwards-table-427-240_3
+  - first:
+      213: -9036552012463819553
+    second: walking backwards-table-427-240_4
+  - first:
+      213: 2479129333415962687
+    second: walking backwards-table-427-240_5
+  - first:
+      213: 499383967852298366
+    second: walking backwards-table-427-240_6
+  - first:
+      213: 3651167891960526266
+    second: walking backwards-table-427-240_7
+  - first:
+      213: 3991322088206450430
+    second: walking backwards-table-427-240_8
+  - first:
+      213: -8446072951620484731
+    second: walking backwards-table-427-240_9
+  - first:
+      213: 4832675797390746717
+    second: walking backwards-table-427-240_10
+  - first:
+      213: -7252371090732653328
+    second: walking backwards-table-427-240_11
+  - first:
+      213: -6450698660364142165
+    second: walking backwards-table-427-240_12
+  - first:
+      213: -8590023113485176640
+    second: walking backwards-table-427-240_13
+  - first:
+      213: 4217214005555904701
+    second: walking backwards-table-427-240_14
+  - first:
+      213: -4782358737749352908
+    second: walking backwards-table-427-240_15
+  - first:
+      213: 4799156447700517798
+    second: walking backwards-table-427-240_16
+  - first:
+      213: -8135207060101940184
+    second: walking backwards-table-427-240_17
+  - first:
+      213: 2861595574378920179
+    second: walking backwards-table-427-240_18
+  - first:
+      213: 33990401975967293
+    second: walking backwards-table-427-240_19
+  - first:
+      213: 5926274968835844537
+    second: walking backwards-table-427-240_20
+  - first:
+      213: 6885633212105593950
+    second: walking backwards-table-427-240_21
+  - first:
+      213: 3848326468092254646
+    second: walking backwards-table-427-240_22
+  - first:
+      213: 947271642899210146
+    second: walking backwards-table-427-240_23
+  - first:
+      213: 7264308556132070178
+    second: walking backwards-table-427-240_24
+  - first:
+      213: 648270986916229771
+    second: walking backwards-table-427-240_25
+  - first:
+      213: 1507891099794756155
+    second: walking backwards-table-427-240_26
+  - first:
+      213: -46906548547136943
+    second: walking backwards-table-427-240_27
+  - first:
+      213: -2951059138070739167
+    second: walking backwards-table-427-240_28
+  - first:
+      213: 4175323129660210092
+    second: walking backwards-table-427-240_29
+  - first:
+      213: -1552133641134608527
+    second: walking backwards-table-427-240_30
+  - first:
+      213: -4773967869425891814
+    second: walking backwards-table-427-240_31
+  - first:
+      213: 3198397362384748977
+    second: walking backwards-table-427-240_32
+  - first:
+      213: 8363435003828659598
+    second: walking backwards-table-427-240_33
+  - first:
+      213: -2375397131433908320
+    second: walking backwards-table-427-240_34
+  - first:
+      213: -4775352267287627291
+    second: walking backwards-table-427-240_35
+  - first:
+      213: 3683394052967176010
+    second: walking backwards-table-427-240_36
+  - first:
+      213: 1402489390613568941
+    second: walking backwards-table-427-240_37
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_0
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 1242
+        width: 256
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76c5e2c4da5fbadb0800000000000000
+      internalID: -4779456454867395481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_1
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 1242
+        width: 254
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db1d80daf9106ac00800000000000000
+      internalID: 911417759903568317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_2
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 1242
+        width: 252
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ad88a8a7231bad60800000000000000
+      internalID: 7902431032205938088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_3
+      rect:
+        serializedVersion: 2
+        x: 1363
+        y: 1242
+        width: 250
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69d079c272ef06a80800000000000000
+      internalID: -8475495054505996906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_4
+      rect:
+        serializedVersion: 2
+        x: 1793
+        y: 1242
+        width: 248
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd4b0c682d7b79280800000000000000
+      internalID: -9036552012463819553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_5
+      rect:
+        serializedVersion: 2
+        x: 2221
+        y: 1242
+        width: 247
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3862866ef2a76220800000000000000
+      internalID: 2479129333415962687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_6
+      rect:
+        serializedVersion: 2
+        x: 2651
+        y: 1242
+        width: 244
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e708c5aa21b2ee600800000000000000
+      internalID: 499383967852298366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_7
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 1002
+        width: 240
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab57e9f5add8ba230800000000000000
+      internalID: 3651167891960526266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_8
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 1002
+        width: 240
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efe37b3da46046730800000000000000
+      internalID: 3991322088206450430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_9
+      rect:
+        serializedVersion: 2
+        x: 946
+        y: 1002
+        width: 237
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58140a3566589ca80800000000000000
+      internalID: -8446072951620484731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_10
+      rect:
+        serializedVersion: 2
+        x: 1373
+        y: 1002
+        width: 237
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d546a1a780d111340800000000000000
+      internalID: 4832675797390746717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_11
+      rect:
+        serializedVersion: 2
+        x: 1800
+        y: 1002
+        width: 237
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f4619deae66a5b90800000000000000
+      internalID: -7252371090732653328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_12
+      rect:
+        serializedVersion: 2
+        x: 2226
+        y: 1005
+        width: 238
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba938e3eeb38a76a0800000000000000
+      internalID: -6450698660364142165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_13
+      rect:
+        serializedVersion: 2
+        x: 2653
+        y: 1005
+        width: 238
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c0325c7d7b1ac880800000000000000
+      internalID: -8590023113485176640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_14
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 763
+        width: 243
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db046f65bcd868a30800000000000000
+      internalID: 4217214005555904701
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_15
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 762
+        width: 247
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43ed6f7e016a1adb0800000000000000
+      internalID: -4782358737749352908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_16
+      rect:
+        serializedVersion: 2
+        x: 935
+        y: 762
+        width: 249
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a307b6bc570a9240800000000000000
+      internalID: 4799156447700517798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_17
+      rect:
+        serializedVersion: 2
+        x: 1358
+        y: 762
+        width: 253
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82cbf50f740f91f80800000000000000
+      internalID: -8135207060101940184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_18
+      rect:
+        serializedVersion: 2
+        x: 1784
+        y: 762
+        width: 254
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f87fa5730e66b720800000000000000
+      internalID: 2861595574378920179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_19
+      rect:
+        serializedVersion: 2
+        x: 2210
+        y: 762
+        width: 256
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3edc8b2712c87000800000000000000
+      internalID: 33990401975967293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_20
+      rect:
+        serializedVersion: 2
+        x: 2639
+        y: 762
+        width: 254
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b9efb67fab5e3250800000000000000
+      internalID: 5926274968835844537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_21
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 522
+        width: 253
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e549f2dbceeae8f50800000000000000
+      internalID: 6885633212105593950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_22
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 522
+        width: 249
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b95f5e8880086530800000000000000
+      internalID: 3848326468092254646
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_23
+      rect:
+        serializedVersion: 2
+        x: 939
+        y: 522
+        width: 248
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2afdec45a82652d00800000000000000
+      internalID: 947271642899210146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_24
+      rect:
+        serializedVersion: 2
+        x: 1369
+        y: 522
+        width: 245
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2233513d42200d460800000000000000
+      internalID: 7264308556132070178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_25
+      rect:
+        serializedVersion: 2
+        x: 1797
+        y: 522
+        width: 244
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b827555270f1ff800800000000000000
+      internalID: 648270986916229771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_26
+      rect:
+        serializedVersion: 2
+        x: 2226
+        y: 522
+        width: 240
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b325d3357fa1de410800000000000000
+      internalID: 1507891099794756155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_27
+      rect:
+        serializedVersion: 2
+        x: 2653
+        y: 522
+        width: 239
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 152553c1eba595ff0800000000000000
+      internalID: -46906548547136943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_28
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 282
+        width: 238
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1278f1c695bbb07d0800000000000000
+      internalID: -2951059138070739167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_29
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 282
+        width: 238
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cab7eddb34ab1f930800000000000000
+      internalID: 4175323129660210092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_30
+      rect:
+        serializedVersion: 2
+        x: 945
+        y: 282
+        width: 238
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17fec3c4da6b57ae0800000000000000
+      internalID: -1552133641134608527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_31
+      rect:
+        serializedVersion: 2
+        x: 1372
+        y: 283
+        width: 238
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a16cdbd24857fbdb0800000000000000
+      internalID: -4773967869425891814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_32
+      rect:
+        serializedVersion: 2
+        x: 1799
+        y: 284
+        width: 238
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b14d7b847df26c20800000000000000
+      internalID: 3198397362384748977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_33
+      rect:
+        serializedVersion: 2
+        x: 2225
+        y: 282
+        width: 240
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e85664913d3e01470800000000000000
+      internalID: 8363435003828659598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_34
+      rect:
+        serializedVersion: 2
+        x: 2650
+        y: 282
+        width: 242
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a76664f4e4e80fd0800000000000000
+      internalID: -2375397131433908320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_35
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 42
+        width: 243
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e9f6fee96a8abdb0800000000000000
+      internalID: -4775352267287627291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_36
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 42
+        width: 245
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4715ee206b0e1330800000000000000
+      internalID: 3683394052967176010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walking backwards-table-427-240_37
+      rect:
+        serializedVersion: 2
+        x: 939
+        y: 42
+        width: 246
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dad96c88ba4a67310800000000000000
+      internalID: 1402489390613568941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      walking backwards-table-427-240_0: -4779456454867395481
+      walking backwards-table-427-240_1: 911417759903568317
+      walking backwards-table-427-240_10: 4832675797390746717
+      walking backwards-table-427-240_11: -7252371090732653328
+      walking backwards-table-427-240_12: -6450698660364142165
+      walking backwards-table-427-240_13: -8590023113485176640
+      walking backwards-table-427-240_14: 4217214005555904701
+      walking backwards-table-427-240_15: -4782358737749352908
+      walking backwards-table-427-240_16: 4799156447700517798
+      walking backwards-table-427-240_17: -8135207060101940184
+      walking backwards-table-427-240_18: 2861595574378920179
+      walking backwards-table-427-240_19: 33990401975967293
+      walking backwards-table-427-240_2: 7902431032205938088
+      walking backwards-table-427-240_20: 5926274968835844537
+      walking backwards-table-427-240_21: 6885633212105593950
+      walking backwards-table-427-240_22: 3848326468092254646
+      walking backwards-table-427-240_23: 947271642899210146
+      walking backwards-table-427-240_24: 7264308556132070178
+      walking backwards-table-427-240_25: 648270986916229771
+      walking backwards-table-427-240_26: 1507891099794756155
+      walking backwards-table-427-240_27: -46906548547136943
+      walking backwards-table-427-240_28: -2951059138070739167
+      walking backwards-table-427-240_29: 4175323129660210092
+      walking backwards-table-427-240_3: -8475495054505996906
+      walking backwards-table-427-240_30: -1552133641134608527
+      walking backwards-table-427-240_31: -4773967869425891814
+      walking backwards-table-427-240_32: 3198397362384748977
+      walking backwards-table-427-240_33: 8363435003828659598
+      walking backwards-table-427-240_34: -2375397131433908320
+      walking backwards-table-427-240_35: -4775352267287627291
+      walking backwards-table-427-240_36: 3683394052967176010
+      walking backwards-table-427-240_37: 1402489390613568941
+      walking backwards-table-427-240_4: -9036552012463819553
+      walking backwards-table-427-240_5: 2479129333415962687
+      walking backwards-table-427-240_6: 499383967852298366
+      walking backwards-table-427-240_7: 3651167891960526266
+      walking backwards-table-427-240_8: 3991322088206450430
+      walking backwards-table-427-240_9: -8446072951620484731
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

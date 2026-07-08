@@ -1,0 +1,1586 @@
+fileFormatVersion: 2
+guid: 42580c84d08a1cf429f26bdeea9d2fe5
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2342422448609722634
+    second: wolfrunning-table-427-240_0
+  - first:
+      213: -5719693930421669291
+    second: wolfrunning-table-427-240_1
+  - first:
+      213: 262686235023023550
+    second: wolfrunning-table-427-240_2
+  - first:
+      213: 970102243182190277
+    second: wolfrunning-table-427-240_3
+  - first:
+      213: -4742048170831318912
+    second: wolfrunning-table-427-240_4
+  - first:
+      213: 4417538160014814173
+    second: wolfrunning-table-427-240_5
+  - first:
+      213: 6441923959772964238
+    second: wolfrunning-table-427-240_6
+  - first:
+      213: 6843131780218526142
+    second: wolfrunning-table-427-240_7
+  - first:
+      213: 2979416339905061946
+    second: wolfrunning-table-427-240_8
+  - first:
+      213: 321950841351397396
+    second: wolfrunning-table-427-240_9
+  - first:
+      213: -6791193802968283273
+    second: wolfrunning-table-427-240_10
+  - first:
+      213: -1162634670224077645
+    second: wolfrunning-table-427-240_11
+  - first:
+      213: -2729504886922327777
+    second: wolfrunning-table-427-240_12
+  - first:
+      213: 2684106589205533843
+    second: wolfrunning-table-427-240_13
+  - first:
+      213: 8694136950438622043
+    second: wolfrunning-table-427-240_14
+  - first:
+      213: 6031300732401841865
+    second: wolfrunning-table-427-240_15
+  - first:
+      213: -2831368853044099725
+    second: wolfrunning-table-427-240_16
+  - first:
+      213: -505910723318052548
+    second: wolfrunning-table-427-240_17
+  - first:
+      213: 7316258022511997625
+    second: wolfrunning-table-427-240_18
+  - first:
+      213: 7676608179411331639
+    second: wolfrunning-table-427-240_19
+  - first:
+      213: -6919564540772575766
+    second: wolfrunning-table-427-240_20
+  - first:
+      213: -5192185608007678420
+    second: wolfrunning-table-427-240_21
+  - first:
+      213: -3285942012011826691
+    second: wolfrunning-table-427-240_22
+  - first:
+      213: 8705302795012071620
+    second: wolfrunning-table-427-240_23
+  - first:
+      213: 9156002986241363603
+    second: wolfrunning-table-427-240_24
+  - first:
+      213: 957564817759421674
+    second: wolfrunning-table-427-240_25
+  - first:
+      213: -7497051326497644429
+    second: wolfrunning-table-427-240_26
+  - first:
+      213: 3630287606350082896
+    second: wolfrunning-table-427-240_27
+  - first:
+      213: 5318534567557795
+    second: wolfrunning-table-427-240_28
+  - first:
+      213: -2116873803898628948
+    second: wolfrunning-table-427-240_29
+  - first:
+      213: 4810644533260685153
+    second: wolfrunning-table-427-240_30
+  - first:
+      213: -7717037423193277698
+    second: wolfrunning-table-427-240_31
+  - first:
+      213: 4751605833719672842
+    second: wolfrunning-table-427-240_32
+  - first:
+      213: 7556827262178793118
+    second: wolfrunning-table-427-240_33
+  - first:
+      213: -5072637052167641929
+    second: wolfrunning-table-427-240_34
+  - first:
+      213: -3549335457026795368
+    second: wolfrunning-table-427-240_35
+  - first:
+      213: -4052721553265948876
+    second: wolfrunning-table-427-240_36
+  - first:
+      213: 1937338441615350070
+    second: wolfrunning-table-427-240_37
+  - first:
+      213: -2855585145029680942
+    second: wolfrunning-table-427-240_38
+  - first:
+      213: 6652541838529910283
+    second: wolfrunning-table-427-240_39
+  - first:
+      213: -5499092084455218859
+    second: wolfrunning-table-427-240_40
+  - first:
+      213: -919552629355462963
+    second: wolfrunning-table-427-240_41
+  - first:
+      213: -3509920923600258315
+    second: wolfrunning-table-427-240_42
+  - first:
+      213: 5451548142888554561
+    second: wolfrunning-table-427-240_43
+  - first:
+      213: -1925233279231398335
+    second: wolfrunning-table-427-240_44
+  - first:
+      213: -5814756302862642674
+    second: wolfrunning-table-427-240_45
+  - first:
+      213: 6608600731071433553
+    second: wolfrunning-table-427-240_46
+  - first:
+      213: -6984821862708889711
+    second: wolfrunning-table-427-240_47
+  - first:
+      213: -5099484293797625603
+    second: wolfrunning-table-427-240_48
+  - first:
+      213: 8667448326780669937
+    second: wolfrunning-table-427-240_49
+  - first:
+      213: -3670957562812506957
+    second: wolfrunning-table-427-240_50
+  - first:
+      213: -5896646058879601639
+    second: wolfrunning-table-427-240_51
+  - first:
+      213: -6531380936392311628
+    second: wolfrunning-table-427-240_52
+  - first:
+      213: 6636986917893105245
+    second: wolfrunning-table-427-240_53
+  - first:
+      213: 9018323927755156056
+    second: wolfrunning-table-427-240_54
+  - first:
+      213: -3480332610395584776
+    second: wolfrunning-table-427-240_55
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_0
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 1487
+        width: 285
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fe77b4913b0e7fd0800000000000000
+      internalID: -2342422448609722634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_1
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 1487
+        width: 286
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 552324daca09f90b0800000000000000
+      internalID: -5719693930421669291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_2
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 1488
+        width: 286
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebd9eed2dbf35a300800000000000000
+      internalID: 262686235023023550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_3
+      rect:
+        serializedVersion: 2
+        x: 1339
+        y: 1488
+        width: 286
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ce1fa0b9de767d00800000000000000
+      internalID: 970102243182190277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_4
+      rect:
+        serializedVersion: 2
+        x: 1767
+        y: 1488
+        width: 283
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 080fec5205cd03eb0800000000000000
+      internalID: -4742048170831318912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_5
+      rect:
+        serializedVersion: 2
+        x: 2195
+        y: 1488
+        width: 280
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddb6a692d8f3e4d30800000000000000
+      internalID: 4417538160014814173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_6
+      rect:
+        serializedVersion: 2
+        x: 2623
+        y: 1488
+        width: 278
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e85685ce5bf466950800000000000000
+      internalID: 6441923959772964238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_7
+      rect:
+        serializedVersion: 2
+        x: 3053
+        y: 1486
+        width: 274
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb99c1ff810b7fe50800000000000000
+      internalID: 6843131780218526142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_8
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 1246
+        width: 271
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3429022063095920800000000000000
+      internalID: 2979416339905061946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_9
+      rect:
+        serializedVersion: 2
+        x: 494
+        y: 1246
+        width: 268
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41063ed959cc77400800000000000000
+      internalID: 321950841351397396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_10
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 1246
+        width: 262
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 777cd3da735d0c1a0800000000000000
+      internalID: -6791193802968283273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_11
+      rect:
+        serializedVersion: 2
+        x: 1352
+        y: 1246
+        width: 261
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bc8db56ded7ddfe0800000000000000
+      internalID: -1162634670224077645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_12
+      rect:
+        serializedVersion: 2
+        x: 1781
+        y: 1245
+        width: 260
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f194d4254c9de1ad0800000000000000
+      internalID: -2729504886922327777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_13
+      rect:
+        serializedVersion: 2
+        x: 2208
+        y: 1245
+        width: 259
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39491ecc8bcdf3520800000000000000
+      internalID: 2684106589205533843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_14
+      rect:
+        serializedVersion: 2
+        x: 2636
+        y: 1245
+        width: 257
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b53fd7f2e77c7a870800000000000000
+      internalID: 8694136950438622043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_15
+      rect:
+        serializedVersion: 2
+        x: 3063
+        y: 1245
+        width: 255
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c67d589f0c73b350800000000000000
+      internalID: 6031300732401841865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_16
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 1005
+        width: 254
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37583368705f4b8d0800000000000000
+      internalID: -2831368853044099725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_17
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 1005
+        width: 253
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c390198a0e4aaf8f0800000000000000
+      internalID: -505910723318052548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_18
+      rect:
+        serializedVersion: 2
+        x: 924
+        y: 1011
+        width: 255
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b2fde488e1988560800000000000000
+      internalID: 7316258022511997625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_19
+      rect:
+        serializedVersion: 2
+        x: 1350
+        y: 1011
+        width: 255
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73aabad777ac88a60800000000000000
+      internalID: 7676608179411331639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_20
+      rect:
+        serializedVersion: 2
+        x: 1775
+        y: 1010
+        width: 257
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae59cda26b4c8ff90800000000000000
+      internalID: -6919564540772575766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_21
+      rect:
+        serializedVersion: 2
+        x: 2199
+        y: 1009
+        width: 259
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c268ecae2b6a1f7b0800000000000000
+      internalID: -5192185608007678420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_22
+      rect:
+        serializedVersion: 2
+        x: 2624
+        y: 1007
+        width: 261
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df1b085562df562d0800000000000000
+      internalID: -3285942012011826691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_23
+      rect:
+        serializedVersion: 2
+        x: 3050
+        y: 1006
+        width: 262
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c0e8e6f4c27fc870800000000000000
+      internalID: 8705302795012071620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_24
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 766
+        width: 265
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39e05559438a01f70800000000000000
+      internalID: 9156002986241363603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_25
+      rect:
+        serializedVersion: 2
+        x: 486
+        y: 766
+        width: 272
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae446fbd024f94d00800000000000000
+      internalID: 957564817759421674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_26
+      rect:
+        serializedVersion: 2
+        x: 913
+        y: 766
+        width: 281
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 370ac352a8f15f790800000000000000
+      internalID: -7497051326497644429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_27
+      rect:
+        serializedVersion: 2
+        x: 1339
+        y: 767
+        width: 286
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 053fff8085f516230800000000000000
+      internalID: 3630287606350082896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_28
+      rect:
+        serializedVersion: 2
+        x: 1767
+        y: 767
+        width: 286
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aaff93dd25e21000800000000000000
+      internalID: 5318534567557795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_29
+      rect:
+        serializedVersion: 2
+        x: 2194
+        y: 767
+        width: 287
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca4da44bd7a5f92e0800000000000000
+      internalID: -2116873803898628948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_30
+      rect:
+        serializedVersion: 2
+        x: 2623
+        y: 767
+        width: 285
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16f8da117b7d2c240800000000000000
+      internalID: 4810644533260685153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_31
+      rect:
+        serializedVersion: 2
+        x: 3051
+        y: 767
+        width: 282
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: efa3b28a95397e490800000000000000
+      internalID: -7717037423193277698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_32
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 528
+        width: 280
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a00f887a45811f140800000000000000
+      internalID: 4751605833719672842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_33
+      rect:
+        serializedVersion: 2
+        x: 491
+        y: 528
+        width: 276
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e96972f6b5e3fd860800000000000000
+      internalID: 7556827262178793118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_34
+      rect:
+        serializedVersion: 2
+        x: 921
+        y: 529
+        width: 269
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b4201f1a7f5a99b0800000000000000
+      internalID: -5072637052167641929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_35
+      rect:
+        serializedVersion: 2
+        x: 1348
+        y: 529
+        width: 268
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 898183ff43a3ebec0800000000000000
+      internalID: -3549335457026795368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_36
+      rect:
+        serializedVersion: 2
+        x: 1779
+        y: 525
+        width: 257
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43783043837d1c7c0800000000000000
+      internalID: -4052721553265948876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_37
+      rect:
+        serializedVersion: 2
+        x: 2208
+        y: 524
+        width: 255
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63911365c0fc2ea10800000000000000
+      internalID: 1937338441615350070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_38
+      rect:
+        serializedVersion: 2
+        x: 2635
+        y: 524
+        width: 254
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d0af9ca07cee58d0800000000000000
+      internalID: -2855585145029680942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_39
+      rect:
+        serializedVersion: 2
+        x: 3064
+        y: 524
+        width: 253
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b06dff23e83925c50800000000000000
+      internalID: 6652541838529910283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_40
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 284
+        width: 252
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55162e672ec4fa3b0800000000000000
+      internalID: -5499092084455218859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_41
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 285
+        width: 251
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dcebdfe61c71d33f0800000000000000
+      internalID: -919552629355462963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_42
+      rect:
+        serializedVersion: 2
+        x: 931
+        y: 285
+        width: 251
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fa781f24814a4fc0800000000000000
+      internalID: -3509920923600258315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_43
+      rect:
+        serializedVersion: 2
+        x: 1357
+        y: 285
+        width: 251
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14010d4072ac7ab40800000000000000
+      internalID: 5451548142888554561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_44
+      rect:
+        serializedVersion: 2
+        x: 1782
+        y: 285
+        width: 251
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14ee6a968823845e0800000000000000
+      internalID: -1925233279231398335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_45
+      rect:
+        serializedVersion: 2
+        x: 2206
+        y: 290
+        width: 253
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e02986053f5dd4fa0800000000000000
+      internalID: -5814756302862642674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_46
+      rect:
+        serializedVersion: 2
+        x: 2633
+        y: 290
+        width: 253
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15b46edd95776bb50800000000000000
+      internalID: 6608600731071433553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_47
+      rect:
+        serializedVersion: 2
+        x: 3057
+        y: 290
+        width: 256
+        height: 139
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 197bad5e58de01f90800000000000000
+      internalID: -6984821862708889711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_48
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 50
+        width: 257
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df042829d0efa39b0800000000000000
+      internalID: -5099484293797625603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_49
+      rect:
+        serializedVersion: 2
+        x: 492
+        y: 48
+        width: 259
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ffc0d2c456f84870800000000000000
+      internalID: 8667448326780669937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_50
+      rect:
+        serializedVersion: 2
+        x: 918
+        y: 47
+        width: 260
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bcd603db832e0dc0800000000000000
+      internalID: -3670957562812506957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_51
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 46
+        width: 261
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9143646b6a7ea2ea0800000000000000
+      internalID: -5896646058879601639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_52
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 46
+        width: 264
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bcf391a4afdb55a0800000000000000
+      internalID: -6531380936392311628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_53
+      rect:
+        serializedVersion: 2
+        x: 2197
+        y: 46
+        width: 270
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d56eee300705b1c50800000000000000
+      internalID: 6636986917893105245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_54
+      rect:
+        serializedVersion: 2
+        x: 2624
+        y: 46
+        width: 277
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85a6047c4d5872d70800000000000000
+      internalID: 9018323927755156056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wolfrunning-table-427-240_55
+      rect:
+        serializedVersion: 2
+        x: 3051
+        y: 46
+        width: 279
+        height: 145
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f6c9213eef53bfc0800000000000000
+      internalID: -3480332610395584776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      wolfrunning-table-427-240_0: -2342422448609722634
+      wolfrunning-table-427-240_1: -5719693930421669291
+      wolfrunning-table-427-240_10: -6791193802968283273
+      wolfrunning-table-427-240_11: -1162634670224077645
+      wolfrunning-table-427-240_12: -2729504886922327777
+      wolfrunning-table-427-240_13: 2684106589205533843
+      wolfrunning-table-427-240_14: 8694136950438622043
+      wolfrunning-table-427-240_15: 6031300732401841865
+      wolfrunning-table-427-240_16: -2831368853044099725
+      wolfrunning-table-427-240_17: -505910723318052548
+      wolfrunning-table-427-240_18: 7316258022511997625
+      wolfrunning-table-427-240_19: 7676608179411331639
+      wolfrunning-table-427-240_2: 262686235023023550
+      wolfrunning-table-427-240_20: -6919564540772575766
+      wolfrunning-table-427-240_21: -5192185608007678420
+      wolfrunning-table-427-240_22: -3285942012011826691
+      wolfrunning-table-427-240_23: 8705302795012071620
+      wolfrunning-table-427-240_24: 9156002986241363603
+      wolfrunning-table-427-240_25: 957564817759421674
+      wolfrunning-table-427-240_26: -7497051326497644429
+      wolfrunning-table-427-240_27: 3630287606350082896
+      wolfrunning-table-427-240_28: 5318534567557795
+      wolfrunning-table-427-240_29: -2116873803898628948
+      wolfrunning-table-427-240_3: 970102243182190277
+      wolfrunning-table-427-240_30: 4810644533260685153
+      wolfrunning-table-427-240_31: -7717037423193277698
+      wolfrunning-table-427-240_32: 4751605833719672842
+      wolfrunning-table-427-240_33: 7556827262178793118
+      wolfrunning-table-427-240_34: -5072637052167641929
+      wolfrunning-table-427-240_35: -3549335457026795368
+      wolfrunning-table-427-240_36: -4052721553265948876
+      wolfrunning-table-427-240_37: 1937338441615350070
+      wolfrunning-table-427-240_38: -2855585145029680942
+      wolfrunning-table-427-240_39: 6652541838529910283
+      wolfrunning-table-427-240_4: -4742048170831318912
+      wolfrunning-table-427-240_40: -5499092084455218859
+      wolfrunning-table-427-240_41: -919552629355462963
+      wolfrunning-table-427-240_42: -3509920923600258315
+      wolfrunning-table-427-240_43: 5451548142888554561
+      wolfrunning-table-427-240_44: -1925233279231398335
+      wolfrunning-table-427-240_45: -5814756302862642674
+      wolfrunning-table-427-240_46: 6608600731071433553
+      wolfrunning-table-427-240_47: -6984821862708889711
+      wolfrunning-table-427-240_48: -5099484293797625603
+      wolfrunning-table-427-240_49: 8667448326780669937
+      wolfrunning-table-427-240_5: 4417538160014814173
+      wolfrunning-table-427-240_50: -3670957562812506957
+      wolfrunning-table-427-240_51: -5896646058879601639
+      wolfrunning-table-427-240_52: -6531380936392311628
+      wolfrunning-table-427-240_53: 6636986917893105245
+      wolfrunning-table-427-240_54: 9018323927755156056
+      wolfrunning-table-427-240_55: -3480332610395584776
+      wolfrunning-table-427-240_6: 6441923959772964238
+      wolfrunning-table-427-240_7: 6843131780218526142
+      wolfrunning-table-427-240_8: 2979416339905061946
+      wolfrunning-table-427-240_9: 321950841351397396
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,1274 @@
+fileFormatVersion: 2
+guid: 197edf68e3d48f4458f3838b18973843
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1827001277838956726
+    second: slowlywalking-table-427-240_0
+  - first:
+      213: 2668783755649051712
+    second: slowlywalking-table-427-240_1
+  - first:
+      213: -3782591305795498293
+    second: slowlywalking-table-427-240_2
+  - first:
+      213: 7893388466327028374
+    second: slowlywalking-table-427-240_3
+  - first:
+      213: 5115953749405187147
+    second: slowlywalking-table-427-240_4
+  - first:
+      213: 8132448395814686551
+    second: slowlywalking-table-427-240_5
+  - first:
+      213: -8830717025704909990
+    second: slowlywalking-table-427-240_6
+  - first:
+      213: -3010265046167976564
+    second: slowlywalking-table-427-240_7
+  - first:
+      213: -3448490213603377799
+    second: slowlywalking-table-427-240_8
+  - first:
+      213: -941825150828589342
+    second: slowlywalking-table-427-240_9
+  - first:
+      213: -503796100859337308
+    second: slowlywalking-table-427-240_10
+  - first:
+      213: -5288116602769739217
+    second: slowlywalking-table-427-240_11
+  - first:
+      213: -8403764917025793166
+    second: slowlywalking-table-427-240_12
+  - first:
+      213: -1590911785549674251
+    second: slowlywalking-table-427-240_13
+  - first:
+      213: -1925647184640940378
+    second: slowlywalking-table-427-240_14
+  - first:
+      213: -8233612333474612973
+    second: slowlywalking-table-427-240_15
+  - first:
+      213: 7211039907062557835
+    second: slowlywalking-table-427-240_16
+  - first:
+      213: -4702376894526478628
+    second: slowlywalking-table-427-240_17
+  - first:
+      213: -7040051418205285487
+    second: slowlywalking-table-427-240_18
+  - first:
+      213: 3041973669679326195
+    second: slowlywalking-table-427-240_19
+  - first:
+      213: 2621151332756904356
+    second: slowlywalking-table-427-240_20
+  - first:
+      213: -251114314103070683
+    second: slowlywalking-table-427-240_21
+  - first:
+      213: -4931507344417507559
+    second: slowlywalking-table-427-240_22
+  - first:
+      213: -6309448957968000554
+    second: slowlywalking-table-427-240_23
+  - first:
+      213: 2985433541634708735
+    second: slowlywalking-table-427-240_24
+  - first:
+      213: -4604940028603161038
+    second: slowlywalking-table-427-240_25
+  - first:
+      213: 6161049939595306332
+    second: slowlywalking-table-427-240_26
+  - first:
+      213: -3556602142248148351
+    second: slowlywalking-table-427-240_27
+  - first:
+      213: 3690738372923376790
+    second: slowlywalking-table-427-240_28
+  - first:
+      213: -5558127588326461449
+    second: slowlywalking-table-427-240_29
+  - first:
+      213: 8828601022128076032
+    second: slowlywalking-table-427-240_30
+  - first:
+      213: 8795357514960547120
+    second: slowlywalking-table-427-240_31
+  - first:
+      213: -8248300137608924368
+    second: slowlywalking-table-427-240_32
+  - first:
+      213: 6257693327967513512
+    second: slowlywalking-table-427-240_33
+  - first:
+      213: -1015914945014441504
+    second: slowlywalking-table-427-240_34
+  - first:
+      213: 931082911234475542
+    second: slowlywalking-table-427-240_35
+  - first:
+      213: 934522141882269105
+    second: slowlywalking-table-427-240_36
+  - first:
+      213: -391575144698417614
+    second: slowlywalking-table-427-240_37
+  - first:
+      213: 3867975307284502888
+    second: slowlywalking-table-427-240_38
+  - first:
+      213: 716802324761406738
+    second: slowlywalking-table-427-240_39
+  - first:
+      213: -5041383966540312214
+    second: slowlywalking-table-427-240_40
+  - first:
+      213: -1464591328498938
+    second: slowlywalking-table-427-240_41
+  - first:
+      213: -8069597417300762943
+    second: slowlywalking-table-427-240_42
+  - first:
+      213: 6640318448027298263
+    second: slowlywalking-table-427-240_43
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_0
+      rect:
+        serializedVersion: 2
+        x: 89
+        y: 1482
+        width: 243
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a476936840035a6e0800000000000000
+      internalID: -1827001277838956726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_1
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 1482
+        width: 245
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04c6bc99fac690520800000000000000
+      internalID: 2668783755649051712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_2
+      rect:
+        serializedVersion: 2
+        x: 939
+        y: 1482
+        width: 247
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bce04979f39818bc0800000000000000
+      internalID: -3782591305795498293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_3
+      rect:
+        serializedVersion: 2
+        x: 1366
+        y: 1482
+        width: 247
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69286993df2fa8d60800000000000000
+      internalID: 7893388466327028374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_4
+      rect:
+        serializedVersion: 2
+        x: 1793
+        y: 1482
+        width: 246
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4cbf9064d48ff640800000000000000
+      internalID: 5115953749405187147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_5
+      rect:
+        serializedVersion: 2
+        x: 2221
+        y: 1482
+        width: 245
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75fcaba7ab24cd070800000000000000
+      internalID: 8132448395814686551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_6
+      rect:
+        serializedVersion: 2
+        x: 2650
+        y: 1482
+        width: 243
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a536ddaf6adf27580800000000000000
+      internalID: -8830717025704909990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_7
+      rect:
+        serializedVersion: 2
+        x: 89
+        y: 1242
+        width: 241
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c85026bb3e36936d0800000000000000
+      internalID: -3010265046167976564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_8
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 1242
+        width: 241
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97d72ceeb608420d0800000000000000
+      internalID: -3448490213603377799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_9
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 1245
+        width: 239
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ee455ce307fde2f0800000000000000
+      internalID: -941825150828589342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_10
+      rect:
+        serializedVersion: 2
+        x: 1371
+        y: 1245
+        width: 239
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a56d019d182209f0800000000000000
+      internalID: -503796100859337308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_11
+      rect:
+        serializedVersion: 2
+        x: 1798
+        y: 1242
+        width: 239
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f227019a7f5dc96b0800000000000000
+      internalID: -5288116602769739217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_12
+      rect:
+        serializedVersion: 2
+        x: 2226
+        y: 1242
+        width: 238
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27b99c04554df5b80800000000000000
+      internalID: -8403764917025793166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_13
+      rect:
+        serializedVersion: 2
+        x: 2653
+        y: 1242
+        width: 238
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f84459f822fbe9e0800000000000000
+      internalID: -1590911785549674251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_14
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 1002
+        width: 239
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a6eebc861ab645e0800000000000000
+      internalID: -1925647184640940378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_15
+      rect:
+        serializedVersion: 2
+        x: 517
+        y: 1002
+        width: 241
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31978fcc4355cbd80800000000000000
+      internalID: -8233612333474612973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_16
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 1002
+        width: 242
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8c21a9f692c21460800000000000000
+      internalID: 7211039907062557835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_17
+      rect:
+        serializedVersion: 2
+        x: 1369
+        y: 1002
+        width: 245
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd6aeb1f02dcdbeb0800000000000000
+      internalID: -4702376894526478628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_18
+      rect:
+        serializedVersion: 2
+        x: 1795
+        y: 1002
+        width: 246
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1939361f886bc4e90800000000000000
+      internalID: -7040051418205285487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_19
+      rect:
+        serializedVersion: 2
+        x: 2219
+        y: 1002
+        width: 249
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f3e35d7fe2473a20800000000000000
+      internalID: 3041973669679326195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_20
+      rect:
+        serializedVersion: 2
+        x: 2645
+        y: 1002
+        width: 250
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a9548bef33306420800000000000000
+      internalID: 2621151332756904356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_21
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 762
+        width: 253
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 520eedd9cdcd38cf0800000000000000
+      internalID: -251114314103070683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_22
+      rect:
+        serializedVersion: 2
+        x: 503
+        y: 762
+        width: 255
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 917b3c0d234cf8bb0800000000000000
+      internalID: -4931507344417507559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_23
+      rect:
+        serializedVersion: 2
+        x: 929
+        y: 762
+        width: 256
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d9dbd30a955078a0800000000000000
+      internalID: -6309448957968000554
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_24
+      rect:
+        serializedVersion: 2
+        x: 1356
+        y: 762
+        width: 256
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff45ca51df36e6920800000000000000
+      internalID: 2985433541634708735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_25
+      rect:
+        serializedVersion: 2
+        x: 1784
+        y: 762
+        width: 254
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 236a1272177f710c0800000000000000
+      internalID: -4604940028603161038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_26
+      rect:
+        serializedVersion: 2
+        x: 2214
+        y: 762
+        width: 251
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5525050742708550800000000000000
+      internalID: 6161049939595306332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_27
+      rect:
+        serializedVersion: 2
+        x: 2644
+        y: 762
+        width: 248
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 182e7eff13964aec0800000000000000
+      internalID: -3556602142248148351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_28
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 522
+        width: 246
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 694400deef2283330800000000000000
+      internalID: 3690738372923376790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_29
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 524
+        width: 241
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ffa08918609dd2b0800000000000000
+      internalID: -5558127588326461449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_30
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 525
+        width: 239
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 005389b8add758a70800000000000000
+      internalID: 8828601022128076032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_31
+      rect:
+        serializedVersion: 2
+        x: 1372
+        y: 524
+        width: 238
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03d29cf5f036f0a70800000000000000
+      internalID: 8795357514960547120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_32
+      rect:
+        serializedVersion: 2
+        x: 1800
+        y: 522
+        width: 237
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 033b309e9b6288d80800000000000000
+      internalID: -8248300137608924368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_33
+      rect:
+        serializedVersion: 2
+        x: 2227
+        y: 522
+        width: 237
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8abe5d65deac7d650800000000000000
+      internalID: 6257693327967513512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_34
+      rect:
+        serializedVersion: 2
+        x: 2654
+        y: 522
+        width: 238
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e957647dbeb6e1f0800000000000000
+      internalID: -1015914945014441504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_35
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 282
+        width: 238
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 616419489fedbec00800000000000000
+      internalID: 931082911234475542
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_36
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 282
+        width: 240
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bd31adcfe618fc00800000000000000
+      internalID: 934522141882269105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_37
+      rect:
+        serializedVersion: 2
+        x: 943
+        y: 282
+        width: 243
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23ee0650b78d09af0800000000000000
+      internalID: -391575144698417614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_38
+      rect:
+        serializedVersion: 2
+        x: 1369
+        y: 282
+        width: 245
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 869dcae6c0fcda530800000000000000
+      internalID: 3867975307284502888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_39
+      rect:
+        serializedVersion: 2
+        x: 1794
+        y: 282
+        width: 247
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21de395aae792f900800000000000000
+      internalID: 716802324761406738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_40
+      rect:
+        serializedVersion: 2
+        x: 2219
+        y: 282
+        width: 249
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a61d30a2ef7690ab0800000000000000
+      internalID: -5041383966540312214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_41
+      rect:
+        serializedVersion: 2
+        x: 2643
+        y: 282
+        width: 251
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60baf1246fbcafff0800000000000000
+      internalID: -1464591328498938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_42
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 42
+        width: 254
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ced06d47e7030090800000000000000
+      internalID: -8069597417300762943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: slowlywalking-table-427-240_43
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 42
+        width: 254
+        height: 154
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d9e3225276272c50800000000000000
+      internalID: 6640318448027298263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      slowlywalking-table-427-240_0: -1827001277838956726
+      slowlywalking-table-427-240_1: 2668783755649051712
+      slowlywalking-table-427-240_10: -503796100859337308
+      slowlywalking-table-427-240_11: -5288116602769739217
+      slowlywalking-table-427-240_12: -8403764917025793166
+      slowlywalking-table-427-240_13: -1590911785549674251
+      slowlywalking-table-427-240_14: -1925647184640940378
+      slowlywalking-table-427-240_15: -8233612333474612973
+      slowlywalking-table-427-240_16: 7211039907062557835
+      slowlywalking-table-427-240_17: -4702376894526478628
+      slowlywalking-table-427-240_18: -7040051418205285487
+      slowlywalking-table-427-240_19: 3041973669679326195
+      slowlywalking-table-427-240_2: -3782591305795498293
+      slowlywalking-table-427-240_20: 2621151332756904356
+      slowlywalking-table-427-240_21: -251114314103070683
+      slowlywalking-table-427-240_22: -4931507344417507559
+      slowlywalking-table-427-240_23: -6309448957968000554
+      slowlywalking-table-427-240_24: 2985433541634708735
+      slowlywalking-table-427-240_25: -4604940028603161038
+      slowlywalking-table-427-240_26: 6161049939595306332
+      slowlywalking-table-427-240_27: -3556602142248148351
+      slowlywalking-table-427-240_28: 3690738372923376790
+      slowlywalking-table-427-240_29: -5558127588326461449
+      slowlywalking-table-427-240_3: 7893388466327028374
+      slowlywalking-table-427-240_30: 8828601022128076032
+      slowlywalking-table-427-240_31: 8795357514960547120
+      slowlywalking-table-427-240_32: -8248300137608924368
+      slowlywalking-table-427-240_33: 6257693327967513512
+      slowlywalking-table-427-240_34: -1015914945014441504
+      slowlywalking-table-427-240_35: 931082911234475542
+      slowlywalking-table-427-240_36: 934522141882269105
+      slowlywalking-table-427-240_37: -391575144698417614
+      slowlywalking-table-427-240_38: 3867975307284502888
+      slowlywalking-table-427-240_39: 716802324761406738
+      slowlywalking-table-427-240_4: 5115953749405187147
+      slowlywalking-table-427-240_40: -5041383966540312214
+      slowlywalking-table-427-240_41: -1464591328498938
+      slowlywalking-table-427-240_42: -8069597417300762943
+      slowlywalking-table-427-240_43: 6640318448027298263
+      slowlywalking-table-427-240_5: 8132448395814686551
+      slowlywalking-table-427-240_6: -8830717025704909990
+      slowlywalking-table-427-240_7: -3010265046167976564
+      slowlywalking-table-427-240_8: -3448490213603377799
+      slowlywalking-table-427-240_9: -941825150828589342
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
