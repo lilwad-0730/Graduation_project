@@ -30,9 +30,17 @@ public class RollingRockVisual : MonoBehaviour
         }
     }
 
+    [Header("物理設定")]
+    [Tooltip("巨石的質量 (重量，預設 20f)")]
+    public float mass = 20f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.mass = mass;
+        }
         
         // 取得碰撞器以計算真實的世界空間半徑
         Collider col = GetComponent<Collider>();
