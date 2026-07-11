@@ -7,10 +7,10 @@ using UnityEngine;
 public class WolfSpriteAnimator : MonoBehaviour
 {
     [Header("元件關聯")]
-    [Tooltip("狼的 Animator 組件 (若為空，會嘗試在子物件或本機中搜尋)")]
+    [Tooltip("狼的 Animator 組件 (建議手動拖入有 Animator 的物件，若為空會自動搜尋)")]
     public Animator animator;
     
-    [Tooltip("狼的 SpriteRenderer 組件 (用來控制左右翻轉)")]
+    [Tooltip("狼的 SpriteRenderer 組件 (建議手動拖入有 SpriteRenderer 的物件，若為空會自動搜尋)")]
     public SpriteRenderer spriteRenderer;
 
     [Header("動畫狀態名稱 (必須與 Animator Controller 中的 State 名字完全相同)")]
@@ -38,17 +38,34 @@ public class WolfSpriteAnimator : MonoBehaviour
 
     private void Start()
     {
+        // 強化版組件搜尋：不論腳本掛載在父物件或子物件上，都能自動抓取所需組件
         rb = GetComponent<Rigidbody>();
-        wolfEnemy = GetComponent<WolfEnemy>();
+        if (rb == null) rb = GetComponentInParent<Rigidbody>();
+        if (rb == null) rb = GetComponentInChildren<Rigidbody>();
 
+        wolfEnemy = GetComponent<WolfEnemy>();
+        if (wolfEnemy == null) wolfEnemy = GetComponentInParent<WolfEnemy>();
+        if (wolfEnemy == null) wolfEnemy = GetComponentInChildren<WolfEnemy>();
+
+        if (animator == null) animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator == null) animator = GetComponentInParent<Animator>();
+
+        if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer == null) spriteRenderer = GetComponentInParent<SpriteRenderer>();
 
         GameObject pObj = GameObject.FindGameObjectWithTag("Player");
         if (pObj != null)
         {
             playerTransform = pObj.transform;
         }
+
+        // 防呆警告
+        if (rb == null) Debug.LogWarning($"[WolfSpriteAnimator] '{gameObject.name}' 找不到 Rigidbody，無法取得移動速度！");
+        if (wolfEnemy == null) Debug.LogWarning($"[WolfSpriteAnimator] '{gameObject.name}' 找不到 WolfEnemy 腳本，無法讀取硬直與附著狀態！");
+        if (animator == null) Debug.LogWarning($"[WolfSpriteAnimator] '{gameObject.name}' 找不到 Animator，無法播放動畫！");
+        if (spriteRenderer == null) Debug.LogWarning($"[WolfSpriteAnimator] '{gameObject.name}' 找不到 SpriteRenderer，無法翻轉方向！");
     }
 
     private void Update()
