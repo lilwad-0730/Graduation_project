@@ -5,10 +5,14 @@ using System.Collections;
 public class WolfEnemy : MonoBehaviour
 {
     [Header("追蹤設定")]
-    [Tooltip("背對狼逃跑時，狼的追擊速度 (快速追擊)")]
-    public float fastChaseSpeed = 8f;
-    [Tooltip("回頭看狼時，狼的減速速度 (大於 0 仍會緩慢移動)")]
-    public float slowChaseSpeed = 1.5f;
+    [Tooltip("背對狼逃跑時，狼的追擊速度 (快速追擊，跑速設為 6)")]
+    public float fastChaseSpeed = 6f;
+    [Tooltip("偵測到玩家在遠處時，狼的慢走速度 (慢步接近，設為 3)")]
+    public float slowChaseSpeed = 3f;
+    [Tooltip("狼被迫往後退的退後速度 (負數代表往回走，設為 -1.5)")]
+    public float retreatSpeed = -1.5f;
+    [Tooltip("狼從慢走切換到快跑的距離閥值")]
+    public float runDistanceThreshold = 6f;
     public float aggroDistanceX = 6f; // 靠近到 x=6 開始追蹤
     public float giveUpDistanceX = 12f; // 【新增】逃遠到 x=12 放棄追蹤
 
@@ -77,8 +81,26 @@ public class WolfEnemy : MonoBehaviour
             isPlayerFacingWolf = (directionX * playerFacingX < 0);
         }
 
-        // 根據玩家朝向決定追擊速度
-        float currentSpeed = isPlayerFacingWolf ? slowChaseSpeed : fastChaseSpeed;
+        float currentSpeed = 0f;
+
+        if (isPlayerFacingWolf)
+        {
+            // 玩家回頭看著狼：123木頭人機制，狼往後退！
+            currentSpeed = retreatSpeed;
+        }
+        else
+        {
+            // 玩家背對著狼：根據距離決定是慢走還是快跑
+            float distanceX = Mathf.Abs(dirToPlayerX);
+            if (distanceX > runDistanceThreshold)
+            {
+                currentSpeed = slowChaseSpeed; // 慢慢走 (預設 3)
+            }
+            else
+            {
+                currentSpeed = fastChaseSpeed; // 奔跑 (預設 6)
+            }
+        }
 
         rb.linearVelocity = new Vector3(directionX * currentSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
     }
