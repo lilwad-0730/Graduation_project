@@ -263,7 +263,11 @@ public class PlayerMovement : MonoBehaviour
         float finalSpeed = currentSpeed;
         if (pulledObject != null)
         {
+            // 強化型剛體搜尋：防呆，以防推拉的碰撞器 (Collider) 與剛體 (Rigidbody) 不在同一個物件層級上
             Rigidbody pulledRb = pulledObject.GetComponent<Rigidbody>();
+            if (pulledRb == null) pulledRb = pulledObject.GetComponentInParent<Rigidbody>();
+            if (pulledRb == null) pulledRb = pulledObject.GetComponentInChildren<Rigidbody>();
+
             if (pulledRb != null)
             {
                 // 動態重量比率：主角自身重量為 10f。拉動物體越重，速度越慢。
