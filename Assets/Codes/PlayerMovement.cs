@@ -260,7 +260,23 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
 
-        float finalSpeed = (pulledObject != null) ? currentSpeed / 2f : currentSpeed;
+        float finalSpeed = currentSpeed;
+        if (pulledObject != null)
+        {
+            Rigidbody pulledRb = pulledObject.GetComponent<Rigidbody>();
+            if (pulledRb != null)
+            {
+                // 動態重量比率：主角自身重量為 10f。拉動物體越重，速度越慢。
+                // 速度比例 = 10f / (10f + 物體質量)。
+                // 例如：物體質量 10f -> 速度減半；物體質量 90f -> 速度變 1/10；物體質量 500f -> 幾乎拉不動。
+                float weightFactor = 10f / (10f + pulledRb.mass);
+                finalSpeed = currentSpeed * weightFactor;
+            }
+            else
+            {
+                finalSpeed = currentSpeed / 2f; // 備用方案
+            }
+        }
         
         if (actuallyFreeze || isStrictLockingX)
         {
