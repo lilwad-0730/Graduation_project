@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// 控制 2D 狼的 Sprite 動態與動畫參數更新。
-/// 支援自動翻轉 Sprite 面朝玩家，並根據物理速度與狀態判定播放 Idle、跑、走、倒退走等動畫。
+/// 控制 2D 狼的 Sprite 動態與動畫狀態切換。
+/// 直接透過 C# 程式碼呼叫 Play/CrossFade 切換動畫，省去在 Animator 連線與設定參數的步驟。
 /// </summary>
 public class WolfSpriteAnimator : MonoBehaviour
 {
@@ -13,9 +13,28 @@ public class WolfSpriteAnimator : MonoBehaviour
     [Tooltip("狼的 SpriteRenderer 組件 (用來控制左右翻轉)")]
     public SpriteRenderer spriteRenderer;
 
+    [Header("動畫狀態名稱 (必須與 Animator Controller 中的 State 名字完全相同)")]
+    [Tooltip("靜止/Idle 狀態的動畫名稱 (預設使用 backward 動作)")]
+    public string idleStateName = "backward";
+
+    [Tooltip("慢走狀態的動畫名稱 (預設使用 walking 動作)")]
+    public string walkStateName = "walking";
+
+    [Tooltip("奔跑狀態的動畫名稱 (預設使用 running 動作)")]
+    public string runStateName = "running";
+
+    [Tooltip("倒退走狀態的動畫名稱 (預設使用 backward 動作)")]
+    public string backwardStateName = "backward";
+
+    [Header("過渡時間")]
+    [Tooltip("動畫切換時的平滑過渡時間 (秒，2D Sprite 建議設為 0 或極小如 0.02 以免殘影)")]
+    public float crossFadeDuration = 0.02f;
+
     private Rigidbody rb;
     private WolfEnemy wolfEnemy;
     private Transform playerTransform;
+    
+    private string currentPlayingState = "";
 
     private void Start()
     {
@@ -36,57 +55,87 @@ public class WolfSpriteAnimator : MonoBehaviour
     {
         if (animator == null || rb == null) return;
 
-        // 1. 獲取基本數值與狀態
+        // 1. 獲取物理數值與狀態
         float speedX = rb.linearVelocity.x;
         float absSpeedX = Mathf.Abs(speedX);
 
-        bool isStunned = false;
-        bool isAttached = false;
+        // 安全讀取 WolfEnemy 的 private 變數
+        bool isStunned = GetWolfEnemyBool("isStunned");
+        bool isAttached = GetWolfEnemyBool("isAttached");
 
-        if (wolfEnemy != null)
-        {
-            // 透過反射或直接訪問 WolfEnemy 內部的私有狀態 (如果有的話)
-            // 由於 WolfEnemy.cs 裡 isStunned 與 isAttached 是 private，
-            // 我們可以使用下面的安全讀取方式，或者在 WolfEnemy 補上 public 屬性。
-            // 這裡我們先提供一組屬性對應，並在下方寫出通用防呆。
-        }
-
-        // 安全地反射獲取 WolfEnemy 的狀態以防私有變數無法存取
-        isStunned = GetWolfEnemyBool("isStunned");
-        isAttached = GetWolfEnemyBool("isAttached");
-
-        // 2. 轉向與倒退判定
+        bool isBackingUp = false;
+        
+        // 2. 轉向與倒退走判定
         if (playerTransform != null && !isAttached && !isStunned)
         {
-            // 算出玩家相對於狼的方向 (1 代表玩家在右邊，-1 代表在左邊)
+            // 判斷玩家方向 (1 右，-1 左)
             float directionToPlayer = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-            // 狼面朝玩家：如果玩家在右，狼不翻轉；玩家在左，狼翻轉 (假設原畫是面朝右)
+            // 翻轉 Sprite 面朝玩家
             if (spriteRenderer != null)
             {
                 spriteRenderer.flipX = (directionToPlayer < 0);
             }
 
-            // 倒退走 (Backing Up) 判定：
-            // 當狼在移動，且其「移動速度方向」與「面朝玩家方向」相反時，代表正在倒退！
-            // 例如：玩家在右 (directionToPlayer > 0)，但狼的速度往左 (speedX < -0.1f)
-            bool isBackingUp = false;
+            // 倒退走判定：當狼在移動，且其速度方向與玩家方向相反時
             if (absSpeedX > 0.1f)
             {
                 isBackingUp = (speedX * directionToPlayer < 0);
             }
+        }
 
-            animator.SetBool("IsBackingUp", isBackingUp);
+        // 3. 用程式直接控制動畫狀態 (CrossFade)
+        string targetState = idleStateName;
+
+        if (isAttached)
+        {
+            targetState = idleStateName; // 咬住玩家時播放靜止/回頭
+        }
+        else if (isStunned)
+        {
+            targetState = idleStateName; // 硬直狀態播放靜止/回頭
+        }
+        else if (isBackingUp)
+        {
+            targetState = backwardStateName; // 播放倒退動畫
         }
         else
         {
-            animator.SetBool("IsBackingUp", false);
+            // 根據 X 軸速度大小決定播放哪種前進動畫
+            if (absSpeedX < 0.1f)
+            {
+                targetState = idleStateName; // 速度低於 0.1 播放靜止
+            }
+            else if (absSpeedX > 4.5f)
+            {
+                targetState = runStateName; // 速度大於 4.5 播放快跑
+            }
+            else
+            {
+                targetState = walkStateName; // 速度低於 4.5 播放慢走
+            }
         }
 
-        // 3. 更新 Animator 內的參數
-        animator.SetFloat("Speed", absSpeedX);
-        animator.SetBool("IsStunned", isStunned);
-        animator.SetBool("IsAttached", isAttached);
+        // 4. 直接呼叫播放 (過濾重複播放)
+        PlayAnimationDirectly(targetState);
+    }
+
+    private void PlayAnimationDirectly(string stateName)
+    {
+        if (currentPlayingState == stateName) return;
+
+        currentPlayingState = stateName;
+        
+        if (crossFadeDuration > 0f)
+        {
+            animator.CrossFade(stateName, crossFadeDuration);
+        }
+        else
+        {
+            animator.Play(stateName);
+        }
+        
+        Debug.Log($"【程式碼控制動畫】已切換播放狀態為: '{stateName}'");
     }
 
     // 利用反射安全讀取 WolfEnemy 的 private bool 狀態
