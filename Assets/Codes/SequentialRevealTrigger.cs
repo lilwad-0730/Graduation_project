@@ -257,6 +257,17 @@ public class SequentialRevealTrigger : MonoBehaviour
         }
     }
 
+    // 【新增】：支援實體碰撞 (Is Trigger 未勾選) 的情況下也能正常觸發機關，使主角能站在平台上
+    private void OnCollisionEnter(Collision collision)
+    {
+        OnTriggerEnter(collision.collider);
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        OnTriggerExit(collision.collider);
+    }
+
     private void StartRevealSequence()
     {
         if (_activeSequenceCoroutine != null)
