@@ -8,6 +8,9 @@ using UnityEngine;
 public class RuinsDoor : MonoBehaviour
 {
     [Header("碰撞偵測設定")]
+    [Tooltip("指定只能被此特定物件撞壞 (例如：把 rock-new 拖進來，主角或其他物體碰觸就絕對不會破壞門)。若為空則使用 Tag/名字判定。")]
+    public GameObject specificDestructionObject;
+
     [Tooltip("可撞壞此門的物件 Tag。預設為 RollingRock。")]
     public string targetTag = "RollingRock";
 
@@ -35,15 +38,25 @@ public class RuinsDoor : MonoBehaviour
     {
         bool isTarget = false;
 
-        // 1. 檢查 Tag 匹配
-        if (!string.IsNullOrEmpty(targetTag) && hitObject.CompareTag(targetTag))
+        // 1. 如果有指定特定破壞物件，只認該物件，其餘碰觸（如主角）皆不破壞
+        if (specificDestructionObject != null)
         {
-            isTarget = true;
+            if (hitObject == specificDestructionObject || hitObject.transform.IsChildOf(specificDestructionObject.transform))
+            {
+                isTarget = true;
+            }
         }
-        // 2. 後備方案：如果物件名字含有 "rock" 或者是滾動巨石腳本
-        else if (hitObject.GetComponent<RollingRockVisual>() != null || hitObject.name.ToLower().Contains("rock"))
+        else
         {
-            isTarget = true;
+            // 2. 沒有指定特定物件時，才使用 Tag 與名稱匹配邏輯
+            if (!string.IsNullOrEmpty(targetTag) && hitObject.CompareTag(targetTag))
+            {
+                isTarget = true;
+            }
+            else if (hitObject.GetComponent<RollingRockVisual>() != null || hitObject.name.ToLower().Contains("rock"))
+            {
+                isTarget = true;
+            }
         }
 
         if (isTarget)

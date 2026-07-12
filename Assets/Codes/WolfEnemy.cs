@@ -16,6 +16,10 @@ public class WolfEnemy : MonoBehaviour
     public float aggroDistanceX = 6f; // 靠近到 x=6 開始追蹤
     public float giveUpDistanceX = 12f; // 【新增】逃遠到 x=12 放棄追蹤
 
+    [Header("物理免疫設定")]
+    [Tooltip("狼要忽略碰撞的物件 Collider 清單 (例如：把 Stone Steps 平台的 Collider 拉進來，狼就不會撞到它們)")]
+    public System.Collections.Generic.List<Collider> collidersToIgnore = new System.Collections.Generic.List<Collider>();
+
     private Transform player;
     private PlayerMovement playerMovement; 
     private Rigidbody rb;
@@ -30,6 +34,19 @@ public class WolfEnemy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+
+        // 執行碰撞忽略設定
+        if (col != null && collidersToIgnore != null)
+        {
+            foreach (Collider targetCol in collidersToIgnore)
+            {
+                if (targetCol != null)
+                {
+                    Physics.IgnoreCollision(col, targetCol, true);
+                    Debug.Log($"【物理忽略】狼 '{gameObject.name}' 已設定忽略與 '{targetCol.gameObject.name}' 的碰撞");
+                }
+            }
+        }
         
         GameObject pObj = GameObject.FindGameObjectWithTag("Player");
         if (pObj != null)
