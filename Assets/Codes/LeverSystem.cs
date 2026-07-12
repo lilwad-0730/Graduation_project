@@ -19,12 +19,15 @@ public class LeverSystem : MonoBehaviour
     [Header("拉桿視覺效果")]
     [Tooltip("拉桿的 SpriteRenderer (若為空，會嘗試自動在自身或子物件尋找)")]
     public SpriteRenderer leverRenderer;
+    [Tooltip("拉桿的 Animator (若有做拉桿動畫，可以拉入此處，並在 Animator 內建立名為 'Pull' 的 Trigger 參數)")]
+    public Animator leverAnimator;
 
     public enum VisualEffectType
     {
-        FlipSprite,  // 左右翻轉 (FlipX，最推薦：用一張圖就能做出左右扳動的效果)
-        Rotate,      // 旋轉角度 (例如將 Transform Z軸 旋轉 -60 度)
-        SpriteSwap   // 更換圖片 (需要拖入拉動後的圖片)
+        FlipSprite,     // 左右翻轉 (FlipX，最推薦：用一張圖就能做出左右扳動的效果)
+        Rotate,         // 旋轉角度 (例如將 Transform Z軸 旋轉 -60 度)
+        SpriteSwap,     // 更換圖片 (需要拖入拉動後的圖片)
+        PlayAnimation   // 播放動畫 (透過 Animator 播放拉桿動畫)
     }
     [Tooltip("拉動拉桿時的視覺表現方式")]
     public VisualEffectType visualEffect = VisualEffectType.FlipSprite;
@@ -118,7 +121,12 @@ public class LeverSystem : MonoBehaviour
         }
 
         // 2. 執行拉桿視覺效果
-        if (leverRenderer != null)
+        if (visualEffect == VisualEffectType.PlayAnimation && leverAnimator != null)
+        {
+            leverAnimator.SetTrigger("Pull"); // 觸發名為 'Pull' 的 Trigger 播放拉下動畫
+            Debug.Log($"【拉桿系統】已向 '{leverAnimator.gameObject.name}' 的 Animator 發送 'Pull' 觸發信號！");
+        }
+        else if (leverRenderer != null)
         {
             switch (visualEffect)
             {
