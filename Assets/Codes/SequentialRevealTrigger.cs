@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(Collider))]
 public class SequentialRevealTrigger : MonoBehaviour
 {
     public enum RevealType
@@ -22,7 +21,10 @@ public class SequentialRevealTrigger : MonoBehaviour
     }
 
     [Header("觸發條件")]
-    [Tooltip("指定觸發此機關的特定巨石。若留空，則任何帶有 UnlockableMovableObject 組件的巨石壓上都能觸發。")]
+    [Tooltip("是否允許主角踩上去來觸發顯現平台？(勾選後，主角踩上去就會觸發，不需要拉任何物件入 Specific Stone)")]
+    public bool triggerByPlayer = false;
+
+    [Tooltip("指定觸發此機關的特定巨石。若留空且 triggerByPlayer 為 false，則任何帶有 UnlockableMovableObject 組件的巨石壓上都能觸發。")]
     public UnlockableMovableObject specificStone;
 
     [Header("顯示物件清單 (依排序順序顯現)")]
@@ -188,7 +190,28 @@ public class SequentialRevealTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // 偵測是否為巨石組件
+        // 1. 偵測是否為主角觸發
+        if (triggerByPlayer)
+        {
+            bool isPlayer = other.CompareTag("Player") || other.GetComponentInParent<PlayerMovement>() != null || other.GetComponentInChildren<PlayerMovement>() != null;
+            if (isPlayer)
+            {
+                if (!_activeStones.Contains(other))
+                {
+                    _activeStones.Add(other);
+                }
+
+                if (!_isTriggered)
+                {
+                    _isTriggered = true;
+                    Debug.Log($"【機關觸發】主角已踏上 {gameObject.name}。開始順序顯現物件。");
+                    StartRevealSequence();
+                }
+                return; // 優先處理主角，直接結束
+            }
+        }
+
+        // 2. 偵測是否為巨石組件
         UnlockableMovableObject stone = other.GetComponentInParent<UnlockableMovableObject>();
         if (stone == null)
         {
@@ -200,7 +223,10 @@ public class SequentialRevealTrigger : MonoBehaviour
             // 如果指定了特定巨石，且踏入的不是該巨石，則無視
             if (specificStone != null && stone != specificStone) return;
 
-            _activeStones.Add(other);
+            if (!_activeStones.Contains(other))
+            {
+                _activeStones.Add(other);
+            }
 
             if (!_isTriggered)
             {
@@ -217,11 +243,11 @@ public class SequentialRevealTrigger : MonoBehaviour
         {
             _activeStones.Remove(other);
 
-            // 當沒有任何巨石壓在上面，且設定為移開後隱藏 (keepRevealed = false)
+            // 當沒有任何觸發源在上面，且設定為移開後隱藏 (keepRevealed = false)
             if (_activeStones.Count == 0 && _isTriggered)
             {
                 _isTriggered = false;
-                Debug.Log($"【機關解除】巨石已離開 {gameObject.name}。");
+                Debug.Log($"【機關重置】踏板 {gameObject.name} 上已無觸發源。");
                 
                 if (!keepRevealed)
                 {

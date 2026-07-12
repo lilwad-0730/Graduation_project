@@ -33,6 +33,9 @@ public class ScreenFeedbackManager : MonoBehaviour
     [Range(0f, 1f)]
     public float maxRedVignetteAlpha = 0.5f;
 
+    [Tooltip("受傷紅邊單次閃爍的半週期時間 (秒，設定為 0.25f 到 0.35f 會讓頻率變慢顯得更柔和)")]
+    public float flashHalfCycleDuration = 0.3f;
+
     private Canvas feedbackCanvas;
     private Image vignetteImage;
     private Texture2D vignetteTexture;
@@ -142,9 +145,9 @@ public class ScreenFeedbackManager : MonoBehaviour
         // 1. 啟動震動：持續 0.4 秒，強度 0.3f
         TriggerCameraShake(0.4f, 0.3f);
 
-        // 2. 啟動紅邊閃爍：閃爍 3 下，每半個週期 0.12 秒
+        // 2. 啟動紅邊閃爍：閃爍 3 下，時間由變數控制以減慢頻率
         if (flashCoroutine != null) StopCoroutine(flashCoroutine);
-        flashCoroutine = StartCoroutine(FlashRedBorderCoroutine(3, 0.12f));
+        flashCoroutine = StartCoroutine(FlashRedBorderCoroutine(3, flashHalfCycleDuration));
     }
 
     private void TriggerCameraShake(float duration, float power)
