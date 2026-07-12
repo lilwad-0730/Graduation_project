@@ -14,8 +14,8 @@ public class RuinsDoor : MonoBehaviour
     [Tooltip("可撞壞此門的物件 Tag。預設為 RollingRock。")]
     public string targetTag = "RollingRock";
 
-    [Tooltip("撞擊門的最低速度，若速度太慢則不會撞開。")]
-    public float minImpactSpeed = 1.0f;
+    [Tooltip("撞擊門的最低速度，若速度太慢則不會撞開。可設為 0 以便任何微弱碰觸皆能撞開。")]
+    public float minImpactSpeed = 0.1f;
 
     private Destructible destructible;
 
@@ -38,10 +38,15 @@ public class RuinsDoor : MonoBehaviour
     {
         bool isTarget = false;
 
-        // 1. 如果有指定特定破壞物件，只認該物件，其餘碰觸（如主角）皆不破壞
+        // 1. 如果有指定特定破壞物件，只認該物件 (進行名稱防呆比對，相容場景實例與專案預製體拖曳)
         if (specificDestructionObject != null)
         {
-            if (hitObject == specificDestructionObject || hitObject.transform.IsChildOf(specificDestructionObject.transform))
+            string hitName = hitObject.name.Replace("(Clone)", "").Trim();
+            string targetName = specificDestructionObject.name.Replace("(Clone)", "").Trim();
+
+            if (hitObject == specificDestructionObject || 
+                hitObject.transform.IsChildOf(specificDestructionObject.transform) ||
+                hitName == targetName)
             {
                 isTarget = true;
             }
