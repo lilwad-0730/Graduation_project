@@ -115,6 +115,13 @@ public class WolfEnemy : MonoBehaviour
             // 【新增】碰到玩家瞬間，先把狼的速度清空，避免殘餘力量撞飛玩家
             rb.linearVelocity = Vector3.zero; 
             rb.angularVelocity = Vector3.zero;
+
+            // 觸發螢幕受傷回饋 (震動與閃紅邊)
+            if (ScreenFeedbackManager.Instance != null)
+            {
+                ScreenFeedbackManager.Instance.TriggerHitFeedback();
+            }
+
             AttachToPlayer();
         }
     }
