@@ -388,10 +388,17 @@ public class PlayerMovement : MonoBehaviour
         if (attachedWolvesCount >= (int)maxWolvesToStop)
         {
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = GetComponentInChildren<PlayerRespawnSystem>();
+
             if (respawnSystem != null)
             {
                 Debug.Log("【狼咬致死】累積狼咬達到上限，觸發重生系統！");
                 respawnSystem.TriggerRespawn();
+            }
+            else
+            {
+                Debug.LogError("【狼咬致死】找不到 PlayerRespawnSystem 組件！請確認主角物件或父/子物件上有掛載 PlayerRespawnSystem 腳本。");
             }
         }
     }
