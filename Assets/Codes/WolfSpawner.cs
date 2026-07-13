@@ -36,17 +36,41 @@ public class WolfSpawner : MonoBehaviour
 
     private void Start()
     {
-        // 尋找玩家
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
+        // 尋找玩家 (優先使用 PlayerMovement 組件搜尋，防呆且不依賴 Tag 判定)
+        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+        if (pm == null) pm = FindFirstObjectByType<PlayerMovement>();
+        #pragma warning disable CS0618
+        if (pm == null) pm = (PlayerMovement)FindObjectOfType(typeof(PlayerMovement));
+        #pragma warning restore CS0618
+
+        if (pm != null)
         {
-            playerTransform = playerObj.transform;
+            playerTransform = pm.transform;
+        }
+        else
+        {
+            // 備用：使用 Tag 搜尋
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+
+        if (playerTransform == null)
+        {
+            Debug.LogError($"【狼出生點】'{gameObject.name}' 找不到主角！請確認主角物件上有掛載 PlayerMovement 腳本。");
+        }
+        else
+        {
+            Debug.Log($"【狼出生點】'{gameObject.name}' 已成功鎖定主角：'{playerTransform.name}'");
         }
 
         // 防呆：如果模板是場景中的物件，遊戲開始時先將其隱藏，避免場景多出一隻不動的狼
         if (wolfTemplate != null && wolfTemplate.scene.name != null)
         {
             wolfTemplate.SetActive(false);
+            Debug.Log($"【狼出生點】已自動隱藏場景中的狼模板：'{wolfTemplate.name}'");
         }
     }
 
