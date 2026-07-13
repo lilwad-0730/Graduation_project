@@ -92,16 +92,27 @@ public class WolfSpriteAnimator : MonoBehaviour
             // 判斷玩家方向 (1 右，-1 左)
             float directionToPlayer = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-            // 翻轉 Sprite 面朝玩家 (使用 localScale 做整體鏡像，避開動畫中 FlipX 關鍵影格的衝突)
+            // 翻轉 Sprite 面朝玩家 (防呆安全機制：避免直接翻轉含有 Rigidbody 的父物件導致物理引擎失常滑行)
             float targetScaleX = (directionToPlayer > 0f) ? 1f : -1f;
             if (reverseFacingDirection)
             {
                 targetScaleX = -targetScaleX;
             }
 
-            Vector3 currentScale = transform.localScale;
-            // 保持原本的縮放大小比例，只修改 X 軸的方向
-            transform.localScale = new Vector3(targetScaleX * Mathf.Abs(currentScale.x), currentScale.y, currentScale.z);
+            if (spriteRenderer != null)
+            {
+                if (spriteRenderer.transform != transform)
+                {
+                    // 1. 如果 SpriteRenderer 在子物件上，翻轉子物件的 localScale (極度安全，物理不受影響)
+                    Vector3 currentScale = spriteRenderer.transform.localScale;
+                    spriteRenderer.transform.localScale = new Vector3(targetScaleX * Mathf.Abs(currentScale.x), currentScale.y, currentScale.z);
+                }
+                else
+                {
+                    // 2. 如果 SpriteRenderer 掛在父物件本體上，改用 flipX (防止物理碰撞箱反轉導致物理引擎崩潰亂飄)
+                    spriteRenderer.flipX = (targetScaleX < 0f);
+                }
+            }
 
             // 倒退走判定：當狼在移動，且其速度方向與玩家方向相反時
             if (absSpeedX > 0.1f)
