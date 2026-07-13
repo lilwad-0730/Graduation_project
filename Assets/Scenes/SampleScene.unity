@@ -2586,7 +2586,7 @@ Transform:
   m_GameObject: {fileID: 216456106}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -4.21, y: 0, z: 0}
   m_LocalScale: {x: 1.7159, y: 1.7159, z: 1.7159}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -5186,6 +5186,7 @@ MonoBehaviour:
   pullRange: 1
   jumpForce: 10
   animator: {fileID: 0}
+  isGrounded: 0
   isStrictLockingX: 0
   lockedXValue: 0
   maxWolvesToStop: 10
@@ -5458,6 +5459,56 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 6.330242, z: 1}
   m_Center: {x: 0, y: 0.13667107, z: 0}
+--- !u!1 &452954560
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 452954561}
+  - component: {fileID: 452954562}
+  m_Layer: 0
+  m_Name: wolf2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &452954561
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452954560}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 91.29, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 979294358}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &452954562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452954560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69e34a4509d347f6b33dcd707e1150a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfSpawner
+  wolfTemplate: {fileID: 931082209}
+  triggerType: 2
+  triggerXOffset: 2
+  triggerDistance: 2
+  startChasePlayerDistance: 8
+  fadeDuration: 1.5
 --- !u!1 &461997064
 GameObject:
   m_ObjectHideFlags: 0
@@ -6727,6 +6778,56 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 5.5361114, z: 1}
   m_Center: {x: 0, y: 0.19440484, z: 0}
+--- !u!1 &567425445
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 567425446}
+  - component: {fileID: 567425447}
+  m_Layer: 0
+  m_Name: wolf1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &567425446
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 567425445}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 69.95, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 979294358}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &567425447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 567425445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69e34a4509d347f6b33dcd707e1150a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfSpawner
+  wolfTemplate: {fileID: 931082209}
+  triggerType: 2
+  triggerXOffset: 2
+  triggerDistance: 2
+  startChasePlayerDistance: 8
+  fadeDuration: 1.5
 --- !u!1 &584289256
 GameObject:
   m_ObjectHideFlags: 0
@@ -6767,6 +6868,7 @@ MonoBehaviour:
   aggroDistanceX: 12
   giveUpDistanceX: 8
   collidersToIgnore: []
+  stopChaseHeightDifference: 3
 --- !u!54 &584289258
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9585,6 +9687,7 @@ GameObject:
   m_Component:
   - component: {fileID: 885076986}
   - component: {fileID: 885076985}
+  - component: {fileID: 885076987}
   m_Layer: 0
   m_Name: loopable mt ground_0 (2)
   m_TagString: Untagged
@@ -9666,6 +9769,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &885076987
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 885076984}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 21.72, y: 5.631504, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &886359352
 GameObject:
   m_ObjectHideFlags: 0
@@ -9908,6 +10032,7 @@ MonoBehaviour:
   runStateName: running
   backwardStateName: backward
   crossFadeDuration: 0.02
+  reverseFacingDirection: 0
 --- !u!114 &931082211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9930,6 +10055,7 @@ MonoBehaviour:
   - {fileID: 327784617}
   - {fileID: 2072297853}
   - {fileID: 1765964096}
+  stopChaseHeightDifference: 3
 --- !u!136 &931082212
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9949,10 +10075,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 2.2522087
-  m_Height: 4.5044174
+  m_Radius: 2.1960678
+  m_Height: 4.3921356
   m_Direction: 1
-  m_Center: {x: -0.13833237, y: 0.5533409, z: 0}
+  m_Center: {x: -4.2929, y: 0.58141327, z: 0}
 --- !u!54 &931082213
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9988,13 +10114,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 931082209}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 43.63, y: -127.59, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 216456109}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 979294358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &932045870
 GameObject:
@@ -10533,6 +10659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 970413064}
   - component: {fileID: 970413063}
+  - component: {fileID: 970413065}
   m_Layer: 0
   m_Name: loopable mt ground_0 (1)
   m_TagString: Untagged
@@ -10614,6 +10741,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 34.648}
+--- !u!65 &970413065
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970413062}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &979191916
 GameObject:
   m_ObjectHideFlags: 0
@@ -10727,6 +10875,43 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2049566478}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &979294357
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 979294358}
+  m_Layer: 0
+  m_Name: "\uFF37olfs"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &979294358
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 979294357}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.63, y: -127.59, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 931082214}
+  - {fileID: 567425446}
+  - {fileID: 452954561}
+  - {fileID: 1453943281}
+  - {fileID: 1626604037}
+  - {fileID: 1241402640}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &981337944
 GameObject:
@@ -11740,6 +11925,7 @@ MonoBehaviour:
   aggroDistanceX: 18
   giveUpDistanceX: 12
   collidersToIgnore: []
+  stopChaseHeightDifference: 3
 --- !u!54 &1086252309
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13106,6 +13292,56 @@ Transform:
   - {fileID: 285333300}
   m_Father: {fileID: 1193377503}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1241402639
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1241402640}
+  - component: {fileID: 1241402641}
+  m_Layer: 0
+  m_Name: wolf5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1241402640
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241402639}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 142.26, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 979294358}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1241402641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241402639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69e34a4509d347f6b33dcd707e1150a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfSpawner
+  wolfTemplate: {fileID: 931082209}
+  triggerType: 2
+  triggerXOffset: 0.2
+  triggerDistance: 0.2
+  startChasePlayerDistance: 8
+  fadeDuration: 1.5
 --- !u!1 &1251621802
 GameObject:
   m_ObjectHideFlags: 0
@@ -15408,6 +15644,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1417348837}
   - component: {fileID: 1417348836}
+  - component: {fileID: 1417348838}
   m_Layer: 0
   m_Name: loopable mt ground_0
   m_TagString: Untagged
@@ -15489,6 +15726,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 34.648}
+--- !u!65 &1417348838
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1417348835}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 21.72, y: 5.6315055, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1425372682
 GameObject:
   m_ObjectHideFlags: 0
@@ -16064,6 +16322,56 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TriggerablePlatform
   disableDelay: 0.25
   activateTimeout: 1.5
+--- !u!1 &1453943280
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1453943281}
+  - component: {fileID: 1453943282}
+  m_Layer: 0
+  m_Name: wolf3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1453943281
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453943280}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 119.02, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 979294358}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1453943282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1453943280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69e34a4509d347f6b33dcd707e1150a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfSpawner
+  wolfTemplate: {fileID: 931082209}
+  triggerType: 2
+  triggerXOffset: 2
+  triggerDistance: 2
+  startChasePlayerDistance: 8
+  fadeDuration: 1.5
 --- !u!1 &1464992050
 GameObject:
   m_ObjectHideFlags: 0
@@ -18735,6 +19043,56 @@ RectTransform:
   m_AnchoredPosition: {x: -29.479, y: 13.87}
   m_SizeDelta: {x: 20.0219, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1626604036
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1626604037}
+  - component: {fileID: 1626604038}
+  m_Layer: 0
+  m_Name: wolf4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1626604037
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626604036}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 128.9, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 979294358}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1626604038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1626604036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69e34a4509d347f6b33dcd707e1150a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfSpawner
+  wolfTemplate: {fileID: 931082209}
+  triggerType: 2
+  triggerXOffset: 2
+  triggerDistance: 2
+  startChasePlayerDistance: 8
+  fadeDuration: 1.5
 --- !u!1 &1631049669
 GameObject:
   m_ObjectHideFlags: 0
@@ -29076,7 +29434,7 @@ SceneRoots:
   - {fileID: 1472103422}
   - {fileID: 1086366440}
   - {fileID: 2143951435}
-  - {fileID: 931082214}
+  - {fileID: 979294358}
   - {fileID: 1329899410}
   - {fileID: 1417348837}
   - {fileID: 970413064}
