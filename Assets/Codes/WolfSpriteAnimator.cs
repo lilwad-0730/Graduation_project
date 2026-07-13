@@ -92,12 +92,8 @@ public class WolfSpriteAnimator : MonoBehaviour
             // 判斷玩家方向 (1 右，-1 左)
             float directionToPlayer = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-            // 翻轉 Sprite 面朝玩家 (防呆安全機制：避免直接翻轉含有 Rigidbody 的父物件導致物理引擎失常滑行)
-            float targetScaleX = (directionToPlayer > 0f) ? 1f : -1f;
-            if (reverseFacingDirection)
-            {
-                targetScaleX = -targetScaleX;
-            }
+            // 寫死規則：玩家在右邊為正常向 (1)，在左邊為鏡像 (-1)
+            float targetScaleX = (playerTransform.position.x >= transform.position.x) ? 1f : -1f;
 
             if (spriteRenderer != null)
             {

@@ -390,6 +390,11 @@ public class PlayerMovement : MonoBehaviour
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
             if (respawnSystem == null) respawnSystem = GetComponentInChildren<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = FindAnyObjectByType<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = FindFirstObjectByType<PlayerRespawnSystem>();
+            #pragma warning disable CS0618
+            if (respawnSystem == null) respawnSystem = (PlayerRespawnSystem)FindObjectOfType(typeof(PlayerRespawnSystem));
+            #pragma warning restore CS0618
 
             if (respawnSystem != null)
             {
@@ -398,7 +403,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                Debug.LogError("【狼咬致死】找不到 PlayerRespawnSystem 組件！請確認主角物件或父/子物件上有掛載 PlayerRespawnSystem 腳本。");
+                Debug.LogError("【狼咬致死】找不到 PlayerRespawnSystem 組件！無法觸發重生！請確認場景中是否有任何物件掛載了 PlayerRespawnSystem 腳本。");
             }
         }
     }
