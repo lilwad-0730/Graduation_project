@@ -20,6 +20,10 @@ public class WolfEnemy : MonoBehaviour
     [Tooltip("狼要忽略碰撞的物件 Collider 清單 (例如：把 Stone Steps 平台的 Collider 拉進來，狼就不會撞到它們)")]
     public System.Collections.Generic.List<Collider> collidersToIgnore = new System.Collections.Generic.List<Collider>();
 
+    [Header("高度追蹤限制")]
+    [Tooltip("當主角高度超過狼多少距離，且主角懸空時，狼會停止追蹤，直到主角觸地")]
+    public float stopChaseHeightDifference = 3.0f;
+
     private Transform player;
     private PlayerMovement playerMovement; 
     private Rigidbody rb;
@@ -65,15 +69,33 @@ public class WolfEnemy : MonoBehaviour
         // 計算與玩家在 X 軸的絕對距離
         float distanceX = Mathf.Abs(player.position.x - transform.position.x);
 
-        // 【修改】判斷要不要追蹤，或是要不要放棄
-        if (distanceX <= aggroDistanceX && !isChasing)
+        // 【新增】：高度限制偵測
+        // 如果玩家高度大於狼，且玩家不在地面上（正在跳躍/墜落中），且高度差大於閾值，則狼會跟丟主角
+        bool isPlayerTooHigh = playerMovement != null && 
+                               !playerMovement.isGrounded && 
+                               (player.position.y - transform.position.y) > stopChaseHeightDifference;
+
+        if (isPlayerTooHigh)
         {
-            isChasing = true; // 進入範圍，開始追！
+            if (isChasing)
+            {
+                isChasing = false; // 停止追蹤
+                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, rb.linearVelocity.z); // 原地煞車
+                Debug.Log($"【狼追蹤】玩家跳得太高 (高度差：{(player.position.y - transform.position.y):F2} > {stopChaseHeightDifference})，狼停止追蹤！");
+            }
         }
-        else if (distanceX > giveUpDistanceX && isChasing)
+        else
         {
-            isChasing = false; // 逃太遠了，放棄追蹤
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, rb.linearVelocity.z); // 原地煞車
+            // 只有當玩家觸地，或是高度沒有那麼高時，才執行正常的距離追逐判定
+            if (distanceX <= aggroDistanceX && !isChasing)
+            {
+                isChasing = true; // 進入範圍，開始追！
+            }
+            else if (distanceX > giveUpDistanceX && isChasing)
+            {
+                isChasing = false; // 逃太遠了，放棄追蹤
+                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, rb.linearVelocity.z); // 原地煞車
+            }
         }
 
         // 執行追蹤

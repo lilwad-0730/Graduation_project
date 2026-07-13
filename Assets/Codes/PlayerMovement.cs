@@ -21,7 +21,7 @@ public class PlayerMovement : MonoBehaviour
     
     private Collider playerCollider;
     private string currentAnimState = ""; 
-    private bool isGrounded = false;
+    public bool isGrounded = false;
     private bool isJumping = false;
     
     private float initialZ;
@@ -383,6 +383,17 @@ public class PlayerMovement : MonoBehaviour
         attachedWolvesCount++;
         CalculateSpeed();
         Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼，玩家速度降為：{currentSpeed}");
+
+        // 【新增】：當累積狼咬達到上限（預設 3 隻），觸發主角死亡重生機制
+        if (attachedWolvesCount >= (int)maxWolvesToStop)
+        {
+            PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+            if (respawnSystem != null)
+            {
+                Debug.Log("【狼咬致死】累積狼咬達到上限，觸發重生系統！");
+                respawnSystem.TriggerRespawn();
+            }
+        }
     }
 
     public void RemoveWolf()
@@ -449,6 +460,10 @@ public class PlayerMovement : MonoBehaviour
         {
             cameraTarget.position = position;
         }
+
+        // 【新增】：重置身上所有被狼咬住的計數，並恢復速度
+        attachedWolvesCount = 0;
+        CalculateSpeed();
         _smoothYVelocity = 0f; // 重置 Y 軸平滑速度快取
         
         // 瞬間解鎖玩家所有的移動/墜落鎖定與劇情鎖定，防止傳送後卡死
