@@ -30,6 +30,10 @@ public class WolfSpriteAnimator : MonoBehaviour
     [Tooltip("動畫切換時的平滑過渡時間 (秒，2D Sprite 建議設為 0 或極小如 0.02 以免殘影)")]
     public float crossFadeDuration = 0.02f;
 
+    [Header("轉向設定")]
+    [Tooltip("如果您的狼原圖朝向是反的 (例如主角在右邊，狼卻看左邊)，請勾選此欄位進行反轉修正")]
+    public bool reverseFacingDirection = false;
+
     private Rigidbody rb;
     private WolfEnemy wolfEnemy;
     private Transform playerTransform;
@@ -88,16 +92,21 @@ public class WolfSpriteAnimator : MonoBehaviour
             // 判斷玩家方向 (1 右，-1 左)
             float directionToPlayer = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-            // 翻轉 Sprite 面朝玩家
-            if (spriteRenderer != null)
+            // 翻轉 Sprite 面朝玩家 (使用 localScale 做整體鏡像，避開動畫中 FlipX 關鍵影格的衝突)
+            float targetScaleX = (directionToPlayer > 0f) ? 1f : -1f;
+            if (reverseFacingDirection)
             {
-                spriteRenderer.flipX = (directionToPlayer < 0);
+                targetScaleX = -targetScaleX;
             }
+
+            Vector3 currentScale = transform.localScale;
+            // 保持原本的縮放大小比例，只修改 X 軸的方向
+            transform.localScale = new Vector3(targetScaleX * Mathf.Abs(currentScale.x), currentScale.y, currentScale.z);
 
             // 倒退走判定：當狼在移動，且其速度方向與玩家方向相反時
             if (absSpeedX > 0.1f)
             {
-                isBackingUp = (speedX * directionToPlayer < 0);
+                isBackingUp = (speedX * directionToPlayer < 0f);
             }
         }
 
