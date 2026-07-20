@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b411bf996d92b68428909e875813f5b1
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 29422
+  packageName: Free Parallax for Unity (2D)
+  packageVersion: 1.1.2
+  assetPath: Assets/FreeParallax/Scripts/FreeParallaxDemo.cs
+  uploadId: 130639

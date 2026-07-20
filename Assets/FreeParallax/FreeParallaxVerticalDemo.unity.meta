@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d775ee0617b6aa2458a214d977a4b5e0
+timeCreated: 1431098578
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 29422
+  packageName: Free Parallax for Unity (2D)
+  packageVersion: 1.1.2
+  assetPath: Assets/FreeParallax/FreeParallaxVerticalDemo.unity
+  uploadId: 130639
