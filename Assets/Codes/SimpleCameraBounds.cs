@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Camera))]
@@ -15,11 +16,20 @@ public class SimpleCameraBounds : MonoBehaviour
     private Camera cam;
     private Collider[] _cachedBackgrounds;
     private float _cacheTimer = 0f;
+    private Transform playerTransform;
 
     void Start()
     {
         cam = GetComponent<Camera>();
+        FindPlayer();
         CacheBackgrounds();
+    }
+
+    void FindPlayer()
+    {
+        GameObject playerObj = GameObject.FindWithTag("Player");
+        if (playerObj == null) playerObj = GameObject.Find("Player");
+        if (playerObj != null) playerTransform = playerObj.transform;
     }
 
     void CacheBackgrounds()
@@ -35,7 +45,12 @@ public class SimpleCameraBounds : MonoBehaviour
                     foreach (GameObject bg in bgs)
                     {
                         Collider col = bg.GetComponent<Collider>();
-                        if (col != null) colliders.Add(col);
+                        if (col != null)
+                        {
+                            // 關鍵修復 1：背景碰撞器必須設為 isTrigger = true，否則會當作實體牆壁擋住玩家前進！
+                            col.isTrigger = true;
+                            colliders.Add(col);
+                        }
                     }
                 }
             }
@@ -46,7 +61,12 @@ public class SimpleCameraBounds : MonoBehaviour
 
     void LateUpdate()
     {
-        // 每 2 秒重新掃描一次背景，避免每幀搜尋造成嚴重 Lag 或卡頓
+        if (playerTransform == null)
+        {
+            FindPlayer();
+        }
+
+        // 每 2 秒重新掃描一次背景，避免每幀搜尋造成卡頓
         _cacheTimer += Time.deltaTime;
         if (_cacheTimer > 2f)
         {
@@ -57,8 +77,7 @@ public class SimpleCameraBounds : MonoBehaviour
         Collider closestBg = GetClosestBackgroundFromCache();
         if (closestBg == null) return;
 
-        // 【新增需求】：如果是 FallingBackground，攝影機強制跟隨玩家，不做邊界限制！
-        // 只使用 Tag 判斷，避免 RuinedBackground 剛好也叫 connect_0 (1) 而被誤判！
+        // 如果是 FallingBackground，攝影機強制跟隨玩家，不做邊界限制
         if (closestBg.CompareTag("FallingBackground")) 
         {
             return;
@@ -69,7 +88,6 @@ public class SimpleCameraBounds : MonoBehaviour
         float halfHeight = 0f;
         float halfWidth = 0f;
 
-        // 完美數學公式：視野角度 ✖️ 距離 ＝ 實際寬高
         if (cam.orthographic)
         {
             halfHeight = cam.orthographicSize;
@@ -87,7 +105,7 @@ public class SimpleCameraBounds : MonoBehaviour
         float minY = bgBounds.min.y + halfHeight;
         float maxY = bgBounds.max.y - halfHeight;
 
-        // 防呆：如果背景比螢幕還小，就鎖死在背景中心
+        // 防呆：如果背景比螢幕視野還小，鎖死在背景中心
         if (minX > maxX) minX = maxX = bgBounds.center.x;
         if (minY > maxY) minY = maxY = bgBounds.center.y;
 
@@ -104,17 +122,24 @@ public class SimpleCameraBounds : MonoBehaviour
 
     private Collider GetClosestBackgroundFromCache()
     {
+        if (_cachedBackgrounds == null || _cachedBackgrounds.Length == 0) return null;
+
+        // 關鍵修復 2：計算距離必須使用【玩家的位置 (playerTransform)】而非【相機的位置 (transform.position)】！
+        // 否則相機卡在舊背景邊緣後，會永遠無法切換到玩家踩入的新背景！
+        Vector3 referencePos = (playerTransform != null) ? playerTransform.position : transform.position;
+
         Collider closest = null;
         float minDist = float.MaxValue;
-        
-        if (_cachedBackgrounds == null) return null;
 
         foreach (Collider col in _cachedBackgrounds)
         {
             if (col == null) continue;
             
-            Vector3 closestPt = col.bounds.ClosestPoint(transform.position);
-            float dist = Vector3.Distance(transform.position, closestPt);
+            // 確保 isTrigger 為 true
+            if (!col.isTrigger) col.isTrigger = true;
+
+            Vector3 closestPt = col.bounds.ClosestPoint(referencePos);
+            float dist = Vector3.Distance(referencePos, closestPt);
             
             if (dist < minDist)
             {

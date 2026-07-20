@@ -93,12 +93,12 @@ public class SceneSetupHelper : EditorWindow
             if (createdNewPlayer)
             {
                 playerObj.transform.position = originalWorldPos;
-                playerObj.transform.rotation = originalWorldRot;
+                playerObj.transform.rotation = Quaternion.identity; // 根物件必須維持 (0,0,0) 旋轉以符 2.5D 物理約束
             }
 
             Undo.SetTransformParent(momoModel, playerObj.transform, "Parent momo to Player");
             momoModel.localPosition = Vector3.zero;
-            momoModel.localRotation = Quaternion.identity;
+            momoModel.localRotation = originalWorldRot; // 模型繼承原有的視覺旋轉 (如 Y=90度)
             momoModel.localScale = new Vector3(1.14375f, 1.1320312f, 1.5f);
             Debug.Log($"[SceneSetupHelper] Re-parented momo model {momoModel.name} to Player and preserved position.");
         }

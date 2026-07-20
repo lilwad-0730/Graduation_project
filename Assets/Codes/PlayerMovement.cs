@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
     
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
-    public float currentSpeed;      
+    [HideInInspector] public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
@@ -148,8 +148,13 @@ public class PlayerMovement : MonoBehaviour
         // 【防呆機制】：只有在掉落背景且真的雙腳離地、並且「正在往下掉」時，才準備鎖定
         bool actuallyFreeze = isInDropZone && !preliminaryGrounded && rb.linearVelocity.y < 0f;
         
-        // 如果被劇情鎖定，則無條件取消所有玩家輸入
+        // 如果被劇情鎖定，則無條件取消所有玩家輸入；否則同時支援 Input Axis 與 KeyCode 物理按鍵直讀
         float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : Input.GetAxis("Horizontal"); 
+        if (moveInput == 0f && !actuallyFreeze && !isCutsceneFrozen)
+        {
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) moveInput = 1f;
+            else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) moveInput = -1f;
+        }
 
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -260,6 +265,12 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
 
+        // 防呆校正：若未被狼咬或速度異常為0，強制重置為 baseSpeed
+        if (attachedWolvesCount == 0 || currentSpeed <= 0f)
+        {
+            currentSpeed = baseSpeed;
+        }
+
         float finalSpeed = currentSpeed;
         if (pulledObject != null)
         {
@@ -314,9 +325,8 @@ public class PlayerMovement : MonoBehaviour
                         }
                         else
                         {
-                            // 沒有按鍵時，消除 Y 軸墜落速度（抗重力），防止在無摩擦力斜坡上往下滑
+                            // 沒有按鍵時，消除 X 軸滑動，但保留自然物理墜落速度
                             targetVelocity.x = 0f;
-                            targetVelocity.y = 0f;
                         }
                     }
                 }
