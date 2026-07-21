@@ -556,20 +556,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void SetCameraFollow(Transform target)
     {
-        // 尋找「所有」新版 CinemachineCamera 並強制修改目標 (解決多鏡頭切換不跟隨的問題)
+        // 尋找「所有」新版 CinemachineCamera 並強制修改追蹤目標 (解決 Cinemachine v3 相機跟隨失效問題)
         var vcams3 = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
         foreach(var vcam in vcams3)
         {
-            vcam.Follow = target;
-            Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 Follow 設為 {target.name}");
+            if (vcam != null && target != null)
+            {
+                vcam.Target.TrackingTarget = target;
+                vcam.Follow = target;
+                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name}");
+            }
         }
 
-        // 尋找「所有」舊版 CinemachineVirtualCamera
         var vcamsLegacy = Object.FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
         foreach(var vcam in vcamsLegacy)
         {
-            vcam.Follow = target;
-            Debug.Log($"[PlayerMovement] 已將 CinemachineVirtualCamera {vcam.name} 的 Follow 設為 {target.name}");
+            if (vcam != null && target != null)
+            {
+                vcam.Follow = target;
+            }
         }
     }
 
