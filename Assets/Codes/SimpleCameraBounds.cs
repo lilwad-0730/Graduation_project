@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Camera))]
-[DefaultExecutionOrder(9999)] // 確保此腳本在 Cinemachine 算完位置之後才執行，強制蓋過它的設定！
+[DefaultExecutionOrder(9999)] // 確保此腳本在 Cinemachine 算完位置之後才執行
 public class SimpleCameraBounds : MonoBehaviour
 {
     [Header("背景邊界設定")]
-    [Tooltip("自動偵測這些標籤的 BoxCollider 作為邊界。只要給背景圖片加上 BoxCollider 跟標籤即可！")]
+    [Tooltip("自動偵測這些標籤的 BoxCollider 作為邊界 (僅套用於天空與全景背景，勿給地面套用此標籤)")]
     public string[] backgroundTags = { "Background", "FallingBackground", "RuinedBackground" };
 
-    [Tooltip("是否同時限制上下邊界？(勾選後攝影機也不會拍到背景上下方的穿幫處)")]
+    [Tooltip("是否同時限制上下邊界？(只有背景高度大於相機視野時才會觸發限制)")]
     public bool clampYAxis = true;
 
     private Camera cam;
@@ -44,10 +44,11 @@ public class SimpleCameraBounds : MonoBehaviour
                 {
                     foreach (GameObject bg in bgs)
                     {
+                        if (bg.name.ToLower().Contains("ground")) continue;
+
                         Collider col = bg.GetComponent<Collider>();
                         if (col != null)
                         {
-                            // 關鍵修復 1：背景碰撞器必須設為 isTrigger = true，否則會當作實體牆壁擋住玩家前進！
                             col.isTrigger = true;
                             colliders.Add(col);
                         }
@@ -66,7 +67,6 @@ public class SimpleCameraBounds : MonoBehaviour
             FindPlayer();
         }
 
-        // 每 2 秒重新掃描一次背景，避免每幀搜尋造成卡頓
         _cacheTimer += Time.deltaTime;
         if (_cacheTimer > 2f)
         {
@@ -74,16 +74,17 @@ public class SimpleCameraBounds : MonoBehaviour
             CacheBackgrounds();
         }
 
-        Collider closestBg = GetClosestBackgroundFromCache();
-        if (closestBg == null) return;
+        if (_cachedBackgrounds == null || _cachedBackgrounds.Length == 0) return;
 
-        // 如果是 FallingBackground，攝影機強制跟隨玩家，不做邊界限制
-        if (closestBg.CompareTag("FallingBackground")) 
+        // 合併全景背景 Bounds
+        Bounds combinedBounds = _cachedBackgrounds[0].bounds;
+        for (int i = 1; i < _cachedBackgrounds.Length; i++)
         {
-            return;
+            if (_cachedBackgrounds[i] != null)
+            {
+                combinedBounds.Encapsulate(_cachedBackgrounds[i].bounds);
+            }
         }
-
-        Bounds bgBounds = closestBg.bounds;
 
         float halfHeight = 0f;
         float halfWidth = 0f;
@@ -95,58 +96,38 @@ public class SimpleCameraBounds : MonoBehaviour
         }
         else
         {
-            float distance = Mathf.Abs(transform.position.z - bgBounds.center.z);
+            float distance = Mathf.Abs(transform.position.z - combinedBounds.center.z);
             halfHeight = distance * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
             halfWidth = halfHeight * cam.aspect;
         }
 
-        float minX = bgBounds.min.x + halfWidth;
-        float maxX = bgBounds.max.x - halfWidth;
-        float minY = bgBounds.min.y + halfHeight;
-        float maxY = bgBounds.max.y - halfHeight;
-
-        // 防呆：如果背景比螢幕視野還小，鎖死在背景中心
-        if (minX > maxX) minX = maxX = bgBounds.center.x;
-        if (minY > maxY) minY = maxY = bgBounds.center.y;
-
         Vector3 pos = transform.position;
-        pos.x = Mathf.Clamp(pos.x, minX, maxX);
-        
-        if (clampYAxis)
+        Vector3 targetPos = pos;
+
+        // 限制 X 軸
+        float minX = combinedBounds.min.x + halfWidth;
+        float maxX = combinedBounds.max.x - halfWidth;
+        if (minX <= maxX)
         {
-            pos.y = Mathf.Clamp(pos.y, minY, maxY);
+            targetPos.x = Mathf.Clamp(pos.x, minX, maxX);
         }
 
-        transform.position = pos;
-    }
-
-    private Collider GetClosestBackgroundFromCache()
-    {
-        if (_cachedBackgrounds == null || _cachedBackgrounds.Length == 0) return null;
-
-        // 關鍵修復 2：計算距離必須使用【玩家的位置 (playerTransform)】而非【相機的位置 (transform.position)】！
-        // 否則相機卡在舊背景邊緣後，會永遠無法切換到玩家踩入的新背景！
-        Vector3 referencePos = (playerTransform != null) ? playerTransform.position : transform.position;
-
-        Collider closest = null;
-        float minDist = float.MaxValue;
-
-        foreach (Collider col in _cachedBackgrounds)
+        // 限制 Y 軸
+        if (clampYAxis && combinedBounds.size.y >= (halfHeight * 2f))
         {
-            if (col == null) continue;
-            
-            // 確保 isTrigger 為 true
-            if (!col.isTrigger) col.isTrigger = true;
-
-            Vector3 closestPt = col.bounds.ClosestPoint(referencePos);
-            float dist = Vector3.Distance(referencePos, closestPt);
-            
-            if (dist < minDist)
+            float minY = combinedBounds.min.y + halfHeight;
+            float maxY = combinedBounds.max.y - halfHeight;
+            if (minY <= maxY)
             {
-                minDist = dist;
-                closest = col;
+                targetPos.y = Mathf.Clamp(pos.y, minY, maxY);
             }
         }
-        return closest;
+
+        // 核心修正：徹底消滅站立時的微幅抖動/震盪 (Jittering)！
+        // 只有當限制後的邊界與當前位置差異大於極小值時才套用，避免與 Cinemachine 每幀爭奪座標導致的微幅跳動！
+        if (Mathf.Abs(pos.x - targetPos.x) > 0.001f || Mathf.Abs(pos.y - targetPos.y) > 0.001f)
+        {
+            transform.position = targetPos;
+        }
     }
 }

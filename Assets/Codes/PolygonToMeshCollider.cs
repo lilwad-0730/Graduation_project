@@ -103,11 +103,15 @@ public class PolygonToMeshCollider : MonoBehaviour
 
         meshCollider.sharedMesh = newMesh;
 
-        // 【新增】：讓生成的 3D 碰撞器繼承 2D 碰撞器的 IsTrigger 設定
-        // 注意：在 Unity 中，MeshCollider 必須開啟 Convex 才能勾選 IsTrigger
-        if (poly2D.isTrigger)
+        // 核心修復：強制 MeshCollider 設為 convex = true 與 isTrigger = true
+        // 避免在動態剛體 (Dynamic Rigidbody，如 Player) 底下作為非凸面 MeshCollider 導致 PhysX 物理引擎全體卡死！
+        meshCollider.convex = true;
+        if (poly2D != null && poly2D.isTrigger)
         {
-            meshCollider.convex = true;
+            meshCollider.isTrigger = true;
+        }
+        else if (transform.name.Contains("Shield") || transform.GetComponentInParent<PlayerShield>() != null)
+        {
             meshCollider.isTrigger = true;
         }
         else

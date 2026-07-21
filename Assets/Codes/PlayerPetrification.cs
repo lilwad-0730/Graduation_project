@@ -15,8 +15,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     public Color petrifyColor = new Color(0.2f, 0.2f, 0.2f, 1f);
 
     [Header("開局與重生防護")]
-    [Tooltip("開局或重生後，保護玩家免受石化的免疫時間 (秒，預設 3)")]
-    public float respawnGracePeriod = 3.0f;
+    [Tooltip("開局或重生後，保護玩家免受石化的免疫時間 (秒，預設 5)")]
+    public float respawnGracePeriod = 5.0f;
 
     [Header("狀態監控")]
     public int currentPetrifyCount = 0;
@@ -48,10 +48,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
         CacheOriginalRenderers();
 
-        // 核心修復：開局給予 3 秒安全免疫時間，確保玩家落地並可正常操控！
+        // 核心修復：開局給予 5 秒安全免疫時間，確保玩家順利落地並可移動！
         graceTimer = respawnGracePeriod;
         
-        // 確保剛體在開局絕對不是 Kinematic，允許受重力下落
         if (rb != null)
         {
             rb.isKinematic = false;
@@ -95,7 +94,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     /// </summary>
     public void Petrify()
     {
-        // 核心修復：若處於開局/重生保護期內，不執行石化，防範開局卡死在半空！
+        // 核心修復：若處於保護期內，不執行石化，防範開局卡死在半空！
         if (graceTimer > 0f)
         {
             return;
@@ -151,6 +150,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         
         isPetrified = false;
         Debug.Log("【石化系統】石化解除，玩家恢復行動！");
+
+        // 核心修復：解除石化後給予 3 秒免疫保護期，防止剛解除又被下一幀風吹秒石化！
+        graceTimer = 3.0f;
 
         // 恢復物理與動作
         if (rb != null)
