@@ -33,27 +33,52 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     private void Start()
     {
-        playerMovement = GetComponent<PlayerMovement>();
-        respawnSystem = GetComponent<PlayerRespawnSystem>();
-        rb = GetComponent<Rigidbody>();
+        EnsureComponents();
+        CacheOriginalRenderers();
+
+        // 開局給予免疫保護時間
+        graceTimer = respawnGracePeriod;
         
-        if (playerMovement != null)
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+        }
+    }
+
+    /// <summary>
+    /// 安全檢索所有核心組件 (相容跨層級與 Prefab 子物件結構)
+    /// </summary>
+    private void EnsureComponents()
+    {
+        if (playerMovement == null)
+        {
+            playerMovement = GetComponent<PlayerMovement>();
+            if (playerMovement == null) playerMovement = GetComponentInParent<PlayerMovement>();
+            if (playerMovement == null) playerMovement = GetComponentInChildren<PlayerMovement>();
+        }
+
+        if (respawnSystem == null)
+        {
+            respawnSystem = GetComponent<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
+            if (respawnSystem == null) respawnSystem = FindFirstObjectByType<PlayerRespawnSystem>();
+        }
+
+        if (rb == null)
+        {
+            rb = GetComponent<Rigidbody>();
+            if (rb == null) rb = GetComponentInParent<Rigidbody>();
+            if (rb == null) rb = GetComponentInChildren<Rigidbody>();
+        }
+
+        if (animator == null && playerMovement != null)
         {
             animator = playerMovement.animator;
         }
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
-        }
-
-        CacheOriginalRenderers();
-
-        // 核心修復：開局給予 5 秒安全免疫時間，確保玩家順利落地並可移動！
-        graceTimer = respawnGracePeriod;
-        
-        if (rb != null)
-        {
-            rb.isKinematic = false;
+            if (animator == null) animator = GetComponentInParent<Animator>();
         }
     }
 
@@ -94,12 +119,12 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     /// </summary>
     public void Petrify()
     {
-        // 核心修復：若處於保護期內，不執行石化，防範開局卡死在半空！
+        EnsureComponents();
+
+        // 若處於免疫保護期內，不執行石化
         if (graceTimer > 0f) return;
 
-        // 【重生防護 - 用 Static 旗標，不依賴物件參考，一定有效】
-        // 重生動畫需要 5.5 秒，期間若被風再次石化，重生結束後玩家會卡死。
-        // 用 static 全域旗標確保任何情況下都能正確阻擋。
+        // 全域重生防護：重生期間不允許重複石化
         if (PlayerRespawnSystem.IsAnyRespawning) return;
 
         if (isPetrified) return;
@@ -114,7 +139,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true; // 暫時鎖定物理
+            rb.isKinematic = true;
         }
 
         // 暫停動畫
@@ -150,26 +175,23 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     {
         if (!isPetrified) return;
         
+        EnsureComponents();
         isPetrified = false;
         Debug.Log("【石化系統】石化解除，玩家恢復行動！");
 
-        // 核心修復：解除石化後給予 3 秒免疫保護期，防止剛解除又被下一幀風吹秒石化！
         graceTimer = 3.0f;
 
-        // 恢復物理與動作
         if (rb != null)
         {
             rb.isKinematic = false;
         }
         if (playerMovement != null) playerMovement.enabled = true;
         
-        // 恢復動畫
         if (animator != null)
         {
             animator.speed = 1f;
         }
 
-        // 恢復原色
         ApplyPetrifyVisual(false);
     }
 
@@ -187,7 +209,14 @@ public class PlayerPetrification : MonoBehaviour, IResettable
                 }
                 else
                 {
-                    if (originalColors.TryGetValue(sr, out Color c)) sr.color = c;
+                    if (originalColors.TryGetValue(sr, out Color c))
+                    {
+                        sr.color = c;
+                    }
+                    else
+                    {
+                        sr.color = Color.white; // 備用方案：若快取失敗則強制還原為白色
+                    }
                 }
             }
             else
@@ -201,7 +230,14 @@ public class PlayerPetrification : MonoBehaviour, IResettable
                     }
                     else
                     {
-                        if (originalColors.TryGetValue(r, out Color c)) r.material.color = c;
+                        if (originalColors.TryGetValue(r, out Color c))
+                        {
+                            r.material.color = c;
+                        }
+                        else
+                        {
+                            r.material.color = Color.white;
+                        }
                     }
                 }
             }
@@ -211,61 +247,73 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     private IEnumerator DeathSequence()
     {
         yield return new WaitForSeconds(0.5f);
+        EnsureComponents();
+
         if (respawnSystem != null)
         {
             respawnSystem.TriggerRespawn();
         }
         else
         {
-            Debug.LogError("【石化系統】找不到 PlayerRespawnSystem，無法觸發重生！");
+            Debug.LogError("【石化系統】找不到 PlayerRespawnSystem，嘗試全域搜尋...");
+            PlayerRespawnSystem sys = FindFirstObjectByType<PlayerRespawnSystem>();
+            if (sys != null)
+            {
+                sys.TriggerRespawn();
+            }
         }
     }
 
     /// <summary>
-    /// 【重生專用規則】清除玩家身上所有負面效果，使其恢復完全正常的可操作狀態。
-    /// 此規則寫死：重生 = 完全乾淨的玩家。只給予 2 秒短暫保護防止落地瞬間被打，
-    /// 不影響正常遊戲中的石化機制。
+    /// 【重生專用寫死規則】完全清除玩家身上的所有負面狀態與石化效果。
+    /// 包含：物理解鎖 (isKinematic=false)、動作恢復 (PlayerMovement=true)、
+    /// 動畫恢復 (animator.speed=1.0)、顏色刷回原本貼圖、給予 5 秒免疫。
     /// </summary>
     public void ClearAllNegativeEffects()
     {
         StopAllCoroutines();
+        EnsureComponents();
+
         isPetrified = false;
         currentPetrifyCount = 0;
 
-        // 重生後只給 5 秒保護（從 2 秒延長），覆蓋完整重生動畫時長（約 5.5 秒）
+        // 給予 5 秒免疫防護，涵蓋重生過場全過程
         graceTimer = 5.0f;
 
+        // 1. 物理強制解鎖
         if (rb != null)
         {
             rb.isKinematic = false;
+            rb.useGravity = true;
             rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (animator != null) animator.speed = 1f;
 
-        // 清除石化視覺（恢復原本顏色）
+        // 2. 移動腳本與標記強制解鎖
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = true;
+            playerMovement.freezeHorizontal = false;
+            playerMovement.isCutsceneFrozen = false;
+            playerMovement.isStrictLockingX = false;
+            playerMovement.attachedWolvesCount = 0;
+        }
+
+        // 3. 動畫播放速度強制恢復
+        if (animator != null)
+        {
+            animator.speed = 1.0f;
+        }
+
+        // 4. 視覺強制還原正常貼圖顏色 (刷洗掉黑色)
         ApplyPetrifyVisual(false);
 
-        Debug.Log("【石化系統】重生：已清除所有負面效果，玩家恢復完全正常狀態。");
+        Debug.Log("【石化系統】重生規則生效：已徹底清除所有負面效果與石化狀態，玩家全面恢復正常！");
     }
 
-    // --- IResettable 實作 (場景重置用，非重生用) ---
+    // --- IResettable 實作 (場景重置用) ---
     public void ResetToInitialState()
     {
-        StopAllCoroutines();
-        isPetrified = false;
-        currentPetrifyCount = 0;
-        graceTimer = respawnGracePeriod; // 場景整體重置時才給予完整保護期
-        
-        // 恢復物理與狀態
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-        }
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (animator != null) animator.speed = 1f;
-
-        // 恢復原色
-        ApplyPetrifyVisual(false);
+        ClearAllNegativeEffects();
     }
 }

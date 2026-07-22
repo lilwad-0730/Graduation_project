@@ -56,9 +56,34 @@ public class PlayerRespawnSystem : MonoBehaviour
         "♪ You can do this! ♪" 
     };
 
+    private PlayerPetrification GetPetrification()
+    {
+        PlayerPetrification p = GetComponent<PlayerPetrification>();
+        if (p == null) p = GetComponentInChildren<PlayerPetrification>();
+        if (p == null) p = GetComponentInParent<PlayerPetrification>();
+        return p;
+    }
+
+    private PlayerMovement GetMovement()
+    {
+        PlayerMovement m = GetComponent<PlayerMovement>();
+        if (m == null) m = GetComponentInChildren<PlayerMovement>();
+        if (m == null) m = GetComponentInParent<PlayerMovement>();
+        return m;
+    }
+
+    private Rigidbody GetPlayerRigidbody()
+    {
+        if (_playerRb != null) return _playerRb;
+        _playerRb = GetComponent<Rigidbody>();
+        if (_playerRb == null) _playerRb = GetComponentInChildren<Rigidbody>();
+        if (_playerRb == null) _playerRb = GetComponentInParent<Rigidbody>();
+        return _playerRb;
+    }
+
     void Start()
     {
-        _playerRb = GetComponent<Rigidbody>();
+        _playerRb = GetPlayerRigidbody();
         _mainCam = Camera.main;
 
         // 起始點即為最基礎的安全點
@@ -239,16 +264,14 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.color = new Color(0, 0, 0, 1f);
 
         // --- 【重生規則】先清除所有負面效果，再傳送 ---
-        // 必須在 WarpTo 之前呼叫，確保傳送時 rb.isKinematic 已解除，
-        // PlayerMovement 已啟用，玩家落地後受重力正常運作。
-        PlayerPetrification petrify = GetComponent<PlayerPetrification>();
+        PlayerPetrification petrify = GetPetrification();
         if (petrify != null)
         {
             petrify.ClearAllNegativeEffects();
         }
 
         // --- 傳送至最後著陸的安全點 ---
-        PlayerMovement pmComponent = GetComponent<PlayerMovement>();
+        PlayerMovement pmComponent = GetMovement();
         Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
         if (pmComponent != null)
         {
@@ -323,16 +346,26 @@ public class PlayerRespawnSystem : MonoBehaviour
         // graceTimer 是剛刷新的 5 秒，風無法在該瞬間立即石化玩家。
         // 這是解決「重生後立刻被石化」的根本修復。
         // ===================================================================
-        PlayerPetrification petrifyFinal = GetComponent<PlayerPetrification>();
+        PlayerPetrification petrifyFinal = GetPetrification();
         if (petrifyFinal != null)
         {
             petrifyFinal.ClearAllNegativeEffects(); // graceTimer 刷新為 5 秒
         }
 
         // 確保 Rigidbody 和 PlayerMovement 正常
-        if (_playerRb != null) _playerRb.isKinematic = false;
-        PlayerMovement pm = GetComponent<PlayerMovement>();
-        if (pm != null) { pm.enabled = true; pm.freezeHorizontal = false; pm.isCutsceneFrozen = false; }
+        Rigidbody rbComp = GetPlayerRigidbody();
+        if (rbComp != null)
+        {
+            rbComp.isKinematic = false;
+            rbComp.useGravity = true;
+        }
+        PlayerMovement pm = GetMovement();
+        if (pm != null)
+        {
+            pm.enabled = true;
+            pm.freezeHorizontal = false;
+            pm.isCutsceneFrozen = false;
+        }
 
         // 現在才解除重生旗標（此時 graceTimer=5s，風無法立即石化）
         _isRespawning = false;
