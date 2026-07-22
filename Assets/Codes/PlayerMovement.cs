@@ -159,6 +159,25 @@ public class PlayerMovement : MonoBehaviour
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
 
+        // 【除錯診斷 LOG】：當玩家嘗試按下移動或跳躍鍵時，在 Console 印出目前所有的解鎖狀態與數值
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W) || 
+            Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            PlayerPetrification petr = GetComponent<PlayerPetrification>();
+            if (petr == null) petr = GetComponentInChildren<PlayerPetrification>();
+            Debug.Log($"【移動診斷 LOG】玩家按下按鍵！\n" +
+                      $" - 座標 Position: {transform.position}\n" +
+                      $" - Rigidbody.isKinematic: {(rb != null ? rb.isKinematic.ToString() : "NULL")}\n" +
+                      $" - PlayerMovement.enabled: {this.enabled}\n" +
+                      $" - isGrounded: {isGrounded}\n" +
+                      $" - freezeHorizontal: {freezeHorizontal}\n" +
+                      $" - isCutsceneFrozen: {isCutsceneFrozen}\n" +
+                      $" - isStrictLockingX: {isStrictLockingX}\n" +
+                      $" - 石化狀態 isPetrified: {(petr != null ? petr.isPetrified.ToString() : "無石化組件")}\n" +
+                      $" - 當前速度 currentSpeed: {currentSpeed}\n" +
+                      $" - 剛體速度 velocity: {(rb != null ? rb.linearVelocity.ToString() : "NULL")}");
+        }
+
         // ==========================================
         // 1. 超穩定地面偵測 (使用 BoxCast 防止微小抖動)
         // ==========================================

@@ -308,7 +308,12 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         // 4. 視覺強制還原正常貼圖顏色 (刷洗掉黑色)
         ApplyPetrifyVisual(false);
 
-        Debug.Log("【石化系統】重生規則生效：已徹底清除所有負面效果與石化狀態，玩家全面恢復正常！");
+        Debug.Log($"【石化診斷 LOG】ClearAllNegativeEffects() 執行完成！\n" +
+                  $" - isPetrified: {isPetrified}\n" +
+                  $" - currentPetrifyCount: {currentPetrifyCount}\n" +
+                  $" - graceTimer: {graceTimer}\n" +
+                  $" - Rigidbody.isKinematic: {(rb != null ? rb.isKinematic.ToString() : "NULL")}\n" +
+                  $" - PlayerMovement.enabled: {(playerMovement != null ? playerMovement.enabled.ToString() : "NULL")}");
     }
 
     // --- IResettable 實作 (場景重置用) ---
