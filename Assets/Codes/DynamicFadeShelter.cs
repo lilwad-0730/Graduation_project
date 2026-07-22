@@ -104,12 +104,17 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
                 if (fadeOutPct < 0.2f && shelterCollider != null && shelterCollider.enabled)
                 {
                     shelterCollider.enabled = false;
+                    // 【修復 Unity 已知問題】：Collider 被程式停用時 OnTriggerExit 不會觸發，
+                    // 導致 IsPlayerSheltered 永遠卡在 true，玩家從此不會被石化。
+                    // 強制在此重置保護狀態，確保掩體消失後石化機制恢復正常。
+                    WindGustSystem.IsPlayerSheltered = false;
                 }
 
                 if (cycleTimer >= fadeOutDuration)
                 {
                     SetAlpha(0.0f);
                     if (shelterCollider != null) shelterCollider.enabled = false;
+                    WindGustSystem.IsPlayerSheltered = false; // 保險：確保完全消失時也重置
                     currentState = ShelterFadeState.Inactive;
                     cycleTimer = 0f;
                 }

@@ -22,7 +22,9 @@ public class PlayerRespawnSystem : MonoBehaviour
     public float blackScreenTime = 2.5f;
 
     // --- 內部狀態追蹤 ---
-    private bool _isRespawning = false; 
+    private bool _isRespawning = false;
+    /// <summary>供外部腳本查詢目前是否正在重生過程中（例如石化系統用來阻擋重生期間被再次石化）</summary>
+    public bool IsRespawning => _isRespawning;
     private bool _isTeleporting = false;
     private Rigidbody _playerRb;
     private Camera _mainCam;
