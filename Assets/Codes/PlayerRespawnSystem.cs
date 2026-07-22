@@ -203,9 +203,10 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發死亡重生轉場 (預設傳送到最後安全點)
     public void TriggerRespawn()
     {
-        if (!this.enabled) return;
+        this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
         if (!_isRespawning)
         {
+            Debug.Log("【重生系統】TriggerRespawn() 正式被呼叫！開始啟動 RespawnSequence...");
             StartCoroutine(RespawnSequence(_lastSafeGroundPos));
         }
     }
@@ -213,9 +214,10 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
-        if (!this.enabled) return;
+        this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
         if (!_isRespawning)
         {
+            Debug.Log($"【重生系統】TriggerRespawn({customSpawnPos}) 正式被呼叫！開始啟動 RespawnSequence...");
             StartCoroutine(RespawnSequence(customSpawnPos));
         }
     }

@@ -246,20 +246,28 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     private IEnumerator DeathSequence()
     {
+        Debug.LogWarning("【石化系統】玩家達到最大石化次數 (3/3)，開始啟動 0.5 秒 DeathSequence...");
         yield return new WaitForSeconds(0.5f);
         EnsureComponents();
 
         if (respawnSystem != null)
         {
+            Debug.Log("【石化系統】已找到 PlayerRespawnSystem，強制啟動並觸發 TriggerRespawn()...");
+            respawnSystem.enabled = true;
             respawnSystem.TriggerRespawn();
         }
         else
         {
-            Debug.LogError("【石化系統】找不到 PlayerRespawnSystem，嘗試全域搜尋...");
+            Debug.LogError("【石化系統】找不到本地 PlayerRespawnSystem，嘗試全域搜尋...");
             PlayerRespawnSystem sys = FindFirstObjectByType<PlayerRespawnSystem>();
             if (sys != null)
             {
+                sys.enabled = true;
                 sys.TriggerRespawn();
+            }
+            else
+            {
+                Debug.LogError("【石化系統致命錯誤】場景中「完全沒有」PlayerRespawnSystem，請確認是否有掛載該腳本！");
             }
         }
     }
