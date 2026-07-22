@@ -129,7 +129,12 @@ public class PlayerMovement : MonoBehaviour
         }
         _lastFramePos = transform.position;
 
-        // 1. 偵測地面狀態 (極簡化版，後續由 BoxCast 決定精確的 isGrounded)
+        // 補強組件檢索
+        if (playerCollider == null) playerCollider = GetComponent<Collider>();
+        if (playerCollider == null) playerCollider = GetComponentInChildren<Collider>();
+        if (playerCollider == null) playerCollider = GetComponentInParent<Collider>();
+
+        // 1. 偵測地面狀態 (若 playerCollider 為空則啟用 Raycast Fallback)
         bool preliminaryGrounded = false;
         if (playerCollider != null)
         {
@@ -137,24 +142,34 @@ public class PlayerMovement : MonoBehaviour
             Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
             preliminaryGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
         }
+        else
+        {
+            preliminaryGrounded = Physics.Raycast(transform.position, Vector3.down, 1.5f, ~0, QueryTriggerInteraction.Ignore);
+        }
 
         // ==========================================
-        // 處理水平移動與最高層級墜落鎖定 (必須先計算 moveInput 供後續動畫使用)
+        // 處理水平移動與最高層級墜落鎖定
         // ==========================================
-        
-        // 判斷是否處於掉落的背景中
         bool isInDropZone = freezeHorizontal;
-
-        // 【防呆機制】：只有在掉落背景且真的雙腳離地、並且「正在往下掉」時，才準備鎖定
         bool actuallyFreeze = isInDropZone && !preliminaryGrounded && rb.linearVelocity.y < 0f;
         
-        // 如果被劇情鎖定，則無條件取消所有玩家輸入；否則同時支援 Input Axis 與 KeyCode 物理按鍵直讀
-        float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : Input.GetAxis("Horizontal"); 
-        if (moveInput == 0f && !actuallyFreeze && !isCutsceneFrozen)
+        // 讀取玩家輸入
+        float rawInput = Input.GetAxis("Horizontal");
+        if (rawInput == 0f)
         {
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) moveInput = 1f;
-            else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) moveInput = -1f;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) rawInput = 1f;
+            else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
         }
+
+        // 【最高解鎖規則】：若玩家主動按下按鍵要移動，無條件強制解鎖所有 X 軸與掉落鎖死！
+        if (Mathf.Abs(rawInput) > 0.1f && !isCutsceneFrozen)
+        {
+            isStrictLockingX = false;
+            freezeHorizontal = false;
+            actuallyFreeze = false;
+        }
+
+        float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : rawInput;
 
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -169,7 +184,7 @@ public class PlayerMovement : MonoBehaviour
                       $" - 座標 Position: {transform.position}\n" +
                       $" - Rigidbody.isKinematic: {(rb != null ? rb.isKinematic.ToString() : "NULL")}\n" +
                       $" - PlayerMovement.enabled: {this.enabled}\n" +
-                      $" - isGrounded: {isGrounded}\n" +
+                      $" - isGrounded: {preliminaryGrounded}\n" +
                       $" - freezeHorizontal: {freezeHorizontal}\n" +
                       $" - isCutsceneFrozen: {isCutsceneFrozen}\n" +
                       $" - isStrictLockingX: {isStrictLockingX}\n" +
