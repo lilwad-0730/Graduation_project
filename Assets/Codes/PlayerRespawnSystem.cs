@@ -306,11 +306,19 @@ public class PlayerRespawnSystem : MonoBehaviour
         _isRespawning = false;
         _isWaitingForPlayerMove = true; 
 
-        // 【新增】確保重生後，玩家一定能恢復移動
+        // 【修復】確保重生後，玩家一定能恢復移動
         PlayerMovement pm = GetComponent<PlayerMovement>();
         if (pm != null)
         {
             pm.freezeHorizontal = false;
+        }
+
+        // 【重生規則】清除玩家身上所有負面效果，恢復完全正常狀態
+        // 此為寫死規則：重生 = 乾淨的玩家，包含石化、isKinematic、顏色全部清除
+        PlayerPetrification petrify = GetComponent<PlayerPetrification>();
+        if (petrify != null)
+        {
+            petrify.ClearAllNegativeEffects();
         }
     }
 

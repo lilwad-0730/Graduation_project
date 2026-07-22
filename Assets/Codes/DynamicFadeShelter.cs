@@ -3,6 +3,7 @@ using System.Collections;
 
 /// <summary>
 /// 控制掩體（如真/假掩體）週期性「漸顯、存在、漸暗、消失」的規律循環，並自動在消失時停用碰撞偵測。
+/// 支援：Built-in Shader (_Color)、URP Shader (_BaseColor)、以及純 MeshRenderer 開關（無透明材質備用方案）。
 /// </summary>
 public class DynamicFadeShelter : MonoBehaviour, IResettable
 {
@@ -16,21 +17,68 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
     [Tooltip("漸顯（出現）的持續時間 (秒)")]
     public float fadeInDuration = 1.5f;
 
+    // 自動偵測材質類型
+    private enum MaterialMode { None, BuiltinColor, URPBaseColor, RendererToggle }
+    private MaterialMode materialMode = MaterialMode.None;
+
+    // 抓取 Collider（含子物件，相容 WindShelter 掛在子物件的結構）
     private Collider shelterCollider;
     private SpriteRenderer[] spriteRenderers;
     private Renderer[] meshRenderers;
-    
+
     private float cycleTimer = 0f;
     private enum ShelterFadeState { Active, FadingOut, Inactive, FadingIn }
     private ShelterFadeState currentState = ShelterFadeState.Active;
 
     private void Start()
     {
-        shelterCollider = GetComponent<Collider>();
+        // 【修復】改用 GetComponentInChildren，相容 WindShelter Trigger 在子物件的場景結構
+        shelterCollider = GetComponentInChildren<Collider>();
         spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
         meshRenderers = GetComponentsInChildren<Renderer>(true);
 
+        // 自動偵測此物件的材質類型，決定要用哪種方式改透明度
+        DetectMaterialMode();
+
         ResetToStart();
+    }
+
+    /// <summary>
+    /// 自動偵測材質支援哪種透明度屬性，決定漸隱漸顯的實作方式。
+    /// </summary>
+    private void DetectMaterialMode()
+    {
+        foreach (var mr in meshRenderers)
+        {
+            if (mr == null || mr is SpriteRenderer) continue;
+            if (mr.sharedMaterial == null) continue;
+
+            if (mr.sharedMaterial.HasProperty("_BaseColor"))
+            {
+                // URP Shader (Lit, Unlit 等)
+                materialMode = MaterialMode.URPBaseColor;
+                return;
+            }
+            if (mr.sharedMaterial.HasProperty("_Color"))
+            {
+                // Built-in Shader (Standard, Legacy 等)
+                materialMode = MaterialMode.BuiltinColor;
+                return;
+            }
+        }
+
+        if (spriteRenderers.Length > 0)
+        {
+            // 有 SpriteRenderer，走 SpriteRenderer 透明度
+            materialMode = MaterialMode.BuiltinColor;
+            return;
+        }
+
+        // 以上都不支援時，fallback：直接開關 MeshRenderer（無漸變，但至少能出現消失）
+        materialMode = MaterialMode.RendererToggle;
+        Debug.LogWarning($"[DynamicFadeShelter] '{gameObject.name}' 的材質不支援透明度，" +
+                         "將改用 MeshRenderer 開關模式（無漸變效果）。\n" +
+                         "若要有漸變效果，請將材質的 Surface Type 改為 Transparent（URP）或 Fade（Built-in）。");
     }
 
     private void Update()
@@ -99,20 +147,38 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
 
     private void SetAlpha(float alpha)
     {
+        // --- SpriteRenderer 透明度 ---
         foreach (var sr in spriteRenderers)
         {
-            if (sr != null)
-            {
-                Color c = sr.color;
-                c.a = alpha;
-                sr.color = c;
-            }
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = alpha;
+            sr.color = c;
         }
 
+        // --- MeshRenderer 透明度（根據偵測到的模式處理）---
         foreach (var mr in meshRenderers)
         {
-            if (mr != null && !(mr is SpriteRenderer))
+            if (mr == null || mr is SpriteRenderer) continue;
+
+            if (materialMode == MaterialMode.RendererToggle)
             {
+                // 無透明材質時：0 = 關閉 Renderer，1 = 開啟 Renderer
+                mr.enabled = alpha > 0.01f;
+            }
+            else if (materialMode == MaterialMode.URPBaseColor)
+            {
+                // URP Shader：屬性名稱為 _BaseColor
+                if (mr.material != null && mr.material.HasProperty("_BaseColor"))
+                {
+                    Color c = mr.material.GetColor("_BaseColor");
+                    c.a = alpha;
+                    mr.material.SetColor("_BaseColor", c);
+                }
+            }
+            else if (materialMode == MaterialMode.BuiltinColor)
+            {
+                // Built-in Shader：屬性名稱為 _Color
                 if (mr.material != null && mr.material.HasProperty("_Color"))
                 {
                     Color c = mr.material.color;

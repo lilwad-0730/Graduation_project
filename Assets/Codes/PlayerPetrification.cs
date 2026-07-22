@@ -219,13 +219,41 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         }
     }
 
-    // --- IResettable 實作 ---
+    /// <summary>
+    /// 【重生專用規則】清除玩家身上所有負面效果，使其恢復完全正常的可操作狀態。
+    /// 此規則寫死：重生 = 完全乾淨的玩家。只給予 2 秒短暫保護防止落地瞬間被打，
+    /// 不影響正常遊戲中的石化機制。
+    /// </summary>
+    public void ClearAllNegativeEffects()
+    {
+        StopAllCoroutines();
+        isPetrified = false;
+        currentPetrifyCount = 0;
+
+        // 重生後只給 2 秒短暫保護，讓玩家安全落地即可，不長期免疫石化
+        graceTimer = 2.0f;
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+        }
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (animator != null) animator.speed = 1f;
+
+        // 清除石化視覺（恢復原本顏色）
+        ApplyPetrifyVisual(false);
+
+        Debug.Log("【石化系統】重生：已清除所有負面效果，玩家恢復完全正常狀態。");
+    }
+
+    // --- IResettable 實作 (場景重置用，非重生用) ---
     public void ResetToInitialState()
     {
         StopAllCoroutines();
         isPetrified = false;
         currentPetrifyCount = 0;
-        graceTimer = respawnGracePeriod; // 重生時重置免疫時間
+        graceTimer = respawnGracePeriod; // 場景整體重置時才給予完整保護期
         
         // 恢復物理與狀態
         if (rb != null)
