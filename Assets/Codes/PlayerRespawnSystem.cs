@@ -233,6 +233,15 @@ public class PlayerRespawnSystem : MonoBehaviour
         if (_fadeImage != null)
             _fadeImage.color = new Color(0, 0, 0, 1f);
 
+        // --- 【重生規則】先清除所有負面效果，再傳送 ---
+        // 必須在 WarpTo 之前呼叫，確保傳送時 rb.isKinematic 已解除，
+        // PlayerMovement 已啟用，玩家落地後受重力正常運作。
+        PlayerPetrification petrify = GetComponent<PlayerPetrification>();
+        if (petrify != null)
+        {
+            petrify.ClearAllNegativeEffects();
+        }
+
         // --- 傳送至最後著陸的安全點 ---
         PlayerMovement pmComponent = GetComponent<PlayerMovement>();
         Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
@@ -306,19 +315,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         _isRespawning = false;
         _isWaitingForPlayerMove = true; 
 
-        // 【修復】確保重生後，玩家一定能恢復移動
+        // 保險：確保移動不被鎖住
         PlayerMovement pm = GetComponent<PlayerMovement>();
         if (pm != null)
         {
             pm.freezeHorizontal = false;
-        }
-
-        // 【重生規則】清除玩家身上所有負面效果，恢復完全正常狀態
-        // 此為寫死規則：重生 = 乾淨的玩家，包含石化、isKinematic、顏色全部清除
-        PlayerPetrification petrify = GetComponent<PlayerPetrification>();
-        if (petrify != null)
-        {
-            petrify.ClearAllNegativeEffects();
+            pm.isCutsceneFrozen = false;
         }
     }
 
