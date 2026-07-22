@@ -108,10 +108,24 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             audioSource.playOnAwake = false;
         }
 
+        // 多重搜尋策略：防止 Player 沒設 Tag 導致抓不到物件
         if (playerTrans == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null) playerTrans = playerObj.transform;
+            if (playerObj != null)
+            {
+                playerTrans = playerObj.transform;
+            }
+            else
+            {
+                PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
+                if (pm != null) playerTrans = pm.transform;
+                else
+                {
+                    PlayerRespawnSystem sys = FindFirstObjectByType<PlayerRespawnSystem>();
+                    if (sys != null) playerTrans = sys.transform;
+                }
+            }
         }
     }
 
@@ -124,14 +138,24 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
             if (playerTrans != null)
             {
-                float dist = Vector3.Distance(transform.position, playerTrans.position);
-                if (dist <= detectionRange)
+                // 計算 2.5D 水平距離與 3D 距離 (防止天空高處的鳥因為 Y 軸落差過大而無法觸發)
+                float xDist = Mathf.Abs(transform.position.x - playerTrans.position.x);
+                float totalDist = Vector3.Distance(transform.position, playerTrans.position);
+
+                if (xDist <= detectionRange || totalDist <= detectionRange)
                 {
-                    Debug.Log($"【鳥群系統】玩家進入偵測範圍 ({dist:F1}m <= {detectionRange}m)！{gameObject.name} 發起俯衝攻擊！");
+                    Debug.LogWarning($"【鳥群系統】玩家進入偵測範圍 (水平距離 {xDist:F1}m <= {detectionRange}m)！{gameObject.name} 正式發起俯衝攻擊！");
                     StartAttackSequence();
                 }
             }
         }
+    }
+
+    // 在 Scene 視窗繪製可視化感應範圍圈
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 
     /// <summary>
