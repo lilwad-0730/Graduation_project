@@ -15,13 +15,12 @@ public class CreateSeaweedParent
         var target = GameObject.Find("little seaweed 4");
         if (target == null)
         {
-            Debug.LogWarning("little seaweed 4 not found!");
+            // 非海底場景不輸出警告，避免 Console 混亂
             return;
         }
 
         if (target.transform.parent != null && target.transform.parent.name.EndsWith("_Parent"))
         {
-            Debug.Log("little seaweed 4 already has a Parent object.");
             return;
         }
 
