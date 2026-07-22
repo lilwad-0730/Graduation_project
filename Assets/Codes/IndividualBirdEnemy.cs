@@ -3,6 +3,11 @@ using System.Collections;
 
 public enum BirdBehavior { DirectPlayer, PlayerOffset, HomingPlayer }
 
+/// <summary>
+/// 個別鳥類敵人控制器：
+/// 1. 支援程式碼強行接管並播放各種動畫 (Idle, 警報, 俯衝, 撞地卡住, 死亡/彈飛)。
+/// 2. 支援發出聲音警報 ➔ 高速俯衝 ➔ 撞擊護盾彈飛 / 撞擊玩家石化 / 撞擊地面卡住消退。
+/// </summary>
 public class IndividualBirdEnemy : MonoBehaviour, IResettable
 {
     [Header("鳥類敵人類型與移動")]
@@ -25,12 +30,29 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("卡住後漸暗消失的時間 (秒，預設 1)")]
     public float fadeDuration = 1f;
 
+    [Header("動畫控制 (可直接在 Inspector 指定狀態區塊名稱)")]
+    [Tooltip("待機/盤旋動畫名稱 (預設 flyStraight)")]
+    public string idleAnimName = "flyStraight";
+
+    [Tooltip("警報/準備俯衝動畫名稱 (預設 worried 或 watch01)")]
+    public string warningAnimName = "worried";
+
+    [Tooltip("高速俯衝動畫名稱 (預設 flyStraight)")]
+    public string diveAnimName = "flyStraight";
+
+    [Tooltip("撞地卡住動畫名稱 (預設 landing 或 peck)")]
+    public string stuckAnimName = "landing";
+
+    [Tooltip("被護盾彈飛/死亡動畫名稱 (預設 die)")]
+    public string dieAnimName = "die";
+
     [Header("音效設定")]
     [Tooltip("俯衝前發出的叫聲音效")]
     public AudioClip warningClip;
 
     private AudioSource audioSource;
     private Rigidbody rb;
+    private Animator animator;
     private SpriteRenderer spriteRenderer;
     private Renderer meshRenderer;
     
@@ -48,9 +70,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         rb = GetComponent<Rigidbody>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         
-        // 預設物理關閉重力，不受干擾
         rb.useGravity = false;
         rb.isKinematic = true;
+
+        // 自動搜尋 Animator (支援本體與子物件)
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
 
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         meshRenderer = GetComponentInChildren<Renderer>();
@@ -64,6 +89,28 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         originalPosition = transform.position;
         originalRotation = transform.rotation;
+
+        // 預設播放待機飛行動畫
+        PlayAnim(idleAnimName);
+    }
+
+    /// <summary>
+    /// 【程式控制動畫核心方法】：根據傳入的動畫區塊名稱，強制動態切換播放！
+    /// </summary>
+    public void PlayAnim(string animName)
+    {
+        if (animator == null || string.IsNullOrEmpty(animName)) return;
+
+        // 若 Animator 內有對應狀態，直接進行 CrossFade 過渡切換
+        if (animator.HasState(0, Animator.StringToHash(animName)))
+        {
+            animator.CrossFade(animName, 0.1f);
+        }
+        else
+        {
+            // 若為 FBX 自帶的預設 Clip，嘗試用 Play 播放
+            animator.Play(animName);
+        }
     }
 
     /// <summary>
@@ -89,16 +136,20 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         currentState = BirdState.Warning;
         
-        // 1. 播放警告叫聲
+        // 1. 程式切換為警報動畫 (例如 worried/watch01)
+        PlayAnim(warningAnimName);
+
+        // 2. 播放叫聲
         if (audioSource != null && warningClip != null)
         {
             audioSource.PlayOneShot(warningClip);
         }
 
-        // 2. 警報期等待
+        // 3. 警報期等待
         yield return new WaitForSeconds(warningDuration);
 
-        // 3. 進入俯衝
+        // 4. 程式切換為俯衝飛行動畫
+        PlayAnim(diveAnimName);
         currentState = BirdState.Diving;
         rb.isKinematic = false;
 
@@ -111,12 +162,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             targetPosition = transform.position + Vector3.down * 15f;
         }
 
-        // 4. 持續朝目標飛行，直到碰撞發生
+        // 5. 持續朝目標飛行，直到碰撞發生
         while (currentState == BirdState.Diving)
         {
             if (behaviorType == BirdBehavior.HomingPlayer && playerTrans != null)
             {
-                // 鎖定追逐模式下，每幀更新目標點至玩家最新位置
                 targetPosition = playerTrans.position;
             }
 
@@ -147,7 +197,6 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 break;
 
             case BirdBehavior.PlayerOffset:
-                // 隨機在玩家的 X + 5 或 X - 5 處俯衝，製造不確定隨機感
                 float xOffset = Random.value > 0.5f ? targetOffset : -targetOffset;
                 targetPosition = new Vector3(playerPos.x + xOffset, playerPos.y, playerPos.z);
                 break;
@@ -159,7 +208,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 當撞擊地面物件時觸發 (由地面物件掛載的 GroundCollisionNotifier 回傳)
+    /// 當撞擊地面物件時觸發
     /// </summary>
     public void OnHitGround()
     {
@@ -168,6 +217,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         currentState = BirdState.Stuck;
         rb.linearVelocity = Vector3.zero;
         rb.isKinematic = true;
+
+        // 程式切換為撞地/降落動畫 (如 landing 或 peck)
+        PlayAnim(stuckAnimName);
 
         Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地面，卡住 {stuckDuration} 秒後開始消失。");
         StartCoroutine(FadeAndDestroyCoroutine());
@@ -205,17 +257,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        HandleCollision(collision.gameObject);
-    }
-
     private void OnTriggerEnter(Collider other)
-    {
-        HandleCollision(other.gameObject);
-    }
-
-    private void HandleCollision(GameObject other)
     {
         if (currentState != BirdState.Diving) return;
 
@@ -248,30 +290,32 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private void BounceOff(PlayerShield shield)
     {
         currentState = BirdState.Bounced;
-        rb.isKinematic = false;
-        rb.useGravity = true; // 彈開後加重力
+        rb.linearVelocity = Vector3.zero;
+        
+        // 程式切換為死亡/彈飛動畫 (如 die)
+        PlayAnim(dieAnimName);
 
-        // 力道彈開方向：遠離護盾中心朝向鳥的方向，並強行往上拋
-        Vector3 bounceDir = (transform.position - shield.transform.position).normalized;
-        bounceDir.y = Mathf.Abs(bounceDir.y) + 0.5f; 
-        bounceDir = bounceDir.normalized;
+        // 向後上方反彈
+        Vector3 bounceDir = (transform.position - shield.transform.position).normalized + Vector3.up * 0.5f;
+        rb.AddForce(bounceDir * shield.knockbackForce, ForceMode.Impulse);
 
-        rb.linearVelocity = bounceDir * shield.knockbackForce;
-        Debug.LogWarning($"【鳥群系統】{gameObject.name} 碰撞到護盾被彈飛！擊退力道：{shield.knockbackForce}");
-
-        Destroy(gameObject, 2f);
+        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊玩家護盾！成功彈飛！");
+        Destroy(gameObject, 1.5f);
     }
 
     // --- IResettable 實作 ---
     public void ResetToInitialState()
     {
         StopAllCoroutines();
-        rb.linearVelocity = Vector3.zero;
-        rb.isKinematic = true;
-        rb.useGravity = false;
+        currentState = BirdState.Idle;
         transform.position = originalPosition;
         transform.rotation = originalRotation;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
         SetAlpha(1.0f);
-        currentState = BirdState.Idle;
+        PlayAnim(idleAnimName);
     }
 }
