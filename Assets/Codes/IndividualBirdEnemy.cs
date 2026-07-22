@@ -5,11 +5,19 @@ public enum BirdBehavior { DirectPlayer, PlayerOffset, HomingPlayer }
 
 /// <summary>
 /// 個別鳥類敵人控制器：
-/// 1. 支援程式碼強行接管並播放各種動畫 (Idle, 警報, 俯衝, 撞地卡住, 死亡/彈飛)。
-/// 2. 支援發出聲音警報 ➔ 高速俯衝 ➔ 撞擊護盾彈飛 / 撞擊玩家石化 / 撞擊地面卡住消退。
+/// 1. 自動偵測玩家距離 (detectionRange)：玩家靠近自動發出警報並俯衝！
+/// 2. 相容 living birds 的動畫控制器 (flying, worried, landing, die)。
+/// 3. 發出叫聲警報 ➔ 高速俯衝 ➔ 撞擊護盾彈飛 / 撞擊玩家石化 / 撞擊地面卡住消退。
 /// </summary>
 public class IndividualBirdEnemy : MonoBehaviour, IResettable
 {
+    [Header("自動偵測玩家攻擊")]
+    [Tooltip("是否在玩家進入範圍時自動引爆俯衝攻擊？(預設開啟)")]
+    public bool autoDetectPlayer = true;
+
+    [Tooltip("自動偵測玩家的攻擊距離 (米，預設 12)")]
+    public float detectionRange = 12f;
+
     [Header("鳥類敵人類型與移動")]
     [Tooltip("此隻鳥的俯衝行為類型")]
     public BirdBehavior behaviorType = BirdBehavior.DirectPlayer;
@@ -30,17 +38,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("卡住後漸暗消失的時間 (秒，預設 1)")]
     public float fadeDuration = 1f;
 
-    [Header("動畫控制 (可直接在 Inspector 指定狀態區塊名稱)")]
-    [Tooltip("待機/盤旋動畫名稱 (預設 flyStraight)")]
-    public string idleAnimName = "flyStraight";
+    [Header("動畫控制 (對應 living birds 的真實動畫 State 名稱)")]
+    [Tooltip("待機/盤旋動畫名稱 (預設 flying)")]
+    public string idleAnimName = "flying";
 
-    [Tooltip("警報/準備俯衝動畫名稱 (預設 worried 或 watch01)")]
+    [Tooltip("警報/準備俯衝動畫名稱 (預設 worried)")]
     public string warningAnimName = "worried";
 
-    [Tooltip("高速俯衝動畫名稱 (預設 flyStraight)")]
-    public string diveAnimName = "flyStraight";
+    [Tooltip("高速俯衝動畫名稱 (預設 flying)")]
+    public string diveAnimName = "flying";
 
-    [Tooltip("撞地卡住動畫名稱 (預設 landing 或 peck)")]
+    [Tooltip("撞地卡住動畫名稱 (預設 landing)")]
     public string stuckAnimName = "landing";
 
     [Tooltip("被護盾彈飛/死亡動畫名稱 (預設 die)")]
@@ -73,43 +81,90 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         rb.useGravity = false;
         rb.isKinematic = true;
 
-        // 自動搜尋 Animator (支援本體與子物件)
-        animator = GetComponent<Animator>();
-        if (animator == null) animator = GetComponentInChildren<Animator>();
-
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        meshRenderer = GetComponentInChildren<Renderer>();
-
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.playOnAwake = false;
-
-        GameObject playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null) playerTrans = playerObj.transform;
+        EnsureComponents();
 
         originalPosition = transform.position;
         originalRotation = transform.rotation;
 
-        // 預設播放待機飛行動畫
+        // 預設播放待機飛行動畫 (flying)
         PlayAnim(idleAnimName);
     }
 
+    private void EnsureComponents()
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator == null) animator = GetComponentInChildren<Animator>();
+        }
+
+        if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (meshRenderer == null) meshRenderer = GetComponentInChildren<Renderer>();
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+        }
+
+        if (playerTrans == null)
+        {
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null) playerTrans = playerObj.transform;
+        }
+    }
+
+    private void Update()
+    {
+        // 核心修復 1：自動偵測玩家距離並觸發俯衝
+        if (autoDetectPlayer && currentState == BirdState.Idle)
+        {
+            if (playerTrans == null) EnsureComponents();
+
+            if (playerTrans != null)
+            {
+                float dist = Vector3.Distance(transform.position, playerTrans.position);
+                if (dist <= detectionRange)
+                {
+                    Debug.Log($"【鳥群系統】玩家進入偵測範圍 ({dist:F1}m <= {detectionRange}m)！{gameObject.name} 發起俯衝攻擊！");
+                    StartAttackSequence();
+                }
+            }
+        }
+    }
+
     /// <summary>
-    /// 【程式控制動畫核心方法】：根據傳入的動畫區塊名稱，強制動態切換播放！
+    /// 【程式控制動畫核心方法】：自動適應 living birds 動畫 State 名稱並切換播放！
     /// </summary>
     public void PlayAnim(string animName)
     {
+        if (animator == null) EnsureComponents();
         if (animator == null || string.IsNullOrEmpty(animName)) return;
 
-        // 若 Animator 內有對應狀態，直接進行 CrossFade 過渡切換
-        if (animator.HasState(0, Animator.StringToHash(animName)))
+        // 相容性別名對應
+        string targetName = animName;
+        if (targetName == "flyStraight") targetName = "flying";
+
+        // 嘗試在主層級與子物件的 Animator 播放
+        Animator[] animators = GetComponentsInChildren<Animator>(true);
+        foreach (var anim in animators)
         {
-            animator.CrossFade(animName, 0.1f);
-        }
-        else
-        {
-            // 若為 FBX 自帶的預設 Clip，嘗試用 Play 播放
-            animator.Play(animName);
+            if (anim == null) continue;
+            anim.speed = 1f;
+
+            if (anim.HasState(0, Animator.StringToHash(targetName)))
+            {
+                anim.CrossFade(targetName, 0.1f);
+            }
+            else if (anim.HasState(0, Animator.StringToHash("flying")))
+            {
+                anim.CrossFade("flying", 0.1f);
+            }
+            else
+            {
+                anim.Play(targetName, 0, 0f);
+            }
         }
     }
 
@@ -136,10 +191,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         currentState = BirdState.Warning;
         
-        // 1. 程式切換為警報動畫 (例如 worried/watch01)
+        // 1. 程式切換為警報動畫 (worried)
         PlayAnim(warningAnimName);
 
-        // 2. 播放叫聲
+        // 2. 播放警告叫聲
         if (audioSource != null && warningClip != null)
         {
             audioSource.PlayOneShot(warningClip);
@@ -148,7 +203,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 3. 警報期等待
         yield return new WaitForSeconds(warningDuration);
 
-        // 4. 程式切換為俯衝飛行動畫
+        // 4. 程式切換為俯衝飛行動畫 (flying)
         PlayAnim(diveAnimName);
         currentState = BirdState.Diving;
         rb.isKinematic = false;
@@ -218,7 +273,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         rb.linearVelocity = Vector3.zero;
         rb.isKinematic = true;
 
-        // 程式切換為撞地/降落動畫 (如 landing 或 peck)
+        // 程式切換為撞地降落動畫 (landing)
         PlayAnim(stuckAnimName);
 
         Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地面，卡住 {stuckDuration} 秒後開始消失。");
@@ -292,10 +347,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         currentState = BirdState.Bounced;
         rb.linearVelocity = Vector3.zero;
         
-        // 程式切換為死亡/彈飛動畫 (如 die)
+        // 程式切換為死亡彈飛動畫 (die)
         PlayAnim(dieAnimName);
 
-        // 向後上方反彈
         Vector3 bounceDir = (transform.position - shield.transform.position).normalized + Vector3.up * 0.5f;
         rb.AddForce(bounceDir * shield.knockbackForce, ForceMode.Impulse);
 
