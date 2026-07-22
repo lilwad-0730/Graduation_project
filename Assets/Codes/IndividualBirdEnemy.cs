@@ -135,27 +135,51 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 【程式控制動畫核心方法】：自動適應 living birds 動畫 State 名稱並切換播放！
+    /// 【程式控制動畫核心方法】：同時設置 Animator Parameters (flying, worried, landing, die) 
+    /// 與直接 State 播放，保證 100% 相容 living birds 的動畫控制器！
     /// </summary>
     public void PlayAnim(string animName)
     {
         if (animator == null) EnsureComponents();
         if (animator == null || string.IsNullOrEmpty(animName)) return;
 
-        // 相容性別名對應
-        string targetName = animName;
-        if (targetName == "flyStraight") targetName = "flying";
+        string targetName = animName.ToLower();
 
-        // 嘗試在主層級與子物件的 Animator 播放
         Animator[] animators = GetComponentsInChildren<Animator>(true);
         foreach (var anim in animators)
         {
             if (anim == null) continue;
             anim.speed = 1f;
 
-            if (anim.HasState(0, Animator.StringToHash(targetName)))
+            // 1. 自動設置 Animator Controller 參數 (根據你在 Inspector/Animator 視窗截圖中的 Parameters)
+            if (targetName.Contains("fly") || targetName.Contains("idle"))
             {
-                anim.CrossFade(targetName, 0.1f);
+                SetAnimBoolIfExists(anim, "flying", true);
+                SetAnimBoolIfExists(anim, "landing", false);
+                SetAnimBoolIfExists(anim, "perched", false);
+            }
+            else if (targetName.Contains("worried") || targetName.Contains("warning"))
+            {
+                SetAnimTriggerIfExists(anim, "worried");
+            }
+            else if (targetName.Contains("land") || targetName.Contains("stuck") || targetName.Contains("peck"))
+            {
+                SetAnimBoolIfExists(anim, "landing", true);
+                SetAnimBoolIfExists(anim, "flying", false);
+                SetAnimTriggerIfExists(anim, "peck");
+            }
+            else if (targetName.Contains("die") || targetName.Contains("bounce"))
+            {
+                SetAnimTriggerIfExists(anim, "die");
+            }
+
+            // 2. 直接狀態強制過渡 (Double Protection)
+            string stateToPlay = animName;
+            if (animName == "flyStraight" || animName == "fly") stateToPlay = "flying";
+
+            if (anim.HasState(0, Animator.StringToHash(stateToPlay)))
+            {
+                anim.CrossFade(stateToPlay, 0.1f);
             }
             else if (anim.HasState(0, Animator.StringToHash("flying")))
             {
@@ -163,7 +187,31 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
             else
             {
-                anim.Play(targetName, 0, 0f);
+                anim.Play(stateToPlay, 0, 0f);
+            }
+        }
+    }
+
+    private void SetAnimBoolIfExists(Animator anim, string paramName, bool val)
+    {
+        foreach (var p in anim.parameters)
+        {
+            if (p.name == paramName && p.type == AnimatorControllerParameterType.Bool)
+            {
+                anim.SetBool(paramName, val);
+                return;
+            }
+        }
+    }
+
+    private void SetAnimTriggerIfExists(Animator anim, string paramName)
+    {
+        foreach (var p in anim.parameters)
+        {
+            if (p.name == paramName && p.type == AnimatorControllerParameterType.Trigger)
+            {
+                anim.SetTrigger(paramName);
+                return;
             }
         }
     }
