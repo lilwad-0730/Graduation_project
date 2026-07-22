@@ -23,8 +23,10 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     // --- 內部狀態追蹤 ---
     private bool _isRespawning = false;
-    /// <summary>供外部腳本查詢目前是否正在重生過程中（例如石化系統用來阻擋重生期間被再次石化）</summary>
+    /// <summary>供外部腳本查詢目前是否正在重生過程中</summary>
     public bool IsRespawning => _isRespawning;
+    /// <summary>【Static 全域旗標】不需要物件參考，任何腳本都能直接讀取。重生期間為 true。</summary>
+    public static bool IsAnyRespawning = false;
     private bool _isTeleporting = false;
     private Rigidbody _playerRb;
     private Camera _mainCam;
@@ -199,7 +201,8 @@ public class PlayerRespawnSystem : MonoBehaviour
     IEnumerator RespawnSequence(Vector3 spawnPos)
     {
         _isRespawning = true;
-        _isWaitingForPlayerMove = false; 
+        IsAnyRespawning = true;  // 全域通知：重生開始
+        _isWaitingForPlayerMove = false;
 
         // 強制確保 UI 一定存在
         if (_fadeImage == null || _messageText == null) CreatePersistentUI();
@@ -315,14 +318,66 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         _isRespawning = false;
-        _isWaitingForPlayerMove = true; 
+        IsAnyRespawning = false; // 全域通知：重生結束
+        _isWaitingForPlayerMove = true;
 
         // 保險：確保移動不被鎖住
         PlayerMovement pm = GetComponent<PlayerMovement>();
         if (pm != null)
         {
+            pm.enabled = true;
             pm.freezeHorizontal = false;
             pm.isCutsceneFrozen = false;
+        }
+        if (_playerRb != null)
+        {
+            _playerRb.isKinematic = false;
+        }
+
+        // 【終極防呆】重生後啟動守護協程，連續 5 秒主動確保玩家可以動
+        // 不管什麼負面狀態殘留，都會被每幀主動清除掉
+        StartCoroutine(PostRespawnGuard());
+    }
+
+    /// <summary>
+    /// 重生後的安全守護協程。持續 5 秒，每幀監控玩家狀態。
+    /// 若偵測到玩家還在石化/鎖定狀態，立刻強制清除。
+    /// 這是最後一道防線，確保「重生 = 玩家一定能動」這個規則絕對成立。
+    /// </summary>
+    private IEnumerator PostRespawnGuard()
+    {
+        float elapsed = 0f;
+        float guardDuration = 5f;
+
+        while (elapsed < guardDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            // 確保 Rigidbody 不被鎖死
+            if (_playerRb != null && _playerRb.isKinematic)
+            {
+                _playerRb.isKinematic = false;
+                Debug.LogWarning("[PostRespawnGuard] 偵測到 isKinematic = true，已強制解除！");
+            }
+
+            // 確保 PlayerMovement 是啟用的
+            PlayerMovement pm = GetComponent<PlayerMovement>();
+            if (pm != null)
+            {
+                if (!pm.enabled) pm.enabled = true;
+                if (pm.freezeHorizontal) pm.freezeHorizontal = false;
+                if (pm.isCutsceneFrozen) pm.isCutsceneFrozen = false;
+            }
+
+            // 若偵測到玩家被石化，立刻清除
+            PlayerPetrification petrify = GetComponent<PlayerPetrification>();
+            if (petrify != null && petrify.isPetrified)
+            {
+                Debug.LogWarning("[PostRespawnGuard] 重生後偵測到石化狀態殘留，強制清除！");
+                petrify.ClearAllNegativeEffects();
+            }
+
+            yield return null;
         }
     }
 

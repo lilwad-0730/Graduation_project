@@ -94,12 +94,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     /// </summary>
     public void Petrify()
     {
-        // 核心修複：若處於保護期內，不執行石化，防範開局卡死在半空！
+        // 核心修復：若處於保護期內，不執行石化，防範開局卡死在半空！
         if (graceTimer > 0f) return;
 
-        // 【修複重生後被石化卡死】：重生序列需要 5.5 秒，中途若風吹起再次石化，
-        // 玩家在重生動畫結束時就已被石化鎖死，造成卡死。
-        if (respawnSystem != null && respawnSystem.IsRespawning) return;
+        // 【重生防護 - 用 Static 旗標，不依賴物件參考，一定有效】
+        // 重生動畫需要 5.5 秒，期間若被風再次石化，重生結束後玩家會卡死。
+        // 用 static 全域旗標確保任何情況下都能正確阻擋。
+        if (PlayerRespawnSystem.IsAnyRespawning) return;
 
         if (isPetrified) return;
         
