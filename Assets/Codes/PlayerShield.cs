@@ -170,9 +170,49 @@ public class PlayerShield : MonoBehaviour, IResettable
         shieldCoroutine = StartCoroutine(ShieldActiveCoroutine());
     }
 
+    /// <summary>
+    /// 遞迴啟用/停用護盾及其所有子物件 (包含渲染器與碰撞器)，確保視覺貼圖不會因子物件關閉而隱形。
+    /// </summary>
+    private void EnableShieldHierarchy(GameObject obj, bool active)
+    {
+        if (obj == null) return;
+
+        // 1. 遞迴開啟/關閉所有子 GameObject
+        obj.SetActive(active);
+        Transform[] allChildren = obj.GetComponentsInChildren<Transform>(true);
+        foreach (var t in allChildren)
+        {
+            if (t != null && t.gameObject != null)
+            {
+                t.gameObject.SetActive(active);
+            }
+        }
+
+        if (active)
+        {
+            // 2. 強制開啟所有 Renderer (MeshRenderer, SpriteRenderer 等)
+            Renderer[] renderers = obj.GetComponentsInChildren<Renderer>(true);
+            foreach (var r in renderers)
+            {
+                if (r != null) r.enabled = true;
+            }
+
+            // 3. 強制將所有 Collider 設為 Trigger 且開啟
+            Collider[] colliders = obj.GetComponentsInChildren<Collider>(true);
+            foreach (var c in colliders)
+            {
+                if (c != null)
+                {
+                    c.enabled = true;
+                    c.isTrigger = true;
+                }
+            }
+        }
+    }
+
     private IEnumerator ShieldActiveCoroutine()
     {
-        // 確保碰撞器為 Trigger，絕不卡死玩家
+        // 確保碰撞器為 Trigger 且絕對開啟
         EnsureShieldCollider(shieldObject);
 
         // 校正護盾相對座標至 Y+2
@@ -185,12 +225,17 @@ public class PlayerShield : MonoBehaviour, IResettable
             shieldObject.transform.position = playerRoot.position + offsetFromPlayer;
         }
 
-        shieldObject.SetActive(true);
-        Debug.Log("【護盾系統】按下 Q 鍵！護盾成功發動（位置：Y+2）！");
+        // 遞迴強制啟用護盾及其所有子物件、渲染器與碰撞器
+        EnableShieldHierarchy(shieldObject, true);
+
+        Debug.LogWarning($"【護盾系統】按下 Q 鍵發動！護盾視覺與子物件已 100% 遞迴啟用！\n" +
+                        $" - 護盾物件名稱: {shieldObject.name}\n" +
+                        $" - 護盾世界座標: {shieldObject.transform.position}\n" +
+                        $" - 相對座標 localPosition: {shieldObject.transform.localPosition}");
 
         yield return new WaitForSeconds(shieldDuration);
 
-        shieldObject.SetActive(false);
+        EnableShieldHierarchy(shieldObject, false);
         cooldownTimer = cooldownDuration;
         shieldCoroutine = null;
         Debug.Log($"【護盾系統】護盾結束，進入 {cooldownDuration} 秒技能冷卻。");
