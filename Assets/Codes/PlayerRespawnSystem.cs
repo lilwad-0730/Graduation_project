@@ -317,25 +317,29 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.gameObject.SetActive(false); 
         }
 
+        // ===================================================================
+        // 【重生規則最終執行點】
+        // 必須在 IsAnyRespawning=false 之前清除，確保旗標解除的瞬間
+        // graceTimer 是剛刷新的 5 秒，風無法在該瞬間立即石化玩家。
+        // 這是解決「重生後立刻被石化」的根本修復。
+        // ===================================================================
+        PlayerPetrification petrifyFinal = GetComponent<PlayerPetrification>();
+        if (petrifyFinal != null)
+        {
+            petrifyFinal.ClearAllNegativeEffects(); // graceTimer 刷新為 5 秒
+        }
+
+        // 確保 Rigidbody 和 PlayerMovement 正常
+        if (_playerRb != null) _playerRb.isKinematic = false;
+        PlayerMovement pm = GetComponent<PlayerMovement>();
+        if (pm != null) { pm.enabled = true; pm.freezeHorizontal = false; pm.isCutsceneFrozen = false; }
+
+        // 現在才解除重生旗標（此時 graceTimer=5s，風無法立即石化）
         _isRespawning = false;
-        IsAnyRespawning = false; // 全域通知：重生結束
+        IsAnyRespawning = false;
         _isWaitingForPlayerMove = true;
 
-        // 保險：確保移動不被鎖住
-        PlayerMovement pm = GetComponent<PlayerMovement>();
-        if (pm != null)
-        {
-            pm.enabled = true;
-            pm.freezeHorizontal = false;
-            pm.isCutsceneFrozen = false;
-        }
-        if (_playerRb != null)
-        {
-            _playerRb.isKinematic = false;
-        }
-
-        // 【終極防呆】重生後啟動守護協程，連續 5 秒主動確保玩家可以動
-        // 不管什麼負面狀態殘留，都會被每幀主動清除掉
+        // 啟動守護協程，5 秒內每幀主動監控確保玩家可動
         StartCoroutine(PostRespawnGuard());
     }
 

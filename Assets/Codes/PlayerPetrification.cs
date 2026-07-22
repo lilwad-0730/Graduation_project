@@ -232,8 +232,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         isPetrified = false;
         currentPetrifyCount = 0;
 
-        // 重生後只給 2 秒短暫保護，讓玩家安全落地即可，不長期免疫石化
-        graceTimer = 2.0f;
+        // 重生後只給 5 秒保護（從 2 秒延長），覆蓋完整重生動畫時長（約 5.5 秒）
+        graceTimer = 5.0f;
 
         if (rb != null)
         {
