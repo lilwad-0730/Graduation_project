@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5375380938264212508}
   - component: {fileID: 745830173811474750}
   - component: {fileID: 8888888888888888888}
+  - component: {fileID: 7777777777777777777}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -390,3 +391,21 @@ MonoBehaviour:
   respawnGracePeriod: 5
   currentPetrifyCount: 0
   isPetrified: 0
+--- !u!114 &7777777777777777777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4560934038298106848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a367eb7110901e14aa1c7b822dceeb33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerShield
+  shieldKey: 113
+  shieldDuration: 3
+  cooldownDuration: 5
+  offsetFromPlayer: {x: 0, y: 2, z: 0}
+  knockbackForce: 15
+  shieldObject: {fileID: 0}
