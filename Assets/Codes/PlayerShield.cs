@@ -83,6 +83,7 @@ public class PlayerShield : MonoBehaviour, IResettable
         if (shieldObject != null)
         {
             EnsureShieldCollider(shieldObject);
+            EnsureShieldMaterial(shieldObject);
             return;
         }
 
@@ -93,6 +94,7 @@ public class PlayerShield : MonoBehaviour, IResettable
         {
             shieldObject = childShield.gameObject;
             EnsureShieldCollider(shieldObject);
+            EnsureShieldMaterial(shieldObject);
             return;
         }
 
@@ -106,15 +108,51 @@ public class PlayerShield : MonoBehaviour, IResettable
         SphereCollider col = newShield.GetComponent<SphereCollider>();
         if (col != null) col.isTrigger = true;
 
-        Renderer r = newShield.GetComponent<Renderer>();
-        if (r != null)
-        {
-            Material shieldMat = new Material(Shader.Find("Sprites/Default"));
-            shieldMat.color = new Color(0.3f, 0.7f, 1.0f, 0.4f);
-            r.material = shieldMat;
-        }
+        EnsureShieldMaterial(newShield);
 
         shieldObject = newShield;
+    }
+
+    /// <summary>
+    /// 自動賦予相容 URP / Built-in 管線的水藍色發光護盾材質
+    /// </summary>
+    private void EnsureShieldMaterial(GameObject obj)
+    {
+        Renderer r = obj.GetComponent<Renderer>();
+        if (r == null) r = obj.GetComponentInChildren<Renderer>();
+        if (r == null) return;
+
+        // 如果已經有合法材質則跳過
+        if (r.sharedMaterial != null && r.sharedMaterial.name != "Default-Material")
+        {
+            return;
+        }
+
+        // 嘗試多種 Shader 備用方案 (相容 URP 與 Standard)
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Sprites/Default");
+        if (shader == null) shader = Shader.Find("Unlit/Color");
+        if (shader == null) shader = Shader.Find("Standard");
+
+        Material shieldMat = new Material(shader != null ? shader : Shader.Find("Sprites/Default"));
+        Color shieldColor = new Color(0.2f, 0.75f, 1.0f, 0.45f);
+
+        if (shieldMat.HasProperty("_BaseColor"))
+        {
+            shieldMat.SetColor("_BaseColor", shieldColor);
+        }
+        if (shieldMat.HasProperty("_Color"))
+        {
+            shieldMat.color = shieldColor;
+        }
+
+        // 透明渲染設定
+        shieldMat.SetFloat("_Surface", 1); // Transparent
+        shieldMat.SetFloat("_Blend", 0);   // Alpha
+        shieldMat.renderQueue = 3000;
+
+        r.material = shieldMat;
     }
 
     /// <summary>
@@ -212,8 +250,9 @@ public class PlayerShield : MonoBehaviour, IResettable
 
     private IEnumerator ShieldActiveCoroutine()
     {
-        // 確保碰撞器為 Trigger 且絕對開啟
+        // 確保碰撞器與材質正確
         EnsureShieldCollider(shieldObject);
+        EnsureShieldMaterial(shieldObject);
 
         // 校正護盾相對座標至 Y+2
         if (shieldObject.transform.IsChildOf(playerRoot))
@@ -228,17 +267,64 @@ public class PlayerShield : MonoBehaviour, IResettable
         // 遞迴強制啟用護盾及其所有子物件、渲染器與碰撞器
         EnableShieldHierarchy(shieldObject, true);
 
-        Debug.LogWarning($"【護盾系統】按下 Q 鍵發動！護盾視覺與子物件已 100% 遞迴啟用！\n" +
+        Debug.LogWarning($"【護盾系統】按下 Q 鍵成功發動！護盾已亮起！\n" +
                         $" - 護盾物件名稱: {shieldObject.name}\n" +
                         $" - 護盾世界座標: {shieldObject.transform.position}\n" +
                         $" - 相對座標 localPosition: {shieldObject.transform.localPosition}");
 
-        yield return new WaitForSeconds(shieldDuration);
+        // 在護盾持續時間內持續進行擊退與敵打飛判定
+        float elapsed = 0f;
+        while (elapsed < shieldDuration)
+        {
+            elapsed += Time.deltaTime;
+            KnockbackEnemies();
+            yield return null;
+        }
 
         EnableShieldHierarchy(shieldObject, false);
         cooldownTimer = cooldownDuration;
         shieldCoroutine = null;
         Debug.Log($"【護盾系統】護盾結束，進入 {cooldownDuration} 秒技能冷卻。");
+    }
+
+    /// <summary>
+    /// 擊退範圍內的所有敵人
+    /// </summary>
+    private void KnockbackEnemies()
+    {
+        if (shieldObject == null) return;
+
+        Vector3 center = shieldObject.transform.position;
+        float radius = 3.0f;
+
+        SphereCollider sc = shieldObject.GetComponent<SphereCollider>();
+        if (sc != null)
+        {
+            radius = sc.radius * Mathf.Max(shieldObject.transform.lossyScale.x, shieldObject.transform.lossyScale.y, shieldObject.transform.lossyScale.z);
+        }
+
+        Collider[] hits = Physics.OverlapSphere(center, radius);
+        foreach (var hit in hits)
+        {
+            if (hit == null || hit.transform.IsChildOf(playerRoot)) continue;
+
+            // 鳥類敵人
+            IndividualBirdEnemy bird = hit.GetComponent<IndividualBirdEnemy>();
+            if (bird == null) bird = hit.GetComponentInParent<IndividualBirdEnemy>();
+            if (bird != null)
+            {
+                bird.OnShieldHit(this);
+            }
+
+            // 一般物理敵人擊退
+            Rigidbody enemyRb = hit.GetComponent<Rigidbody>();
+            if (enemyRb != null && !enemyRb.isKinematic)
+            {
+                Vector3 knockDir = (hit.transform.position - center).normalized;
+                knockDir.y = Mathf.Max(knockDir.y, 0.3f);
+                enemyRb.AddForce(knockDir * knockbackForce, ForceMode.Impulse);
+            }
+        }
     }
 
     public void ResetToInitialState()
