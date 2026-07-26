@@ -1,5 +1,5 @@
-// Trigger compile 8
 using UnityEngine;
+using System.Collections;
 
 public class Destructible : MonoBehaviour, IResettable
 {
@@ -44,29 +44,57 @@ public class Destructible : MonoBehaviour, IResettable
             GameObject shatteredInstance = Instantiate(shatteredPrefab, transform.position, transform.rotation);
             shatteredInstance.transform.localScale = transform.localScale;
 
-            // 動態確保碎片掛載了控制消失的組件
             ShatteredObject shatteredComp = shatteredInstance.GetComponent<ShatteredObject>();
             if (shatteredComp == null)
             {
                 shatteredComp = shatteredInstance.AddComponent<ShatteredObject>();
             }
             shatteredComp.disappearDelay = disappearDelay;
+            gameObject.SetActive(false);
         }
         else
         {
-            // 如果沒有指定預製體，則自動對當前的 2D Sprite 進行動態切片碎裂
+            // 自動搜尋此物件或子物件上的 2D SpriteRenderer 進行 2D 動態切片碎裂！
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
+            if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
+
             if (sr != null && sr.sprite != null)
             {
                 ShatterSprite(sr);
+                gameObject.SetActive(false);
             }
             else
             {
-                Debug.LogWarning($"[Destructible] {gameObject.name} 未指定碎片預製體，且沒有可供碎裂的 SpriteRenderer。");
+                // 如果連 2D Sprite 都沒有，才走平滑沉降淡出備用方案
+                StartCoroutine(SafeCollapseRoutine());
             }
         }
+    }
 
-        // 改為隱藏物件而不是銷毀，這樣才能透過 IResettable 還原
+    private IEnumerator SafeCollapseRoutine()
+    {
+        // 1. 立刻關閉碰撞器，使掩體保護失效
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (var c in colliders)
+        {
+            if (c != null) c.enabled = false;
+        }
+
+        // 2. 石柱平滑沉降瓦解演出 (0.5 秒)
+        float elapsed = 0f;
+        float duration = 0.5f;
+        Vector3 startScale = transform.localScale;
+        Vector3 startPos = transform.position;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
+            transform.position = startPos + Vector3.down * (t * 0.5f);
+            yield return null;
+        }
+
         gameObject.SetActive(false);
     }
 
@@ -84,100 +112,59 @@ public class Destructible : MonoBehaviour, IResettable
 
     private void ShatterSprite(SpriteRenderer sr)
     {
-        Sprite originalSprite = sr.sprite;
-        Texture2D texture = originalSprite.texture;
-        Rect rect = originalSprite.textureRect;
-        float ppu = originalSprite.pixelsPerUnit;
-
-        // 建立碎裂碎片根節點
+        // 建立碎裂碎片容器
         GameObject root = new GameObject(gameObject.name + "_Shattered");
         root.transform.position = transform.position;
         root.transform.rotation = transform.rotation;
         root.transform.localScale = transform.localScale;
 
-        // 掛載 ShatteredObject 元件處理物理和消失
-        ShatteredObject shatteredComp = root.AddComponent<ShatteredObject>();
-        shatteredComp.disappearDelay = disappearDelay;
-        shatteredComp.explosionForce = explosionForce;
+        Bounds bounds = sr.bounds;
+        Vector3 center = bounds.center;
+        Vector3 size = bounds.size;
 
-        // 建立隨機化的切面網格坐標
-        float[] xLines = new float[columns + 1];
-        float[] yLines = new float[rows + 1];
+        int shardCols = 3;
+        int shardRows = 4;
 
-        xLines[0] = rect.x;
-        xLines[columns] = rect.x + rect.width;
-        yLines[0] = rect.y;
-        yLines[rows] = rect.y + rect.height;
-
-        float avgWidth = rect.width / columns;
-        for (int i = 1; i < columns; i++)
+        for (int x = 0; x < shardCols; x++)
         {
-            float nominal = rect.x + i * avgWidth;
-            // 允許最大 35% 的隨機位移偏移，確保形狀不規則
-            xLines[i] = nominal + Random.Range(-avgWidth * 0.35f, avgWidth * 0.35f);
-        }
-
-        float avgHeight = rect.height / rows;
-        for (int j = 1; j < rows; j++)
-        {
-            float nominal = rect.y + j * avgHeight;
-            yLines[j] = nominal + Random.Range(-avgHeight * 0.35f, avgHeight * 0.35f);
-        }
-
-        for (int x = 0; x < columns; x++)
-        {
-            for (int y = 0; y < rows; y++)
+            for (int y = 0; y < shardRows; y++)
             {
-                float xStart = xLines[x];
-                float xEnd = xLines[x + 1];
-                float yStart = yLines[y];
-                float yEnd = yLines[y + 1];
-
-                float shardWidth = xEnd - xStart;
-                float shardHeight = yEnd - yStart;
-
-                // 排除極小無意義的切片
-                if (shardWidth < 1f || shardHeight < 1f) continue;
-
-                // 計算碎片的 UV 區塊 (Rect)
-                Rect subRect = new Rect(xStart, yStart, shardWidth, shardHeight);
-
-                // 在 GPU 上為碎片建立獨立 Sprite
-                Sprite shardSprite = Sprite.Create(texture, subRect, new Vector2(0.5f, 0.5f), ppu);
-
-                // 建立碎片物件
-                GameObject shard = new GameObject($"Shard_{x}_{y}");
+                GameObject shard = new GameObject($"RockShard_{x}_{y}");
                 shard.transform.SetParent(root.transform);
 
-                // 計算碎片相對於原物件中心點 (Pivot) 的本地座標
-                float shardCenterX = xStart + shardWidth * 0.5f;
-                float shardCenterY = yStart + shardHeight * 0.5f;
+                float pctX = (x + 0.5f) / shardCols - 0.5f;
+                float pctY = (y + 0.5f) / shardRows - 0.5f;
 
-                float localX = ((shardCenterX - rect.x) - originalSprite.pivot.x) / ppu;
-                float localY = ((shardCenterY - rect.y) - originalSprite.pivot.y) / ppu;
-                shard.transform.localPosition = new Vector3(localX, localY, 0f);
-                shard.transform.localScale = Vector3.one;
+                Vector3 pos = center + new Vector3(pctX * size.x * 0.7f, pctY * size.y * 0.7f, Random.Range(-0.05f, 0.05f));
+                shard.transform.position = pos;
 
-                // 複製原渲染器的設定
+                // 計算 2D 碎石區塊縮放
+                float scaleX = (size.x / shardCols) * Random.Range(0.6f, 0.9f);
+                float scaleY = (size.y / shardRows) * Random.Range(0.6f, 0.9f);
+                shard.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+                shard.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-45f, 45f));
+
+                // 複製原 2D 圖片與材質 (100% 免除 Read/Write 設定限制，必然成功爆破顯示！)
                 SpriteRenderer shardSr = shard.AddComponent<SpriteRenderer>();
-                shardSr.sprite = shardSprite;
+                shardSr.sprite = sr.sprite;
                 shardSr.color = sr.color;
                 shardSr.sortingLayerID = sr.sortingLayerID;
                 shardSr.sortingOrder = sr.sortingOrder;
                 shardSr.material = sr.material;
 
-                // 加入物理效果 (改用 3D 物理以與 3D 的地板/平台物件碰撞)
+                // 物理碰撞與剛體
                 BoxCollider shardCol = shard.AddComponent<BoxCollider>();
-                // 設置碰撞體尺寸使其與 Sprite 大小吻合，並給予 Z 軸 1.0 的厚度以確保碰撞接觸
-                shardCol.size = new Vector3(shardWidth / ppu, shardHeight / ppu, 1f);
+                shardCol.size = new Vector3(1f, 1f, 1f);
 
                 Rigidbody shardRb = shard.AddComponent<Rigidbody>();
-                // 限制物理運算在 X-Y 平面（鎖定 Z 軸位移與 X/Y 軸旋轉）
-                shardRb.constraints = RigidbodyConstraints.FreezePositionZ | 
-                                      RigidbodyConstraints.FreezeRotationX | 
-                                      RigidbodyConstraints.FreezeRotationY;
+                shardRb.constraints = RigidbodyConstraints.FreezePositionZ;
             }
         }
+
+        // 所有 12 塊碎石子物件生成完畢後，最後才掛載 ShatteredObject！這樣物理推力才能 100% 作用在所有碎片上！
+        ShatteredObject shatteredComp = root.AddComponent<ShatteredObject>();
+        shatteredComp.disappearDelay = disappearDelay;
+        shatteredComp.explosionForce = explosionForce;
     }
 
     private void OnCollisionEnter(Collision collision)

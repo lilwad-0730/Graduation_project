@@ -60,6 +60,41 @@ public class PlayerMovement : MonoBehaviour
     
     private float currentAirTime = 0f;
 
+    public enum WaterDetectionMode { Auto, ForceOn, ForceOff }
+
+    [Header("水下物理與浮力設定 (Underwater Physics)")]
+    [Tooltip("水中狀態偵測模式：Auto(自動偵測場景名稱包含 underwater 或進入水體 Trigger)、ForceOn(強制開啟水下物理)、ForceOff(強制關閉)")]
+    public WaterDetectionMode waterDetectionMode = WaterDetectionMode.Auto;
+
+    [Tooltip("目前是否處於水中狀態 (觀察用 / 腳本唯讀與觸發)")]
+    public bool isUnderwater = false;
+
+    [Tooltip("水中重力縮放比例 (0 ~ 1，數值越小浮力越強、掉落越慢，建議 0.25)")]
+    public float underwaterGravityScale = 0.25f;
+
+    [Tooltip("水中跳躍 / 撥水推進推力 (預設 3.5f，比陸地的跳躍 5.0 更平緩)")]
+    public float underwaterJumpForce = 3.5f;
+
+    [Tooltip("水中最大沉降速度限制 (單位/秒，設為 -2.0f 讓沉降不會太快，產生滯空浮動感)")]
+    public float underwaterMaxFallSpeed = -2.0f;
+
+    [Tooltip("水中垂直向上/向下移動的阻力衰減率 (數值越大衝速減慢越快，呈現滑順水阻)")]
+    public float underwaterVerticalDrag = 2.0f;
+
+    [Tooltip("水中水平移動速度倍率 (預設 0.85f，模擬水中行走/游泳的微水阻)")]
+    public float underwaterHorizontalSpeedMultiplier = 0.85f;
+
+    [Tooltip("是否允許在水中未著地時連按 W 向上撥水游泳")]
+    public bool allowContinuousSwimming = true;
+
+    [Tooltip("撥水游泳冷卻時間 (秒)")]
+    public float swimCooldown = 0.25f;
+    private float lastSwimTime = -999f;
+    private bool isTriggerUnderwater = false;
+
+    // 動畫接軌預留標籤
+    [HideInInspector] public bool isSwimming = false;
+
 
     void Start()
     {
@@ -118,6 +153,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // 刷新水下狀態 (三層判定)
+        UpdateUnderwaterState();
+
         // ==========================================
         // 【防卡死】偵測瞬間移動 (例如：重生系統觸發)
         // ==========================================
@@ -222,6 +260,13 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         if (animator != null)
         {
+            // 自動為未來的游泳 Animator 傳遞狀態標籤 (若 Animator Controller 有對應 Parameter 則更新)
+            foreach (AnimatorControllerParameter param in animator.parameters)
+            {
+                if (param.name == "isUnderwater") animator.SetBool("isUnderwater", isUnderwater);
+                if (param.name == "isSwimming") animator.SetBool("isSwimming", isSwimming);
+            }
+
             // 控制角色外觀模型轉向
             if (facingDirection != Vector3.zero)
             {
@@ -236,21 +281,28 @@ public class PlayerMovement : MonoBehaviour
             // 判斷是否有水平速度或輸入
             bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
 
-            if (isFalling)
+            if (isUnderwater)
             {
-                // 只有在空中待夠久，且真的有往下掉的速度時，才播 FALLING 動畫
-                targetAnim = "Falling";
-            }
-            else
-            {
-                // 停在地上 (或剛跳起來還在上升時)
-                if (hasHorizontalSpeed)
+                // 【水下動畫邏輯】：水中有移動或按 W 游泳時播放 Swimming；原地漂浮時播放 Treading Water
+                if (hasHorizontalSpeed || isSwimming || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space))
                 {
-                    targetAnim = "Run";
+                    targetAnim = animator.HasState(0, Animator.StringToHash("Swimming")) ? "Swimming" : (hasHorizontalSpeed ? "Run" : "Idle");
                 }
                 else
                 {
-                    targetAnim = "Idle";
+                    targetAnim = animator.HasState(0, Animator.StringToHash("Treading Water")) ? "Treading Water" : "Idle";
+                }
+            }
+            else
+            {
+                // 【陸地動畫邏輯】
+                if (isFalling)
+                {
+                    targetAnim = "Falling";
+                }
+                else
+                {
+                    targetAnim = hasHorizontalSpeed ? "Run" : "Idle";
                 }
             }
 
@@ -305,7 +357,7 @@ public class PlayerMovement : MonoBehaviour
             currentSpeed = baseSpeed;
         }
 
-        float finalSpeed = currentSpeed;
+        float finalSpeed = currentSpeed * (isUnderwater ? underwaterHorizontalSpeedMultiplier : 1.0f);
         if (pulledObject != null)
         {
             // 強化型剛體搜尋：防呆，以防推拉的碰撞器 (Collider) 與剛體 (Rigidbody) 不在同一個物件層級上
@@ -319,11 +371,11 @@ public class PlayerMovement : MonoBehaviour
                 // 速度比例 = 10f / (10f + 物體質量)。
                 // 例如：物體質量 10f -> 速度減半；物體質量 90f -> 速度變 1/10；物體質量 500f -> 幾乎拉不動。
                 float weightFactor = 10f / (10f + pulledRb.mass);
-                finalSpeed = currentSpeed * weightFactor;
+                finalSpeed = finalSpeed * weightFactor;
             }
             else
             {
-                finalSpeed = currentSpeed / 2f; // 備用方案
+                finalSpeed = finalSpeed / 2f; // 備用方案
             }
         }
         
@@ -336,7 +388,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
             
-            // 【修復斜坡抖動與抽搐】：如果在地面且非跳躍中，計算斜坡法線並沿著斜坡移動
+            // 【修復斜坡抖動與抽搐】：如果在地面且非跳躍中，計算斜坡法線並沿著斜坡移動 (水下著地時亦適用)
             if (isGrounded && !isJumping)
             {
                 RaycastHit hit;
@@ -369,14 +421,31 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = targetVelocity;
         }
 
-        // 支援 W 鍵或空白鍵跳躍 (必須沒有被劇情鎖定)
-        if (!isCutsceneFrozen && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        // 支援 W 鍵或空白鍵跳躍 / 水中撥水游泳 (必須沒有被劇情鎖定)
+        if (!isCutsceneFrozen && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)))
         {
-            isJumping = true; // 標記為跳躍中，避免斜坡邏輯吃掉跳躍速度
-            // 每次跳躍前先消除往下的掉落速度，確保跳躍高度一致
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            // 改用 VelocityChange，無視質量 (mass = 10) 也能跳得一樣高
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+            if (isUnderwater)
+            {
+                // 在水中：著地時可跳躍，懸空時若允許連續游泳且冷卻時間已過，可向上撥水推進
+                if (isGrounded || (allowContinuousSwimming && (Time.time - lastSwimTime >= swimCooldown)))
+                {
+                    isJumping = true;
+                    lastSwimTime = Time.time;
+                    isSwimming = true;
+
+                    // 保留原本向上的部分速度，消除下沉速，套用柔和的水中向上推力
+                    float baseUpVel = Mathf.Max(rb.linearVelocity.y, 0f);
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, baseUpVel, rb.linearVelocity.z);
+                    rb.AddForce(Vector3.up * underwaterJumpForce, ForceMode.VelocityChange);
+                }
+            }
+            else if (isGrounded)
+            {
+                // 陸地標準跳躍
+                isJumping = true;
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+            }
         }
     }
 
@@ -620,6 +689,62 @@ public class PlayerMovement : MonoBehaviour
         {
             respawnSystem.enabled = true;
             Debug.Log("【重生系統】已延遲重啟，安全防護生效。");
+        }
+    }
+
+    // ==========================================
+    // 水下物理、浮力與阻力實時運算 (FixedUpdate)
+    // ==========================================
+    private void FixedUpdate()
+    {
+        if (isUnderwater && rb != null && !rb.isKinematic)
+        {
+            // 1. 浮力與微重力抵消 (Counter-Gravity / Buoyancy)
+            // 標準重力 Physics.gravity.y (-9.81)。目標水中重力 = Physics.gravity.y * underwaterGravityScale
+            float gravityMagnitude = Mathf.Abs(Physics.gravity.y);
+            float counterForce = gravityMagnitude * (1f - Mathf.Clamp01(underwaterGravityScale)) * rb.mass;
+            rb.AddForce(Vector3.up * counterForce, ForceMode.Force);
+
+            // 2. 水中垂直阻力 (Vertical Drag Damping)
+            Vector3 vel = rb.linearVelocity;
+            if (Mathf.Abs(vel.y) > 0.01f)
+            {
+                vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime);
+            }
+
+            // 3. 水中最大沉降速度限制 (Terminal Sinking Speed Limit)
+            if (vel.y < underwaterMaxFallSpeed)
+            {
+                vel.y = underwaterMaxFallSpeed;
+            }
+
+            rb.linearVelocity = vel;
+        }
+    }
+
+    // ==========================================
+    // 水下狀態判定處理 (三層防護)
+    // ==========================================
+    public void SetTriggerUnderwater(bool state)
+    {
+        isTriggerUnderwater = state;
+    }
+
+    private void UpdateUnderwaterState()
+    {
+        if (waterDetectionMode == WaterDetectionMode.ForceOn)
+        {
+            isUnderwater = true;
+        }
+        else if (waterDetectionMode == WaterDetectionMode.ForceOff)
+        {
+            isUnderwater = false;
+        }
+        else // Auto 模式：自動比對場景名稱包含 underwater，或踩入水體 Trigger
+        {
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+            bool isUnderwaterScene = sceneName.Contains("underwater");
+            isUnderwater = isUnderwaterScene || isTriggerUnderwater;
         }
     }
 }

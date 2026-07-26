@@ -54,12 +54,18 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("被護盾彈飛/死亡動畫名稱 (預設 die)")]
     public string dieAnimName = "die";
 
-    [Header("反彈與撞擊設定")]
-    [Tooltip("撞擊護盾時的反彈力道 (可直接在 Inspector 微調)")]
-    public float bounceForce = 6f;
+    [Header("護盾反彈控制 (可在 Inspector 100% 精確掌控)")]
+    [Tooltip("反彈向後距離 (米，預設 2.5 米)")]
+    public float bounceDistance = 2.5f;
 
-    [Tooltip("撞擊護盾時的翻轉旋轉力道 (可直接在 Inspector 微調)")]
-    public float bounceTorque = 6f;
+    [Tooltip("反彈拋物線弧度高度 (米，預設 1.2 米)")]
+    public float bounceHeight = 1.2f;
+
+    [Tooltip("反彈飛行總時間 (秒，預設 0.6 秒)")]
+    public float bounceDuration = 0.6f;
+
+    [Tooltip("反彈旋轉角度 (度，預設 180 度)")]
+    public float bounceSpinAngle = 180f;
 
     [Header("地面與環境偵測")]
     [Tooltip("地面的 Tag (預設 Floor，自動支援 Floor, Ground, Terrain)")]
@@ -322,7 +328,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             if (behaviorType == BirdBehavior.HomingPlayer && playerTrans != null)
             {
-                targetPosition = playerTrans.position;
+                targetPosition = new Vector3(playerTrans.position.x, playerTrans.position.y - 1.8f, playerTrans.position.z);
             }
 
             // 強制切除 Z 軸，只在 2D (X/Y) 平面上衝刺，防止俯衝時漂移到背景牆裡面
@@ -342,18 +348,6 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 12f);
             }
 
-            // ★ 高精度前瞻射線地表偵測：在俯衝飛行方向 1.2 米內偵測到 Floor/Ground 地表物件，立即精確停格插地！
-            if (Physics.Raycast(currentPos, diveDirection, out RaycastHit hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
-            {
-                if (IsGroundObject(hit.collider.gameObject))
-                {
-                    Debug.Log($"【射線精準插地】於 {hit.point} 偵測到地表 '{hit.collider.name}' (Tag: {hit.collider.tag})，立刻毫秒級停格插地！");
-                    transform.position = new Vector3(hit.point.x, hit.point.y, originalPosition.z);
-                    OnHitGround();
-                    yield break;
-                }
-            }
-
             yield return null;
         }
     }
@@ -365,19 +359,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         if (obj == null) return false;
 
-        // 1. Tag 比對 (優先比對你截圖中的 Floor，以及 Ground / Terrain / 自訂 groundTag)
+        // 核心排除：石柱/掩體/岩石/區域觸發器絕對不是地表，不能讓鳥在柱子上方插地！
+        string lowerName = obj.name.ToLower();
+        if (lowerName.Contains("pillar") || lowerName.Contains("shelter") || lowerName.Contains("rock") || lowerName.Contains("zone") || lowerName.Contains("trigger")) return false;
+
+        // 1. Tag 比對 (僅比對精確地表 Tag：Floor, Ground, Terrain)
         if (obj.CompareTag("Floor") || obj.CompareTag("Ground") || obj.CompareTag("Terrain")) return true;
         if (!string.IsNullOrEmpty(groundTag) && obj.CompareTag(groundTag)) return true;
 
-        // 2. 物件名稱比對
-        string lowerName = obj.name.ToLower();
-        if (lowerName.Contains("floor") || lowerName.Contains("ground") || lowerName.Contains("tile")) return true;
-
-        // 3. 通用排除防呆：非玩家、非護盾、非鳥本身
-        if (!obj.CompareTag("Player") && !lowerName.Contains("shield") && obj != gameObject && !obj.transform.IsChildOf(transform))
-        {
-            return true;
-        }
+        // 2. 物件名稱比對 (純地表地板)
+        if (lowerName.Contains("floor") || lowerName.Contains("ground_texture") || lowerName.Contains("tile")) return true;
 
         return false;
     }
@@ -391,7 +382,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         pos.z = originalPosition.z;
         transform.position = pos;
 
-        // 2. 當撞擊插在地面上時，維持俯衝插地姿態，防止 FBX 動畫切換導致姿態跑掉
+        // 2. 當撞擊插在地面上時，維護俯衝插地姿態，防止 FBX 動畫切換導致姿態跑掉
         if (currentState == BirdState.Stuck)
         {
             transform.rotation = stuckRotation;
@@ -403,20 +394,21 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (playerTrans == null) return;
 
         Vector3 playerPos = playerTrans.position;
+        Vector3 groundTargetPos = new Vector3(playerPos.x, playerPos.y - 1.8f, playerPos.z);
 
         switch (behaviorType)
         {
             case BirdBehavior.DirectPlayer:
-                targetPosition = playerPos;
+                targetPosition = groundTargetPos;
                 break;
 
             case BirdBehavior.PlayerOffset:
                 float xOffset = Random.value > 0.5f ? targetOffset : -targetOffset;
-                targetPosition = new Vector3(playerPos.x + xOffset, playerPos.y, playerPos.z);
+                targetPosition = new Vector3(playerPos.x + xOffset, groundTargetPos.y, playerPos.z);
                 break;
 
             case BirdBehavior.HomingPlayer:
-                targetPosition = playerPos;
+                targetPosition = groundTargetPos;
                 break;
         }
     }
@@ -541,23 +533,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             return;
         }
 
-        // 2. 碰撞到玩家本體
+        // 2. 碰撞到玩家本體：觸發玩家重生，絕不觸發石化效果！
         if (hitObj.CompareTag("Player") || hitObj.name == "Player")
         {
             if (currentState == BirdState.Diving)
             {
-                PlayerPetrification petrify = hitObj.GetComponent<PlayerPetrification>();
-                if (petrify == null) petrify = hitObj.GetComponentInParent<PlayerPetrification>();
-
-                if (petrify != null)
+                PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
+                if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
+                if (respawn != null)
                 {
-                    petrify.Petrify();
-                }
-                else
-                {
-                    PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
-                    if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
-                    if (respawn != null) respawn.TriggerRespawn();
+                    respawn.TriggerRespawn();
                 }
 
                 // 撞到玩家後彈開淡出
@@ -566,7 +551,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
         }
 
-        // 3. 俯衝期間碰撞到地面 (Floor / Ground / Terrain / 環境物件) ➔ 立刻精確插進地面！
+        // 3. 俯衝期間碰撞到 Floor 地面 (純物理碰撞觸發，不使用任何射線) ➔ 立刻以當前角度精確插進地面！
         if (currentState == BirdState.Diving && IsGroundObject(hitObj))
         {
             OnHitGround();
@@ -582,44 +567,77 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 撞擊護盾時反彈飛開效果：播放 DIE 動畫、向後上方甩飛、然後漸漸消失
+    /// 撞擊護盾時反彈飛開效果：播放 DIE 動畫，並依據 Inspector 填寫的數值進行 100% 精確掌控的 2D 拋物線彈飛與漸隱！
     /// </summary>
     public void BounceOff(PlayerShield shield)
     {
         if (currentState == BirdState.Bounced) return;
 
-        StopAllCoroutines(); // 停止俯衝攜程
+        StopAllCoroutines(); // 說明：立即停止俯衝攜程與其他運動
         currentState = BirdState.Bounced;
 
+        // 關閉物理隨機運動，採用 100% 精確控制的拋物線插值
         if (rb != null)
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
         }
 
         // 恢復動畫速度並強制觸發 DIE 動畫
         if (animator != null) animator.speed = 1f;
         PlayAnim(dieAnimName);
 
-        // 計算向後向上的物理反彈向量
-        Vector3 shieldPos = shield != null ? shield.transform.position : (playerTrans != null ? playerTrans.position : transform.position - Vector3.down);
-        Vector3 bounceDir = (transform.position - shieldPos).normalized;
-        bounceDir.z = 0f;
-        if (bounceDir.y < 0.3f) bounceDir.y = 0.5f; // 確保弧線適度拋高
+        StartCoroutine(ControlledBounceCoroutine(shield));
+    }
 
-        // 使用 Inspector 填寫的柔和力道 (預設 6f)
-        float force = bounceForce > 0f ? bounceForce : 6f;
-        float torque = bounceTorque > 0f ? bounceTorque : 6f;
+    /// <summary>
+    /// 100% 可控拋物線反彈協程：飛行距離(bounceDistance)、弧度高度(bounceHeight)、飛行時間(bounceDuration)
+    /// </summary>
+    private IEnumerator ControlledBounceCoroutine(PlayerShield shield)
+    {
+        Vector3 startPos = transform.position;
+        Vector3 shieldCenter = (shield != null ? shield.transform.position : (playerTrans != null ? playerTrans.position : startPos - Vector3.right));
 
-        if (rb != null)
+        float realBounceDuration = bounceDuration > 0.05f ? bounceDuration : 0.6f;
+        float realFadeDuration = fadeDuration > 0.05f ? fadeDuration : 1.0f;
+        float realBounceDist = bounceDistance > 0.1f ? bounceDistance : 2.5f;
+
+        float dirX = (startPos.x >= shieldCenter.x) ? 1.0f : -1.0f;
+        Vector3 targetPos = new Vector3(startPos.x + dirX * realBounceDist, startPos.y, originalPosition.z);
+
+        Quaternion startRot = transform.rotation;
+        Quaternion endRot = startRot * Quaternion.Euler(0, 0, dirX * -bounceSpinAngle);
+
+        Debug.Log($"【鳥群反彈】100% 可控反彈啟動！距離: {realBounceDist}m, 高度: {bounceHeight}m, 時間: {realBounceDuration}s");
+
+        float elapsed = 0f;
+        while (elapsed < realBounceDuration)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.AddForce(bounceDir * force, ForceMode.Impulse);
-            rb.AddTorque(Vector3.forward * -torque, ForceMode.Impulse); // 柔和旋轉
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / realBounceDuration);
+
+            Vector3 currentPos = Vector3.Lerp(startPos, targetPos, t);
+            float arcY = 4f * bounceHeight * t * (1f - t);
+            currentPos.y += arcY;
+            currentPos.z = originalPosition.z;
+
+            transform.position = currentPos;
+            transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+
+            yield return null;
         }
 
-        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊護盾！成功反彈 (力道 {force}) 並播放 DIE 動畫，過後漸漸消失！");
-        StartCoroutine(FadeAndDestroyCoroutineAfterBounce());
+        float fadeElapsed = 0f;
+        while (fadeElapsed < realFadeDuration)
+        {
+            fadeElapsed += Time.deltaTime;
+            float alpha = 1.0f - (fadeElapsed / realFadeDuration);
+            SetAlpha(alpha);
+            yield return null;
+        }
+
+        Destroy(gameObject);
     }
 
     // --- IResettable 實作 ---

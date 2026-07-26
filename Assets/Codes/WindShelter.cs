@@ -22,11 +22,47 @@ public class WindShelter : MonoBehaviour, IResettable
 
     private void Start()
     {
-        // 確保 Collider 被設為 Trigger
-        Collider col = GetComponent<Collider>();
-        if (col != null) col.isTrigger = true;
+        // 搜尋此物件上的 Trigger Collider 作為風暴感應區，絕對不修改主實體物理牆！
+        Collider[] colliders = GetComponents<Collider>();
+        bool hasTrigger = false;
+        foreach (var c in colliders)
+        {
+            if (c != null && c.isTrigger)
+            {
+                hasTrigger = true;
+                break;
+            }
+        }
+
+        // 如果只有實體物理牆 (無 Trigger)，自動建立同尺寸的 Trigger 感應區，保留主實體牆防止玩家穿模！
+        if (!hasTrigger && colliders.Length > 0)
+        {
+            Collider mainCol = colliders[0];
+            if (mainCol is BoxCollider mainBox)
+            {
+                BoxCollider triggerBox = gameObject.AddComponent<BoxCollider>();
+                triggerBox.center = mainBox.center;
+                triggerBox.size = mainBox.size;
+                triggerBox.isTrigger = true;
+            }
+            else if (mainCol is SphereCollider mainSphere)
+            {
+                SphereCollider triggerSphere = gameObject.AddComponent<SphereCollider>();
+                triggerSphere.center = mainSphere.center;
+                triggerSphere.radius = mainSphere.radius;
+                triggerSphere.isTrigger = true;
+            }
+            else
+            {
+                BoxCollider triggerBox = gameObject.AddComponent<BoxCollider>();
+                triggerBox.isTrigger = true;
+            }
+        }
 
         destructible = GetComponent<Destructible>();
+        if (destructible == null) destructible = GetComponentInChildren<Destructible>();
+        if (destructible == null) destructible = GetComponentInParent<Destructible>();
+
         windSystem = FindFirstObjectByType<WindGustSystem>();
 
         if (!isTrueShelter && destructible == null)
@@ -47,29 +83,27 @@ public class WindShelter : MonoBehaviour, IResettable
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void HandlePlayerEnter(GameObject playerObj)
     {
-        if (other.CompareTag("Player"))
+        if (playerObj.CompareTag("Player") || playerObj.name == "Player" || playerObj.GetComponentInParent<PlayerMovement>() != null)
         {
             isPlayerInside = true;
             if (!hasCollapsed)
             {
                 WindGustSystem.IsPlayerSheltered = true;
-                Debug.Log($"【掩體偵測】玩家躲入掩體 '{gameObject.name}'。");
+                Debug.Log($"【掩體偵測】玩家躲入掩體 '{gameObject.name}'。 (isTrueShelter: {isTrueShelter})");
             }
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void HandlePlayerExit(GameObject playerObj)
     {
-        if (other.CompareTag("Player"))
+        if (playerObj.CompareTag("Player") || playerObj.name == "Player" || playerObj.GetComponentInParent<PlayerMovement>() != null)
         {
             isPlayerInside = false;
-            // 離開掩體時，取消保護狀態
             WindGustSystem.IsPlayerSheltered = false;
             Debug.Log($"【掩體偵測】玩家離開掩體 '{gameObject.name}'。");
 
-            // 玩家在崩解前逃離，則暫停崩解倒數
             if (!isTrueShelter && collapseCoroutine != null)
             {
                 StopCoroutine(collapseCoroutine);
@@ -78,22 +112,33 @@ public class WindShelter : MonoBehaviour, IResettable
         }
     }
 
+    private void OnTriggerEnter(Collider other) => HandlePlayerEnter(other.gameObject);
+    private void OnTriggerStay(Collider other) => HandlePlayerEnter(other.gameObject);
+    private void OnTriggerExit(Collider other) => HandlePlayerExit(other.gameObject);
+
+    private void OnTriggerEnter2D(Collider2D other) => HandlePlayerEnter(other.gameObject);
+    private void OnTriggerStay2D(Collider2D other) => HandlePlayerEnter(other.gameObject);
+    private void OnTriggerExit2D(Collider2D other) => HandlePlayerExit(other.gameObject);
+
     private IEnumerator CollapseSequence()
     {
-        Debug.LogWarning($"【假掩體警報】'{gameObject.name}' 開始震動崩解！於 {collapseDelay} 秒後碎裂！");
+        Debug.LogWarning($"【假掩體警報】'{gameObject.name}' 開始崩解！於 {collapseDelay} 秒後碎裂！");
         yield return new WaitForSeconds(collapseDelay);
 
         hasCollapsed = true;
-        WindGustSystem.IsPlayerSheltered = false; // 失去保護
 
+        // 1. 優先觸發 2D 碎石爆破散落效果！
         if (destructible != null)
         {
             destructible.Shatter();
         }
         else
         {
-            gameObject.SetActive(false); // 備用方案：直接關閉物件
+            gameObject.SetActive(false);
         }
+
+        // 2. 碎石爆開發生的同時，掩體保護才正式宣告失效！
+        WindGustSystem.IsPlayerSheltered = false;
         collapseCoroutine = null;
     }
 
