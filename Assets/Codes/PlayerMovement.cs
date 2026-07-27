@@ -92,6 +92,9 @@ public class PlayerMovement : MonoBehaviour
     private float lastSwimTime = -999f;
     private bool isTriggerUnderwater = false;
 
+    [Tooltip("水中按 W 向上游泳時的模型仰角傾斜 (預設 15 度)")]
+    public float underwaterSwimUpTiltAngle = 15f;
+
     // 動畫接軌預留標籤
     [HideInInspector] public bool isSwimming = false;
 
@@ -267,10 +270,22 @@ public class PlayerMovement : MonoBehaviour
                 if (param.name == "isSwimming") animator.SetBool("isSwimming", isSwimming);
             }
 
-            // 控制角色外觀模型轉向
+            // 控制角色外觀模型轉向與水下按 W 向上 15 度仰角傾斜
             if (facingDirection != Vector3.zero)
             {
-                animator.transform.rotation = Quaternion.LookRotation(facingDirection);
+                Quaternion baseRotation = Quaternion.LookRotation(facingDirection);
+                bool isSwimmingUpward = isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || rb.linearVelocity.y > 0.3f);
+
+                if (isSwimmingUpward)
+                {
+                    // 局部 X 軸旋轉 -underwaterSwimUpTiltAngle (-15度) 會將模型的頭部/朝向平滑抬高仰角
+                    Quaternion targetRotation = baseRotation * Quaternion.Euler(-underwaterSwimUpTiltAngle, 0f, 0f);
+                    animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, targetRotation, Time.deltaTime * 12f);
+                }
+                else
+                {
+                    animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, baseRotation, Time.deltaTime * 12f);
+                }
             }
 
             string targetAnim = "Idle";
