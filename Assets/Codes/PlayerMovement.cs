@@ -108,6 +108,23 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("水下深度負浮力最大額外下沉推力上限 (避免極深處掉落太快)")]
     public float maxNegativeBuoyancyExtraForce = 8.0f;
 
+    [Header("隱形水下游泳體力與適時斷開機制 (Underwater Stamina & Limit)")]
+    [Tooltip("連續向上游泳的最大隱形體力上限 (秒，預設 3.0)。控制按住 W 最多能連續向上游多久")]
+    public float maxSwimStamina = 3.0f;
+
+    [Tooltip("隱形體力恢復速率 (倍率，預設 1.5)。當放開按鍵或著地時體力恢復速度")]
+    public float swimStaminaRegenRate = 1.5f;
+
+    [Tooltip("體力耗盡力竭冷卻時間 (秒，預設 1.0)。體力扣完斷開推力後，需冷卻多久才能再次向上游泳")]
+    public float swimExhaustionCooldown = 1.0f;
+
+    [Tooltip("連續向上游泳的推進速度 (預設 4.0f)")]
+    public float underwaterSwimUpSpeed = 4.0f;
+
+    [HideInInspector] public float currentSwimStamina;
+    [HideInInspector] public bool isSwimExhausted = false;
+    private float exhaustionTimer = 0f;
+
     // 動畫接軌預留標籤
     [HideInInspector] public bool isSwimming = false;
 
@@ -165,6 +182,8 @@ public class PlayerMovement : MonoBehaviour
         attachedWolvesCount = 0;
         currentSpeed = baseSpeed;
         _lastFramePos = transform.position;
+        currentSwimStamina = maxSwimStamina;
+        isSwimExhausted = false;
     }
 
     void Update()
@@ -450,31 +469,48 @@ public class PlayerMovement : MonoBehaviour
             rb.linearVelocity = targetVelocity;
         }
 
-        // 支援 W 鍵或空白鍵跳躍 / 水中撥水游泳 (必須沒有被劇情鎖定)
-        if (!isCutsceneFrozen && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)))
-        {
-            if (isUnderwater)
-            {
-                // 在水中：著地時可跳躍，懸空時若允許連續游泳且冷卻時間已過，可向上撥水推進
-                if (isGrounded || (allowContinuousSwimming && (Time.time - lastSwimTime >= swimCooldown)))
-                {
-                    isJumping = true;
-                    lastSwimTime = Time.time;
-                    isSwimming = true;
+        // 水下隱形體力扣除與回復邏輯
+        bool isPressingSwimUp = !isCutsceneFrozen && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
 
-                    // 保留原本向上的部分速度，消除下沉速，套用柔和的水中向上推力
-                    float baseUpVel = Mathf.Max(rb.linearVelocity.y, 0f);
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, baseUpVel, rb.linearVelocity.z);
-                    rb.AddForce(Vector3.up * underwaterJumpForce, ForceMode.VelocityChange);
+        if (isPressingSwimUp && !isSwimExhausted)
+        {
+            currentSwimStamina -= Time.deltaTime;
+            isSwimming = true;
+
+            if (currentSwimStamina <= 0f)
+            {
+                currentSwimStamina = 0f;
+                isSwimExhausted = true;
+                exhaustionTimer = swimExhaustionCooldown;
+                Debug.Log("【水下體力機制】連續向上游泳體力耗盡，適時斷開向上推進！");
+            }
+        }
+        else
+        {
+            if (isSwimExhausted)
+            {
+                exhaustionTimer -= Time.deltaTime;
+                if (exhaustionTimer <= 0f)
+                {
+                    isSwimExhausted = false;
+                    Debug.Log("【水下體力機制】力竭冷卻結束，恢復向上游泳機能！");
                 }
             }
-            else if (isGrounded)
+
+            // 放開按鍵或著地時，隱形體力逐漸自動恢復
+            if (isGrounded || !isPressingSwimUp)
             {
-                // 陸地標準跳躍
-                isJumping = true;
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+                currentSwimStamina = Mathf.Min(maxSwimStamina, currentSwimStamina + Time.deltaTime * swimStaminaRegenRate);
             }
+        }
+
+        // 陸地跳躍 (非水下)
+        if (!isCutsceneFrozen && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        {
+            // 陸地標準跳躍
+            isJumping = true;
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
         }
     }
 
@@ -762,6 +798,13 @@ public class PlayerMovement : MonoBehaviour
             if (vel.y < effectiveMaxFallSpeed)
             {
                 vel.y = effectiveMaxFallSpeed;
+            }
+
+            // 5. 水下連續按 W 向上游泳推進 (未力竭時)
+            bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+            if (isPressingSwimUp && !isSwimExhausted)
+            {
+                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
             }
 
             rb.linearVelocity = vel;
