@@ -303,16 +303,20 @@ public class PlayerMovement : MonoBehaviour
 
             string targetAnim = "Idle";
 
-            // 判斷是否應該播放墜落動畫 (加入了延遲時間與掉落速度的容錯閥值)
-            bool isFalling = !isGrounded && (currentAirTime >= fallAnimationDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
-
-            // 判斷是否有水平速度或輸入
-            bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
+            // 判斷鍵盤是否有按下任何移動按鍵 (A, D, W, Space, 方向鍵)
+            bool hasKeyboardInput = Mathf.Abs(moveInput) > 0.05f 
+                                 || Input.GetKey(KeyCode.W) 
+                                 || Input.GetKey(KeyCode.Space) 
+                                 || Input.GetKey(KeyCode.A) 
+                                 || Input.GetKey(KeyCode.D) 
+                                 || Input.GetKey(KeyCode.LeftArrow) 
+                                 || Input.GetKey(KeyCode.RightArrow)
+                                 || Input.GetKey(KeyCode.UpArrow);
 
             if (isUnderwater)
             {
-                // 【水下動畫邏輯】：在水中只要有水平移動或按 W 向上游泳，播放 Swimming；原地靜止時一律播放 Treading Water
-                if (hasHorizontalSpeed || isSwimming || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space))
+                // 【水下絕對邏輯】：只要鍵盤沒有按鍵在動 ➔ 100% 播放 Treading Water；鍵盤有按鍵在動 ➔ 才播放 Swimming
+                if (hasKeyboardInput)
                 {
                     targetAnim = "Swimming";
                 }
