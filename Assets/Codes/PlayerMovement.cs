@@ -303,6 +303,12 @@ public class PlayerMovement : MonoBehaviour
 
             string targetAnim = "Idle";
 
+            // 判斷是否應該播放墜落動畫 (加入了延遲時間與掉落速度的容錯閥值)
+            bool isFalling = !isGrounded && (currentAirTime >= fallAnimationDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
+
+            // 判斷是否有水平速度或輸入
+            bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
+
             // 判斷鍵盤是否有按下任何移動按鍵 (A, D, W, Space, 方向鍵)
             bool hasKeyboardInput = Mathf.Abs(moveInput) > 0.05f 
                                  || Input.GetKey(KeyCode.W) 
