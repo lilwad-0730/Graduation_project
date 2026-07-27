@@ -95,6 +95,19 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("水中按 W 向上游泳時的模型仰角傾斜 (預設 15 度)")]
     public float underwaterSwimUpTiltAngle = 15f;
 
+    [Header("真實水下波義耳定律負浮力機制 (Depth Buoyancy Physics)")]
+    [Tooltip("是否開啟水下深度波義耳定律負浮力機制 (越深水壓越大壓縮體積，超過中性浮力深度後加速沉降)")]
+    public bool enableDepthBuoyancyPhysics = true;
+
+    [Tooltip("中性浮力 Y 軸座標 (Neutral Buoyancy Y Level)。高於此處為正浮力，低於此處水壓壓縮空氣產生負浮力加速沉降")]
+    public float neutralBuoyancyY = -5f;
+
+    [Tooltip("水壓氣體體積壓縮率 (Depth Compression Rate)。每向下滑行 1 單位深度時增加的沉降加速度比率 (建議 0.1 ~ 0.4)")]
+    public float depthCompressionRate = 0.2f;
+
+    [Tooltip("水下深度負浮力最大額外下沉推力上限 (避免極深處掉落太快)")]
+    public float maxNegativeBuoyancyExtraForce = 8.0f;
+
     // 動畫接軌預留標籤
     [HideInInspector] public bool isSwimming = false;
 
@@ -298,14 +311,14 @@ public class PlayerMovement : MonoBehaviour
 
             if (isUnderwater)
             {
-                // 【水下動畫邏輯】：水中有移動或按 W 游泳時播放 Swimming；原地漂浮時播放 Treading Water
+                // 【水下動畫邏輯】：在水中只要有水平移動或按 W 向上游泳，播放 Swimming；原地靜止時一律播放 Treading Water
                 if (hasHorizontalSpeed || isSwimming || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space))
                 {
-                    targetAnim = animator.HasState(0, Animator.StringToHash("Swimming")) ? "Swimming" : (hasHorizontalSpeed ? "Run" : "Idle");
+                    targetAnim = "Swimming";
                 }
                 else
                 {
-                    targetAnim = animator.HasState(0, Animator.StringToHash("Treading Water")) ? "Treading Water" : "Idle";
+                    targetAnim = "Treading Water";
                 }
             }
             else
@@ -338,21 +351,12 @@ public class PlayerMovement : MonoBehaviour
                 isStrictLockingX = false;
             }
 
-            // 【強制接管播放】使用 Play 直接切換，捨棄 CrossFade 避免任何過渡卡頓或失敗
+            // 【強制接管播放】使用 Play 直接切換指定 State
             if (currentAnimState != targetAnim)
             {
-                // 檢查該狀態是否存在，避免 Console 狂刷錯誤
-                if (animator.HasState(0, Animator.StringToHash(targetAnim)))
-                {
-                    animator.Play(targetAnim);
-                    currentAnimState = targetAnim;
-                    Debug.Log($"[動畫切換] 強制切換為：{targetAnim}");
-                }
-                else
-                {
-                    currentAnimState = targetAnim;
-                    Debug.LogError($"[動畫嚴重錯誤] 試圖播放 '{targetAnim}'，但您的 Animator 裡面「完全沒有」這個名字的方塊！");
-                }
+                animator.Play(targetAnim);
+                currentAnimState = targetAnim;
+                Debug.Log($"[動畫切換] 水下/陸地強制切換為：{targetAnim}");
             }
         }
         else
@@ -708,29 +712,46 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ==========================================
-    // 水下物理、浮力與阻力實時運算 (FixedUpdate)
+    // 水下物理、浮力與真實深度波義耳負浮力運算 (FixedUpdate)
     // ==========================================
     private void FixedUpdate()
     {
         if (isUnderwater && rb != null && !rb.isKinematic)
         {
-            // 1. 浮力與微重力抵消 (Counter-Gravity / Buoyancy)
-            // 標準重力 Physics.gravity.y (-9.81)。目標水中重力 = Physics.gravity.y * underwaterGravityScale
+            // 1. 基礎浮力與微重力抵消 (Counter-Gravity / Buoyancy)
             float gravityMagnitude = Mathf.Abs(Physics.gravity.y);
-            float counterForce = gravityMagnitude * (1f - Mathf.Clamp01(underwaterGravityScale)) * rb.mass;
-            rb.AddForce(Vector3.up * counterForce, ForceMode.Force);
+            float baseCounterForce = gravityMagnitude * (1f - Mathf.Clamp01(underwaterGravityScale)) * rb.mass;
 
-            // 2. 水中垂直阻力 (Vertical Drag Damping)
+            // 2. 真實深度水壓氣體體積壓縮 (Boyle's Law & Negative Buoyancy)
+            // 當深度 Y 越低 (低於 neutralBuoyancyY 中性浮力點)，水壓遞增壓縮氣體體積，正浮力衰減，產生向下加速沉降的負浮力
+            float extraDownwardForce = 0f;
+            if (enableDepthBuoyancyPhysics)
+            {
+                float depthBelowNeutral = neutralBuoyancyY - transform.position.y;
+                if (depthBelowNeutral > 0f)
+                {
+                    extraDownwardForce = Mathf.Min(depthBelowNeutral * depthCompressionRate * rb.mass, maxNegativeBuoyancyExtraForce);
+                }
+            }
+
+            float finalCounterForce = Mathf.Max(0f, baseCounterForce - extraDownwardForce);
+            rb.AddForce(Vector3.up * finalCounterForce, ForceMode.Force);
+
+            // 3. 水中垂直阻力 (Vertical Drag Damping)
             Vector3 vel = rb.linearVelocity;
             if (Mathf.Abs(vel.y) > 0.01f)
             {
                 vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime);
             }
 
-            // 3. 水中最大沉降速度限制 (Terminal Sinking Speed Limit)
-            if (vel.y < underwaterMaxFallSpeed)
+            // 4. 水中最大沉降速度動態限制 (Terminal Sinking Speed Limit with Depth)
+            float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
+                ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
+                : underwaterMaxFallSpeed;
+
+            if (vel.y < effectiveMaxFallSpeed)
             {
-                vel.y = underwaterMaxFallSpeed;
+                vel.y = effectiveMaxFallSpeed;
             }
 
             rb.linearVelocity = vel;
