@@ -18,22 +18,22 @@ public class ShatteredObject : MonoBehaviour
 
     private void ApplyShatterForce()
     {
-        // 3D 物理碎片噴射
+        // 3D 物理碎片爆破與向下傾倒崩塌
         Rigidbody[] rbs3D = GetComponentsInChildren<Rigidbody>();
         foreach (Rigidbody rb in rbs3D)
         {
-            Vector3 randomDir = Random.insideUnitSphere.normalized;
+            Vector3 randomDir = new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(-3.5f, 0.5f), Random.Range(-1f, 1f));
             rb.AddForce(randomDir * explosionForce, ForceMode.Impulse);
-            rb.AddTorque(Random.insideUnitSphere * explosionForce, ForceMode.Impulse);
+            rb.AddTorque(Random.insideUnitSphere * explosionForce * 8f, ForceMode.Impulse);
         }
 
         // 2D 物理碎片噴射
         Rigidbody2D[] rbs2D = GetComponentsInChildren<Rigidbody2D>();
         foreach (Rigidbody2D rb in rbs2D)
         {
-            Vector2 randomDir = Random.insideUnitCircle.normalized;
+            Vector2 randomDir = new Vector2(Random.Range(-2.5f, 2.5f), Random.Range(-3.5f, 0.5f));
             rb.AddForce(randomDir * explosionForce, ForceMode2D.Impulse);
-            rb.AddTorque(Random.Range(-explosionForce, explosionForce), ForceMode2D.Impulse);
+            rb.AddTorque(Random.Range(-explosionForce * 8f, explosionForce * 8f), ForceMode2D.Impulse);
         }
     }
 
