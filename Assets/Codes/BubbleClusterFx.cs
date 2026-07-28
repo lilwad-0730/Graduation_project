@@ -60,8 +60,7 @@ public class BubbleClusterFx : MonoBehaviour
 
     void OnValidate()
     {
-        if (Application.isPlaying || !enabled) return;
-        GenerateCluster();
+        // 避免在 OnValidate 中直接引發 DestroyImmediate 導致 Unity 崩潰與 Console 狂刷錯誤
     }
 
     [ContextMenu("切換暫停/播放動畫")]
@@ -70,6 +69,7 @@ public class BubbleClusterFx : MonoBehaviour
         pauseAnimation = !pauseAnimation;
     }
 
+    [ContextMenu("重新生成泡泡集群")]
     public void GenerateCluster()
     {
         List<GameObject> children = new List<GameObject>();
@@ -79,8 +79,22 @@ public class BubbleClusterFx : MonoBehaviour
         }
         foreach (var child in children)
         {
-            if (Application.isPlaying) Destroy(child);
-            else DestroyImmediate(child);
+            if (child == null) continue;
+            if (Application.isPlaying)
+            {
+                Destroy(child);
+            }
+            else
+            {
+                #if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    if (child != null) DestroyImmediate(child);
+                };
+                #else
+                DestroyImmediate(child);
+                #endif
+            }
         }
         _bubbles.Clear();
 
@@ -88,8 +102,21 @@ public class BubbleClusterFx : MonoBehaviour
         {
             GameObject tempCube = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             bubbleMesh = tempCube.GetComponent<MeshFilter>().sharedMesh;
-            if (Application.isPlaying) Destroy(tempCube);
-            else DestroyImmediate(tempCube);
+            if (Application.isPlaying)
+            {
+                Destroy(tempCube);
+            }
+            else
+            {
+                #if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    if (tempCube != null) DestroyImmediate(tempCube);
+                };
+                #else
+                DestroyImmediate(tempCube);
+                #endif
+            }
         }
 
         if (bubbleMaterial == null)
