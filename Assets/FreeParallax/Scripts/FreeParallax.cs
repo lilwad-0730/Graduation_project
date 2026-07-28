@@ -1,4 +1,4 @@
-﻿// License: https://en.wikipedia.org/wiki/MIT_License
+// License: https://en.wikipedia.org/wiki/MIT_License
 // Code created by Jeff Johnson & Digital Ruby, LLC - http://www.digitalruby.com
 // Code is from the Free Parallax asset on the Unity asset store: http://u3d.as/bvv
 // Code may be redistributed in source form, provided all the comments at the top here are kept intact
@@ -260,12 +260,17 @@ public class FreeParallaxElement
         {
             GameObject obj = GameObjects[i];
             Renderer r = GameObjectRenderers[i];
+
+            if (RepositionLogic.ScaleHeight > 0.0f)
+            {
+                obj.transform.localScale = Vector3.one;
+            }
+
             Bounds b = r.bounds;
 
             if (RepositionLogic.ScaleHeight > 0.0f)
             {
                 float percent;
-                obj.transform.localScale = Vector3.one;
                 if (p.IsHorizontal)
                 {
                     Vector3 maxPoint = c.WorldToViewportPoint(new Vector3(0.0f, worldBottom.y + b.size.y, 0.0f));

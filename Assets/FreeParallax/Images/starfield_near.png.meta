@@ -1,0 +1,1027 @@
+fileFormatVersion: 2
+guid: 7becff32173424f428db1348d955cd91
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 717124787213711241
+    second: starfield_near_0
+  - first:
+      213: -3405633495114808923
+    second: starfield_near_1
+  - first:
+      213: 870623170146563278
+    second: starfield_near_2
+  - first:
+      213: -3660278992047082806
+    second: starfield_near_3
+  - first:
+      213: -5180537765714276249
+    second: starfield_near_4
+  - first:
+      213: 1115363828086339357
+    second: starfield_near_5
+  - first:
+      213: 6052997054473092089
+    second: starfield_near_6
+  - first:
+      213: -7048820294516603272
+    second: starfield_near_7
+  - first:
+      213: 6289585603899711729
+    second: starfield_near_8
+  - first:
+      213: -3616957764975160814
+    second: starfield_near_9
+  - first:
+      213: 1867719968946441186
+    second: starfield_near_10
+  - first:
+      213: 3372098440363067004
+    second: starfield_near_11
+  - first:
+      213: 3814513252388436831
+    second: starfield_near_12
+  - first:
+      213: 2454648400936710199
+    second: starfield_near_13
+  - first:
+      213: -1390243857925308647
+    second: starfield_near_14
+  - first:
+      213: -5882510504938904777
+    second: starfield_near_15
+  - first:
+      213: -7772909003333142840
+    second: starfield_near_16
+  - first:
+      213: 2218310191908882479
+    second: starfield_near_17
+  - first:
+      213: 4733026433236276044
+    second: starfield_near_18
+  - first:
+      213: -4361434382209532612
+    second: starfield_near_19
+  - first:
+      213: -3352535281720099306
+    second: starfield_near_20
+  - first:
+      213: 3970136337611411315
+    second: starfield_near_21
+  - first:
+      213: 1413575615263396572
+    second: starfield_near_22
+  - first:
+      213: -6827042693213138163
+    second: starfield_near_23
+  - first:
+      213: -2607863303857741252
+    second: starfield_near_24
+  - first:
+      213: 6533088711720039715
+    second: starfield_near_25
+  - first:
+      213: -2947360430194836103
+    second: starfield_near_26
+  - first:
+      213: 6500306757050811658
+    second: starfield_near_27
+  - first:
+      213: -5355213369981497054
+    second: starfield_near_28
+  - first:
+      213: -460970790552265361
+    second: starfield_near_29
+  - first:
+      213: -5788067172314905887
+    second: starfield_near_30
+  - first:
+      213: -7729593451940009869
+    second: starfield_near_31
+  - first:
+      213: 3621135201344755670
+    second: starfield_near_32
+  - first:
+      213: 670070687693294393
+    second: starfield_near_33
+  - first:
+      213: 6339199557250426302
+    second: starfield_near_34
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: starfield_near_0
+      rect:
+        serializedVersion: 2
+        x: 545
+        y: 557
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9873089c13db3f900800000000000000
+      internalID: 717124787213711241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_1
+      rect:
+        serializedVersion: 2
+        x: 814
+        y: 560
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a182884162ccb0d0800000000000000
+      internalID: -3405633495114808923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_2
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 518
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec47fc51923151c00800000000000000
+      internalID: 870623170146563278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_3
+      rect:
+        serializedVersion: 2
+        x: 917
+        y: 476
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac2753456a3143dc0800000000000000
+      internalID: -3660278992047082806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_4
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 486
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 760da1989580b18b0800000000000000
+      internalID: -5180537765714276249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_5
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 442
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d17f7600e719a7f00800000000000000
+      internalID: 1115363828086339357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_6
+      rect:
+        serializedVersion: 2
+        x: 333
+        y: 444
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fbba5a30c0900450800000000000000
+      internalID: 6052997054473092089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_7
+      rect:
+        serializedVersion: 2
+        x: 863
+        y: 442
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87606c3d94f8d2e90800000000000000
+      internalID: -7048820294516603272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_8
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 430
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f06ad878c8194750800000000000000
+      internalID: 6289585603899711729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_9
+      rect:
+        serializedVersion: 2
+        x: 133
+        y: 434
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2129013831cfdcdc0800000000000000
+      internalID: -3616957764975160814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_10
+      rect:
+        serializedVersion: 2
+        x: 472
+        y: 396
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ebc4f88a697be910800000000000000
+      internalID: 1867719968946441186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_11
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 370
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c764d755aa91cce20800000000000000
+      internalID: 3372098440363067004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_12
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 378
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5bf1a7c79fdfe430800000000000000
+      internalID: 3814513252388436831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_13
+      rect:
+        serializedVersion: 2
+        x: 570
+        y: 375
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 730305227b9a01220800000000000000
+      internalID: 2454648400936710199
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_14
+      rect:
+        serializedVersion: 2
+        x: 251
+        y: 360
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91f7139b39cd4bce0800000000000000
+      internalID: -1390243857925308647
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_15
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 332
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 733ec95dcdf1d5ea0800000000000000
+      internalID: -5882510504938904777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_16
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 338
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c674e0b174112490800000000000000
+      internalID: -7772909003333142840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_17
+      rect:
+        serializedVersion: 2
+        x: 545
+        y: 322
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f288b5ecd5509ce10800000000000000
+      internalID: 2218310191908882479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_18
+      rect:
+        serializedVersion: 2
+        x: 661
+        y: 290
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c431591e6761fa140800000000000000
+      internalID: 4733026433236276044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_19
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 291
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3db93989821973c0800000000000000
+      internalID: -4361434382209532612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_20
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 267
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61efb1c7ce66971d0800000000000000
+      internalID: -3352535281720099306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_21
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 276
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37fc231e6f1c81730800000000000000
+      internalID: 3970136337611411315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_22
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 232
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd2ddea58870e9310800000000000000
+      internalID: 1413575615263396572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_23
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 227
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d03da9c77d87141a0800000000000000
+      internalID: -6827042693213138163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_24
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 200
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3268c664220fcbd0800000000000000
+      internalID: -2607863303857741252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_25
+      rect:
+        serializedVersion: 2
+        x: 462
+        y: 193
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 325ff2cc1913aaa50800000000000000
+      internalID: 6533088711720039715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_26
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 187
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97db135fd4fd817d0800000000000000
+      internalID: -2947360430194836103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_27
+      rect:
+        serializedVersion: 2
+        x: 690
+        y: 163
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a05c5113e8ab53a50800000000000000
+      internalID: 6500306757050811658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_28
+      rect:
+        serializedVersion: 2
+        x: 498
+        y: 123
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22194d920d57ea5b0800000000000000
+      internalID: -5355213369981497054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_29
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 78
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6d1d41228d4a99f0800000000000000
+      internalID: -460970790552265361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_30
+      rect:
+        serializedVersion: 2
+        x: 892
+        y: 80
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e20212c297acafa0800000000000000
+      internalID: -5788067172314905887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_31
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 70
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3782ee665b7fab490800000000000000
+      internalID: -7729593451940009869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_32
+      rect:
+        serializedVersion: 2
+        x: 682
+        y: 37
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d711dfa74bd04230800000000000000
+      internalID: 3621135201344755670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_33
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 33
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93b4c528db19c4900800000000000000
+      internalID: 670070687693294393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: starfield_near_34
+      rect:
+        serializedVersion: 2
+        x: 410
+        y: 0
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb5a93a296c59f750800000000000000
+      internalID: 6339199557250426302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      starfield_near_0: 717124787213711241
+      starfield_near_1: -3405633495114808923
+      starfield_near_10: 1867719968946441186
+      starfield_near_11: 3372098440363067004
+      starfield_near_12: 3814513252388436831
+      starfield_near_13: 2454648400936710199
+      starfield_near_14: -1390243857925308647
+      starfield_near_15: -5882510504938904777
+      starfield_near_16: -7772909003333142840
+      starfield_near_17: 2218310191908882479
+      starfield_near_18: 4733026433236276044
+      starfield_near_19: -4361434382209532612
+      starfield_near_2: 870623170146563278
+      starfield_near_20: -3352535281720099306
+      starfield_near_21: 3970136337611411315
+      starfield_near_22: 1413575615263396572
+      starfield_near_23: -6827042693213138163
+      starfield_near_24: -2607863303857741252
+      starfield_near_25: 6533088711720039715
+      starfield_near_26: -2947360430194836103
+      starfield_near_27: 6500306757050811658
+      starfield_near_28: -5355213369981497054
+      starfield_near_29: -460970790552265361
+      starfield_near_3: -3660278992047082806
+      starfield_near_30: -5788067172314905887
+      starfield_near_31: -7729593451940009869
+      starfield_near_32: 3621135201344755670
+      starfield_near_33: 670070687693294393
+      starfield_near_34: 6339199557250426302
+      starfield_near_4: -5180537765714276249
+      starfield_near_5: 1115363828086339357
+      starfield_near_6: 6052997054473092089
+      starfield_near_7: -7048820294516603272
+      starfield_near_8: 6289585603899711729
+      starfield_near_9: -3616957764975160814
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
