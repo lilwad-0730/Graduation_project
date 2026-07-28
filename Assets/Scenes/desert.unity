@@ -2375,6 +2375,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraTargetXFollower
   targetToFollow: {fileID: 651209167}
   fixedY: 5.29
+  lockLeftMovement: 1
+  clampPlayerLeftEdge: 1
+  playerLeftEdgeOffset: 25
 --- !u!1 &780444289
 GameObject:
   m_ObjectHideFlags: 0
