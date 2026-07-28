@@ -91,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
     public float swimCooldown = 0.25f;
     private float lastSwimTime = -999f;
     private bool isTriggerUnderwater = false;
+    private HorizontalMovingPlatform activeMovingPlatform;
 
     [Tooltip("水中按 W 向上游泳時的模型仰角傾斜 (預設 15 度)")]
     public float underwaterSwimUpTiltAngle = 15f;
@@ -209,15 +210,26 @@ public class PlayerMovement : MonoBehaviour
 
         // 1. 偵測地面狀態 (若 playerCollider 為空則啟用 Raycast Fallback)
         bool preliminaryGrounded = false;
+        RaycastHit groundHit;
         if (playerCollider != null)
         {
             Vector3 center = playerCollider.bounds.center;
             Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
-            preliminaryGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
+            preliminaryGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out groundHit, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
         }
         else
         {
-            preliminaryGrounded = Physics.Raycast(transform.position, Vector3.down, 1.5f, ~0, QueryTriggerInteraction.Ignore);
+            preliminaryGrounded = Physics.Raycast(transform.position, Vector3.down, out groundHit, 1.5f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
+        if (preliminaryGrounded && groundHit.collider != null)
+        {
+            activeMovingPlatform = groundHit.collider.GetComponentInParent<HorizontalMovingPlatform>();
+            if (activeMovingPlatform == null) activeMovingPlatform = groundHit.collider.GetComponent<HorizontalMovingPlatform>();
+        }
+        else
+        {
+            activeMovingPlatform = null;
         }
 
         // ==========================================
@@ -466,6 +478,11 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
             
+            if (activeMovingPlatform != null)
+            {
+                targetVelocity.x += activeMovingPlatform.Velocity.x;
+            }
+
             rb.linearVelocity = targetVelocity;
         }
 
