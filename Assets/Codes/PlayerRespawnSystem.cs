@@ -286,7 +286,14 @@ public class PlayerRespawnSystem : MonoBehaviour
 
         if (_mainCam != null)
         {
-            _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            GameObject customTarget = GameObject.Find("CameraFollowTarget");
+            if (customTarget != null) {
+                Vector3 camPos = transform.position + cameraOffsetFromPlayer;
+                camPos.y = customTarget.transform.position.y;
+                _mainCam.transform.position = camPos;
+            } else {
+                _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            }
             Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
 
             // 尋找新版 CinemachineCamera
@@ -294,6 +301,9 @@ public class PlayerRespawnSystem : MonoBehaviour
             foreach (var vcam in vcams3)
             {
                 vcam.PreviousStateIsValid = false;
+                var t = vcam.Target;
+                t.TrackingTarget = targetFollow;
+                vcam.Target = t;
                 vcam.Follow = targetFollow;
             }
 
@@ -695,7 +705,14 @@ public class PlayerRespawnSystem : MonoBehaviour
 
         if (_mainCam != null)
         {
-            _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            GameObject customTarget = GameObject.Find("CameraFollowTarget");
+            if (customTarget != null) {
+                Vector3 camPos = transform.position + cameraOffsetFromPlayer;
+                camPos.y = customTarget.transform.position.y;
+                _mainCam.transform.position = camPos;
+            } else {
+                _mainCam.transform.position = transform.position + cameraOffsetFromPlayer;
+            }
             Transform targetFollow = (pmComponent != null) ? pmComponent.GetCameraTarget() : this.transform;
 
             // 重置 Cinemachine
@@ -703,6 +720,9 @@ public class PlayerRespawnSystem : MonoBehaviour
             foreach (var vcam in vcams3)
             {
                 vcam.PreviousStateIsValid = false;
+                var t = vcam.Target;
+                t.TrackingTarget = targetFollow;
+                vcam.Target = t;
                 vcam.Follow = targetFollow;
             }
             CinemachineVirtualCamera[] vcamsLegacy = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);

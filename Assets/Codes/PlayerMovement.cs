@@ -539,17 +539,25 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         if (smoothCameraY && cameraTarget != null)
         {
-            float targetX = transform.position.x;
-            float targetZ = transform.position.z;
-            
-            // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
-            float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
+            GameObject customTarget = GameObject.Find("CameraFollowTarget");
+            if (customTarget != null)
+            {
+                cameraTarget.position = customTarget.transform.position;
+            }
+            else
+            {
+                float targetX = transform.position.x;
+                float targetZ = transform.position.z;
+                
+                // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
+                float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
 
-            // X 和 Z 軸死死咬住玩家 (0 延遲)
-            // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
-            float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
+                // X 和 Z 軸死死咬住玩家 (0 延遲)
+                // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
+                float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
 
-            cameraTarget.position = new Vector3(targetX, newY, targetZ);
+                cameraTarget.position = new Vector3(targetX, newY, targetZ);
+            }
         }
     }
 
@@ -637,6 +645,9 @@ public class PlayerMovement : MonoBehaviour
 
     public Transform GetCameraTarget()
     {
+        GameObject customTarget = GameObject.Find("CameraFollowTarget");
+        if (customTarget != null) return customTarget.transform;
+
         return (smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform;
     }
 
@@ -730,9 +741,15 @@ public class PlayerMovement : MonoBehaviour
         {
             if (vcam != null && target != null)
             {
-                vcam.Target.TrackingTarget = target;
-                vcam.Follow = target;
-                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name}");
+                GameObject customTarget = GameObject.Find("CameraFollowTarget");
+                Debug.Log($"[SetCameraFollow Debug] customTarget={customTarget?.name}, target={target?.name}");
+                Transform finalTarget = customTarget != null ? customTarget.transform : target;
+
+                var t = vcam.Target;
+                t.TrackingTarget = finalTarget;
+                vcam.Target = t;
+                vcam.Follow = finalTarget;
+                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {finalTarget.name}");
             }
         }
 
@@ -741,7 +758,10 @@ public class PlayerMovement : MonoBehaviour
         {
             if (vcam != null && target != null)
             {
-                vcam.Follow = target;
+                GameObject customTarget = GameObject.Find("CameraFollowTarget");
+                Transform finalTarget = customTarget != null ? customTarget.transform : target;
+
+                vcam.Follow = finalTarget;
             }
         }
     }

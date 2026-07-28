@@ -113,13 +113,17 @@ public class SimpleCameraBounds : MonoBehaviour
         }
 
         // 限制 Y 軸
-        if (clampYAxis && combinedBounds.size.y >= (halfHeight * 2f))
+        if (clampYAxis && combinedBounds.size.y >= (halfHeight * 2f - 0.1f))
         {
             float minY = combinedBounds.min.y + halfHeight;
             float maxY = combinedBounds.max.y - halfHeight;
             if (minY <= maxY)
             {
                 targetPos.y = Mathf.Clamp(pos.y, minY, maxY);
+            }
+            else
+            {
+                targetPos.y = combinedBounds.center.y;
             }
         }
 
