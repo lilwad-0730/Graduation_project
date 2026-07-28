@@ -1,0 +1,1729 @@
+fileFormatVersion: 2
+guid: 3267cbc94b67ca049ab4499c19bff9f7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6311828393955741064
+    second: glass floor adj_0
+  - first:
+      213: -1593141784486669386
+    second: glass floor adj_1
+  - first:
+      213: 1088020561418301263
+    second: glass floor adj_2
+  - first:
+      213: -4813676506053020310
+    second: glass floor adj_3
+  - first:
+      213: -8132520912727184938
+    second: glass floor adj_4
+  - first:
+      213: 7324753067439643163
+    second: glass floor adj_5
+  - first:
+      213: -2405065525535890751
+    second: glass floor adj_6
+  - first:
+      213: -3502337252543504340
+    second: glass floor adj_7
+  - first:
+      213: -5940223757175508323
+    second: glass floor adj_8
+  - first:
+      213: 1677562225636414460
+    second: glass floor adj_9
+  - first:
+      213: 1681722798238742821
+    second: glass floor adj_10
+  - first:
+      213: -9188244284981120708
+    second: glass floor adj_11
+  - first:
+      213: 8949098763977840167
+    second: glass floor adj_12
+  - first:
+      213: 8712148978363821800
+    second: glass floor adj_13
+  - first:
+      213: -5073208084042555342
+    second: glass floor adj_14
+  - first:
+      213: 5108562389939239395
+    second: glass floor adj_15
+  - first:
+      213: 9155756664384987717
+    second: glass floor adj_16
+  - first:
+      213: -8948665662915643176
+    second: glass floor adj_17
+  - first:
+      213: -2953105604452554893
+    second: glass floor adj_18
+  - first:
+      213: -5078034714512427041
+    second: glass floor adj_19
+  - first:
+      213: 6758258352834085742
+    second: glass floor adj_20
+  - first:
+      213: 6385668468001070703
+    second: glass floor adj_21
+  - first:
+      213: 7591198896778057455
+    second: glass floor adj_22
+  - first:
+      213: -8684344699255127897
+    second: glass floor adj_23
+  - first:
+      213: 2927776648364419007
+    second: glass floor adj_24
+  - first:
+      213: -7218084466652627536
+    second: glass floor adj_25
+  - first:
+      213: -8401363090644587714
+    second: glass floor adj_26
+  - first:
+      213: -7436091610644922324
+    second: glass floor adj_27
+  - first:
+      213: 4753470006945240461
+    second: glass floor adj_28
+  - first:
+      213: 3396148933093847121
+    second: glass floor adj_29
+  - first:
+      213: -8095103851854624610
+    second: glass floor adj_30
+  - first:
+      213: 1659554605490351568
+    second: glass floor adj_31
+  - first:
+      213: 7616181461891234511
+    second: glass floor adj_32
+  - first:
+      213: -601557206581961263
+    second: glass floor adj_33
+  - first:
+      213: 408830541892712621
+    second: glass floor adj_34
+  - first:
+      213: -1888568041235457440
+    second: glass floor adj_35
+  - first:
+      213: -6678555756434776724
+    second: glass floor adj_36
+  - first:
+      213: 7128520107814405241
+    second: glass floor adj_37
+  - first:
+      213: -5240856406687146226
+    second: glass floor adj_38
+  - first:
+      213: 5711310130255230731
+    second: glass floor adj_39
+  - first:
+      213: -4141686101316679636
+    second: glass floor adj_40
+  - first:
+      213: -1063635895558394440
+    second: glass floor adj_41
+  - first:
+      213: 321393917059914597
+    second: glass floor adj_42
+  - first:
+      213: 3617572308912461622
+    second: glass floor adj_43
+  - first:
+      213: 1350490324592324079
+    second: glass floor adj_44
+  - first:
+      213: 4378829104533505678
+    second: glass floor adj_45
+  - first:
+      213: -3903057789650603980
+    second: glass floor adj_46
+  - first:
+      213: 4732312097845072149
+    second: glass floor adj_47
+  - first:
+      213: -4805442829355778692
+    second: glass floor adj_48
+  - first:
+      213: -3965006815016314558
+    second: glass floor adj_49
+  - first:
+      213: 5495504233195820914
+    second: glass floor adj_50
+  - first:
+      213: -959047606221964040
+    second: glass floor adj_51
+  - first:
+      213: 6248899526815583147
+    second: glass floor adj_52
+  - first:
+      213: 6699301923203336334
+    second: glass floor adj_53
+  - first:
+      213: -2856912502997124017
+    second: glass floor adj_54
+  - first:
+      213: 8102565172006211307
+    second: glass floor adj_55
+  - first:
+      213: -9109432237439975555
+    second: glass floor adj_56
+  - first:
+      213: 4446355813612537392
+    second: glass floor adj_57
+  - first:
+      213: -5705481981530613197
+    second: glass floor adj_58
+  - first:
+      213: 3564671223177137414
+    second: glass floor adj_59
+  - first:
+      213: 2049212327822753499
+    second: glass floor adj_60
+  - first:
+      213: 6561120845972102796
+    second: glass floor adj_61
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: glass floor adj_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 0
+        width: 321
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8723b076481e768a0800000000000000
+      internalID: -6311828393955741064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_1
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 983
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b317d2ecf504e9e0800000000000000
+      internalID: -1593141784486669386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_2
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 998
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4fa8af9fec691f00800000000000000
+      internalID: 1088020561418301263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_3
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 991
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a65f011c8b2623db0800000000000000
+      internalID: -4813676506053020310
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_4
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 974
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d9e57c515b732f80800000000000000
+      internalID: -8132520912727184938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_5
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 952
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1a513c4b10c6a560800000000000000
+      internalID: 7324753067439643163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_6
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 896
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c225e8a5ad7f9ed0800000000000000
+      internalID: -2405065525535890751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_7
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 840
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c20e68233d2356fc0800000000000000
+      internalID: -3502337252543504340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_8
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 824
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d92b73b27f5109da0800000000000000
+      internalID: -5940223757175508323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_9
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 831
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf31ca3c4f5e74710800000000000000
+      internalID: 1677562225636414460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_10
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 799
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52932bf89fda65710800000000000000
+      internalID: 1681722798238742821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_11
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 625
+        width: 663
+        height: 399
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c31ff24118ccc7080800000000000000
+      internalID: -9188244284981120708
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_12
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 636
+        width: 80
+        height: 388
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72659c659e5913c70800000000000000
+      internalID: 8949098763977840167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_13
+      rect:
+        serializedVersion: 2
+        x: 1004
+        y: 1008
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ee68ad3655c7e870800000000000000
+      internalID: 8712148978363821800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_14
+      rect:
+        serializedVersion: 2
+        x: 1004
+        y: 960
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 230e00760285899b0800000000000000
+      internalID: -5073208084042555342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_15
+      rect:
+        serializedVersion: 2
+        x: 1004
+        y: 952
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e9bf356d6245e640800000000000000
+      internalID: 5108562389939239395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_16
+      rect:
+        serializedVersion: 2
+        x: 1004
+        y: 897
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 542259e4d28cf0f70800000000000000
+      internalID: 9155756664384987717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_17
+      rect:
+        serializedVersion: 2
+        x: 1098
+        y: 633
+        width: 430
+        height: 391
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d87d2cddf3ffc380800000000000000
+      internalID: -8948665662915643176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_18
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 430
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 377e36659167407d0800000000000000
+      internalID: -2953105604452554893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_19
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 0
+        width: 1352
+        height: 625
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd7726ce4523789b0800000000000000
+      internalID: -5078034714512427041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_20
+      rect:
+        serializedVersion: 2
+        x: 185
+        y: 400
+        width: 12
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e630ef44a282acd50800000000000000
+      internalID: 6758258352834085742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_21
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 435
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6edd9093a37e9850800000000000000
+      internalID: 6385668468001070703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_22
+      rect:
+        serializedVersion: 2
+        x: 94
+        y: 394
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe61bcd3d2b595960800000000000000
+      internalID: 7591198896778057455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_23
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 381
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a00ad5f1820b7780800000000000000
+      internalID: -8684344699255127897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_24
+      rect:
+        serializedVersion: 2
+        x: 998
+        y: 350
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb7e173895d81a820800000000000000
+      internalID: 2927776648364419007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_25
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 359
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0bdb76eab6634db90800000000000000
+      internalID: -7218084466652627536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_26
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 323
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3b2d0908cc586b80800000000000000
+      internalID: -8401363090644587714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_27
+      rect:
+        serializedVersion: 2
+        x: 1044
+        y: 334
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c204f360412bdc890800000000000000
+      internalID: -7436091610644922324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_28
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 315
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d85d17e49c7b7f140800000000000000
+      internalID: 4753470006945240461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_29
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 318
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1507169067b812f20800000000000000
+      internalID: 3396148933093847121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_30
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 302
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e980f4abfe968af80800000000000000
+      internalID: -8095103851854624610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_31
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 282
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ddad99fe1ce70710800000000000000
+      internalID: 1659554605490351568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_32
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 192
+        width: 21
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fca31f4ffac12b960800000000000000
+      internalID: 7616181461891234511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_33
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 183
+        width: 32
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dd1b9568e6d6a7f0800000000000000
+      internalID: -601557206581961263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_34
+      rect:
+        serializedVersion: 2
+        x: 993
+        y: 195
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da878d636357ca500800000000000000
+      internalID: 408830541892712621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_35
+      rect:
+        serializedVersion: 2
+        x: 1039
+        y: 212
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06a51006f557ac5e0800000000000000
+      internalID: -1888568041235457440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_36
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 167
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6d901d8ce00153a0800000000000000
+      internalID: -6678555756434776724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_37
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 159
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 974c18005479de260800000000000000
+      internalID: 7128520107814405241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_38
+      rect:
+        serializedVersion: 2
+        x: 992
+        y: 170
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0f15988ddcb447b0800000000000000
+      internalID: -5240856406687146226
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_39
+      rect:
+        serializedVersion: 2
+        x: 992
+        y: 162
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b07f3fbbd46a24f40800000000000000
+      internalID: 5711310130255230731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_40
+      rect:
+        serializedVersion: 2
+        x: 1037
+        y: 165
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c28c8d73f66c586c0800000000000000
+      internalID: -4141686101316679636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_41
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 145
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bd23e2d9c43d31f0800000000000000
+      internalID: -1063635895558394440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_42
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 140
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56bd3539012d57400800000000000000
+      internalID: 321393917059914597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_43
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 133
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 637540629d2343230800000000000000
+      internalID: 3617572308912461622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_44
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 120
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fed6de58bc7edb210800000000000000
+      internalID: 1350490324592324079
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_45
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 116
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e868cdbded9b4cc30800000000000000
+      internalID: 4378829104533505678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_46
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 122
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 430fd0e9e9d85d9c0800000000000000
+      internalID: -3903057789650603980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_47
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 100
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 511d656b7cc8ca140800000000000000
+      internalID: 4732312097845072149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_48
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 83
+        width: 10
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7dfccff433af4db0800000000000000
+      internalID: -4805442829355778692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_49
+      rect:
+        serializedVersion: 2
+        x: 124
+        y: 75
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24913fa2f4779f8c0800000000000000
+      internalID: -3965006815016314558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_50
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 50
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 277da41dbf3f34c40800000000000000
+      internalID: 5495504233195820914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_51
+      rect:
+        serializedVersion: 2
+        x: 1032
+        y: 62
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fc737c8847c0b2f0800000000000000
+      internalID: -959047606221964040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_52
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 54
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bab03f4f20d88b650800000000000000
+      internalID: 6248899526815583147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_53
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 33
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8840afca93b8fc50800000000000000
+      internalID: 6699301923203336334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_54
+      rect:
+        serializedVersion: 2
+        x: 1030
+        y: 29
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4cfb7017353a58d0800000000000000
+      internalID: -2856912502997124017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_55
+      rect:
+        serializedVersion: 2
+        x: 1073
+        y: 31
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: beec1ee3818127070800000000000000
+      internalID: 8102565172006211307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_56
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 17
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7ff5e5d4abc49180800000000000000
+      internalID: -9109432237439975555
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_57
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 20
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0364e5ffd01a4bd30800000000000000
+      internalID: 4446355813612537392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_58
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 11
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33ad972ed5e02d0b0800000000000000
+      internalID: -5705481981530613197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_59
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 8
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60dc78e4791487130800000000000000
+      internalID: 3564671223177137414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_60
+      rect:
+        serializedVersion: 2
+        x: 985
+        y: 11
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdef93541c3407c10800000000000000
+      internalID: 2049212327822753499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: glass floor adj_61
+      rect:
+        serializedVersion: 2
+        x: 986
+        y: 5
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8ed398a5a8cd0b50800000000000000
+      internalID: 6561120845972102796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      glass floor adj_0: -6311828393955741064
+      glass floor adj_1: -1593141784486669386
+      glass floor adj_10: 1681722798238742821
+      glass floor adj_11: -9188244284981120708
+      glass floor adj_12: 8949098763977840167
+      glass floor adj_13: 8712148978363821800
+      glass floor adj_14: -5073208084042555342
+      glass floor adj_15: 5108562389939239395
+      glass floor adj_16: 9155756664384987717
+      glass floor adj_17: -8948665662915643176
+      glass floor adj_18: -2953105604452554893
+      glass floor adj_19: -5078034714512427041
+      glass floor adj_2: 1088020561418301263
+      glass floor adj_20: 6758258352834085742
+      glass floor adj_21: 6385668468001070703
+      glass floor adj_22: 7591198896778057455
+      glass floor adj_23: -8684344699255127897
+      glass floor adj_24: 2927776648364419007
+      glass floor adj_25: -7218084466652627536
+      glass floor adj_26: -8401363090644587714
+      glass floor adj_27: -7436091610644922324
+      glass floor adj_28: 4753470006945240461
+      glass floor adj_29: 3396148933093847121
+      glass floor adj_3: -4813676506053020310
+      glass floor adj_30: -8095103851854624610
+      glass floor adj_31: 1659554605490351568
+      glass floor adj_32: 7616181461891234511
+      glass floor adj_33: -601557206581961263
+      glass floor adj_34: 408830541892712621
+      glass floor adj_35: -1888568041235457440
+      glass floor adj_36: -6678555756434776724
+      glass floor adj_37: 7128520107814405241
+      glass floor adj_38: -5240856406687146226
+      glass floor adj_39: 5711310130255230731
+      glass floor adj_4: -8132520912727184938
+      glass floor adj_40: -4141686101316679636
+      glass floor adj_41: -1063635895558394440
+      glass floor adj_42: 321393917059914597
+      glass floor adj_43: 3617572308912461622
+      glass floor adj_44: 1350490324592324079
+      glass floor adj_45: 4378829104533505678
+      glass floor adj_46: -3903057789650603980
+      glass floor adj_47: 4732312097845072149
+      glass floor adj_48: -4805442829355778692
+      glass floor adj_49: -3965006815016314558
+      glass floor adj_5: 7324753067439643163
+      glass floor adj_50: 5495504233195820914
+      glass floor adj_51: -959047606221964040
+      glass floor adj_52: 6248899526815583147
+      glass floor adj_53: 6699301923203336334
+      glass floor adj_54: -2856912502997124017
+      glass floor adj_55: 8102565172006211307
+      glass floor adj_56: -9109432237439975555
+      glass floor adj_57: 4446355813612537392
+      glass floor adj_58: -5705481981530613197
+      glass floor adj_59: 3564671223177137414
+      glass floor adj_6: -2405065525535890751
+      glass floor adj_60: 2049212327822753499
+      glass floor adj_61: 6561120845972102796
+      glass floor adj_7: -3502337252543504340
+      glass floor adj_8: -5940223757175508323
+      glass floor adj_9: 1677562225636414460
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
