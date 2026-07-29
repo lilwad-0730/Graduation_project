@@ -185,6 +185,16 @@ public class PlayerMovement : MonoBehaviour
         _lastFramePos = transform.position;
         currentSwimStamina = maxSwimStamina;
         isSwimExhausted = false;
+
+        // 【修復轉場殘留鎖定】：強制重置 Rigidbody 的 constraints 與重力狀態
+        // WaterOasisTransition 轉場時會鎖定 FreezePositionX 和關閉 useGravity，
+        // 場景切換後這些狀態會殘留在 Player 身上導致無法移動，這裡強制還原！
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+            rb.useGravity = true;
+            rb.isKinematic = false;
+        }
     }
 
     void Update()
