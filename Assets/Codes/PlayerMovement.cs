@@ -194,7 +194,29 @@ public class PlayerMovement : MonoBehaviour
             rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
             rb.useGravity = true;
             rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero; // 清除殘留速度
         }
+
+        // =========================================
+        // 【超強力啟動診斷】幫助排查卡住問題
+        // =========================================
+        Debug.Log($"========== 【PlayerMovement 啟動診斷】 ==========\n" +
+                  $" 場景名稱: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}\n" +
+                  $" 座標 Position: {transform.position}\n" +
+                  $" Rigidbody: {(rb != null ? "有" : "❌ NULL！")}\n" +
+                  $"   - isKinematic: {(rb != null ? rb.isKinematic.ToString() : "N/A")}\n" +
+                  $"   - useGravity: {(rb != null ? rb.useGravity.ToString() : "N/A")}\n" +
+                  $"   - constraints: {(rb != null ? rb.constraints.ToString() : "N/A")}\n" +
+                  $"   - mass: {(rb != null ? rb.mass.ToString() : "N/A")}\n" +
+                  $" Animator: {(animator != null ? animator.name : "❌ NULL！動畫不會播放！")}\n" +
+                  $" Collider: {(playerCollider != null ? playerCollider.GetType().Name : "❌ NULL！")}\n" +
+                  $" PlayerMovement.enabled: {this.enabled}\n" +
+                  $" isCutsceneFrozen: {isCutsceneFrozen}\n" +
+                  $" freezeHorizontal: {freezeHorizontal}\n" +
+                  $" isStrictLockingX: {isStrictLockingX}\n" +
+                  $" isUnderwater: {isUnderwater}\n" +
+                  $" baseSpeed: {baseSpeed} | currentSpeed: {currentSpeed}\n" +
+                  $"==============================================");
     }
 
     void Update()
@@ -402,12 +424,18 @@ public class PlayerMovement : MonoBehaviour
                 isStrictLockingX = false;
             }
 
-            // 【強制接管播放】使用 Play 直接切換指定 State
+            // 【強制接管播放】使用 Play 直接切換指定 State (加入安全保護)
             if (currentAnimState != targetAnim)
             {
-                animator.Play(targetAnim);
-                currentAnimState = targetAnim;
-                Debug.Log($"[動畫切換] 水下/陸地強制切換為：{targetAnim}");
+                try
+                {
+                    animator.Play(targetAnim);
+                    currentAnimState = targetAnim;
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[動畫安全保護] 找不到動畫 State '{targetAnim}'，跳過切換。Error: {e.Message}");
+                }
             }
         }
         else
