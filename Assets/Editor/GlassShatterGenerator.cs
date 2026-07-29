@@ -3,27 +3,16 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 
-[InitializeOnLoad]
 public class GlassShatterGenerator
 {
-    private static bool executed = false;
-
-    static GlassShatterGenerator()
-    {
-        EditorApplication.update += RunOnce;
-    }
-
-    private static void RunOnce()
-    {
-        if (executed) return;
-        executed = true;
-        EditorApplication.update -= RunOnce;
-        GenerateMirrorWallAndShatterEffect();
-    }
-
     [MenuItem("Tools/Generate Mirror Wall Shatter Effect")]
     public static void GenerateMirrorWallAndShatterEffect()
     {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            Debug.LogWarning("[GlassShatterGenerator] 遊戲正在運行中 (Play Mode)，無法在 Play Mode 執行 Editor 場景生成工具。");
+            return;
+        }
         // 1. 生成 procédural 鏡面玻璃碎片與鏡牆貼圖
         Texture2D shardsTexture = GenerateGlassShardsTexture();
         Texture2D wallTexture = GenerateMirrorWallTexture();
