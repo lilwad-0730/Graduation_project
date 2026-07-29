@@ -2,6 +2,8 @@ Shader "Custom/UnderwaterVignette"
 {
     Properties
     {
+        // Unity UI Canvas 的 RawImage 元件必須有 _MainTex，否則會噴 SendWillRenderCanvases 警告
+        [HideInInspector] _MainTex ("Base (RGB)", 2D) = "white" {}
         _Color ("Vignette Color", Color) = (0,0,0,1)
         // _Radius: 透明圓心半徑 (0=全黑, 1=全透明, 0.5=半屏暗化)
         _Radius ("Clear Radius (0=fullBlack 1=fullClear)", Range(0, 1)) = 0.8
