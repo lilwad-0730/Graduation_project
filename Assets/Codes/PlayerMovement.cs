@@ -175,6 +175,12 @@ public class PlayerMovement : MonoBehaviour
         // 如果沒有手動設定，才嘗試自動搜尋 (備用)
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+
+        if (animator != null)
+        {
+            animator.applyRootMotion = false; // 強制關閉 Root Motion！防止 3D/FBX 動畫拖走或鎖死 Transform 導致玩家在水下卡住不能動！
+            animator.speed = 1.0f;
+        }
         
         // 強制重置所有狀態，避免卡死
         freezeHorizontal = false; 
@@ -339,6 +345,8 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         if (animator != null)
         {
+            animator.applyRootMotion = false; // 每幀維持關閉 Root Motion，確保玩家速度由程式與 Physics 主導
+
             // 自動為未來的游泳 Animator 傳遞狀態標籤 (若 Animator Controller 有對應 Parameter 則更新)
             foreach (AnimatorControllerParameter param in animator.parameters)
             {
