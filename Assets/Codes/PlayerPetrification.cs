@@ -36,13 +36,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         EnsureComponents();
         CacheOriginalRenderers();
 
-        // 開局給予免疫保護時間
-        graceTimer = respawnGracePeriod;
-        
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-        }
+        // 開局強制完全清除任何殘留的石化、動作停用與動畫凍結，並給予 5 秒開局免疫保護
+        ClearAllNegativeEffects();
     }
 
     /// <summary>

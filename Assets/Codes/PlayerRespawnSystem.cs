@@ -83,6 +83,7 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     void Start()
     {
+        IsAnyRespawning = false; // 強制重置全域重生靜態旗標，防止舊階段殘留鎖死
         _playerRb = GetPlayerRigidbody();
         _mainCam = Camera.main;
 

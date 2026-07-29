@@ -284,12 +284,13 @@ public class PlayerMovement : MonoBehaviour
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
         }
 
-        // 【最高解鎖規則】：若玩家主動按下按鍵要移動，無條件強制解鎖所有 X 軸與掉落鎖死！
-        if (Mathf.Abs(rawInput) > 0.1f && !isCutsceneFrozen)
+        // 【最高解鎖規則】：若玩家主動按下按鍵要移動，無條件強制解鎖所有 X 軸、掉落鎖死與轉場/劇情殘留凍結！
+        if (Mathf.Abs(rawInput) > 0.1f)
         {
             isStrictLockingX = false;
             freezeHorizontal = false;
             actuallyFreeze = false;
+            isCutsceneFrozen = false;
         }
 
         float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : rawInput;
