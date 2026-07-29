@@ -866,11 +866,20 @@ public class PlayerMovement : MonoBehaviour
             float finalCounterForce = Mathf.Max(0f, baseCounterForce - extraDownwardForce);
             rb.AddForce(Vector3.up * finalCounterForce, ForceMode.Force);
 
-            // 3. 水中垂直阻力 (Vertical Drag Damping)
             Vector3 vel = rb.linearVelocity;
-            if (Mathf.Abs(vel.y) > 0.01f)
+
+            // 3. 水下游泳推進與垂直水阻
+            bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+            if (isPressingSwimUp && !isSwimExhausted)
             {
-                vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime);
+                // 按住 W / Space / 上方向鍵 向上游泳推進
+                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
+            }
+            else if (vel.y > 0.1f)
+            {
+                // 【核心修復】：水阻僅作用於向上衝勢 (vel.y > 0)，放開 W 鍵時向上速度平滑減速；
+                // 絕不對向下掉落 (vel.y < 0) 進行抹平，否則每幀拉回 0 會導致玩家卡在空中無法正常下沉！
+                vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime * 4f);
             }
 
             // 4. 水中最大沉降速度動態限制 (Terminal Sinking Speed Limit with Depth)
@@ -881,13 +890,6 @@ public class PlayerMovement : MonoBehaviour
             if (vel.y < effectiveMaxFallSpeed)
             {
                 vel.y = effectiveMaxFallSpeed;
-            }
-
-            // 5. 水下連續按 W 向上游泳推進 (未力竭時)
-            bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
-            if (isPressingSwimUp && !isSwimExhausted)
-            {
-                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
             }
 
             rb.linearVelocity = vel;
