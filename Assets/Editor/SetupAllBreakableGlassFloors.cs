@@ -16,6 +16,7 @@ public class SetupAllBreakableGlassFloors
     private static void RunOnce()
     {
         if (executed) return;
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return; // 不在 Play Mode 執行
         executed = true;
         EditorApplication.update -= RunOnce;
         ApplyToAll();
