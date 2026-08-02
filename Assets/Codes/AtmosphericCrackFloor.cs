@@ -10,11 +10,11 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
 {
     [Header("龜裂視覺與數量設定")]
     [Tooltip("龜裂撞擊中心數量 (數量越多，裂痕涵蓋範圍與密度越密)")]
-    [Range(1, 15)]
+    [Range(1, 35)]
     public int crackCenterCount = 8;
 
     [Tooltip("每個撞擊中心放射出的主裂痕分支數量 (數值越大裂痕越密)")]
-    [Range(3, 20)]
+    [Range(1, 35)]
     public int branchesPerCenter = 14;
 
     [Tooltip("裂痕分支伸展長度與細節段數")]
@@ -131,7 +131,7 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
     /// </summary>
     public Sprite GenerateProceduralCrackSprite(SpriteRenderer parentSr = null)
     {
-        float aspect = 4.0f; // 預設 4:1 長寬比
+        float aspect = 4.0f;
         if (parentSr != null && parentSr.bounds.size.y > 0)
         {
             aspect = parentSr.bounds.size.x / parentSr.bounds.size.y;
@@ -149,9 +149,8 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
         for (int i = 0; i < clear.Length; i++) clear[i] = Color.clear;
         tex.SetPixels(clear);
 
-        Random.InitState(42);
+        Random.InitState(GetInstanceID());
 
-        // 在整個地磚寬度與高度範圍內均勻分佈裂痕撞擊中心
         for (int c = 0; c < crackCenterCount; c++)
         {
             Vector2 center = new Vector2(Random.Range(width * 0.08f, width * 0.92f), Random.Range(height * 0.15f, height * 0.85f));
@@ -168,7 +167,6 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
                 {
                     Vector2 next = current + dir * Random.Range(stepDist * 0.6f, stepDist * 1.4f) + new Vector2(Random.Range(-2f, 2f), Random.Range(-2f, 2f));
                     
-                    // 嚴格將裂痕繪製座標約束在地磚貼圖邊界內，防止超界
                     next.x = Mathf.Clamp(next.x, 3f, width - 4f);
                     next.y = Mathf.Clamp(next.y, 3f, height - 4f);
 
@@ -201,6 +199,14 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
             if (e2 > -dx) { err -= dy; x0 += sx; }
             if (e2 < dy) { err += dx; y0 += sy; }
         }
+    }
+
+    [ContextMenu("Randomize Crack Parameters (5-30)")]
+    public void RandomizeCrackParameters()
+    {
+        crackCenterCount = Random.Range(5, 31);
+        branchesPerCenter = Random.Range(5, 31);
+        crackStepCount = Random.Range(5, 31);
     }
 
     public void ResetToInitialState()

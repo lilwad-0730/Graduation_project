@@ -842,6 +842,7 @@ GameObject:
   - component: {fileID: 256428255}
   - component: {fileID: 256428254}
   - component: {fileID: 256428253}
+  - component: {fileID: 256428256}
   m_Layer: 0
   m_Name: glass floor_0 (4)
   m_TagString: Untagged
@@ -944,6 +945,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &256428256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 256428252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &269588321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1331,6 +1351,7 @@ GameObject:
   - component: {fileID: 475637471}
   - component: {fileID: 475637470}
   - component: {fileID: 475637469}
+  - component: {fileID: 475637472}
   m_Layer: 0
   m_Name: glass floor_0
   m_TagString: Untagged
@@ -1433,6 +1454,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &475637472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475637468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 11
+  crackStepCount: 30
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &553133610
 GameObject:
   m_ObjectHideFlags: 0
@@ -1535,6 +1575,7 @@ GameObject:
   - component: {fileID: 576076290}
   - component: {fileID: 576076289}
   - component: {fileID: 576076288}
+  - component: {fileID: 576076291}
   m_Layer: 0
   m_Name: glass floor_0 (8)
   m_TagString: Untagged
@@ -1637,6 +1678,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &576076291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 576076287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &589906321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1648,6 +1708,7 @@ GameObject:
   - component: {fileID: 589906324}
   - component: {fileID: 589906323}
   - component: {fileID: 589906322}
+  - component: {fileID: 589906325}
   m_Layer: 0
   m_Name: glass floor_0 (6)
   m_TagString: Untagged
@@ -1750,6 +1811,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &589906325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589906321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &608591036
 GameObject:
   m_ObjectHideFlags: 0
@@ -2159,6 +2239,7 @@ GameObject:
   - component: {fileID: 722750634}
   - component: {fileID: 722750633}
   - component: {fileID: 722750632}
+  - component: {fileID: 722750635}
   m_Layer: 0
   m_Name: glass floor_0 (5)
   m_TagString: Untagged
@@ -2261,6 +2342,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &722750635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722750631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &767365193
 GameObject:
   m_ObjectHideFlags: 0
@@ -2774,6 +2874,7 @@ GameObject:
   - component: {fileID: 1003010534}
   - component: {fileID: 1003010533}
   - component: {fileID: 1003010532}
+  - component: {fileID: 1003010535}
   m_Layer: 0
   m_Name: glass floor_0 (3)
   m_TagString: Untagged
@@ -2876,6 +2977,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1003010535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1003010531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &1012649193
 GameObject:
   m_ObjectHideFlags: 0
@@ -3019,7 +3139,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -34.4
+      value: -88.69
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3377,6 +3497,7 @@ GameObject:
   - component: {fileID: 1188905879}
   - component: {fileID: 1188905878}
   - component: {fileID: 1188905877}
+  - component: {fileID: 1188905880}
   m_Layer: 0
   m_Name: glass floor_0 (2)
   m_TagString: Untagged
@@ -3479,6 +3600,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1188905880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188905876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &1276455102
 GameObject:
   m_ObjectHideFlags: 0
@@ -4227,6 +4367,7 @@ GameObject:
   - component: {fileID: 1403726391}
   - component: {fileID: 1403726390}
   - component: {fileID: 1403726389}
+  - component: {fileID: 1403726392}
   m_Layer: 0
   m_Name: glass floor_0 (7)
   m_TagString: Untagged
@@ -4329,6 +4470,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1403726392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1403726388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
+  crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
+  crackOverlaySprite: {fileID: 0}
+  warningShakeDuration: 0.3
+  shakeIntensity: 0.1
 --- !u!1 &1443840500
 GameObject:
   m_ObjectHideFlags: 0
@@ -4672,9 +4832,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e6d418efe2d2c64fb09a6ad32efceef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtmosphericCrackFloor
-  crackCenterCount: 14
-  branchesPerCenter: 9
-  crackStepCount: 21
+  crackCenterCount: 15
+  branchesPerCenter: 12
+  crackStepCount: 34
   crackLineColor: {r: 0.77647066, g: 0.8078432, b: 0.80392164, a: 0.95}
   crackOverlaySprite: {fileID: 0}
   warningShakeDuration: 0.3
