@@ -1,0 +1,2953 @@
+fileFormatVersion: 2
+guid: 73a15a27b54d51843a6e469327c6df0c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7448610176210892427
+    second: done-spritesheet-table-320-480_0
+  - first:
+      213: -988679368437945286
+    second: done-spritesheet-table-320-480_1
+  - first:
+      213: -8063013754486843975
+    second: done-spritesheet-table-320-480_2
+  - first:
+      213: -6515045385491213740
+    second: done-spritesheet-table-320-480_3
+  - first:
+      213: -2417959855175904307
+    second: done-spritesheet-table-320-480_4
+  - first:
+      213: -2936515599872602766
+    second: done-spritesheet-table-320-480_5
+  - first:
+      213: 5999356068964346941
+    second: done-spritesheet-table-320-480_6
+  - first:
+      213: 1875597506396294506
+    second: done-spritesheet-table-320-480_7
+  - first:
+      213: 4940898122593395398
+    second: done-spritesheet-table-320-480_8
+  - first:
+      213: 3265733840153435967
+    second: done-spritesheet-table-320-480_9
+  - first:
+      213: -2071538446564285078
+    second: done-spritesheet-table-320-480_10
+  - first:
+      213: -7965600805850079488
+    second: done-spritesheet-table-320-480_11
+  - first:
+      213: 1326285072922548849
+    second: done-spritesheet-table-320-480_12
+  - first:
+      213: 806545671781895057
+    second: done-spritesheet-table-320-480_13
+  - first:
+      213: 389835862171365916
+    second: done-spritesheet-table-320-480_14
+  - first:
+      213: 3499371187554321329
+    second: done-spritesheet-table-320-480_15
+  - first:
+      213: 7579836284455184337
+    second: done-spritesheet-table-320-480_16
+  - first:
+      213: 2295953398244332125
+    second: done-spritesheet-table-320-480_17
+  - first:
+      213: -9136363339970727176
+    second: done-spritesheet-table-320-480_18
+  - first:
+      213: 3526183934451112162
+    second: done-spritesheet-table-320-480_19
+  - first:
+      213: 5201535147979296856
+    second: done-spritesheet-table-320-480_20
+  - first:
+      213: 3861851932151724026
+    second: done-spritesheet-table-320-480_21
+  - first:
+      213: -5753986897391145909
+    second: done-spritesheet-table-320-480_22
+  - first:
+      213: -2621944465029014598
+    second: done-spritesheet-table-320-480_23
+  - first:
+      213: -2045976941948430939
+    second: done-spritesheet-table-320-480_24
+  - first:
+      213: -6074607821567768690
+    second: done-spritesheet-table-320-480_25
+  - first:
+      213: -5105061096466492063
+    second: done-spritesheet-table-320-480_26
+  - first:
+      213: -2444447318291559578
+    second: done-spritesheet-table-320-480_27
+  - first:
+      213: 4568626384702516995
+    second: done-spritesheet-table-320-480_28
+  - first:
+      213: 3876397854997882555
+    second: done-spritesheet-table-320-480_29
+  - first:
+      213: 381677222196760489
+    second: done-spritesheet-table-320-480_30
+  - first:
+      213: -4291903525660456812
+    second: done-spritesheet-table-320-480_31
+  - first:
+      213: -2499032346331286572
+    second: done-spritesheet-table-320-480_32
+  - first:
+      213: 3777273352511836414
+    second: done-spritesheet-table-320-480_33
+  - first:
+      213: -7826060023985633024
+    second: done-spritesheet-table-320-480_34
+  - first:
+      213: 4349343506438933625
+    second: done-spritesheet-table-320-480_35
+  - first:
+      213: 2762851143663643844
+    second: done-spritesheet-table-320-480_36
+  - first:
+      213: 9049015917516562323
+    second: done-spritesheet-table-320-480_37
+  - first:
+      213: -3498936538063968226
+    second: done-spritesheet-table-320-480_38
+  - first:
+      213: -4779120415037994577
+    second: done-spritesheet-table-320-480_39
+  - first:
+      213: 8911556775818490062
+    second: done-spritesheet-table-320-480_40
+  - first:
+      213: -8711608430881564373
+    second: done-spritesheet-table-320-480_41
+  - first:
+      213: 8710117452960967821
+    second: done-spritesheet-table-320-480_42
+  - first:
+      213: 3174112700702895801
+    second: done-spritesheet-table-320-480_43
+  - first:
+      213: 8575827594279766692
+    second: done-spritesheet-table-320-480_44
+  - first:
+      213: -5189146279271355756
+    second: done-spritesheet-table-320-480_45
+  - first:
+      213: 141242009989383067
+    second: done-spritesheet-table-320-480_46
+  - first:
+      213: -2585048950889365469
+    second: done-spritesheet-table-320-480_47
+  - first:
+      213: 2013840834437507937
+    second: done-spritesheet-table-320-480_48
+  - first:
+      213: 7924774318019688369
+    second: done-spritesheet-table-320-480_49
+  - first:
+      213: -8449530617369196129
+    second: done-spritesheet-table-320-480_50
+  - first:
+      213: 3263129976779401374
+    second: done-spritesheet-table-320-480_51
+  - first:
+      213: -2748563875539314747
+    second: done-spritesheet-table-320-480_52
+  - first:
+      213: 4892054316773288800
+    second: done-spritesheet-table-320-480_53
+  - first:
+      213: -4822171968982294544
+    second: done-spritesheet-table-320-480_54
+  - first:
+      213: -8256514959568042074
+    second: done-spritesheet-table-320-480_55
+  - first:
+      213: -5654949689855972039
+    second: done-spritesheet-table-320-480_56
+  - first:
+      213: 1145763442818648225
+    second: done-spritesheet-table-320-480_57
+  - first:
+      213: -6759512473533810990
+    second: done-spritesheet-table-320-480_58
+  - first:
+      213: -3528573292047035507
+    second: done-spritesheet-table-320-480_59
+  - first:
+      213: 6572523764890341938
+    second: done-spritesheet-table-320-480_60
+  - first:
+      213: -435897280833737932
+    second: done-spritesheet-table-320-480_61
+  - first:
+      213: -4837005243292658892
+    second: done-spritesheet-table-320-480_62
+  - first:
+      213: -9091764885941672234
+    second: done-spritesheet-table-320-480_63
+  - first:
+      213: 4115726786620519409
+    second: done-spritesheet-table-320-480_64
+  - first:
+      213: 5338190358153452847
+    second: done-spritesheet-table-320-480_65
+  - first:
+      213: -8947147420612966194
+    second: done-spritesheet-table-320-480_66
+  - first:
+      213: -1307454107187308941
+    second: done-spritesheet-table-320-480_67
+  - first:
+      213: -8891067876066927784
+    second: done-spritesheet-table-320-480_68
+  - first:
+      213: -3432836240501250071
+    second: done-spritesheet-table-320-480_69
+  - first:
+      213: 1776257548962610464
+    second: done-spritesheet-table-320-480_70
+  - first:
+      213: 8883574606830475558
+    second: done-spritesheet-table-320-480_71
+  - first:
+      213: -4594023963032784540
+    second: done-spritesheet-table-320-480_72
+  - first:
+      213: 8014954317883785245
+    second: done-spritesheet-table-320-480_73
+  - first:
+      213: -7417878559194442312
+    second: done-spritesheet-table-320-480_74
+  - first:
+      213: 6246495667521467684
+    second: done-spritesheet-table-320-480_75
+  - first:
+      213: 4379164687398361342
+    second: done-spritesheet-table-320-480_76
+  - first:
+      213: 72730560474987819
+    second: done-spritesheet-table-320-480_77
+  - first:
+      213: -6516344999921674385
+    second: done-spritesheet-table-320-480_78
+  - first:
+      213: 3288960113511751200
+    second: done-spritesheet-table-320-480_79
+  - first:
+      213: 2572923734382896387
+    second: done-spritesheet-table-320-480_80
+  - first:
+      213: 5015589240859957068
+    second: done-spritesheet-table-320-480_81
+  - first:
+      213: -2247092699715902268
+    second: done-spritesheet-table-320-480_82
+  - first:
+      213: -5603631651168961275
+    second: done-spritesheet-table-320-480_83
+  - first:
+      213: -8157462593535459594
+    second: done-spritesheet-table-320-480_84
+  - first:
+      213: -527385295358405970
+    second: done-spritesheet-table-320-480_85
+  - first:
+      213: -2118184139244936184
+    second: done-spritesheet-table-320-480_86
+  - first:
+      213: -2738562522668940993
+    second: done-spritesheet-table-320-480_87
+  - first:
+      213: 8388273905672699831
+    second: done-spritesheet-table-320-480_88
+  - first:
+      213: 668548917554720122
+    second: done-spritesheet-table-320-480_89
+  - first:
+      213: -6719136291815878353
+    second: done-spritesheet-table-320-480_90
+  - first:
+      213: -7114537920342948728
+    second: done-spritesheet-table-320-480_91
+  - first:
+      213: 6997107398469447258
+    second: done-spritesheet-table-320-480_92
+  - first:
+      213: -66527832186891298
+    second: done-spritesheet-table-320-480_93
+  - first:
+      213: 7449162153230335299
+    second: done-spritesheet-table-320-480_94
+  - first:
+      213: 4898667729419849364
+    second: done-spritesheet-table-320-480_95
+  - first:
+      213: 5169923637982643184
+    second: done-spritesheet-table-320-480_96
+  - first:
+      213: -323336275222256928
+    second: done-spritesheet-table-320-480_97
+  - first:
+      213: 498052576497544912
+    second: done-spritesheet-table-320-480_98
+  - first:
+      213: -4586932862748458566
+    second: done-spritesheet-table-320-480_99
+  - first:
+      213: -64827030060090584
+    second: done-spritesheet-table-320-480_100
+  - first:
+      213: 2959202703179107677
+    second: done-spritesheet-table-320-480_101
+  - first:
+      213: -2507664271643377120
+    second: done-spritesheet-table-320-480_102
+  - first:
+      213: 3074741593083398867
+    second: done-spritesheet-table-320-480_103
+  - first:
+      213: -4293137243948249174
+    second: done-spritesheet-table-320-480_104
+  - first:
+      213: -4446588307266621437
+    second: done-spritesheet-table-320-480_105
+  - first:
+      213: 2226101703101003539
+    second: done-spritesheet-table-320-480_106
+  - first:
+      213: -5783171398173153164
+    second: done-spritesheet-table-320-480_107
+  - first:
+      213: -215871050584563922
+    second: done-spritesheet-table-320-480_108
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b86f867ad77ce5760800000000000000
+      internalID: 7448610176210892427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_1
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3caf774a518742f0800000000000000
+      internalID: -988679368437945286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_2
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b519b0c5bb6a1090800000000000000
+      internalID: -8063013754486843975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_3
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4529f367db8e595a0800000000000000
+      internalID: -6515045385491213740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_4
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc3d517925ea17ed0800000000000000
+      internalID: -2417959855175904307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_5
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27d4338ce966f37d0800000000000000
+      internalID: -2936515599872602766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_6
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3c24bb0f8ef14350800000000000000
+      internalID: 5999356068964346941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_7
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6d0c56aef5770a10800000000000000
+      internalID: 1875597506396294506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_8
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c2e29c1aa8919440800000000000000
+      internalID: 4940898122593395398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_9
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3f515100a7325d20800000000000000
+      internalID: 3265733840153435967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_10
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 4320
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a65a8f122ca6043e0800000000000000
+      internalID: -2071538446564285078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_11
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00f9db84540847190800000000000000
+      internalID: -7965600805850079488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_12
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17a93723f39e76210800000000000000
+      internalID: 1326285072922548849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_13
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19b40b5e30d613b00800000000000000
+      internalID: 806545671781895057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_14
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c12be65b6a9f86500800000000000000
+      internalID: 389835862171365916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_15
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b3896bfd83409030800000000000000
+      internalID: 3499371187554321329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_16
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d76196e0fcf03960800000000000000
+      internalID: 7579836284455184337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_17
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d525433837ddcdf10800000000000000
+      internalID: 2295953398244332125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_18
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f2b426e2fd153180800000000000000
+      internalID: -9136363339970727176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_19
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e8d5a91b958fe030800000000000000
+      internalID: 3526183934451112162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_20
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 850d30e78a09f2840800000000000000
+      internalID: 5201535147979296856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_21
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 3840
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af73f0f0fdd089530800000000000000
+      internalID: 3861851932151724026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_22
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4cafba176bb520b0800000000000000
+      internalID: -5753986897391145909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_23
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abbd425966bfc9bd0800000000000000
+      internalID: -2621944465029014598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_24
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a51684bfca3b93e0800000000000000
+      internalID: -2045976941948430939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_25
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e87c4a5fe58a2bba0800000000000000
+      internalID: -6074607821567768690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_26
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 165d2740bfd2729b0800000000000000
+      internalID: -5105061096466492063
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_27
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66b43118d14931ed0800000000000000
+      internalID: -2444447318291559578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_28
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30faba3cd75076f30800000000000000
+      internalID: 4568626384702516995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_29
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb62c33af4bbbc530800000000000000
+      internalID: 3876397854997882555
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_30
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9af45ef496dfb4500800000000000000
+      internalID: 381677222196760489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_31
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49803ce9b781074c0800000000000000
+      internalID: -4291903525660456812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_32
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 3360
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d376ba4257a15dd0800000000000000
+      internalID: -2499032346331286572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_33
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef0540ce9129b6430800000000000000
+      internalID: 3777273352511836414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_34
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00983775fdf346390800000000000000
+      internalID: -7826060023985633024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_35
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97cc17310e8fb5c30800000000000000
+      internalID: 4349343506438933625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_36
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cc6a591a7e975620800000000000000
+      internalID: 2762851143663643844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_37
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39f1e628800949d70800000000000000
+      internalID: 9049015917516562323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_38
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e18ef0db1c7417fc0800000000000000
+      internalID: -3498936538063968226
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_39
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa9c7daad472dadb0800000000000000
+      internalID: -4779120415037994577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_40
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec0f2621ca53cab70800000000000000
+      internalID: 8911556775818490062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_41
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b299107c9462a1780800000000000000
+      internalID: -8711608430881564373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_42
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8c2bafdcad80e870800000000000000
+      internalID: 8710117452960967821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_43
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 2880
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bea3722fa6bc0c20800000000000000
+      internalID: 3174112700702895801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_44
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4aac904a2c5730770800000000000000
+      internalID: 8575827594279766692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_45
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49aad78c3f27cf7b0800000000000000
+      internalID: -5189146279271355756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_46
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9387c81cdac5f100800000000000000
+      internalID: 141242009989383067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_47
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3204e33ecaf002cd0800000000000000
+      internalID: -2585048950889365469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_48
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16be2d2b19992fb10800000000000000
+      internalID: 2013840834437507937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_49
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b7b3b641447afd60800000000000000
+      internalID: 7924774318019688369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_50
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f990ce8cbac3dba80800000000000000
+      internalID: -8449530617369196129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_51
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e986dd1dc67f84d20800000000000000
+      internalID: 3263129976779401374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_52
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c7120cb7b32bd9d0800000000000000
+      internalID: -2748563875539314747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_53
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06b203d5b7114e340800000000000000
+      internalID: 4892054316773288800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_54
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 2400
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ffd6f6a424341db0800000000000000
+      internalID: -4822171968982294544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_55
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a78f30a367fa6d80800000000000000
+      internalID: -8256514959568042074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_56
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93ded61e7359581b0800000000000000
+      internalID: -5654949689855972039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_57
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a885ddd7c196ef00800000000000000
+      internalID: 1145763442818648225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_58
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d6f13008336132a0800000000000000
+      internalID: -6759512473533810990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_59
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d831b9b394df70fc0800000000000000
+      internalID: -3528573292047035507
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_60
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2321a1c9a8b463b50800000000000000
+      internalID: 6572523764890341938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_61
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43ba8598bb163f9f0800000000000000
+      internalID: -435897280833737932
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_62
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 433d6d8db518fdcb0800000000000000
+      internalID: -4837005243292658892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_63
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d6a318a10093d180800000000000000
+      internalID: -9091764885941672234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_64
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f37315d4bffd1930800000000000000
+      internalID: 4115726786620519409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_65
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 1920
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2dd62909df051a40800000000000000
+      internalID: 5338190358153452847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_66
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec8cf4133d855d380800000000000000
+      internalID: -8947147420612966194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_67
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37699fcaa6dfadde0800000000000000
+      internalID: -1307454107187308941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_68
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85bd425afd49c9480800000000000000
+      internalID: -8891067876066927784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_69
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e7e5d090ad1c50d0800000000000000
+      internalID: -3432836240501250071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_70
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02db58b64d886a810800000000000000
+      internalID: 1776257548962610464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_71
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6299fc7a90cc84b70800000000000000
+      internalID: 8883574606830475558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_72
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4617cc9bb8fbe30c0800000000000000
+      internalID: -4594023963032784540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_73
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d104270bc76da3f60800000000000000
+      internalID: 8014954317883785245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_74
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b59a3480c66e0990800000000000000
+      internalID: -7417878559194442312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_75
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42532a9d6b200b650800000000000000
+      internalID: 6246495667521467684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_76
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 1440
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef85055d41be5cc30800000000000000
+      internalID: 4379164687398361342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_77
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2d3d653f04620100800000000000000
+      internalID: 72730560474987819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_78
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6796c56fba4195a0800000000000000
+      internalID: -6516344999921674385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_79
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02edb4e2ccbb4ad20800000000000000
+      internalID: 3288960113511751200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_80
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3056016218cd4b320800000000000000
+      internalID: 2572923734382896387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_81
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c479ab047d3fa9540800000000000000
+      internalID: 5015589240859957068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_82
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c46f006819b0d0e0800000000000000
+      internalID: -2247092699715902268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_83
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50d30fbd3b6eb32b0800000000000000
+      internalID: -5603631651168961275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_84
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fe38c3cdfedace80800000000000000
+      internalID: -8157462593535459594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_85
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea2d56a3ed95ea8f0800000000000000
+      internalID: -527385295358405970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_86
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 804607b7fb2ba92e0800000000000000
+      internalID: -2118184139244936184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_87
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 960
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f31ce1925ebaef9d0800000000000000
+      internalID: -2738562522668940993
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_88
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bfbc4a9ca2296470800000000000000
+      internalID: 8388273905672699831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_89
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7d22d9c2b9274900800000000000000
+      internalID: 668548917554720122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_90
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2111e06425d0c2a0800000000000000
+      internalID: -6719136291815878353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_91
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88489e4b475144d90800000000000000
+      internalID: -7114537920342948728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_92
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5e670d4b18ba1160800000000000000
+      internalID: 6997107398469447258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_93
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed3d2d20a45a31ff0800000000000000
+      internalID: -66527832186891298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_94
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34df391d28db06760800000000000000
+      internalID: 7449162153230335299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_95
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49e4dbc78509bf340800000000000000
+      internalID: 4898667729419849364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_96
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f3c9d548224fb740800000000000000
+      internalID: 5169923637982643184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_97
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e2216cee57438bf0800000000000000
+      internalID: -323336275222256928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_98
+      rect:
+        serializedVersion: 2
+        x: 3200
+        y: 480
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0deaa95fd2079e600800000000000000
+      internalID: 498052576497544912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_99
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab1005b2dd0f750c0800000000000000
+      internalID: -4586932862748458566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_100
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82bbc6dd820b91ff0800000000000000
+      internalID: -64827030060090584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_101
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5dcd551e23311920800000000000000
+      internalID: 2959202703179107677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_102
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02202c091acf23dd0800000000000000
+      internalID: -2507664271643377120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_103
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3dacadf203dabaa20800000000000000
+      internalID: 3074741593083398867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_104
+      rect:
+        serializedVersion: 2
+        x: 1600
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aaf07723c66bb64c0800000000000000
+      internalID: -4293137243948249174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_105
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 300b7fa5e7b8a42c0800000000000000
+      internalID: -4446588307266621437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_106
+      rect:
+        serializedVersion: 2
+        x: 2240
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3173a3f54b3b4ee10800000000000000
+      internalID: 2226101703101003539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_107
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 478a0b0014c0ebfa0800000000000000
+      internalID: -5783171398173153164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: done-spritesheet-table-320-480_108
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 0
+        width: 320
+        height: 480
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2fdd985c62110df0800000000000000
+      internalID: -215871050584563922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 189f10ad58696ee44a4c075ce5f68960
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":11.0,"y":10.0},"gridSpriteSize":{"x":320.0,"y":480.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      done-spritesheet-table-320-480_0: 7448610176210892427
+      done-spritesheet-table-320-480_1: -988679368437945286
+      done-spritesheet-table-320-480_10: -2071538446564285078
+      done-spritesheet-table-320-480_100: -64827030060090584
+      done-spritesheet-table-320-480_101: 2959202703179107677
+      done-spritesheet-table-320-480_102: -2507664271643377120
+      done-spritesheet-table-320-480_103: 3074741593083398867
+      done-spritesheet-table-320-480_104: -4293137243948249174
+      done-spritesheet-table-320-480_105: -4446588307266621437
+      done-spritesheet-table-320-480_106: 2226101703101003539
+      done-spritesheet-table-320-480_107: -5783171398173153164
+      done-spritesheet-table-320-480_108: -215871050584563922
+      done-spritesheet-table-320-480_11: -7965600805850079488
+      done-spritesheet-table-320-480_12: 1326285072922548849
+      done-spritesheet-table-320-480_13: 806545671781895057
+      done-spritesheet-table-320-480_14: 389835862171365916
+      done-spritesheet-table-320-480_15: 3499371187554321329
+      done-spritesheet-table-320-480_16: 7579836284455184337
+      done-spritesheet-table-320-480_17: 2295953398244332125
+      done-spritesheet-table-320-480_18: -9136363339970727176
+      done-spritesheet-table-320-480_19: 3526183934451112162
+      done-spritesheet-table-320-480_2: -8063013754486843975
+      done-spritesheet-table-320-480_20: 5201535147979296856
+      done-spritesheet-table-320-480_21: 3861851932151724026
+      done-spritesheet-table-320-480_22: -5753986897391145909
+      done-spritesheet-table-320-480_23: -2621944465029014598
+      done-spritesheet-table-320-480_24: -2045976941948430939
+      done-spritesheet-table-320-480_25: -6074607821567768690
+      done-spritesheet-table-320-480_26: -5105061096466492063
+      done-spritesheet-table-320-480_27: -2444447318291559578
+      done-spritesheet-table-320-480_28: 4568626384702516995
+      done-spritesheet-table-320-480_29: 3876397854997882555
+      done-spritesheet-table-320-480_3: -6515045385491213740
+      done-spritesheet-table-320-480_30: 381677222196760489
+      done-spritesheet-table-320-480_31: -4291903525660456812
+      done-spritesheet-table-320-480_32: -2499032346331286572
+      done-spritesheet-table-320-480_33: 3777273352511836414
+      done-spritesheet-table-320-480_34: -7826060023985633024
+      done-spritesheet-table-320-480_35: 4349343506438933625
+      done-spritesheet-table-320-480_36: 2762851143663643844
+      done-spritesheet-table-320-480_37: 9049015917516562323
+      done-spritesheet-table-320-480_38: -3498936538063968226
+      done-spritesheet-table-320-480_39: -4779120415037994577
+      done-spritesheet-table-320-480_4: -2417959855175904307
+      done-spritesheet-table-320-480_40: 8911556775818490062
+      done-spritesheet-table-320-480_41: -8711608430881564373
+      done-spritesheet-table-320-480_42: 8710117452960967821
+      done-spritesheet-table-320-480_43: 3174112700702895801
+      done-spritesheet-table-320-480_44: 8575827594279766692
+      done-spritesheet-table-320-480_45: -5189146279271355756
+      done-spritesheet-table-320-480_46: 141242009989383067
+      done-spritesheet-table-320-480_47: -2585048950889365469
+      done-spritesheet-table-320-480_48: 2013840834437507937
+      done-spritesheet-table-320-480_49: 7924774318019688369
+      done-spritesheet-table-320-480_5: -2936515599872602766
+      done-spritesheet-table-320-480_50: -8449530617369196129
+      done-spritesheet-table-320-480_51: 3263129976779401374
+      done-spritesheet-table-320-480_52: -2748563875539314747
+      done-spritesheet-table-320-480_53: 4892054316773288800
+      done-spritesheet-table-320-480_54: -4822171968982294544
+      done-spritesheet-table-320-480_55: -8256514959568042074
+      done-spritesheet-table-320-480_56: -5654949689855972039
+      done-spritesheet-table-320-480_57: 1145763442818648225
+      done-spritesheet-table-320-480_58: -6759512473533810990
+      done-spritesheet-table-320-480_59: -3528573292047035507
+      done-spritesheet-table-320-480_6: 5999356068964346941
+      done-spritesheet-table-320-480_60: 6572523764890341938
+      done-spritesheet-table-320-480_61: -435897280833737932
+      done-spritesheet-table-320-480_62: -4837005243292658892
+      done-spritesheet-table-320-480_63: -9091764885941672234
+      done-spritesheet-table-320-480_64: 4115726786620519409
+      done-spritesheet-table-320-480_65: 5338190358153452847
+      done-spritesheet-table-320-480_66: -8947147420612966194
+      done-spritesheet-table-320-480_67: -1307454107187308941
+      done-spritesheet-table-320-480_68: -8891067876066927784
+      done-spritesheet-table-320-480_69: -3432836240501250071
+      done-spritesheet-table-320-480_7: 1875597506396294506
+      done-spritesheet-table-320-480_70: 1776257548962610464
+      done-spritesheet-table-320-480_71: 8883574606830475558
+      done-spritesheet-table-320-480_72: -4594023963032784540
+      done-spritesheet-table-320-480_73: 8014954317883785245
+      done-spritesheet-table-320-480_74: -7417878559194442312
+      done-spritesheet-table-320-480_75: 6246495667521467684
+      done-spritesheet-table-320-480_76: 4379164687398361342
+      done-spritesheet-table-320-480_77: 72730560474987819
+      done-spritesheet-table-320-480_78: -6516344999921674385
+      done-spritesheet-table-320-480_79: 3288960113511751200
+      done-spritesheet-table-320-480_8: 4940898122593395398
+      done-spritesheet-table-320-480_80: 2572923734382896387
+      done-spritesheet-table-320-480_81: 5015589240859957068
+      done-spritesheet-table-320-480_82: -2247092699715902268
+      done-spritesheet-table-320-480_83: -5603631651168961275
+      done-spritesheet-table-320-480_84: -8157462593535459594
+      done-spritesheet-table-320-480_85: -527385295358405970
+      done-spritesheet-table-320-480_86: -2118184139244936184
+      done-spritesheet-table-320-480_87: -2738562522668940993
+      done-spritesheet-table-320-480_88: 8388273905672699831
+      done-spritesheet-table-320-480_89: 668548917554720122
+      done-spritesheet-table-320-480_9: 3265733840153435967
+      done-spritesheet-table-320-480_90: -6719136291815878353
+      done-spritesheet-table-320-480_91: -7114537920342948728
+      done-spritesheet-table-320-480_92: 6997107398469447258
+      done-spritesheet-table-320-480_93: -66527832186891298
+      done-spritesheet-table-320-480_94: 7449162153230335299
+      done-spritesheet-table-320-480_95: 4898667729419849364
+      done-spritesheet-table-320-480_96: 5169923637982643184
+      done-spritesheet-table-320-480_97: -323336275222256928
+      done-spritesheet-table-320-480_98: 498052576497544912
+      done-spritesheet-table-320-480_99: -4586932862748458566
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
