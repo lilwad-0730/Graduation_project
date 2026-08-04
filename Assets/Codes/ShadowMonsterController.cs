@@ -9,13 +9,6 @@ using Unity.Cinemachine;
 /// 【狀態流程】
 ///   Dormant → (觸發點) → Appearing → Chasing → (全部燭火) → Vanishing (勝利)
 ///                                            → (最後燭火未全集) → Punishing → Devouring → 重生→Dormant
-///
-/// 【場景建置步驟】
-///   1. 複製玩家 Prefab，刪除所有邏輯腳本，放大 Scale，掛載此腳本。
-///   2. 調整 SpriteRenderer 顏色為暗紅黑 (0.3, 0.1, 0.1, 1)。
-///   3. 建立空物件 "ShadowMonsterTrigger"，加 BoxCollider(IsTrigger=true)，掛載 ShadowMonsterTriggerZone.cs。
-///   4. 在 candles[] 欄位手動拖曳所有 CandleCollectible 物件。
-///   5. 確認場景底部有 DeathZone，各安全平台有 RespawnPoint（可沿用 dark glasses 既有設定）。
 /// </summary>
 public class ShadowMonsterController : MonoBehaviour, IResettable
 {
@@ -30,19 +23,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     // ──────────── Inspector 設定 ────────────
     [Header("目標設定")]
-    [Tooltip("玩家 Transform（留空時自動透過 Tag 尋找）")]
+    [Tooltip("玩家 Transform（留空時自動透過 Tag 或 PlayerMovement 腳本尋找）")]
     public Transform player;
 
     [Header("燭火清單 (⚠ 請手動拖曳所有燭火物件到此陣列)")]
     public CandleCollectible[] candles;
 
-    [Header("追逐速度設定")]
+    [Header("追逐行為設定")]
+    [Tooltip("怪物登場出現時，是否同步朝玩家追擊？（勾選 = 邊現身邊追擊；取消 = 原地登場完再追）")]
+    public bool chaseWhileAppearing = true;
     [Tooltip("一般追逐速度（玩家正常速度約 5，低於 5 讓玩家可以跑掉）")]
     public float chaseSpeed = 3.2f;
     [Tooltip("懲罰階段追逐速度（應快於被恐懼壓制的玩家速度 2.5）")]
     public float punishChaseSpeed = 4.8f;
-    [Tooltip("距離玩家多近算「追上吞噬」(世界單位)")]
-    public float catchDistance = 1.5f;
+    [Tooltip("距離玩家多近算「追上吞噬」(巨大怪物建議 3.5 ~ 4.5，因為體型大)")]
+    public float catchDistance = 3.5f;
+
+    [Header("動畫設定")]
+    [Tooltip("怪物追擊時自動強行播放的動畫 Clip 名稱 (預設 Walk)")]
+    public string walkAnimationName = "Walk";
 
     [Header("轉場時間設定")]
     [Tooltip("怪物漸漸出現的時間（秒）")]
@@ -61,14 +60,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float minScaleMultiplier = 0.2f;
 
     [Header("光暈設定")]
-    [Tooltip("光暈粒子環的基礎半徑（隨 Scale 動態調整）")]
-    public float haloBaseRadius = 2.5f;
-    [Tooltip("光暈粒子顏色（灰帶紅，建議 A 值 0.5 左右）")]
-    public Color haloColor = new Color(0.6f, 0.3f, 0.3f, 0.5f);
+    [Tooltip("光暈基礎半徑/倍率")]
+    public float haloBaseRadius = 3.5f;
+    [Tooltip("光暈視覺顏色（暗灰紅光環）")]
+    public Color haloColor = new Color(0.95f, 0.25f, 0.25f, 0.75f);
     [Tooltip("點光源顏色")]
-    public Color lightColor = new Color(0.55f, 0.15f, 0.15f, 1f);
-    [Tooltip("點光源基礎強度")]
-    public float lightBaseIntensity = 3.0f;
+    public Color lightColor = new Color(1.0f, 0.2f, 0.2f, 1f);
+    [Tooltip("點光源強度")]
+    public float lightBaseIntensity = 8.0f;
+    [Tooltip("點光源影響範圍")]
+    public float lightRange = 15.0f;
     [Tooltip("懲罰時光暈增大倍率（1.2 = 比基礎大 20%）")]
     public float punishHaloMultiplier = 1.2f;
 
@@ -87,19 +88,22 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // ──────────── 內部狀態 ────────────
     private int _candlesCollected = 0;
     private int _totalCandles = 0;
-    private CandleCollectible _lastCandleByX; // X 值最大（最右邊）的燭火
+    private CandleCollectible _lastCandleByX;
 
     private Vector3 _initialPosition;
     private Vector3 _baseScale;
     private float _currentScaleMultiplier = 1f;
 
     // 光暈組件（程式動態生成）
+    private SpriteRenderer _haloSpriteRenderer;
     private ParticleSystem _haloPs;
     private Light _haloLight;
 
-    // 視覺組件快取
-    private SpriteRenderer[] _spriteRenderers;
+    // 視覺與動畫組件快取
+    private Renderer[] _renderers;
     private Color[] _originalColors;
+    private MaterialPropertyBlock _mpb;
+    private Animator _animator;
 
     // 玩家組件快取
     private PlayerMovement _pm;
@@ -124,7 +128,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     void Awake()
     {
-        // Singleton
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
@@ -136,26 +139,28 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         _mainCam = Camera.main;
 
-        // 快取視覺組件
-        _spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
-        _originalColors = new Color[_spriteRenderers.Length];
-        for (int i = 0; i < _spriteRenderers.Length; i++)
-            _originalColors[i] = _spriteRenderers[i].color;
+        // 快取動畫組件
+        _animator = GetComponent<Animator>();
+        if (_animator == null) _animator = GetComponentInChildren<Animator>();
 
-        // 自動尋找玩家
-        if (player == null)
+        // 快取視覺組件（包括 SpriteRenderer、SkinnedMeshRenderer、MeshRenderer）
+        _renderers = GetComponentsInChildren<Renderer>(true);
+        _mpb = new MaterialPropertyBlock();
+        _originalColors = new Color[_renderers.Length];
+        for (int i = 0; i < _renderers.Length; i++)
         {
-            GameObject p = GameObject.FindWithTag("Player");
-            if (p != null) player = p.transform;
+            if (_renderers[i] == null) continue;
+            Material mat = _renderers[i].sharedMaterial;
+            if (mat != null && mat.HasProperty("_BaseColor"))
+                _originalColors[i] = mat.GetColor("_BaseColor");
+            else if (mat != null && mat.HasProperty("_Color"))
+                _originalColors[i] = mat.GetColor("_Color");
+            else
+                _originalColors[i] = Color.white;
         }
 
-        // 快取 PlayerMovement
-        if (player != null)
-        {
-            _pm = player.GetComponent<PlayerMovement>();
-            if (_pm == null) _pm = player.GetComponentInChildren<PlayerMovement>();
-            if (_pm == null) _pm = player.GetComponentInParent<PlayerMovement>();
-        }
+        // 自動強效搜尋玩家
+        EnsurePlayerReference();
 
         // 自動尋找重生系統
         if (respawnSystem == null)
@@ -164,17 +169,28 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // 初始化燭火資訊
         SetupCandles();
 
-        // 建立光暈特效（程式自動生成，不需手動設定）
+        // 建立光暈特效（包含 procedural 2D 光暈貼圖 + 粒子 + 光源）
         CreateHaloEffect();
 
-        // 初始狀態：完全不可見
+        // 初始狀態：完全隱藏（Scale = 0 & Visuals Disabled）
         SetVisualAlpha(0f);
+        transform.localScale = Vector3.zero;
     }
 
     void Update()
     {
+        EnsurePlayerReference();
+
         switch (currentState)
         {
+            case MonsterState.Appearing:
+                if (chaseWhileAppearing)
+                {
+                    MoveTowardPlayer(chaseSpeed);
+                    CheckCatch();
+                }
+                break;
+
             case MonsterState.Chasing:
                 MoveTowardPlayer(chaseSpeed);
                 CheckCatch();
@@ -188,13 +204,30 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
     }
 
+    // 碰觸雙重保險判定（除了距離判定，物理碰撞也算抓到）
+    private void OnTriggerEnter(Collider other)
+    {
+        CheckCollisionCatch(other.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        CheckCollisionCatch(collision.gameObject);
+    }
+
+    private void CheckCollisionCatch(GameObject go)
+    {
+        if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
+        if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
+        {
+            TriggerDevour();
+        }
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
-    // 公開介面（供外部腳本呼叫）
+    // 公開介面
     // ──────────────────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// 由 ShadowMonsterTriggerZone 呼叫：啟動怪物出現序列。
-    /// </summary>
     public void ActivateChase()
     {
         if (currentState != MonsterState.Dormant) return;
@@ -202,13 +235,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _stateCoroutine = StartCoroutine(AppearSequence());
     }
 
-    /// <summary>
-    /// 由 CandleCollectible 呼叫：玩家收集一根燭火。
-    /// </summary>
     public void OnCandleCollected(CandleCollectible candle)
     {
-        // 只有追逐中，燭火才有效
-        if (currentState != MonsterState.Chasing)
+        if (currentState != MonsterState.Chasing && currentState != MonsterState.Appearing)
         {
             Debug.Log($"【影子怪物】非追逐狀態（{currentState}），燭火收集無效。");
             return;
@@ -217,11 +246,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _candlesCollected++;
         Debug.Log($"【影子怪物】燭火收集 {_candlesCollected}/{_totalCandles}（{candle.gameObject.name}）");
 
-        // 縮小怪物（主體 + 光暈同步）
         _currentScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
         ApplyCurrentScale();
 
-        // ── 判斷：吃到最右邊那根，但尚未全部收集 → 觸發懲罰 ──
         if (candle == _lastCandleByX && _candlesCollected < _totalCandles)
         {
             Debug.Log("【影子怪物】吃到最後一根燭火但未全部收集！觸發懲罰！");
@@ -229,7 +256,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             return;
         }
 
-        // ── 判斷：全部燭火收集完畢 → 怪物消失（玩家勝利）──
         if (_candlesCollected >= _totalCandles)
         {
             Debug.Log("【影子怪物】全部燭火收集完畢！怪物開始消失...");
@@ -242,25 +268,32 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // 私有：狀態機核心邏輯
     // ──────────────────────────────────────────────────────────────────────────
 
-    /// <summary>怪物從透明漸漸出現，完成後進入追逐狀態。</summary>
     private IEnumerator AppearSequence()
     {
         currentState = MonsterState.Appearing;
-        Debug.Log("【影子怪物】開始出現...");
+        Debug.Log("【影子怪物】開始現身...");
+
+        PlayWalkAnimation();
 
         float t = 0f;
         while (t < appearDuration)
         {
             t += Time.deltaTime;
-            SetVisualAlpha(Mathf.SmoothStep(0f, 1f, t / appearDuration));
+            float progress = Mathf.SmoothStep(0f, 1f, t / appearDuration);
+
+            SetVisualAlpha(progress);
+            transform.localScale = _baseScale * _currentScaleMultiplier * progress;
+
             yield return null;
         }
+
         SetVisualAlpha(1f);
+        transform.localScale = _baseScale * _currentScaleMultiplier;
+
         currentState = MonsterState.Chasing;
-        Debug.Log("【影子怪物】出現完成，開始追逐！");
+        Debug.Log("【影子怪物】登場完成，全力追逐！");
     }
 
-    /// <summary>全部燭火收集後，怪物漸漸消失。</summary>
     private IEnumerator VanishSequence()
     {
         currentState = MonsterState.Vanishing;
@@ -268,56 +301,68 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         UnlockCamera();
 
         float t = 0f;
+        Vector3 startScale = transform.localScale;
+
         while (t < vanishDuration)
         {
             t += Time.deltaTime;
-            SetVisualAlpha(Mathf.SmoothStep(1f, 0f, t / vanishDuration));
+            float progress = Mathf.SmoothStep(1f, 0f, t / vanishDuration);
+
+            SetVisualAlpha(progress);
+            transform.localScale = startScale * progress;
+
             yield return null;
         }
+
         SetVisualAlpha(0f);
+        transform.localScale = Vector3.zero;
         currentState = MonsterState.Dormant;
-        Debug.Log("【影子怪物】玩家收集所有燭火，怪物消失！玩家勝利！");
+        Debug.Log("【影子怪物】玩家收集所有燭火，怪物消散！玩家勝利！");
     }
 
-    /// <summary>吞噬玩家：黑幕覆蓋 → 觸發重生 → 重置怪物。</summary>
+    private void TriggerDevour()
+    {
+        if (currentState == MonsterState.Devouring) return;
+        currentState = MonsterState.Devouring;
+        if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
+        _stateCoroutine = StartCoroutine(DevourSequence());
+    }
+
     private IEnumerator DevourSequence()
     {
-        Debug.Log("【影子怪物】玩家被吞噬！");
+        Debug.Log("【影子怪物】玩家被吞噬！啟動重生機制與世界刷新！");
 
-        // 立刻還原玩家速度，避免重生後速度仍被壓制
         RemoveFear();
         UnlockCamera();
 
-        // 觸發重生系統（帶黑幕轉場效果）
+        // 觸發 Respawn 畫面黑化轉場
         if (respawnSystem != null)
+        {
             respawnSystem.TriggerRespawn();
+        }
         else
-            Debug.LogWarning("【影子怪物】找不到 PlayerRespawnSystem！請手動指定。");
+        {
+            Debug.LogWarning("【影子怪物】找不到 PlayerRespawnSystem！");
+        }
 
-        // 等待黑幕完全覆蓋後再重置（避免重置瞬間被玩家看見）
-        yield return new WaitForSecondsRealtime(2.0f);
+        // 等待畫面黑幕覆蓋（1.5秒後）
+        yield return new WaitForSecondsRealtime(1.5f);
 
-        // 重置整個系統（怪物 + 燭火）
+        // 重置影子怪物與所有燭火回初始狀態
         ResetToInitialState();
     }
 
-    /// <summary>懲罰觸發：鏡頭鎖定、玩家減速、怪物恢復原始大小、光暈增大 20%。</summary>
     private void TriggerPunishment()
     {
         if (currentState == MonsterState.Punishing) return;
         currentState = MonsterState.Punishing;
 
-        // 怪物恢復原始大小
         _currentScaleMultiplier = 1f;
         transform.localScale = _baseScale;
 
-        // 套用恐懼效果（玩家減速）
         ApplyFear();
-
-        // 鏡頭鎖定
         LockCamera();
 
-        // 光暈從當前大小漸增到 +20%
         if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
         _stateCoroutine = StartCoroutine(GrowHaloRoutine(
             _currentScaleMultiplier,
@@ -329,36 +374,73 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：移動與判定
+    // 私有：移動、自動搜尋與判定
     // ──────────────────────────────────────────────────────────────────────────
 
-    /// <summary>怪物只追 X 軸（橫向捲軸設計），保持 Y/Z 不變。</summary>
+    private void EnsurePlayerReference()
+    {
+        if (player != null) return;
+
+        GameObject p = GameObject.FindWithTag("Player");
+        if (p == null)
+        {
+            PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
+            if (pm != null) p = pm.gameObject;
+        }
+        if (p == null) p = GameObject.Find("Player");
+
+        if (p != null)
+        {
+            player = p.transform;
+            _pm = player.GetComponent<PlayerMovement>();
+            if (_pm == null) _pm = player.GetComponentInChildren<PlayerMovement>();
+            if (_pm == null) _pm = player.GetComponentInParent<PlayerMovement>();
+            Debug.Log($"【影子怪物】成功連結玩家物件：{player.name}");
+        }
+    }
+
     private void MoveTowardPlayer(float speed)
     {
         if (player == null) return;
+
+        PlayWalkAnimation();
+
         float targetX = player.position.x;
         float newX = Mathf.MoveTowards(transform.position.x, targetX, speed * Time.deltaTime);
         transform.position = new Vector3(newX, transform.position.y, transform.position.z);
     }
 
-    /// <summary>每幀檢查是否追上玩家（XY 平面距離，忽略 Z）。</summary>
+    private void PlayWalkAnimation()
+    {
+        if (_animator != null && !string.IsNullOrEmpty(walkAnimationName))
+        {
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (!stateInfo.IsName(walkAnimationName))
+            {
+                _animator.Play(walkAnimationName);
+            }
+        }
+    }
+
     private void CheckCatch()
     {
         if (player == null || currentState == MonsterState.Devouring) return;
+
+        // 依據當前體型動態計算抓取距離（體型越大抓取距離越大）
+        float effectiveCatchDist = catchDistance * _currentScaleMultiplier;
         float dist = Vector2.Distance(
             new Vector2(transform.position.x, transform.position.y),
             new Vector2(player.position.x, player.position.y)
         );
-        if (dist <= catchDistance)
+
+        if (dist <= effectiveCatchDist)
         {
-            currentState = MonsterState.Devouring;
-            if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
-            _stateCoroutine = StartCoroutine(DevourSequence());
+            TriggerDevour();
         }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：相機鎖定
+    // 私有：相機鎖定與恐懼
     // ──────────────────────────────────────────────────────────────────────────
 
     private void LockCamera()
@@ -366,12 +448,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (_camLocked) return;
         _camLocked = true;
 
-        // 建立虛假跟隨目標（固定在玩家當前位置，相機停止移動）
         if (_camLockDummy == null)
             _camLockDummy = new GameObject("ShadowMonster_CamLockDummy").transform;
         _camLockDummy.position = player != null ? player.position : Vector3.zero;
 
-        // 快取並替換所有 Cinemachine 相機的 Follow 目標
         _vcams3.Clear();
         _vcamsLegacy.Clear();
         _origFollow.Clear();
@@ -414,10 +494,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         Debug.Log("【影子怪物】相機已解鎖。");
     }
 
-    /// <summary>
-    /// 懲罰期間每幀夾住玩家的 X 座標，使其無法超出相機可視範圍。
-    /// 在 Update 中呼叫（Cinemachine 相機已固定，邊界穩定）。
-    /// </summary>
     private void ClampPlayerToCameraView()
     {
         if (_mainCam == null || player == null) return;
@@ -433,7 +509,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             halfW = dist * Mathf.Tan(_mainCam.fieldOfView * 0.5f * Mathf.Deg2Rad) * _mainCam.aspect;
         }
 
-        float margin = 0.5f; // 距螢幕邊緣留半格安全距離
+        float margin = 0.5f;
         float minX = _mainCam.transform.position.x - halfW + margin;
         float maxX = _mainCam.transform.position.x + halfW - margin;
 
@@ -441,10 +517,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         pos.x = Mathf.Clamp(pos.x, minX, maxX);
         player.position = pos;
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // 私有：恐懼效果
-    // ──────────────────────────────────────────────────────────────────────────
 
     private void ApplyFear()
     {
@@ -466,10 +538,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         Debug.Log("【影子怪物】恐懼效果已解除。");
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // 私有：燭火初始化
-    // ──────────────────────────────────────────────────────────────────────────
-
     private void SetupCandles()
     {
         if (candles == null || candles.Length == 0)
@@ -479,8 +547,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         _totalCandles = candles.Length;
-
-        // 找出 X 座標最大（最右邊）的燭火
         _lastCandleByX = candles[0];
         foreach (var c in candles)
         {
@@ -493,19 +559,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                   $"(X = {_lastCandleByX?.transform.position.x:F1})");
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // 私有：縮放應用
-    // ──────────────────────────────────────────────────────────────────────────
-
     private void ApplyCurrentScale()
     {
         transform.localScale = _baseScale * _currentScaleMultiplier;
         UpdateHaloRadius(_currentScaleMultiplier);
     }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // 私有：光暈協程
-    // ──────────────────────────────────────────────────────────────────────────
 
     private IEnumerator GrowHaloRoutine(float fromMult, float toMult, float duration)
     {
@@ -521,142 +579,179 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：光暈建立（程式自動生成，無需手動設定）
+    // 私有：強效光暈（Sprite 貼圖 + 粒子 + 光源 三重保障）
     // ──────────────────────────────────────────────────────────────────────────
 
     private void CreateHaloEffect()
     {
-        // ── 粒子光暈（環繞型粒子環） ──
-        GameObject psObj = new GameObject("Shadow_HaloParticles");
-        psObj.transform.SetParent(transform);
-        psObj.transform.localPosition = Vector3.zero;
-        // 旋轉 -90 度讓 Circle 發射方向從 XZ 平面轉到 XY 平面（2.5D 橫向視角正確）
-        psObj.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+        // ── 1. 程式生成 2D 柔光 Sprite（100% 保障在任何渲染管線中都能顯現） ──
+        GameObject glowObj = new GameObject("Shadow_HaloGlowSprite");
+        glowObj.transform.SetParent(transform);
+        glowObj.transform.localPosition = new Vector3(0f, 1.2f, -0.2f);
+        glowObj.transform.localScale = Vector3.one * haloBaseRadius * 1.8f;
 
-        _haloPs = psObj.AddComponent<ParticleSystem>();
+        _haloSpriteRenderer = glowObj.AddComponent<SpriteRenderer>();
+        _haloSpriteRenderer.sprite = GenerateSoftGlowSprite();
+        _haloSpriteRenderer.color = haloColor;
+        _haloSpriteRenderer.sortingOrder = 999;
 
-        // 主模組
-        var main = _haloPs.main;
-        main.loop = true;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(1.2f, 2.2f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.3f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.35f);
-        main.maxParticles = 350;
-        main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.startColor = new ParticleSystem.MinMaxGradient(
-            new Color(haloColor.r, haloColor.g, haloColor.b, 0.25f),
-            new Color(haloColor.r * 0.6f, haloColor.g * 0.25f, haloColor.b * 0.25f, 0.75f)
-        );
-
-        // 發射率
-        var emission = _haloPs.emission;
-        emission.rateOverTime = 90f;
-
-        // 環形發射器
-        var shape = _haloPs.shape;
-        shape.enabled = true;
-        shape.shapeType = ParticleSystemShapeType.Circle;
-        shape.radius = haloBaseRadius;
-        shape.radiusThickness = 0.12f;
-        shape.arc = 360f;
-
-        // 顏色隨生命週期淡出
-        var col = _haloPs.colorOverLifetime;
-        col.enabled = true;
-        Gradient grad = new Gradient();
-        grad.SetKeys(
-            new GradientColorKey[] {
-                new GradientColorKey(new Color(haloColor.r, haloColor.g, haloColor.b), 0f),
-                new GradientColorKey(new Color(haloColor.r * 0.4f, 0.05f, 0.05f), 1f)
-            },
-            new GradientAlphaKey[] {
-                new GradientAlphaKey(1f, 0f),
-                new GradientAlphaKey(0f, 1f)
-            }
-        );
-        col.color = new ParticleSystem.MinMaxGradient(grad);
-
-        // 大小隨生命週期縮小
-        var sol = _haloPs.sizeOverLifetime;
-        sol.enabled = true;
-        sol.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0.1f));
-
-        // 渲染器設定
-        var psRend = _haloPs.GetComponent<ParticleSystemRenderer>();
-        psRend.renderMode = ParticleSystemRenderMode.Billboard;
-        psRend.sortingOrder = 5; // 讓粒子在大多數背景物件之上
-
-        // 選取最相容的 Shader（依序嘗試）
-        Shader sh = Shader.Find("Sprites/Default")
-                 ?? Shader.Find("Unlit/Transparent")
-                 ?? Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply")
-                 ?? Shader.Find("Legacy Shaders/Particles/Alpha Blended");
-        if (sh != null)
-        {
-            Material mat = new Material(sh);
-            mat.color = new Color(haloColor.r, haloColor.g, haloColor.b, haloColor.a);
-            psRend.material = mat;
-        }
-
-        _haloPs.Play();
-
-        // ── 點光源（加深氛圍感） ──
+        // ── 2. 點光源（強大紅光，Z=-1.2） ──
         GameObject lightObj = new GameObject("Shadow_HaloLight");
         lightObj.transform.SetParent(transform);
-        lightObj.transform.localPosition = new Vector3(0f, 0f, -0.5f); // 比 Sprite 稍前方
+        lightObj.transform.localPosition = new Vector3(0f, 1.2f, -1.2f);
 
         _haloLight = lightObj.AddComponent<Light>();
         _haloLight.type = LightType.Point;
         _haloLight.color = lightColor;
         _haloLight.intensity = lightBaseIntensity;
-        _haloLight.range = haloBaseRadius * 3f;
+        _haloLight.range = lightRange;
         _haloLight.shadows = LightShadows.None;
 
-        Debug.Log("【影子怪物】光暈特效已建立（粒子環 + 點光源）。");
+        // ── 3. 粒子氣場 ──
+        GameObject psObj = new GameObject("Shadow_HaloParticles");
+        psObj.transform.SetParent(transform);
+        psObj.transform.localPosition = new Vector3(0f, 1.0f, -0.5f);
+        psObj.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+
+        _haloPs = psObj.AddComponent<ParticleSystem>();
+
+        var main = _haloPs.main;
+        main.loop = true;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.5f, 2.5f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 0.8f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.8f, 2.2f);
+        main.maxParticles = 500;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.startColor = new ParticleSystem.MinMaxGradient(
+            new Color(haloColor.r, haloColor.g, haloColor.b, 0.8f),
+            new Color(haloColor.r * 0.7f, 0.05f, 0.05f, 0.9f)
+        );
+
+        var emission = _haloPs.emission;
+        emission.rateOverTime = 120f;
+
+        var shape = _haloPs.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = haloBaseRadius;
+
+        var psRend = _haloPs.GetComponent<ParticleSystemRenderer>();
+        psRend.renderMode = ParticleSystemRenderMode.Billboard;
+        psRend.sortingOrder = 1000;
+
+        Shader sh = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                 ?? Shader.Find("Particles/Standard Unlit")
+                 ?? Shader.Find("Sprites/Default")
+                 ?? Shader.Find("Unlit/Transparent");
+        if (sh != null)
+        {
+            Material mat = new Material(sh);
+            mat.color = haloColor;
+            psRend.material = mat;
+        }
+
+        _haloPs.Play();
+        Debug.Log("【影子怪物】強效光暈（2D貼圖 + 粒子 + 光源）建立完成。");
+    }
+
+    /// <summary>自動程式生成漸層柔光 Sprite</summary>
+    private Sprite GenerateSoftGlowSprite()
+    {
+        int res = 128;
+        Texture2D tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
+        Vector2 center = new Vector2(res * 0.5f, res * 0.5f);
+        float radius = res * 0.48f;
+
+        for (int y = 0; y < res; y++)
+        {
+            for (int x = 0; x < res; x++)
+            {
+                float dist = Vector2.Distance(new Vector2(x, y), center);
+                float normDist = Mathf.Clamp01(dist / radius);
+                // 高斯/平滑放射漸層
+                float alpha = Mathf.Pow(1f - normDist, 2.0f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        tex.Apply();
+        return Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f), 100f);
     }
 
     private void UpdateHaloRadius(float multiplier)
     {
+        float m = Mathf.Max(0.1f, multiplier);
+        if (_haloSpriteRenderer != null)
+        {
+            _haloSpriteRenderer.transform.localScale = Vector3.one * haloBaseRadius * 1.8f * m;
+        }
         if (_haloPs != null)
         {
             var shape = _haloPs.shape;
-            shape.radius = haloBaseRadius * Mathf.Max(0.1f, multiplier);
+            shape.radius = haloBaseRadius * m;
         }
         if (_haloLight != null)
         {
-            _haloLight.range = haloBaseRadius * 3f * Mathf.Max(0.1f, multiplier);
-            _haloLight.intensity = lightBaseIntensity * Mathf.Max(0.1f, multiplier);
+            _haloLight.range = lightRange * m;
+            _haloLight.intensity = lightBaseIntensity * m;
         }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：視覺透明度控制
+    // 私有：視覺與光暈開關控制
     // ──────────────────────────────────────────────────────────────────────────
 
     private void SetVisualAlpha(float alpha)
     {
-        // SpriteRenderer
-        for (int i = 0; i < _spriteRenderers.Length; i++)
+        bool showVisuals = alpha > 0.001f;
+
+        for (int i = 0; i < _renderers.Length; i++)
         {
-            if (_spriteRenderers[i] == null) continue;
-            Color c = _originalColors[i];
-            c.a = c.a * alpha;
-            _spriteRenderers[i].color = c;
+            if (_renderers[i] == null) continue;
+            _renderers[i].enabled = showVisuals;
+
+            if (showVisuals)
+            {
+                Color c = _originalColors[i];
+                c.a = c.a * alpha;
+
+                _renderers[i].GetPropertyBlock(_mpb);
+                if (_renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor"))
+                    _mpb.SetColor("_BaseColor", c);
+                else
+                    _mpb.SetColor("_Color", c);
+
+                _renderers[i].SetPropertyBlock(_mpb);
+
+                if (_renderers[i] is SpriteRenderer sr)
+                    sr.color = c;
+            }
         }
 
-        // 粒子光暈透明度
+        if (_haloSpriteRenderer != null)
+        {
+            _haloSpriteRenderer.enabled = showVisuals;
+            Color sc = haloColor;
+            sc.a = haloColor.a * alpha;
+            _haloSpriteRenderer.color = sc;
+        }
+
         if (_haloPs != null)
         {
-            var m = _haloPs.main;
-            m.startColor = new ParticleSystem.MinMaxGradient(
-                new Color(haloColor.r, haloColor.g, haloColor.b, haloColor.a * alpha * 0.3f),
-                new Color(haloColor.r * 0.6f, haloColor.g * 0.2f, haloColor.b * 0.2f, haloColor.a * alpha * 0.9f)
-            );
+            if (!showVisuals)
+            {
+                _haloPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+            else
+            {
+                if (!_haloPs.isPlaying) _haloPs.Play();
+            }
         }
 
-        // 光源亮度
         if (_haloLight != null)
+        {
+            _haloLight.enabled = showVisuals;
             _haloLight.intensity = lightBaseIntensity * alpha;
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -668,26 +763,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         StopAllCoroutines();
         _stateCoroutine = null;
 
-        // 重置所有狀態變數
         currentState = MonsterState.Dormant;
         _candlesCollected = 0;
         _currentScaleMultiplier = 1f;
 
-        // 還原玩家效果
         RemoveFear();
         UnlockCamera();
 
-        // 還原怪物大小與位置（回到觸發點前的初始位置）
-        transform.localScale = _baseScale;
         transform.position = _initialPosition;
+        transform.localScale = Vector3.zero;
 
-        // 還原光暈
         UpdateHaloRadius(1f);
-
-        // 怪物完全不可見
         SetVisualAlpha(0f);
 
-        // 重置所有燭火（讓它們重新出現，可以再次收集）
+        // 重置場景中所有燭火（讓它們重新出現）
         if (candles != null)
         {
             foreach (var c in candles)
