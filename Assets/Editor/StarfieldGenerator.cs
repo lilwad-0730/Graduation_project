@@ -166,42 +166,38 @@ public class StarfieldGenerator : EditorWindow
         }
         texture.SetPixels(clearColors);
         
-        // 2. Generate random large particles and star glints (sparse composition)
-        int starCount = 35; // Airy and not too dense
-        Random.InitState(2026); // Unique seed
+        // 2. Generate random large particles and star glints (ultra dense 450 stars & 100% max brightness)
+        int starCount = 450;
+        Random.InitState(2026);
         
         for (int i = 0; i < starCount; i++)
         {
             int x = Random.Range(0, width);
             int y = Random.Range(0, height);
             
-            // Bright alpha (0.6 to 0.98) for foreground visibility
-            float alpha = Random.Range(0.6f, 0.98f);
+            // 100% Solid Full Vibrant Alpha Brightness
+            float alpha = 1.0f;
             
-            // Soft magical hues: warm gold, glowing cyan, and brilliant white
             float colorRoll = Random.value;
             Color starColor;
             if (colorRoll < 0.35f)
             {
-                // Magical Cyan/Teal glow
-                starColor = new Color(0.7f, 1.0f, 0.95f, alpha);
+                // Vivid Ultra Electric Cyan/Teal glow
+                starColor = new Color(0.8f, 1.0f, 1.0f, alpha);
             }
             else if (colorRoll < 0.7f)
             {
-                // Dreamy warm gold
-                starColor = new Color(1.0f, 0.9f, 0.65f, alpha);
+                // Radiant Warm Gold Diamond
+                starColor = new Color(1.0f, 0.96f, 0.8f, alpha);
             }
             else
             {
-                // Brilliant white
+                // Pure Brilliant White Flare
                 starColor = new Color(1.0f, 1.0f, 1.0f, alpha);
             }
             
-            // Select shape:
-            // 70% large soft glowing dot (type 0)
-            // 30% bright stylized star sparkle glint (type 1)
             float shapeRoll = Random.value;
-            int shapeType = shapeRoll < 0.7f ? 0 : 1;
+            int shapeType = shapeRoll < 0.5f ? 0 : 1;
             
             DrawNearStar(texture, x, y, width, height, starColor, shapeType);
         }
@@ -212,11 +208,11 @@ public class StarfieldGenerator : EditorWindow
         string relativePath = "Assets/FreeParallax/Images/starfield_near.png";
         SaveTextureToPNG(texture, relativePath);
         
-        // 4. Configure Import Settings with PPU = 40 ( membuat星點在遊戲運行 Play Mode 時比常規大 2.5 倍且不被 FreeParallax 重置)
-        ConfigureSpriteImporter(relativePath, 40f);
+        // 4. Configure Import Settings (PPU = 28 for extra large dazzling stars)
+        ConfigureSpriteImporter(relativePath, 28f);
         
-        // 5. Add to scene 'dark glasses'
-        SetupSceneLayer(relativePath, "Parallax_StarfieldNear", 10f, -80, 0.3f);
+        // 5. Add to scene 'dark glasses' with 1.5x super speed ratio
+        SetupSceneLayer(relativePath, "Parallax_StarfieldNear", 10f, -80, 1.5f);
     }
     
     private static void SaveTextureToPNG(Texture2D texture, string relativePath)

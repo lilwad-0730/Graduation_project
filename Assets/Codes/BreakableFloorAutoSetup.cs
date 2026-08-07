@@ -26,8 +26,8 @@ public class BreakableFloorAutoSetup : MonoBehaviour
             {
                 Destructible dest = go.GetComponent<Destructible>();
                 if (dest == null) dest = go.AddComponent<Destructible>();
-                dest.columns = 4;
-                dest.rows = 4;
+                dest.minGridSubdivisions = 6;
+                dest.jitterAmount = 0.42f;
                 dest.explosionForce = 4.5f;
                 dest.disappearDelay = 2.5f;
                 dest.shatterOnCollision = false;
@@ -37,6 +37,12 @@ public class BreakableFloorAutoSetup : MonoBehaviour
                 bgf.delayBeforeShatter = 2.0f;
                 bgf.enableWarningShake = true;
                 bgf.shakeIntensity = 0.05f;
+
+                GlassShatterFX gfx = go.GetComponent<GlassShatterFX>();
+                if (gfx == null) gfx = go.AddComponent<GlassShatterFX>();
+                gfx.delayBeforeShatter = 2.0f;
+                gfx.shakeIntensity = 0.05f;
+                gfx.burstFlashDuration = 0.08f;
 
                 Collider col = go.GetComponent<Collider>();
                 if (col == null)

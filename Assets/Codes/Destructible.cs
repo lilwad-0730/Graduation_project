@@ -1,23 +1,36 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// 玻璃不規則細小四邊形爆裂組件 (Irregular Micro Quad Glass Shatter System)。
+/// 根據平台實際 Bounds 的長寬比例動態計算高密度細小正方形基礎網格 (Aspect-Ratio Aware Grid)，
+/// 搭配強效不規則頂點抖動，將平台本體裁切為 120~200 塊細小晶瑩的玻璃切片爆裂！
+/// </summary>
 public class Destructible : MonoBehaviour, IResettable
 {
-    [Header("Shattered Prefab to Spawn (Optional)")]
+    [Header("Shattered Prefab (選填)")]
     public GameObject shatteredPrefab;
 
-    [Header("Shatter Settings")]
-    public bool shatterOnCollision = true;
-    public float minCollisionVelocity = 2f;
-    public float disappearDelay = 2f; // 碎裂後幾秒開始消失
+    [Header("碎裂設定")]
+    [Tooltip("碰撞時是否自動碎裂")]
+    public bool shatterOnCollision = false;
 
-    [Header("Auto-Shatter Grid Settings")]
-    public int columns = 4;
-    public int rows = 5;
-    public float explosionForce = 3f;
+    [Tooltip("碎片消失延遲 (秒)")]
+    public float disappearDelay = 2.5f;
+
+    [Tooltip("短邊切分網格數 (將依長寬比例自動計算長邊細分)")]
+    [Range(3, 10)]
+    public int minGridSubdivisions = 6;
+
+    [Tooltip("四邊形不規則抖動程度 (0.1 ~ 0.45)")]
+    [Range(0.1f, 0.45f)]
+    public float jitterAmount = 0.42f;
+
+    [Tooltip("碎裂爆裂力道")]
+    public float explosionForce = 4.5f;
 
     private bool hasShattered = false;
-
     private Vector3 initialPosition;
     private Quaternion initialRotation;
     private Vector3 initialScale;
@@ -40,12 +53,8 @@ public class Destructible : MonoBehaviour, IResettable
         {
             GameObject shatteredInstance = Instantiate(shatteredPrefab, transform.position, transform.rotation);
             shatteredInstance.transform.localScale = transform.localScale;
-
             ShatteredObject shatteredComp = shatteredInstance.GetComponent<ShatteredObject>();
-            if (shatteredComp == null)
-            {
-                shatteredComp = shatteredInstance.AddComponent<ShatteredObject>();
-            }
+            if (shatteredComp == null) shatteredComp = shatteredInstance.AddComponent<ShatteredObject>();
             shatteredComp.disappearDelay = disappearDelay;
             gameObject.SetActive(false);
         }
@@ -56,7 +65,7 @@ public class Destructible : MonoBehaviour, IResettable
 
             if (sr != null && sr.sprite != null)
             {
-                ShatterSprite(sr);
+                ShatterSpriteToMicroGlassQuads(sr);
                 gameObject.SetActive(false);
             }
             else
@@ -75,83 +84,59 @@ public class Destructible : MonoBehaviour, IResettable
         hasShattered = false;
     }
 
-    private void ShatterSprite(SpriteRenderer sr)
+    /// <summary>
+    /// 生成長寬比例吻合的高密度細小不規則玻璃切片 (Aspect-Ratio Aware Micro Glass Quads)
+    /// </summary>
+    private void ShatterSpriteToMicroGlassQuads(SpriteRenderer sr)
     {
-        if (sr == null || sr.sprite == null) return;
-
-        // 建立碎裂碎片容器
-        GameObject root = new GameObject(gameObject.name + "_Shattered");
-        root.transform.position = transform.position;
-        root.transform.rotation = transform.rotation;
-        root.transform.localScale = transform.localScale;
-
-        Sprite origSprite = sr.sprite;
-        Texture2D tex = origSprite.texture;
-        Rect origRect = origSprite.textureRect;
-        float ppu = origSprite.pixelsPerUnit;
-
-        int shardCols = columns > 0 ? columns : 4;
-        int shardRows = rows > 0 ? rows : 5;
-
-        float shardW = origRect.width / shardCols;
-        float shardH = origRect.height / shardRows;
-
+        Sprite sprite = sr.sprite;
+        Texture2D texture = sprite.texture;
+        Rect textureRect = sprite.textureRect;
         Bounds bounds = sr.bounds;
-        Vector3 wallMin = bounds.min;
-        Vector3 wallSize = bounds.size;
+        Vector3 centerPos = bounds.center;
 
-        for (int x = 0; x < shardCols; x++)
+        GameObject root = new GameObject(gameObject.name + "_MicroGlassShattered");
+        root.transform.position = centerPos;
+
+        float width = bounds.size.x;
+        float height = bounds.size.y;
+        float aspectRatio = Mathf.Max(0.1f, width / Mathf.Max(0.01f, height));
+
+        int rws = Mathf.Max(3, minGridSubdivisions);
+        int cols = Mathf.Clamp(Mathf.RoundToInt(rws * aspectRatio), 6, 60);
+
+        // 1. 建立帶有強效隨機抖動的高密度網格 (Jittered Vertex Grid)
+        Vector2[,] grid = new Vector2[cols + 1, rws + 1];
+        Random.InitState((int)(Time.time * 1000f) + gameObject.GetInstanceID());
+
+        for (int x = 0; x <= cols; x++)
         {
-            for (int y = 0; y < shardRows; y++)
+            for (int y = 0; y <= rws; y++)
             {
-                GameObject shard = new GameObject($"{gameObject.name}_Shard_{x}_{y}");
-                shard.transform.SetParent(root.transform);
+                float normX = (float)x / cols;
+                float normY = (float)y / rws;
 
-                // 精確計算碎片在原物件世界座標的位置
-                float pctX = (x + 0.5f) / shardCols;
-                float pctY = (y + 0.5f) / shardRows;
+                float offsetX = (x > 0 && x < cols) ? Random.Range(-jitterAmount, jitterAmount) / cols : 0f;
+                float offsetY = (y > 0 && y < rws) ? Random.Range(-jitterAmount, jitterAmount) / rws : 0f;
 
-                Vector3 shardWorldPos = new Vector3(
-                    wallMin.x + pctX * wallSize.x,
-                    wallMin.y + pctY * wallSize.y,
-                    transform.position.z + Random.Range(-0.02f, 0.02f)
+                grid[x, y] = new Vector2(
+                    Mathf.Clamp01(normX + offsetX),
+                    Mathf.Clamp01(normY + offsetY)
                 );
-                shard.transform.position = shardWorldPos;
+            }
+        }
 
-                // 直接裁切物件本體的圖案區域，產生 100% 物件本身的精確碎片 Sprite
-                Rect subRect = new Rect(origRect.x + x * shardW, origRect.y + y * shardH, shardW, shardH);
-                Sprite shardSprite = Sprite.Create(tex, subRect, new Vector2(0.5f, 0.5f), ppu);
+        // 2. 構建大量細小晶瑩不規則四邊形切片 Mesh
+        for (int x = 0; x < cols; x++)
+        {
+            for (int y = 0; y < rws; y++)
+            {
+                Vector2 p0 = grid[x, y];         // Top-Left
+                Vector2 p1 = grid[x + 1, y];     // Top-Right
+                Vector2 p2 = grid[x + 1, y + 1]; // Bottom-Right
+                Vector2 p3 = grid[x, y + 1];     // Bottom-Left
 
-                SpriteRenderer shardSr = shard.AddComponent<SpriteRenderer>();
-                shardSr.sprite = shardSprite;
-                shardSr.color = sr.color;
-                shardSr.sortingLayerID = sr.sortingLayerID;
-                shardSr.sortingOrder = sr.sortingOrder + 1;
-                shardSr.material = sr.material;
-
-                // 掛載 3D 碰撞體與剛體 (設為 isTrigger 避免物理互卡，順暢受重力下墜)
-                BoxCollider col = shard.AddComponent<BoxCollider>();
-                col.size = new Vector3(wallSize.x / shardCols * 0.85f, wallSize.y / shardRows * 0.85f, 0.2f);
-                col.isTrigger = true;
-
-                Rigidbody rb = shard.AddComponent<Rigidbody>();
-                rb.useGravity = true;
-                rb.constraints = RigidbodyConstraints.FreezePositionZ;
-
-                // 賦予重力崩塌下墜初速度與隨機扭力
-                Vector3 burstDir = new Vector3(Random.Range(-1.5f, 1.5f), Random.Range(-2.5f, -0.5f), 0f);
-                rb.AddForce(burstDir * (explosionForce * 1.5f), ForceMode.Impulse);
-                rb.AddTorque(Random.insideUnitSphere * explosionForce * 5.0f, ForceMode.Impulse);
-
-                // 讓碎片忽略周圍地磚碰撞，確保能夠流暢地向下方重力沉降崩塌
-                Collider[] envCols = Object.FindObjectsByType<Collider>(FindObjectsSortMode.None);
-                foreach (var ec in envCols)
-                {
-                    if (ec != null && ec.gameObject != shard && (ec.transform.parent == null || ec.transform.parent != root.transform))
-                    {
-                        Physics.IgnoreCollision(col, ec, true);
-                    }
-                }
+                CreateSingleMicroQuadShard(root.transform, sprite, texture, textureRect, bounds, p0, p1, p2, p3, sr, x, y);
             }
         }
 
@@ -160,13 +145,60 @@ public class Destructible : MonoBehaviour, IResettable
         shatteredComp.explosionForce = explosionForce;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void CreateSingleMicroQuadShard(Transform parent, Sprite sprite, Texture2D texture, Rect rect, Bounds bounds, Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, SpriteRenderer origSr, int gridX, int gridY)
     {
-        if (shatterOnCollision) Shatter();
-    }
+        GameObject shard = new GameObject($"{gameObject.name}_MicroShard_{gridX}_{gridY}");
+        shard.transform.SetParent(parent);
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (shatterOnCollision) Shatter();
+        Vector2 centerUV = (p0 + p1 + p2 + p3) * 0.25f;
+        Vector3 worldPos = new Vector3(
+            bounds.min.x + centerUV.x * bounds.size.x,
+            bounds.min.y + centerUV.y * bounds.size.y,
+            bounds.center.z + Random.Range(-0.02f, 0.02f)
+        );
+        shard.transform.position = worldPos;
+
+        Vector3 v0 = new Vector3((p0.x - centerUV.x) * bounds.size.x, (p0.y - centerUV.y) * bounds.size.y, 0f);
+        Vector3 v1 = new Vector3((p1.x - centerUV.x) * bounds.size.x, (p1.y - centerUV.y) * bounds.size.y, 0f);
+        Vector3 v2 = new Vector3((p2.x - centerUV.x) * bounds.size.x, (p2.y - centerUV.y) * bounds.size.y, 0f);
+        Vector3 v3 = new Vector3((p3.x - centerUV.x) * bounds.size.x, (p3.y - centerUV.y) * bounds.size.y, 0f);
+
+        Vector2 uv0 = new Vector2((rect.x + p0.x * rect.width) / texture.width, (rect.y + p0.y * rect.height) / texture.height);
+        Vector2 uv1 = new Vector2((rect.x + p1.x * rect.width) / texture.width, (rect.y + p1.y * rect.height) / texture.height);
+        Vector2 uv2 = new Vector2((rect.x + p2.x * rect.width) / texture.width, (rect.y + p2.y * rect.height) / texture.height);
+        Vector2 uv3 = new Vector2((rect.x + p3.x * rect.width) / texture.width, (rect.y + p3.y * rect.height) / texture.height);
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = new Vector3[] { v0, v1, v2, v3 };
+        mesh.uv = new Vector2[] { uv0, uv1, uv2, uv3 };
+        mesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        MeshFilter mf = shard.AddComponent<MeshFilter>();
+        mf.mesh = mesh;
+
+        MeshRenderer mr = shard.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = origSr.material;
+        mr.material.mainTexture = texture;
+        mr.sortingLayerID = origSr.sortingLayerID;
+        mr.sortingOrder = origSr.sortingOrder + 1;
+
+        BoxCollider col = shard.AddComponent<BoxCollider>();
+        col.isTrigger = true;
+
+        Rigidbody rb = shard.AddComponent<Rigidbody>();
+        rb.useGravity = true;
+        rb.constraints = RigidbodyConstraints.FreezePositionZ;
+
+        // 純自由落體：極微幅水平漂移，主要由自然重力拉引沉降與輕盈自轉
+        Vector3 freeFallDir = new Vector3(
+            Random.Range(-0.2f, 0.2f),
+            Random.Range(-0.8f, -0.2f),
+            0f
+        );
+
+        rb.AddForce(freeFallDir * (explosionForce * Random.Range(0.5f, 1.0f)), ForceMode.Impulse);
+        rb.AddTorque(Random.insideUnitSphere * Random.Range(2.0f, 6.0f), ForceMode.Impulse);
     }
 }

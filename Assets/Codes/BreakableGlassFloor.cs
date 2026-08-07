@@ -56,6 +56,14 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
     {
         if (isTriggered) return;
         isTriggered = true;
+
+        GlassShatterFX fx = GetComponent<GlassShatterFX>();
+        if (fx != null)
+        {
+            fx.TriggerBreakSequence();
+            return;
+        }
+
         StartCoroutine(ShatterRoutine());
     }
 
