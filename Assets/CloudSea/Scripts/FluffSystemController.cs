@@ -102,11 +102,13 @@ public class FluffSystemController : MonoBehaviour
         // 生成瞬間隨機從 0 ~ 8 幀 (9 種姿態) 中選取一種
         tsa.startFrame = new ParticleSystem.MinMaxCurve(0f, 8f);
 
-        // 5. 風速與不規則飄動
+        // 5. 風速與不規則飄動（X, Y, Z 三軸必須統一為相同的 MinMaxCurve Mode）
         var velocityOverLife = ps.velocityOverLifetime;
         velocityOverLife.enabled = true;
         velocityOverLife.x = new ParticleSystem.MinMaxCurve(windForceX * 0.5f, windForceX * 1.5f);
         velocityOverLife.y = new ParticleSystem.MinMaxCurve(-0.1f, 0.3f);
+        velocityOverLife.z = new ParticleSystem.MinMaxCurve(0f, 0f);
+
 
         var noise = ps.noise;
         noise.enabled = turbulenceStrength > 0f;

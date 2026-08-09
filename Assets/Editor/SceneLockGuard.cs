@@ -40,6 +40,8 @@ public class SceneLockGuard
     {
         EditorSceneManager.playModeStartScene = null;
 
+        if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying) return;
+
         if (!string.IsNullOrEmpty(previousScenePath) && System.IO.File.Exists(previousScenePath))
         {
             var activeScene = EditorSceneManager.GetActiveScene();
@@ -50,4 +52,5 @@ public class SceneLockGuard
             }
         }
     }
+
 }

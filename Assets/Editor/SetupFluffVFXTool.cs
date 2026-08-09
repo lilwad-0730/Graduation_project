@@ -21,6 +21,7 @@ public class SetupFluffVFXTool
     private static void RunOnce()
     {
         if (executed) return;
+        if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying) return;
         executed = true;
         EditorApplication.update -= RunOnce;
         SetupFluffVFX();
@@ -29,7 +30,9 @@ public class SetupFluffVFXTool
     [MenuItem("Tools/Setup Fluff VFX in SampleScene Now")]
     public static void SetupFluffVFX()
     {
+        if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying) return;
         var scene = EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity", OpenSceneMode.Single);
+
 
         string prefabPath = "Assets/TheLazzyKnight/Stylized Environment VFX/Prefabs/Fluff.prefab";
         string texPath = "Assets/TheLazzyKnight/Stylized Environment VFX/Textures/Fluff.tif";
@@ -112,6 +115,9 @@ public class SetupFluffVFXTool
         var velocityOverLife = ps.velocityOverLifetime;
         velocityOverLife.enabled = true;
         velocityOverLife.x = new ParticleSystem.MinMaxCurve(0.3f, 0.9f); // 微風向右飄動
+        velocityOverLife.y = new ParticleSystem.MinMaxCurve(-0.1f, 0.3f);
+        velocityOverLife.z = new ParticleSystem.MinMaxCurve(0f, 0f);
+
 
         var rotOverLife = ps.rotationOverLifetime;
         rotOverLife.enabled = true;

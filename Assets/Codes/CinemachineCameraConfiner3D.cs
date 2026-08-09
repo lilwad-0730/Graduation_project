@@ -89,26 +89,41 @@ public class CinemachineCameraConfiner3D : CinemachineExtension
         {
             if (col != null)
             {
-                Vector3 closestPoint = col.bounds.ClosestPoint(targetPos);
+                Bounds b = col.bounds;
+                Vector3 closestPoint = b.ClosestPoint(targetPos);
                 float dist = Vector3.Distance(closestPoint, targetPos);
-                if (dist < minDistance)
+
+
+                // 當玩家距離背景 15 單位以內時自動繫結該區域，超過 15 單位無碰撞區時自動解鎖
+                if (dist < 15f && dist < minDistance)
                 {
                     minDistance = dist;
                     closestCol = col;
                 }
+
             }
         }
 
-        if (closestCol != null && boundaryCollider != closestCol)
+        if (closestCol != null)
         {
-            boundaryCollider = closestCol;
-            _currentClusterBounds = CalculateClusterBounds(closestCol);
-            Debug.Log($"[CinemachineCameraConfiner3D] 已動態綁定並合併相鄰邊界：{closestCol.gameObject.name}");
+            if (boundaryCollider != closestCol)
+            {
+                boundaryCollider = closestCol;
+                _currentClusterBounds = CalculateClusterBounds(closestCol);
+                Debug.Log($"[CinemachineCameraConfiner3D] ✅ 已動態觸發並綁定區域：{closestCol.gameObject.name}");
+            }
+            else if (_currentClusterBounds.size == Vector3.zero)
+            {
+                _currentClusterBounds = CalculateClusterBounds(boundaryCollider);
+            }
         }
-        else if (boundaryCollider != null && _currentClusterBounds.size == Vector3.zero)
+        else
         {
-            _currentClusterBounds = CalculateClusterBounds(boundaryCollider);
+            // 當玩家不在任何背景碰撞區內時，立刻解鎖邊界限制，允許相機自由跟隨玩家！
+            boundaryCollider = null;
+            _currentClusterBounds = new Bounds();
         }
+
     }
 
     // 將互相連接的背景合併成一個超大邊界，解決背景切換時瞬間傳送的問題！
@@ -170,7 +185,6 @@ public class CinemachineCameraConfiner3D : CinemachineExtension
             float halfWidth = 0f;
 
             // 從目前的 Lens 狀態動態讀取，以完美相容「階梯攝影機動態縮放」的效果！
-            // 當鏡頭動態拉遠時，邊界限制會自動內縮，確保任何縮放大小下，四邊都不會看穿背景！
             bool isOrthographic = state.Lens.Orthographic;
             float currentSize = isOrthographic ? state.Lens.OrthographicSize : state.Lens.FieldOfView;
 
@@ -208,17 +222,31 @@ public class CinemachineCameraConfiner3D : CinemachineExtension
                 clampedPos.x = bgBounds.center.x; // 若背景太窄，強制鎖定在中心
             }
 
-            // Y 軸邊界限制
+            // Y 軸動態邊界限制（活化判斷：掉落從上方進入時不擋鏡頭）
             if (minY <= maxY) 
             {
-                clampedPos.y = Mathf.Clamp(clampedPos.y, minY, maxY);
+                if (state.RawPosition.y > maxY)
+                {
+                    // 鏡頭尚在背景上方時，僅限制 bottom 下邊界 (minY)，允許鏡頭順暢跟隨玩家從上方滑入！
+                    clampedPos.y = Mathf.Max(clampedPos.y, minY);
+                }
+                else
+                {
+                    // 已進入背景內部，完整進行上下邊界限制防露空
+                    clampedPos.y = Mathf.Clamp(clampedPos.y, minY, maxY);
+                }
             }
             else if (lockToCenterIfTooSmall)
             {
-                clampedPos.y = bgBounds.center.y; // 若背景太矮，強制鎖定在中心避免漏出藍天
+                // 若玩家已在背景高度範圍內才置中鎖定；掉落過程不強行擋住鏡頭
+                if (state.RawPosition.y <= bgBounds.max.y)
+                {
+                    clampedPos.y = bgBounds.center.y;
+                }
             }
 
             state.RawPosition = clampedPos;
         }
     }
+
 }

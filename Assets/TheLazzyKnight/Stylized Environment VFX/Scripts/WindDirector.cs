@@ -35,12 +35,16 @@ public class WindDirector : MonoBehaviour
 
         foreach (VisualEffect visualEffect in fxes)
         {
+            if (visualEffect != null)
             {
-                visualEffect.SetVector3("Wind Rotation", windRotation);
-                visualEffect.SetFloat("Wind Force", force);
+                if (visualEffect.HasVector3("Wind Rotation"))
+                    visualEffect.SetVector3("Wind Rotation", windRotation);
+                if (visualEffect.HasFloat("Wind Force"))
+                    visualEffect.SetFloat("Wind Force", force);
             }
         }
     }
+
     void Update()
     {
         windRotation = transform.localRotation.eulerAngles;
@@ -53,27 +57,24 @@ public class WindDirector : MonoBehaviour
 
             foreach (VisualEffect visualEffect in fxes)
             {
+                if (visualEffect != null && visualEffect.HasVector3("Wind Rotation"))
                 {
                     visualEffect.SetVector3("Wind Rotation", windRotation);
                 }
             }
-
-           
         }
 
         if(force != oldForce)
         {
-
             oldForce = force;
 
             foreach (VisualEffect visualEffect in fxes)
             {
+                if (visualEffect != null && visualEffect.HasFloat("Wind Force"))
                 {
                     visualEffect.SetFloat("Wind Force", force);
                 }
             }
-
-
         }
 
     }
