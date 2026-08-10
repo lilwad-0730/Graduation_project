@@ -613,16 +613,29 @@ public class PlayerMovement : MonoBehaviour
                 float targetX = transform.position.x;
                 float targetZ = transform.position.z;
                 
-                // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
-                float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
+                // ★★★ 關鍵修正：當 cameraTarget 的 Y 距離玩家超過 15 單位（長途墜落/重生傳送），
+                // 直接 Snap 瞬間到位，徹底消除「鏡頭卡在高空追不上」的問題！
+                float yDiff = Mathf.Abs(cameraTarget.position.y - transform.position.y);
+                if (yDiff > 15f)
+                {
+                    // 直接跳過去，同時清除速度累積，避免 SmoothDamp overshooting
+                    cameraTarget.position = new Vector3(targetX, transform.position.y, targetZ);
+                    _smoothYVelocity = 0f;
+                    Debug.Log($"[Camera] Y 差距 {yDiff:F1} > 15，執行瞬間 Snap！cameraTarget Y 已歸位至 {transform.position.y:F1}");
+                }
+                else
+                {
+                    // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
+                    float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
 
-                // X 和 Z 軸死死咬住玩家 (0 延遲)
-                // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
-                float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
-
-                cameraTarget.position = new Vector3(targetX, newY, targetZ);
+                    // X 和 Z 軸死死咬住玩家 (0 延遲)
+                    // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
+                    float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
+                    cameraTarget.position = new Vector3(targetX, newY, targetZ);
+                }
             }
         }
+
     }
 
     // ==========================================

@@ -79,38 +79,54 @@ public class CinemachineCameraConfiner3D : CinemachineExtension
             if (_cachedBackgroundColliders == null || _cachedBackgroundColliders.Length == 0) return;
         }
 
-        GameObject player = GameObject.FindWithTag("Player");
-        Vector3 targetPos = player != null ? player.transform.position : transform.position;
+        GameObject playerObj = GameObject.FindWithTag("Player");
+        if (playerObj == null)
+        {
+            boundaryCollider = null;
+            return;
+        }
 
-        Collider closestCol = null;
-        float minDistance = float.MaxValue;
+        Vector3 targetPos = playerObj.transform.position;
 
+        // ★★★ 核心：只有主角踩到地面 (isGrounded) 時才允許開啟 confiner
+        // 在空中墜落時，boundaryCollider 一律保持 null，攝影機完全自由跟隨主角！
+        PlayerMovement pm = playerObj.GetComponent<PlayerMovement>();
+        bool playerIsGrounded = (pm != null) ? pm.isGrounded : false;
+
+        if (!playerIsGrounded)
+        {
+            // 主角在空中（墜落/跳躍），立刻解鎖所有邊界，鏡頭 100% 跟緊主角
+            boundaryCollider = null;
+            _currentClusterBounds = new Bounds();
+            return;
+        }
+
+        // 主角已落地，尋找主角腳底所在的背景區域（只比對 X 軸範圍，Y 軸交給踩地保證）
+        Collider activeCol = null;
         foreach (var col in _cachedBackgroundColliders)
         {
-            if (col != null)
+            if (col == null) continue;
+            Bounds b = col.bounds;
+
+            // 只判斷主角的 X 是否在該背景的 X 範圍內（踩到地即代表 Y 已在正確位置）
+            bool isInsideX = targetPos.x >= b.min.x && targetPos.x <= b.max.x;
+            // Y 也要在背景範圍內（防止主角雖落地但踩到其他背景）
+            bool isInsideY = targetPos.y >= b.min.y && targetPos.y <= b.max.y;
+
+            if (isInsideX && isInsideY)
             {
-                Bounds b = col.bounds;
-                Vector3 closestPoint = b.ClosestPoint(targetPos);
-                float dist = Vector3.Distance(closestPoint, targetPos);
-
-
-                // 當玩家距離背景 15 單位以內時自動繫結該區域，超過 15 單位無碰撞區時自動解鎖
-                if (dist < 15f && dist < minDistance)
-                {
-                    minDistance = dist;
-                    closestCol = col;
-                }
-
+                activeCol = col;
+                break;
             }
         }
 
-        if (closestCol != null)
+        if (activeCol != null)
         {
-            if (boundaryCollider != closestCol)
+            if (boundaryCollider != activeCol)
             {
-                boundaryCollider = closestCol;
-                _currentClusterBounds = CalculateClusterBounds(closestCol);
-                Debug.Log($"[CinemachineCameraConfiner3D] ✅ 已動態觸發並綁定區域：{closestCol.gameObject.name}");
+                boundaryCollider = activeCol;
+                _currentClusterBounds = CalculateClusterBounds(activeCol);
+                Debug.Log($"[CinemachineCameraConfiner3D] ✅ 主角落地於區域，開啟邊界防穿幫：{activeCol.gameObject.name}");
             }
             else if (_currentClusterBounds.size == Vector3.zero)
             {
@@ -119,12 +135,12 @@ public class CinemachineCameraConfiner3D : CinemachineExtension
         }
         else
         {
-            // 當玩家不在任何背景碰撞區內時，立刻解鎖邊界限制，允許相機自由跟隨玩家！
             boundaryCollider = null;
             _currentClusterBounds = new Bounds();
         }
-
     }
+
+
 
     // 將互相連接的背景合併成一個超大邊界，解決背景切換時瞬間傳送的問題！
     private Bounds CalculateClusterBounds(Collider seed)
