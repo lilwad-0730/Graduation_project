@@ -34,10 +34,17 @@ public class WolfEnemy : MonoBehaviour
     private bool isAttached = false;
     private bool isStunned = false; // 被 StopAttackObject 打到時的硬直狀態
 
-    void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+    }
+
+    void Start()
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (col == null) col = GetComponent<Collider>();
+
 
         // 執行碰撞忽略設定
         if (col != null && collidersToIgnore != null)
@@ -147,13 +154,17 @@ public class WolfEnemy : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (isStunned || isAttached) return;
+        if (rb == null) rb = GetComponent<Rigidbody>();
 
         // 咬到玩家 (接觸)
         if (collision.gameObject.CompareTag("Player"))
         {
-            // 【新增】碰到玩家瞬間，先把狼的速度清空，避免殘餘力量撞飛玩家
-            rb.linearVelocity = Vector3.zero; 
-            rb.angularVelocity = Vector3.zero;
+            // 碰到玩家瞬間，先把狼的速度清空，避免殘餘力量撞飛玩家
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero; 
+                rb.angularVelocity = Vector3.zero;
+            }
 
             // 觸發螢幕受傷回饋 (震動與閃紅邊)
             if (ScreenFeedbackManager.Instance != null)
@@ -164,6 +175,7 @@ public class WolfEnemy : MonoBehaviour
             AttachToPlayer();
         }
     }
+
 
     private void OnTriggerEnter(Collider other)
     {

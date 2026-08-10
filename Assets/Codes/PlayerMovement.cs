@@ -335,7 +335,21 @@ public class PlayerMovement : MonoBehaviour
             currentAirTime = 0f;
             // 如果落地且沒有明顯向上的速度，代表跳躍結束
             if (rb.linearVelocity.y <= 0.1f) isJumping = false;
+
+            // ★★★ 關鍵修正：只要玩家落地踩到任何地面，自動解除掉落鎖定，恢復自由控制！
+            if (freezeHorizontal)
+            {
+                freezeHorizontal = false;
+                Debug.Log("【掉落解鎖】玩家已著地 (isGrounded)，自動解除橫向鎖定，恢復自由控制！");
+                PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+                if (respawnSystem != null)
+                {
+                    respawnSystem.SetSafeGroundPosition(this.transform.position);
+                    StartCoroutine(EnableRespawnWithDelay());
+                }
+            }
         }
+
         else
         {
             currentAirTime += Time.deltaTime;
@@ -612,29 +626,17 @@ public class PlayerMovement : MonoBehaviour
             {
                 float targetX = transform.position.x;
                 float targetZ = transform.position.z;
-                
-                // ★★★ 關鍵修正：當 cameraTarget 的 Y 距離玩家超過 15 單位（長途墜落/重生傳送），
-                // 直接 Snap 瞬間到位，徹底消除「鏡頭卡在高空追不上」的問題！
-                float yDiff = Mathf.Abs(cameraTarget.position.y - transform.position.y);
-                if (yDiff > 15f)
-                {
-                    // 直接跳過去，同時清除速度累積，避免 SmoothDamp overshooting
-                    cameraTarget.position = new Vector3(targetX, transform.position.y, targetZ);
-                    _smoothYVelocity = 0f;
-                    Debug.Log($"[Camera] Y 差距 {yDiff:F1} > 15，執行瞬間 Snap！cameraTarget Y 已歸位至 {transform.position.y:F1}");
-                }
-                else
-                {
-                    // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
-                    float currentDamping = (freezeHorizontal && !isGrounded) ? 0.05f : cameraYDamping;
 
-                    // X 和 Z 軸死死咬住玩家 (0 延遲)
-                    // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
-                    float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
-                    cameraTarget.position = new Vector3(targetX, newY, targetZ);
-                }
+                // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
+                float currentDamping = (freezeHorizontal && !isGrounded) ? 0.02f : cameraYDamping;
+
+                // X 和 Z 軸死死咬住玩家 (0 延遲)
+                // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
+                float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
+                cameraTarget.position = new Vector3(targetX, newY, targetZ);
             }
         }
+
 
     }
 

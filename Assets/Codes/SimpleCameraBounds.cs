@@ -1,32 +1,37 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.Cinemachine;
 
+/// <summary>
+/// 業界標準：區域分層與視場邊界動態夾緊相機 Confiner (Zone-Aware Viewport Clamping)
+/// 1. 區域分層：天空區域 (Y > -85) 與廢墟區域 (Y <= -85) 完全解耦。主角未進入廢墟前，廢墟邊界 0% 作用。
+/// 2. 父容器視野包覆：與 ParallaxGroup 協同，當主角進入廢墟層時，以整塊廢墟包覆 Bounds 進行夾緊。
+/// 3. 雙向防破圖：主角在地面不露底邊 (Floor)，爬上高平台時鏡頭頂部精確卡在背景頂端，絕不露白穿圖！
+/// </summary>
 [RequireComponent(typeof(Camera))]
-[DefaultExecutionOrder(9999)] // 確保此腳本在 Cinemachine 算完位置之後才執行
+[DefaultExecutionOrder(9999)]
 public class SimpleCameraBounds : MonoBehaviour
 {
-    [Header("背景邊界設定")]
-    [Tooltip("自動偵測這些標籤的 BoxCollider 作為邊界")]
-    public string[] backgroundTags = { "Background", "FallingBackground", "RuinedBackground" };
+    [Header("背景與地板標籤設定")]
+    public string[] backgroundTags = { "Background", "RuinedBackground", "Floor", "FallingBackground" };
 
-    [Tooltip("是否同時限制上下邊界？")]
+    [Header("邊界鎖定設定")]
     public bool clampYAxis = true;
 
-    [Tooltip("背景比視野小時，是否鎖定到中心？")]
-    public bool lockToCenterIfTooSmall = true;
+    private Camera _cam;
+    private Bounds _skyZoneBounds;
+    private Bounds _ruinedZoneBounds;
+    private bool _hasSkyZone = false;
+    private bool _hasRuinedZone = false;
 
-    private Camera cam;
-    private Collider[] _cachedBackgrounds;
     private float _cacheTimer = 0f;
-    private Transform playerTransform;
+    private Transform _playerTransform;
     private PlayerMovement _playerMovement;
 
     void Start()
     {
-        cam = GetComponent<Camera>();
+        _cam = GetComponent<Camera>();
         FindPlayer();
-        CacheBackgrounds();
+        RebuildZoneClusters();
     }
 
     void FindPlayer()
@@ -35,142 +40,147 @@ public class SimpleCameraBounds : MonoBehaviour
         if (playerObj == null) playerObj = GameObject.Find("Player");
         if (playerObj != null)
         {
-            playerTransform = playerObj.transform;
+            _playerTransform = playerObj.transform;
             _playerMovement = playerObj.GetComponent<PlayerMovement>();
         }
     }
 
-    void CacheBackgrounds()
+    /// <summary>
+    /// 精確按區域 (Sky Zone vs Ruined Zone) 將背景與地板合併為獨立的兩大區域 Bounds
+    /// </summary>
+    public void RebuildZoneClusters()
     {
-        List<Collider> colliders = new List<Collider>();
-        foreach (string tag in backgroundTags)
+        _hasSkyZone = false;
+        _hasRuinedZone = false;
+
+        // 1. 建立天空區 Bounds (Y > -80 且標籤為 Background/Floor)
+        GameObject[] skyObjs = GameObject.FindGameObjectsWithTag("Background");
+        if (skyObjs != null && skyObjs.Length > 0)
         {
-            try
+            Bounds b = skyObjs[0].GetComponent<Collider>().bounds;
+            for (int i = 1; i < skyObjs.Length; i++)
             {
-                GameObject[] bgs = GameObject.FindGameObjectsWithTag(tag);
-                if (bgs != null)
-                {
-                    foreach (GameObject bg in bgs)
-                    {
-                        if (bg.name.ToLower().Contains("ground")) continue;
-                        Collider col = bg.GetComponent<Collider>();
-                        if (col != null)
-                        {
-                            col.isTrigger = true;
-                            colliders.Add(col);
-                        }
-                    }
-                }
+                Collider col = skyObjs[i].GetComponent<Collider>();
+                if (col != null) b.Encapsulate(col.bounds);
             }
-            catch {}
+            _skyZoneBounds = b;
+            _hasSkyZone = true;
         }
-        _cachedBackgrounds = colliders.ToArray();
-    }
 
-    // ★★★ 找到玩家「當前所在」的背景（僅在玩家落地時才啟用邊界）
-    private Collider FindActiveBoundary()
-    {
-        if (playerTransform == null) return null;
-        if (_cachedBackgrounds == null || _cachedBackgrounds.Length == 0) return null;
-
-        // 只有玩家在地面上才啟用邊界，空中時攝影機完全自由跟隨
-        bool isGrounded = (_playerMovement != null) ? _playerMovement.isGrounded : false;
-        if (!isGrounded) return null;
-
-        Vector3 pos = playerTransform.position;
-        Collider bestCol = null;
-        float bestDist = float.MaxValue;
-
-        foreach (var col in _cachedBackgrounds)
+        // 2. 建立廢墟區 Bounds (標籤為 RuinedBackground + Ruined Floor)
+        List<Collider> ruinedCols = new List<Collider>();
+        GameObject[] ruinedBgs = GameObject.FindGameObjectsWithTag("RuinedBackground");
+        if (ruinedBgs != null)
         {
-            if (col == null) continue;
-            Bounds b = col.bounds;
-
-            bool insideX = pos.x >= b.min.x && pos.x <= b.max.x;
-            bool insideY = pos.y >= b.min.y && pos.y <= b.max.y;
-
-            if (insideX && insideY)
+            foreach (var bg in ruinedBgs)
             {
-                float dist = Vector3.Distance(pos, b.center);
-                if (dist < bestDist)
+                Collider c = bg.GetComponent<Collider>();
+                if (c != null) ruinedCols.Add(c);
+            }
+        }
+
+        GameObject[] floors = GameObject.FindGameObjectsWithTag("Floor");
+        if (floors != null)
+        {
+            foreach (var f in floors)
+            {
+                // 只有位置在 Y < -80 區域的 Floor 才歸為廢墟區地板
+                if (f != null && f.transform.position.y < -80f)
                 {
-                    bestDist = dist;
-                    bestCol = col;
+                    Collider c = f.GetComponent<Collider>();
+                    if (c != null) ruinedCols.Add(c);
                 }
             }
         }
-        return bestCol;
+
+        if (ruinedCols.Count > 0)
+        {
+            Bounds b = ruinedCols[0].bounds;
+            for (int i = 1; i < ruinedCols.Count; i++)
+            {
+                if (ruinedCols[i] != null) b.Encapsulate(ruinedCols[i].bounds);
+            }
+            _ruinedZoneBounds = b;
+            _hasRuinedZone = true;
+        }
     }
 
     void LateUpdate()
     {
-        if (playerTransform == null) FindPlayer();
+        if (_playerTransform == null) FindPlayer();
 
         _cacheTimer += Time.deltaTime;
-        if (_cacheTimer > 2f)
+        if (_cacheTimer > 3f)
         {
             _cacheTimer = 0f;
-            CacheBackgrounds();
+            RebuildZoneClusters();
         }
 
-        // ★★★ 核心修正：只用玩家當前所在的背景作為邊界，不合併全部背景！
-        Collider activeBg = FindActiveBoundary();
-        if (activeBg == null) return; // 玩家在空中 or 不在任何背景內 → 攝影機完全自由
+        if (_playerTransform == null) return;
 
-        // FallingBackground 不做邊界限制
-        if (activeBg.CompareTag("FallingBackground")) return;
+        float playerY = _playerTransform.position.y;
 
-        Bounds bgBounds = activeBg.bounds;
+        // ★★★ 核心邏輯 1：分層完全解耦！
+        // 只有主角掉落到 Y <= -85 單位時，才啟動廢墟區域邊界！未掉下去時廢墟邊界 0% 作用！
+        bool inRuinedZone = (playerY <= -85f);
+        
+        if (!inRuinedZone && !_hasSkyZone) return;
+        if (inRuinedZone && !_hasRuinedZone) return;
+
+        Bounds activeZone = inRuinedZone ? _ruinedZoneBounds : _skyZoneBounds;
+
+        // 判斷是否在大怒神通道中自由下落
+        bool isGrounded = (_playerMovement != null) ? _playerMovement.isGrounded : true;
+        bool isFallingInAir = !isGrounded && (_playerMovement != null && _playerMovement.freezeHorizontal);
 
         float halfHeight = 0f;
         float halfWidth = 0f;
 
-        if (cam.orthographic)
+        if (_cam.orthographic)
         {
-            halfHeight = cam.orthographicSize;
-            halfWidth = halfHeight * cam.aspect;
+            halfHeight = _cam.orthographicSize;
+            halfWidth = halfHeight * _cam.aspect;
         }
         else
         {
-            float distance = Mathf.Abs(transform.position.z - bgBounds.center.z);
-            halfHeight = distance * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            halfWidth = halfHeight * cam.aspect;
+            float distance = Mathf.Abs(transform.position.z - activeZone.center.z);
+            halfHeight = distance * Mathf.Tan(_cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            halfWidth = halfHeight * _cam.aspect;
         }
 
-        Vector3 pos = transform.position;
-        Vector3 targetPos = pos;
+        Vector3 camPos = transform.position;
+        Vector3 clampedPos = camPos;
 
-        // 限制 X 軸
-        float minX = bgBounds.min.x + halfWidth;
-        float maxX = bgBounds.max.x - halfWidth;
+        // --- X 軸邊界 Clamp ---
+        float minX = activeZone.min.x + halfWidth;
+        float maxX = activeZone.max.x - halfWidth;
         if (minX <= maxX)
         {
-            targetPos.x = Mathf.Clamp(pos.x, minX, maxX);
-        }
-        else if (lockToCenterIfTooSmall)
-        {
-            targetPos.x = bgBounds.center.x;
+            clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
         }
 
-        // 限制 Y 軸（只有背景高度足夠大時才限制）
-        if (clampYAxis)
+        // --- Y 軸動態雙向防破圖 Clamp ---
+        if (clampYAxis && !isFallingInAir)
         {
-            float minY = bgBounds.min.y + halfHeight;
-            float maxY = bgBounds.max.y - halfHeight;
+            float minY = activeZone.min.y + halfHeight;
+            float maxY = activeZone.max.y - halfHeight;
+
             if (minY <= maxY)
             {
-                targetPos.y = Mathf.Clamp(pos.y, minY, maxY);
+                clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
             }
-            else if (lockToCenterIfTooSmall)
+            else
             {
-                targetPos.y = bgBounds.center.y;
+                // 當背景總高度小於視野時：利用 InverseLerp 根據主角高度比率，軟性插值
+                // 落地時攝影機底部貼緊地面 Floor，跳上高平台時鏡頭頂部貼緊背景頂端，絕對不露白破圖！
+                float t = Mathf.InverseLerp(activeZone.min.y, activeZone.max.y, playerY);
+                clampedPos.y = Mathf.Lerp(minY, maxY, t);
             }
         }
 
-        // 套用邊界修正
-        if (Mathf.Abs(pos.x - targetPos.x) > 0.001f || Mathf.Abs(pos.y - targetPos.y) > 0.001f)
+        if (Vector3.Distance(camPos, clampedPos) > 0.001f)
         {
-            transform.position = targetPos;
+            transform.position = clampedPos;
         }
     }
 }

@@ -165,7 +165,8 @@ public class SceneSetupHelper : EditorWindow
             bounds = mainCamObj.AddComponent<SimpleCameraBounds>();
             Undo.RegisterCreatedObjectUndo(bounds, "Add SimpleCameraBounds to Main Camera");
         }
-        bounds.backgroundTags = new string[] { "Background", "FallingBackground", "RuinedBackground" };
+        bounds.backgroundTags = new string[] { "Background", "FallingBackground", "RuinedBackground", "Floor" };
+
         bounds.clampYAxis = true;
 
         CinemachineBrain brain = mainCamObj.GetComponent<CinemachineBrain>();
