@@ -31,6 +31,10 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public float lockedXValue = 0f;
     private Vector3 _lastFramePos;
 
+    // FallingBackground 防重複觸發 flag
+    private bool _fallingBGEntered = false;
+
+
     [Header("狼群減速狀態 (可調整)")]
     [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
     public float maxWolvesToStop = 3f; 
@@ -624,14 +628,22 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
+                // ★ X 和 Z 軸始終跟緊玩家真實位置（包含 FallingBackground 墜落中）
                 float targetX = transform.position.x;
                 float targetZ = transform.position.z;
 
-                // 如果處於 FallingBackground 大怒神下墜模式，為了避免鏡頭跟不上，把延遲降到極低
-                float currentDamping = (freezeHorizontal && !isGrounded) ? 0.02f : cameraYDamping;
+                float currentDamping;
+                if (freezeHorizontal && !isGrounded)
+                {
+                    // FallingBackground 墜落中：Y 軸也幾乎無延遲，確保攝影機不掉隊
+                    currentDamping = 0.01f;
+                }
+                else
+                {
+                    currentDamping = cameraYDamping;
+                }
 
-                // X 和 Z 軸死死咬住玩家 (0 延遲)
-                // Y 軸使用 SmoothDamp 進行平滑過渡 (吸收跳躍時的碎震)
+                // Y 軸 SmoothDamp（吸收跳躍碎震）；X/Z 無延遲死死跟著玩家
                 float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
                 cameraTarget.position = new Vector3(targetX, newY, targetZ);
             }
@@ -777,6 +789,10 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("FallingBackground"))
         {
+            // ★ 防止重複觸發：同一次墜落只允許進入一次
+            if (_fallingBGEntered) return;
+            _fallingBGEntered = true;
+
             Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始強制掉落！");
             freezeHorizontal = true;
 
@@ -795,6 +811,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("碰觸到 RuinedBackground！解除鎖定，恢復所有機能！");
             freezeHorizontal = false;
+            _fallingBGEntered = false; // 重置 FallingBackground 觸發 flag，供下次使用
 
             // 【關鍵修正】強制把「最後安全點」設為現在的位置！
             // 否則系統會發現玩家跟一開始的天空比起來掉落了幾百公尺，一啟動就立刻把玩家當作墜崖殺死！

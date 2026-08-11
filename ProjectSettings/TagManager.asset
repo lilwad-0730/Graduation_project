@@ -22,11 +22,15 @@ TagManager:
   - Waypoint_WaitPlayer
   - Waypoint_Touch
   - Waypoint_Absorb
+  - lb_groundTarget
+  - lb_perchTarget
+  - lb_bird
+  - WindDirected
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - CameraBoundary
   - Water
   - UI
   - 

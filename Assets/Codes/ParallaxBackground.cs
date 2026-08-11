@@ -1,26 +1,40 @@
 using UnityEngine;
 
 /// <summary>
-/// 2D/2.5D 視差背景滾動腳本 (Parallax Background)
-/// 掛載於廢墟或遠景背景物件，根據攝影機移動產生深度的視覺差效果。
+/// 背景位置硬鎖腳本 (Background Hard Lock)
+/// 掛載於每個 RuinedBackground 物件。
+/// Start() 時記住當前世界座標，LateUpdate() 每幀強制鎖死回去。
+/// 完全不修改父子關係，不移動任何東西，相對位置永遠不變。
+/// 若要開啟視差跟隨，請勾選 enableParallax 並設定 factor 數值。
 /// </summary>
 public class ParallaxBackground : MonoBehaviour
 {
-    [Header("視差強度設定")]
-    [Tooltip("X 軸視差比例 (0 = 固定在螢幕上, 1 = 跟隨世界不動, 0.3 = 輕微移動呈現遠景感, -0.2 = 反向移動製造視覺差)")]
-    public float parallaxFactorX = 0.2f;
+    [Header("視差設定 (預設完全靜止)")]
+    [Tooltip("false = 硬鎖在初始世界座標，完全靜止不動")]
+    public bool enableParallax = false;
 
-    [Tooltip("Y 軸視差比例 (建議設為小數值如 0.05，避免上下差距過大導致露空)")]
-    public float parallaxFactorY = 0.05f;
+    [Tooltip("X 軸視差比例 (enableParallax = true 時有效)")]
+    public float parallaxFactorX = 0f;
 
-    [Tooltip("是否跟隨主角/攝影機在 X 軸微幅移動？")]
-    public bool enableParallax = true;
+    [Tooltip("Y 軸視差比例 (enableParallax = true 時有效)")]
+    public float parallaxFactorY = 0f;
 
+    private Vector3 _lockedWorldPosition;
     private Transform _camTransform;
     private Vector3 _lastCamPos;
+    private bool _initialized = false;
 
     void Start()
     {
+        Init();
+    }
+
+    void Init()
+    {
+        // 記住 Start 時的世界座標，不管 parent 是誰
+        _lockedWorldPosition = transform.position;
+        _initialized = true;
+
         Camera mainCam = Camera.main;
         if (mainCam != null)
         {
@@ -31,8 +45,16 @@ public class ParallaxBackground : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!enableParallax) return;
+        if (!_initialized) { Init(); return; }
 
+        if (!enableParallax)
+        {
+            // ★ 硬鎖：強制回到初始世界座標，任何外力都無效
+            transform.position = _lockedWorldPosition;
+            return;
+        }
+
+        // 視差跟隨模式
         if (_camTransform == null)
         {
             Camera mainCam = Camera.main;
@@ -44,15 +66,11 @@ public class ParallaxBackground : MonoBehaviour
             return;
         }
 
-        // 計算攝影機上一幀到這一幀的位移量 (Delta Position)
         Vector3 camDelta = _camTransform.position - _lastCamPos;
+        _lockedWorldPosition.x += camDelta.x * parallaxFactorX;
+        _lockedWorldPosition.y += camDelta.y * parallaxFactorY;
 
-        // 根據視差比例過渡背景 position
-        Vector3 newPos = transform.position;
-        newPos.x += camDelta.x * parallaxFactorX;
-        newPos.y += camDelta.y * parallaxFactorY;
-
-        transform.position = newPos;
+        transform.position = _lockedWorldPosition;
         _lastCamPos = _camTransform.position;
     }
 }
