@@ -92,9 +92,7 @@ public class ParallaxGroup : MonoBehaviour
         if (!_initialized || _bgTransforms == null) return;
         if (_playerTransform == null) FindPlayer();
 
-        // ─────────────────────────────────────────────────────────────
         // 判斷玩家是否已踩到廢墟地板（isGrounded + Y <= 門檻）
-        // ─────────────────────────────────────────────────────────────
         bool playerGrounded = (_playerMovement != null) ? _playerMovement.isGrounded : false;
         bool playerInRuinedY = (_playerTransform != null) && (_playerTransform.position.y <= ruinedZoneYThreshold);
 
@@ -120,9 +118,7 @@ public class ParallaxGroup : MonoBehaviour
             return;
         }
 
-        // ─────────────────────────────────────────────────────────────
         // 跟隨模式：整體視差跟隨主角 X + 持續 -X 漂移
-        // ─────────────────────────────────────────────────────────────
         float playerX = (_playerTransform != null) ? _playerTransform.position.x : _lastPlayerX;
         float playerY = (_playerTransform != null) ? _playerTransform.position.y : 0f;
 

@@ -2,38 +2,29 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// 攝影機防穿圖限制器 (Camera Bounds Confiner)
+/// 攝影機相向邊界碰撞器 (Direct Camera Viewport Boundary Confiner)
 /// 掛載於 Main Camera 上。
-/// 支援直接把多個 CameraBoundary Collider 拖入 Explicit Backgrounds 陣列。
-///
-/// 解決所有穿圖與卡住問題：
-/// 1. 動態比對主角/相機目前位於哪一個 CameraBoundary 碰撞盒內（不會將多個框誤算為全區超大矩形）。
-/// 2. 隨時精確限制 X 軸邊界，絕對不超出 CameraBoundary 範圍。
-/// 3. 墜落空中 (Falling) 時放開 Y 軸限制，避免攝影機與主角被卡在外面；著地後自動過渡防露空。
-/// 4. 同步修正 PlayerMovement 的 cameraTarget，解決 Cinemachine 反向拉扯穿圖的問題。
+/// 針對 Main Camera 的 4 個視野邊緣 (上、下、左、右) 進行實體碰撞攔截：
+/// 當相機視野邊緣觸碰到 CameraBoundary 碰撞盒時，會被當作實體牆壁擋住，絕對無法跨過去！
 /// </summary>
 [RequireComponent(typeof(Camera))]
 [DefaultExecutionOrder(99999)]
 public class CinemachineCameraConfiner3D : MonoBehaviour
 {
-    [Header("全局背景邊界控制器 (直接拖入你的 CameraBoundary 隱形框 Colliders)")]
-    [Tooltip("把場景中所有 CameraBoundary 物件的 Collider 拖進這裡！")]
+    [Header("邊界 碰撞體 陣列 (可直接拖入 CameraBoundary，未拖入則全自動搜尋)")]
     public Collider[] explicitBackgrounds;
 
-    [Header("備用自動尋找標籤")]
-    public bool autoFindBackground = true;
+    [Header("過濾標籤名稱")]
+    public string[] boundaryTags = { "CameraBoundary", "Background", "RuinedBackground", "FallingBackground" };
 
-    [Header("邊界鎖定設定")]
-    [Tooltip("當某個 CameraBoundary 比螢幕還小時，是否自動把攝影機鎖在該框中心")]
-    public bool lockToCenterIfTooSmall = true;
-
-    [Tooltip("是否將鏡頭高度嚴格限制在 SkyBackground 範圍內 (設為 false 則直接跟隨主角)")]
-    public bool clampSkyBackgroundHeight = false;
+    [Header("相機視野碰撞鎖定")]
+    public bool collideX = true;
+    public bool collideY = true;
+    public bool autoScaleIfBoundaryTooSmall = true;
 
     private Camera _cam;
-    private Collider[] _cachedColliders;
     private Transform _playerTransform;
-    private PlayerMovement _playerMovement;
+    private Collider[] _cachedBoundaries;
 
     void OnEnable()
     {
@@ -49,232 +40,188 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
 
     void OnBeginCameraRendering(UnityEngine.Rendering.ScriptableRenderContext context, Camera camera)
     {
-        if (camera == _cam)
-        {
-            ClampCamera();
-        }
+        if (camera == _cam) ClampCameraToBoundary();
     }
 
     void OnCinemachineUpdated(Unity.Cinemachine.CinemachineBrain brain)
     {
-        if (brain != null && _cam != null && brain.OutputCamera == _cam)
-        {
-            ClampCamera();
-        }
+        if (brain != null && _cam != null && brain.OutputCamera == _cam) ClampCameraToBoundary();
     }
 
     void Start()
     {
         _cam = GetComponent<Camera>();
         FindPlayer();
-        CacheColliders();
+        CacheBoundaries();
     }
 
     void FindPlayer()
     {
         GameObject playerObj = GameObject.FindWithTag("Player");
         if (playerObj == null) playerObj = GameObject.Find("Player");
-        if (playerObj != null)
-        {
-            _playerTransform = playerObj.transform;
-            _playerMovement = playerObj.GetComponent<PlayerMovement>();
-        }
+        if (playerObj != null) _playerTransform = playerObj.transform;
     }
 
-    public void CacheColliders()
+    public void CacheBoundaries()
     {
-        List<Collider> cols = new List<Collider>();
+        List<Collider> list = new List<Collider>();
 
+        // 1. 優先使用手動拖入的 CameraBoundary
         if (explicitBackgrounds != null)
         {
             foreach (var col in explicitBackgrounds)
             {
-                if (col != null && !cols.Contains(col)) cols.Add(col);
+                if (col != null && col.enabled && !list.Contains(col)) list.Add(col);
             }
         }
 
-        if (cols.Count == 0 && autoFindBackground)
+        // 2. 自動搜尋帶有 CameraBoundary 名稱或指定 Tag 的碰撞體
+        Collider[] allCols = GameObject.FindObjectsByType<Collider>(FindObjectsSortMode.None);
+        if (allCols != null)
         {
-            string[] tags = { "Background", "RuinedBackground", "CameraBoundary" };
-            foreach (string tag in tags)
+            foreach (var c in allCols)
             {
-                try
+                if (c == null || !c.enabled || list.Contains(c)) continue;
+                string n = c.gameObject.name;
+                string t = c.gameObject.tag;
+
+                bool match = false;
+                if (n.Contains("CameraBoundary") || n.Contains("Boundary")) match = true;
+                else
                 {
-                    GameObject[] bgs = GameObject.FindGameObjectsWithTag(tag);
-                    if (bgs != null)
+                    foreach (string bt in boundaryTags)
                     {
-                        foreach (var bg in bgs)
+                        if (t.Equals(bt, System.StringComparison.OrdinalIgnoreCase))
                         {
-                            Collider col = bg.GetComponent<Collider>();
-                            if (col != null && !cols.Contains(col)) cols.Add(col);
+                            match = true;
+                            break;
                         }
                     }
                 }
-                catch { }
+
+                if (match && c.bounds.size.sqrMagnitude > 0.1f)
+                {
+                    list.Add(c);
+                }
             }
         }
 
-        _cachedColliders = cols.ToArray();
-        if (_cachedColliders.Length > 0)
-        {
-            Debug.Log($"[CinemachineCameraConfiner3D] ✅ 成功載入 {_cachedColliders.Length} 個 CameraBoundary 邊界 Collider！");
-        }
+        _cachedBoundaries = list.ToArray();
     }
 
     void LateUpdate()
     {
-        ClampCamera();
+        ClampCameraToBoundary();
     }
 
     void OnPreRender()
     {
-        ClampCamera();
-    }
-
-    void ClampCamera()
-    {
-        if (_cam == null) _cam = GetComponent<Camera>();
-        if (_cam == null) return;
-        if (_playerTransform == null) FindPlayer();
-
-        // 計算相機視野半寬高
-        float halfHeight, halfWidth;
-        if (_cam.orthographic)
-        {
-            halfHeight = _cam.orthographicSize;
-            halfWidth = halfHeight * _cam.aspect;
-        }
-        else
-        {
-            float distance = 10f;
-            halfHeight = distance * Mathf.Tan(_cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            halfWidth = halfHeight * _cam.aspect;
-        }
-
-        Vector3 camPos = transform.position;
-        Vector3 clampedPos = camPos;
-
-        // 1. X 軸邊界限制（若有 CameraBoundary Collider）
-        if (_cachedColliders == null || _cachedColliders.Length == 0) CacheColliders();
-        Vector3 targetPos = (_playerTransform != null) ? _playerTransform.position : transform.position;
-        Collider activeCol = GetActiveCollider(targetPos);
-        if (activeCol != null)
-        {
-            Bounds bounds = activeCol.bounds;
-            float minX = bounds.min.x + halfWidth;
-            float maxX = bounds.max.x - halfWidth;
-            if (minX <= maxX)
-            {
-                clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
-            }
-            else if (lockToCenterIfTooSmall)
-            {
-                clampedPos.x = bounds.center.x;
-            }
-        }
-
-        // 2. Y 軸邊界限制 (若開啟 clampSkyBackgroundHeight，才將視野 Y 軸限制在 SkyBackground 高度內)
-        Bounds skyBounds = new Bounds();
-        bool hasSkyBounds = false;
-        if (clampSkyBackgroundHeight)
-        {
-            GameObject[] skyGos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-            foreach (var go in skyGos)
-            {
-                if (go != null && go.name.Contains("SkyBackground") && go.activeInHierarchy)
-                {
-                    SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
-                    Collider col = go.GetComponent<Collider>();
-                    Bounds b = new Bounds();
-                    if (sr != null && sr.sprite != null) b = sr.bounds;
-                    else if (col != null) b = col.bounds;
-
-                    if (b.size.sqrMagnitude > 0.1f)
-                    {
-                        if (!hasSkyBounds) { skyBounds = b; hasSkyBounds = true; }
-                        else { skyBounds.Encapsulate(b); }
-                    }
-                }
-            }
-
-            if (hasSkyBounds)
-            {
-                float skyMinY = skyBounds.min.y + halfHeight;
-                float skyMaxY = skyBounds.max.y - halfHeight;
-                if (skyMinY <= skyMaxY)
-                {
-                    clampedPos.y = Mathf.Clamp(camPos.y, skyMinY, skyMaxY);
-                }
-                else
-                {
-                    clampedPos.y = skyBounds.center.y;
-                }
-            }
-        }
-
-        transform.position = clampedPos;
-
-        // 同步修改 Cinemachine 虛擬攝影機與 PlayerCameraTarget_SmoothY
-        if (clampSkyBackgroundHeight)
-        {
-            var activeVcam = Unity.Cinemachine.CinemachineCore.GetVirtualCamera(0);
-            if (activeVcam != null)
-            {
-                Component vcamComp = activeVcam as Component;
-                if (vcamComp != null)
-                {
-                    Vector3 vcamPos = vcamComp.transform.position;
-                    vcamPos.y = clampedPos.y;
-                    vcamComp.transform.position = vcamPos;
-                }
-            }
-        }
-
-        GameObject cameraTargetObj = GameObject.Find("PlayerCameraTarget_SmoothY");
-        if (cameraTargetObj != null)
-        {
-            Vector3 targetObjPos = cameraTargetObj.transform.position;
-            targetObjPos.x = (_playerTransform != null) ? _playerTransform.position.x : clampedPos.x;
-            if (clampSkyBackgroundHeight && hasSkyBounds)
-            {
-                float skyMinY = skyBounds.min.y + halfHeight;
-                float skyMaxY = skyBounds.max.y - halfHeight;
-                if (skyMinY <= skyMaxY) targetObjPos.y = Mathf.Clamp(targetObjPos.y, skyMinY, skyMaxY);
-                else targetObjPos.y = skyBounds.center.y;
-            }
-            cameraTargetObj.transform.position = targetObjPos;
-        }
+        ClampCameraToBoundary();
     }
 
     /// <summary>
-    /// 找出涵蓋點或距離最近的 CameraBoundary Collider
+    /// 找出包含玩家座標或離玩家最近的 CameraBoundary Collider
     /// </summary>
-    Collider GetActiveCollider(Vector3 point)
+    Collider GetActiveBoundary(Vector3 point)
     {
+        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) CacheBoundaries();
+        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) return null;
+
         Collider closest = null;
-        float minDistance = float.MaxValue;
+        float minDist = float.MaxValue;
 
-        foreach (var col in _cachedColliders)
+        foreach (var col in _cachedBoundaries)
         {
-            if (col == null) continue;
+            if (col == null || !col.enabled) continue;
             Bounds b = col.bounds;
-            if (b.size.sqrMagnitude < 0.1f) continue; // 忽略尺寸為 0 的空碰撞盒
+            if (b.Contains(point)) return col; // 玩家直接身在該 CameraBoundary 碰撞盒內！
 
-            // 優先：點直接位於該 Bounds 內
-            if (b.Contains(point))
+            float d = Vector3.Distance(point, b.ClosestPoint(point));
+            if (d < minDist)
             {
-                return col;
-            }
-
-            // 備選：計算與點最近的 Bounds
-            float dist = Vector3.Distance(point, b.ClosestPoint(point));
-            if (dist < minDistance)
-            {
-                minDistance = dist;
+                minDist = d;
                 closest = col;
             }
         }
 
         return closest;
+    }
+
+    void ClampCameraToBoundary()
+    {
+        if (_cam == null) _cam = GetComponent<Camera>();
+        if (_cam == null) return;
+        if (_playerTransform == null) FindPlayer();
+
+        Vector3 targetPos = (_playerTransform != null) ? _playerTransform.position : transform.position;
+        Collider activeCol = GetActiveBoundary(targetPos);
+        if (activeCol == null) return;
+
+        Bounds bounds = activeCol.bounds;
+
+        // 1. 若 CameraBoundary 碰撞盒尺寸小於視角，自動適應 Orthographic Size 防止露底
+        if (_cam.orthographic && autoScaleIfBoundaryTooSmall)
+        {
+            float maxHalfH = bounds.size.y * 0.5f;
+            float maxHalfW = (bounds.size.x * 0.5f) / _cam.aspect;
+            float maxAllowedSize = Mathf.Min(maxHalfH, maxHalfW);
+
+            if (maxAllowedSize > 0.5f && _cam.orthographicSize > maxAllowedSize)
+            {
+                _cam.orthographicSize = maxAllowedSize;
+            }
+        }
+
+        // 2. 計算相機視野半寬高
+        float halfHeight = _cam.orthographic ? _cam.orthographicSize : 0f;
+        float halfWidth = halfHeight * _cam.aspect;
+
+        Vector3 camPos = transform.position;
+        Vector3 clampedPos = camPos;
+
+        // 3. 【實體碰撞攔截】視野 4 個邊緣撞擊 CameraBoundary 碰撞體時硬性擋住，絕不允許跨越
+        if (collideX)
+        {
+            float minX = bounds.min.x + halfWidth;
+            float maxX = bounds.max.x - halfWidth;
+            if (minX <= maxX) clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
+            else clampedPos.x = bounds.center.x;
+        }
+
+        if (collideY)
+        {
+            float minY = bounds.min.y + halfHeight;
+            float maxY = bounds.max.y - halfHeight;
+            if (minY <= maxY) clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
+            else clampedPos.y = bounds.center.y;
+        }
+
+        // 寫回 Main Camera 座標
+        transform.position = clampedPos;
+
+        // 4. 強制同步 Cinemachine 虛擬攝影機與 PlayerCameraTarget
+        var activeVcam = Unity.Cinemachine.CinemachineCore.GetVirtualCamera(0);
+        if (activeVcam != null)
+        {
+            Component vcamComp = activeVcam as Component;
+            if (vcamComp != null)
+            {
+                Vector3 vcamPos = vcamComp.transform.position;
+                if (collideX) vcamPos.x = clampedPos.x;
+                if (collideY) vcamPos.y = clampedPos.y;
+                vcamComp.transform.position = vcamPos;
+            }
+        }
+
+        GameObject cameraTargetObj = GameObject.Find("PlayerCameraTarget_SmoothY");
+        if (cameraTargetObj != null && collideY)
+        {
+            Vector3 targetObjPos = cameraTargetObj.transform.position;
+            float minY = bounds.min.y + halfHeight;
+            float maxY = bounds.max.y - halfHeight;
+            if (minY <= maxY) targetObjPos.y = Mathf.Clamp(targetObjPos.y, minY, maxY);
+            else targetObjPos.y = bounds.center.y;
+            cameraTargetObj.transform.position = targetObjPos;
+        }
     }
 }
