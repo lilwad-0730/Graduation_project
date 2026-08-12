@@ -50,7 +50,10 @@ public class PlayerMovement : MonoBehaviour
     public bool smoothCameraY = true;
     
     [Tooltip("Y 軸追蹤的平滑時間 (數值越大越慢跟上，0.2 ~ 0.5 最佳)")]
-    public float cameraYDamping = 0.25f; 
+    public float cameraYDamping = 0.25f;
+
+    [Tooltip("是否將鏡頭高度嚴格限制在 SkyBackground 範圍內 (設為 false 則直接跟隨主角)")]
+    public bool clampSkyBackgroundHeight = false;
     
     private Transform cameraTarget;
     private float _smoothYVelocity;
@@ -645,6 +648,42 @@ public class PlayerMovement : MonoBehaviour
 
                 // Y 軸 SmoothDamp（吸收跳躍碎震）；X/Z 無延遲死死跟著玩家
                 float newY = Mathf.SmoothDamp(cameraTarget.position.y, transform.position.y, ref _smoothYVelocity, currentDamping);
+
+                if (clampSkyBackgroundHeight)
+                {
+                    // 限制在 SkyBackground 高度範圍內 (不論主角上下移動，鏡頭視野絕不超出 SkyBackground 頂部與底部)
+                    Bounds skyBounds = new Bounds();
+                    bool hasSkyBounds = false;
+                    GameObject[] skyGos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+                    foreach (var go in skyGos)
+                    {
+                        if (go != null && go.name.Contains("SkyBackground") && go.activeInHierarchy)
+                        {
+                            SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+                            Collider col = go.GetComponent<Collider>();
+                            Bounds b = new Bounds();
+                            if (sr != null && sr.sprite != null) b = sr.bounds;
+                            else if (col != null) b = col.bounds;
+
+                            if (b.size.sqrMagnitude > 0.1f)
+                            {
+                                if (!hasSkyBounds) { skyBounds = b; hasSkyBounds = true; }
+                                else { skyBounds.Encapsulate(b); }
+                            }
+                        }
+                    }
+
+                    if (hasSkyBounds)
+                    {
+                        Camera mainCam = Camera.main;
+                        float halfHeight = (mainCam != null && mainCam.orthographic) ? mainCam.orthographicSize : 10f;
+                        float skyMinY = skyBounds.min.y + halfHeight;
+                        float skyMaxY = skyBounds.max.y - halfHeight;
+                        if (skyMinY <= skyMaxY) newY = Mathf.Clamp(newY, skyMinY, skyMaxY);
+                        else newY = skyBounds.center.y;
+                    }
+                }
+
                 cameraTarget.position = new Vector3(targetX, newY, targetZ);
             }
         }

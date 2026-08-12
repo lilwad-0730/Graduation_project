@@ -142,8 +142,8 @@ public class StarfieldGenerator : EditorWindow
         string relativePath = "Assets/FreeParallax/Images/starfield_mid.png";
         SaveTextureToPNG(texture, relativePath);
         
-        // 4. Configure Import Settings
-        ConfigureSpriteImporter(relativePath);
+        // 4. Configure Import Settings (PPU = 48f to enlarge mid stars close to near stars)
+        ConfigureSpriteImporter(relativePath, 48f);
         
         // 5. Add to scene 'dark glasses'
         SetupSceneLayer(relativePath, "Parallax_StarfieldMid", 15f, -90, 0.15f);
@@ -166,8 +166,8 @@ public class StarfieldGenerator : EditorWindow
         }
         texture.SetPixels(clearColors);
         
-        // 2. Generate random large particles and star glints (ultra dense 450 stars & 100% max brightness)
-        int starCount = 450;
+        // 2. Generate random large particles and star glints (150 stars & 100% max brightness)
+        int starCount = 150;
         Random.InitState(2026);
         
         for (int i = 0; i < starCount; i++)
@@ -175,8 +175,8 @@ public class StarfieldGenerator : EditorWindow
             int x = Random.Range(0, width);
             int y = Random.Range(0, height);
             
-            // 100% Solid Full Vibrant Alpha Brightness
-            float alpha = 1.0f;
+            // 90% Solid Alpha Brightness
+            float alpha = 0.9f;
             
             float colorRoll = Random.value;
             Color starColor;
@@ -208,11 +208,11 @@ public class StarfieldGenerator : EditorWindow
         string relativePath = "Assets/FreeParallax/Images/starfield_near.png";
         SaveTextureToPNG(texture, relativePath);
         
-        // 4. Configure Import Settings (PPU = 28 for extra large dazzling stars)
-        ConfigureSpriteImporter(relativePath, 28f);
+        // 4. Configure Import Settings (PPU = 42 for half-sized dazzling stars)
+        ConfigureSpriteImporter(relativePath, 42f);
         
-        // 5. Add to scene 'dark glasses' with 1.5x super speed ratio
-        SetupSceneLayer(relativePath, "Parallax_StarfieldNear", 10f, -80, 1.5f);
+        // 5. Add to scene 'dark glasses' with 0.5x speed ratio
+        SetupSceneLayer(relativePath, "Parallax_StarfieldNear", 10f, -80, 0.5f);
     }
     
     private static void SaveTextureToPNG(Texture2D texture, string relativePath)
@@ -362,8 +362,8 @@ public class StarfieldGenerator : EditorWindow
     {
         if (type == 0)
         {
-            // 17x17 large glowing bokeh particle (dreamy soft radial glow, significantly scaled up)
-            int radius = 8;
+            // 9x9 compact glowing particle (half size of previous 17x17)
+            int radius = 4;
             for (int dx = -radius; dx <= radius; dx++)
             {
                 for (int dy = -radius; dy <= radius; dy++)
@@ -384,7 +384,7 @@ public class StarfieldGenerator : EditorWindow
         }
         else // type == 1
         {
-            // 13x13 bright sparkling star glint
+            // 7x7 compact sparkling star glint (half size of previous 13x13)
             DrawPixelSeamless(tex, x, y, w, h, color);
             
             float core = 0.9f;
@@ -399,29 +399,17 @@ public class StarfieldGenerator : EditorWindow
             DrawPixelSeamless(tex, x + 1, y - 1, w, h, color * diag);
             DrawPixelSeamless(tex, x - 1, y - 1, w, h, color * diag);
             
-            float flare1 = 0.7f;
+            float flare1 = 0.6f;
             DrawPixelSeamless(tex, x + 2, y, w, h, color * flare1);
             DrawPixelSeamless(tex, x - 2, y, w, h, color * flare1);
             DrawPixelSeamless(tex, x, y + 2, w, h, color * flare1);
             DrawPixelSeamless(tex, x, y - 2, w, h, color * flare1);
             
-            float flare2 = 0.45f;
+            float flare2 = 0.3f;
             DrawPixelSeamless(tex, x + 3, y, w, h, color * flare2);
             DrawPixelSeamless(tex, x - 3, y, w, h, color * flare2);
             DrawPixelSeamless(tex, x, y + 3, w, h, color * flare2);
             DrawPixelSeamless(tex, x, y - 3, w, h, color * flare2);
-            
-            float flare3 = 0.25f;
-            DrawPixelSeamless(tex, x + 4, y, w, h, color * flare3);
-            DrawPixelSeamless(tex, x - 4, y, w, h, color * flare3);
-            DrawPixelSeamless(tex, x, y + 4, w, h, color * flare3);
-            DrawPixelSeamless(tex, x, y - 4, w, h, color * flare3);
-
-            float flare4 = 0.12f;
-            DrawPixelSeamless(tex, x + 5, y, w, h, color * flare4);
-            DrawPixelSeamless(tex, x - 5, y, w, h, color * flare4);
-            DrawPixelSeamless(tex, x, y + 5, w, h, color * flare4);
-            DrawPixelSeamless(tex, x, y - 5, w, h, color * flare4);
         }
     }
     
