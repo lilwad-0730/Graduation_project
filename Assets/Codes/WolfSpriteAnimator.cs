@@ -86,34 +86,32 @@ public class WolfSpriteAnimator : MonoBehaviour
 
         bool isBackingUp = false;
         
-        // 2. 轉向與倒退走判定
+        // 2. 轉向與倒退走判定：狼永遠保持朝向正 X 軸 (+X / 面朝右邊)
+        float targetScaleX = reverseFacingDirection ? -1f : 1f;
+
+        if (spriteRenderer != null)
+        {
+            if (spriteRenderer.transform != transform)
+            {
+                // 1. 如果 SpriteRenderer 在子物件上，固定為正 X 軸縮放
+                Vector3 currentScale = spriteRenderer.transform.localScale;
+                spriteRenderer.transform.localScale = new Vector3(targetScaleX * Mathf.Abs(currentScale.x), currentScale.y, currentScale.z);
+            }
+            else
+            {
+                // 2. 如果 SpriteRenderer 掛在父物件本體上，固定 flipX
+                spriteRenderer.flipX = reverseFacingDirection;
+            }
+        }
+
         if (playerTransform != null && !isAttached && !isStunned)
         {
-            // 判斷玩家方向 (1 右，-1 左)
             float directionToPlayer = Mathf.Sign(playerTransform.position.x - transform.position.x);
 
-            // 寫死規則：玩家在右邊為正常向 (1)，在左邊為鏡像 (-1)
-            float targetScaleX = (playerTransform.position.x >= transform.position.x) ? 1f : -1f;
-
-            if (spriteRenderer != null)
-            {
-                if (spriteRenderer.transform != transform)
-                {
-                    // 1. 如果 SpriteRenderer 在子物件上，翻轉子物件的 localScale (極度安全，物理不受影響)
-                    Vector3 currentScale = spriteRenderer.transform.localScale;
-                    spriteRenderer.transform.localScale = new Vector3(targetScaleX * Mathf.Abs(currentScale.x), currentScale.y, currentScale.z);
-                }
-                else
-                {
-                    // 2. 如果 SpriteRenderer 掛在父物件本體上，改用 flipX (防止物理碰撞箱反轉導致物理引擎崩潰亂飄)
-                    spriteRenderer.flipX = (targetScaleX < 0f);
-                }
-            }
-
-            // 倒退走判定：當狼在移動，且其速度方向與玩家方向相反時
+            // 倒退走判定：當狼向左 (-X) 移動、或其速度與玩家方向相反時，觸發專用倒退動畫
             if (absSpeedX > 0.1f)
             {
-                isBackingUp = (speedX * directionToPlayer < 0f);
+                isBackingUp = (speedX < -0.1f) || (speedX * directionToPlayer < 0f);
             }
         }
 

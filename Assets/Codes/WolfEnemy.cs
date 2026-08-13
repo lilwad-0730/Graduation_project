@@ -29,6 +29,11 @@ public class WolfEnemy : MonoBehaviour
     private Rigidbody rb;
     private Collider col;
 
+    [Header("安全防護")]
+    [Tooltip("狼生成或啟用時的咬人豁免時間 (秒)，防止刷出時因碰撞重疊直接咬傷主角")]
+    public float spawnAttachImmunityTime = 1.0f;
+    private float enableTime = -999f;
+
     // 狀態鎖
     private bool isChasing = false;
     private bool isAttached = false;
@@ -38,6 +43,16 @@ public class WolfEnemy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+    }
+
+    private void OnEnable()
+    {
+        enableTime = Time.time;
+    }
+
+    public void StartChase()
+    {
+        isChasing = true;
     }
 
     void Start()
@@ -153,7 +168,7 @@ public class WolfEnemy : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (isStunned || isAttached) return;
+        if (isStunned || isAttached || Time.time < enableTime + spawnAttachImmunityTime) return;
         if (rb == null) rb = GetComponent<Rigidbody>();
 
         // 咬到玩家 (接觸)

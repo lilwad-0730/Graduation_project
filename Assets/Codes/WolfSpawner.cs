@@ -22,6 +22,9 @@ public class WolfSpawner : MonoBehaviour
     public float triggerDistance = 5f;
 
     [Header("生成後追蹤設定")]
+    [Tooltip("狼生成的相對位置偏置 (預設 X = -6 米，表示生成在出生點/主角後方 6 米，防範狼直接重疊刷在主角身上)")]
+    public Vector3 spawnOffset = new Vector3(-6f, 0f, 0f);
+
     [Tooltip("新狼生成後，主角必須「離開出生點多少距離」後，這隻狼才開始啟動追逐")]
     public float startChasePlayerDistance = 8f;
 
@@ -32,6 +35,8 @@ public class WolfSpawner : MonoBehaviour
     private GameObject spawnedWolf;
     private WolfEnemy spawnedWolfEnemy;
     private Transform playerTransform;
+    private Collider playerCollider;
+    private Collider spawnedWolfCollider;
     private bool isWolfActivated = false;
 
     private void Start()
@@ -46,6 +51,8 @@ public class WolfSpawner : MonoBehaviour
         if (pm != null)
         {
             playerTransform = pm.transform;
+            playerCollider = pm.GetComponent<Collider>();
+            if (playerCollider == null) playerCollider = pm.GetComponentInChildren<Collider>();
         }
         else
         {
@@ -54,6 +61,8 @@ public class WolfSpawner : MonoBehaviour
             if (playerObj != null)
             {
                 playerTransform = playerObj.transform;
+                playerCollider = playerObj.GetComponent<Collider>();
+                if (playerCollider == null) playerCollider = playerObj.GetComponentInChildren<Collider>();
             }
         }
 
@@ -142,10 +151,21 @@ public class WolfSpawner : MonoBehaviour
         hasSpawned = true;
         Debug.Log($"【狼出生點】'{gameObject.name}' 觸發成功！正在生成新狼...");
 
-        // 複製生成新狼
-        spawnedWolf = Instantiate(wolfTemplate, transform.position, transform.rotation);
+        // 複製生成新狼 (依照 spawnOffset 位置偏置生成，防止與主角重疊)
+        Vector3 spawnPos = transform.position + spawnOffset;
+        spawnedWolf = Instantiate(wolfTemplate, spawnPos, transform.rotation);
         spawnedWolf.name = "Spawned_Wolf_" + System.Guid.NewGuid().ToString().Substring(0, 4);
         spawnedWolf.SetActive(true);
+
+        // 取得新狼的碰撞體
+        spawnedWolfCollider = spawnedWolf.GetComponent<Collider>();
+        if (spawnedWolfCollider == null) spawnedWolfCollider = spawnedWolf.GetComponentInChildren<Collider>();
+
+        // 暫時與主角忽略物理碰撞，防止生成瞬間誤咬
+        if (spawnedWolfCollider != null && playerCollider != null)
+        {
+            Physics.IgnoreCollision(spawnedWolfCollider, playerCollider, true);
+        }
 
         // 尋找新狼身上的 WolfEnemy 腳本並暫時停用，讓牠暫時不開始追逐
         spawnedWolfEnemy = spawnedWolf.GetComponent<WolfEnemy>();
@@ -163,9 +183,17 @@ public class WolfSpawner : MonoBehaviour
     private void ActivateWolf()
     {
         isWolfActivated = true;
+
+        // 恢復與主角的碰撞感應
+        if (spawnedWolfCollider != null && playerCollider != null)
+        {
+            Physics.IgnoreCollision(spawnedWolfCollider, playerCollider, false);
+        }
+
         if (spawnedWolfEnemy != null)
         {
             spawnedWolfEnemy.enabled = true; // 啟動追擊
+            spawnedWolfEnemy.StartChase();   // 強制設為追擊狀態
             Debug.Log($"【狼出生點】主角已離開拉開距離 ({startChasePlayerDistance}米)，新狼 '{spawnedWolf.name}' 啟動追逐主角！");
         }
     }
