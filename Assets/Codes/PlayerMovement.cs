@@ -146,6 +146,7 @@ public class PlayerMovement : MonoBehaviour
         initialZ = transform.position.z;
         
         // 強化物理設定，鎖定旋轉與 Z 軸移動，避免被撞飛、偏移或穿模
+        rb.interpolation = RigidbodyInterpolation.Interpolate; // 啟用物理內插，消除攝影機與物理刷新率不同步之畫面抖動
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; 
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
@@ -253,19 +254,10 @@ public class PlayerMovement : MonoBehaviour
         if (playerCollider == null) playerCollider = GetComponentInChildren<Collider>();
         if (playerCollider == null) playerCollider = GetComponentInParent<Collider>();
 
-        // 1. 偵測地面狀態 (若 playerCollider 為空則啟用 Raycast Fallback)
-        bool preliminaryGrounded = false;
+        // 1. 偵測地面狀態與斜坡角度 (使用多點射線確保 BoxCollider 任何邊緣觸地皆能精確穩定感應)
         RaycastHit groundHit;
-        if (playerCollider != null)
-        {
-            Vector3 center = playerCollider.bounds.center;
-            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
-            preliminaryGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out groundHit, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
-        }
-        else
-        {
-            preliminaryGrounded = Physics.Raycast(transform.position, Vector3.down, out groundHit, 1.5f, ~0, QueryTriggerInteraction.Ignore);
-        }
+        float currentSlopeAngle = 0f;
+        bool preliminaryGrounded = CheckGrounded(out groundHit, out currentSlopeAngle);
 
         if (preliminaryGrounded && groundHit.collider != null)
         {
@@ -325,17 +317,9 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 1. 超穩定地面偵測 (使用 BoxCast 防止微小抖動)
+        // 1. 地面狀態判定
         // ==========================================
         isGrounded = preliminaryGrounded;
-        if (playerCollider != null)
-        {
-            Vector3 center = playerCollider.bounds.center;
-            // 寬度稍微縮小避免誤判牆壁，厚度加長偵測底部
-            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.8f, 0.05f, playerCollider.bounds.extents.z * 0.8f);
-            // 改用更長的距離確保一定能掃到地面，並排除自身的 collider
-            isGrounded = Physics.BoxCast(center, halfExtents, Vector3.down, out _, Quaternion.identity, playerCollider.bounds.extents.y + 0.2f, ~0, QueryTriggerInteraction.Ignore);
-        }
 
         if (isGrounded)
         {
@@ -509,49 +493,71 @@ public class PlayerMovement : MonoBehaviour
         
         if (actuallyFreeze || isStrictLockingX)
         {
-            // 嚴格鎖死 X 軸速度為 0，只允許 Y 軸掉落
+            rb.useGravity = true;
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, rb.linearVelocity.z);
         }
         else
         {
-            Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
-            
-            // 【修復斜坡抖動與抽搐】：如果在地面且非跳躍中，計算斜坡法線並沿著斜坡移動 (水下著地時亦適用)
-            if (isGrounded && !isJumping)
+            bool isOnSlope = isGrounded && !isJumping && (currentSlopeAngle > 0.5f && currentSlopeAngle < 60f);
+
+            if (isOnSlope)
             {
-                RaycastHit hit;
-                Vector3 center = playerCollider.bounds.center;
-                // 向下打射線偵測斜坡表面
-                if (Physics.Raycast(center, Vector3.down, out hit, playerCollider.bounds.extents.y + 0.5f, ~0, QueryTriggerInteraction.Ignore))
+                // ★★★ 核心修復：在斜坡上關閉 Unity PhysX 重力！
+                // 否則 PhysX 每一物理幀都會施加向下重力把剛體擠進斜坡，引發法線反彈推開 (Depenetration) 的瘋狂抖動！
+                rb.useGravity = false;
+
+                if (Mathf.Abs(moveInput) > 0.05f)
                 {
-                    float angle = Vector3.Angle(Vector3.up, hit.normal);
-                    // 只有在稍微有坡度（>0.5度），且不至於太陡（<60度）的斜坡才介入
-                    if (angle > 0.5f && angle < 60f)
+                    // 沿斜坡切線移動
+                    Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
+                    Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
+
+                    Vector3 targetVelocity = new Vector3(
+                        slopeDir.x * finalSpeed * Mathf.Abs(moveInput),
+                        slopeDir.y * finalSpeed * Mathf.Abs(moveInput),
+                        0f
+                    );
+
+                    if (activeMovingPlatform != null)
                     {
-                        if (Mathf.Abs(moveInput) > 0.05f)
-                        {
-                            // 將原本的水平移動向量，投影到斜坡表面上
-                            Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
-                            Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, hit.normal).normalized;
-                            
-                            targetVelocity.x = slopeDir.x * finalSpeed * Mathf.Abs(moveInput);
-                            targetVelocity.y = slopeDir.y * finalSpeed * Mathf.Abs(moveInput);
-                        }
-                        else
-                        {
-                            // 沒有按鍵時，消除 X 軸滑動，但保留自然物理墜落速度
-                            targetVelocity.x = 0f;
-                        }
+                        targetVelocity.x += activeMovingPlatform.Velocity.x;
                     }
+
+                    rb.linearVelocity = targetVelocity;
+                }
+                else
+                {
+                    // 靜止站在斜坡上：完全消除所有軸向速度，剛體穩固靜止於斜坡上
+                    Vector3 targetVelocity = Vector3.zero;
+                    if (activeMovingPlatform != null)
+                    {
+                        targetVelocity.x += activeMovingPlatform.Velocity.x;
+                    }
+                    rb.linearVelocity = targetVelocity;
                 }
             }
-            
-            if (activeMovingPlatform != null)
+            else
             {
-                targetVelocity.x += activeMovingPlatform.Velocity.x;
-            }
+                // 平地或空中：非水下時開啟正常重力
+                if (!isUnderwater)
+                {
+                    rb.useGravity = true;
+                }
 
-            rb.linearVelocity = targetVelocity;
+                Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+
+                if (isGrounded && !isJumping && Mathf.Abs(moveInput) <= 0.05f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                {
+                    targetVelocity.y = 0f;
+                }
+
+                if (activeMovingPlatform != null)
+                {
+                    targetVelocity.x += activeMovingPlatform.Velocity.x;
+                }
+
+                rb.linearVelocity = targetVelocity;
+            }
         }
 
         // 水下隱形體力扣除與回復邏輯
@@ -594,6 +600,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // 陸地標準跳躍
             isJumping = true;
+            rb.useGravity = true; // 跳躍時立即還原重力
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
         }
@@ -605,19 +612,19 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         // 【最高層級防破圖系統】確保玩家絕對不出界
         // ==========================================
-        Vector3 finalPos = transform.position;
-
-        // 1. 強制 X 軸墜落鎖定 (優先權最高)
         if (isStrictLockingX)
         {
+            Vector3 finalPos = transform.position;
             finalPos.x = lockedXValue;
+            finalPos.z = initialZ;
+            transform.position = finalPos;
         }
-
-        // 強制鎖死 Z 軸位置，防止 3D 物理碰撞導致 Z 軸偏移
-        finalPos.z = initialZ;
-
-        // 套用最終的防破圖位置
-        transform.position = finalPos;
+        else if (Mathf.Abs(transform.position.z - initialZ) > 0.01f)
+        {
+            Vector3 finalPos = transform.position;
+            finalPos.z = initialZ;
+            transform.position = finalPos;
+        }
 
         // ==========================================
         // 攝影機 Y 軸避震系統
@@ -992,5 +999,83 @@ public class PlayerMovement : MonoBehaviour
             bool isUnderwaterScene = sceneName.Contains("underwater");
             isUnderwater = isUnderwaterScene || isTriggerUnderwater;
         }
+    }
+
+    /// <summary>
+    /// 精確地面與斜坡多點射線偵測系統 (多點掃描 BoxCollider 底部與斜坡法線)
+    /// </summary>
+    private bool CheckGrounded(out RaycastHit bestHit, out float slopeAngle)
+    {
+        bestHit = new RaycastHit();
+        slopeAngle = 0f;
+
+        if (playerCollider == null)
+        {
+            playerCollider = GetComponent<Collider>();
+            if (playerCollider == null) playerCollider = GetComponentInChildren<Collider>();
+            if (playerCollider == null) playerCollider = GetComponentInParent<Collider>();
+        }
+
+        if (playerCollider == null)
+        {
+            if (Physics.Raycast(transform.position, Vector3.down, out bestHit, 1.5f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                slopeAngle = Vector3.Angle(Vector3.up, bestHit.normal);
+                return true;
+            }
+            return false;
+        }
+
+        Vector3 center = playerCollider.bounds.center;
+        float extentsY = playerCollider.bounds.extents.y;
+        float extentsX = playerCollider.bounds.extents.x * 0.75f;
+        float rayLength = extentsY + 0.35f;
+
+        // 3 點向下射線 (中央、左腳邊緣、右腳邊緣)
+        Vector3[] checkPoints = new Vector3[]
+        {
+            center,
+            center + Vector3.left * extentsX,
+            center + Vector3.right * extentsX
+        };
+
+        float minDistance = float.MaxValue;
+        bool found = false;
+        int layerMask = ~LayerMask.GetMask("Ignore Raycast");
+
+        foreach (var origin in checkPoints)
+        {
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider == playerCollider || hit.collider.transform.IsChildOf(transform)) continue;
+
+                if (hit.distance < minDistance)
+                {
+                    minDistance = hit.distance;
+                    bestHit = hit;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found)
+        {
+            Vector3 halfExtents = new Vector3(playerCollider.bounds.extents.x * 0.75f, 0.05f, playerCollider.bounds.extents.z * 0.75f);
+            if (Physics.BoxCast(center, halfExtents, Vector3.down, out RaycastHit boxHit, Quaternion.identity, extentsY + 0.2f, layerMask, QueryTriggerInteraction.Ignore))
+            {
+                if (boxHit.collider != playerCollider && !boxHit.collider.transform.IsChildOf(transform))
+                {
+                    bestHit = boxHit;
+                    found = true;
+                }
+            }
+        }
+
+        if (found)
+        {
+            slopeAngle = Vector3.Angle(Vector3.up, bestHit.normal);
+        }
+
+        return found;
     }
 }
