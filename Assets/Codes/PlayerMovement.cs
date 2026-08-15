@@ -283,13 +283,17 @@ public class PlayerMovement : MonoBehaviour
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
         }
 
-        // 【最高解鎖規則】：若玩家主動按下按鍵要移動，無條件強制解鎖所有 X 軸、掉落鎖死與轉場/劇情殘留凍結！
-        if (Mathf.Abs(rawInput) > 0.1f)
+        // 當處於劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
+        if (isCutsceneFrozen)
         {
+            rawInput = 0f;
+        }
+        else if (Mathf.Abs(rawInput) > 0.1f)
+        {
+            // 若非演出狀態且玩家主動按鍵，才解除掉落鎖死
             isStrictLockingX = false;
             freezeHorizontal = false;
             actuallyFreeze = false;
-            isCutsceneFrozen = false;
         }
 
         float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : rawInput;
@@ -891,6 +895,14 @@ public class PlayerMovement : MonoBehaviour
                 t.TrackingTarget = finalTarget;
                 vcam.Target = t;
                 vcam.Follow = finalTarget;
+
+                // 確保 FollowOffset 的 Y 軸為 0，與主角高度精確水平對齊 (防止攝影機高於主角)
+                var cmFollow = vcam.GetComponent<CinemachineFollow>();
+                if (cmFollow != null)
+                {
+                    cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
+                }
+
                 Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {finalTarget.name}");
             }
         }

@@ -1,0 +1,652 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Cinemachine;
+
+/// <summary>
+/// 鏡牆光球吸入與碎裂演出系統 (Mirror Wall Absorb Cutscene Manager)
+/// - 玩家踏入 Trigger 區自動觸發演出並凍結玩家控制。
+/// - 所有時序參數 (等待時間、飛行時間、消融時長、閃光時長、間隔時間) 皆可在 Inspector 自由調整！
+/// - 4 顆光球隨機依序起飛，瞄準鏡牆 Y 軸中心，帶拋物線弧度加速飛入。
+/// - 相機精準正中 (Dead Center) Zoom In 聚焦至飛行中的光球。
+/// - 抵達鏡牆時先執行【消融縮小被吸收】，完全吸收後再觸發【全螢幕白光閃爍】。
+/// - 全部吸入後觸發鏡牆玻璃碎裂特效 (Destructible / GlassShatterFX)，相機平滑還原追蹤主角，恢復玩家控制。
+/// </summary>
+public class MirrorWallAbsorbCutscene : MonoBehaviour
+{
+    [Header("🎯 目標物件設定")]
+    [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
+    public GameObject mirrorWall;
+
+    [Tooltip("要飛入的光球陣列 (可直接將 4 顆 FairyLight 拖入；若為空則自動搜尋 FairyLight s 子物件)")]
+    public GameObject[] fairyLights;
+
+    [Header("🎬 觸發與玩家控制")]
+    [Tooltip("是否只觸發一次 (防止重複觸發演出)")]
+    public bool triggerOnce = true;
+
+    [Tooltip("踏入觸發時是否凍結玩家動作")]
+    public bool freezePlayerDuringCutscene = true;
+
+    [Header("⏱️ 演出時序設定 (Timing Settings - 自由微調)")]
+    [Tooltip("踏入觸發區後，等待幾秒才開始相機 Zoom In 聚焦第一顆光球 (秒，預設 0.3 秒)")]
+    public float delayBeforeZoomIn = 0.3f;
+
+    [Tooltip("相機開始 Zoom In 後，等待幾秒才正式啟動第一顆光球起飛 (秒，預設 1.2 秒)")]
+    public float delayBeforeFirstFlight = 1.2f;
+
+    [Tooltip("光球觸碰鏡牆時的【消融縮小時長】(秒，營造被吸入鏡內的過渡感，預設 0.45 秒)")]
+    public float meltDuration = 0.45f;
+
+    [Tooltip("白光閃屏淡出總時長 (秒，預設 1.8 秒)")]
+    public float whiteFlashDuration = 1.8f;
+
+    [Tooltip("上一顆光球閃光結束/開始後，間隔幾秒開始下一顆光球起飛 (秒，預設 0.5 秒)")]
+    public float intervalBetweenLights = 0.5f;
+
+    [Tooltip("4 顆光球全吸完後，等待幾秒才觸發鏡牆碎裂 (秒，預設 0.4 秒)")]
+    public float delayBeforeShatter = 0.4f;
+
+    [Tooltip("鏡牆碎裂後，等待幾秒才開始還原相機視角與交還玩家控制權 (秒，預設 0.5 秒)")]
+    public float delayBeforeRestorePlayer = 0.5f;
+
+    [Header("📷 相機正中聚焦與 Zoom In 設定")]
+    [Tooltip("是否開啟相機 Zoom In 聚焦光球")]
+    public bool enableCameraZoom = true;
+
+    [Tooltip("Zoom In 時的鏡頭尺寸 (正交相機數值越小畫面越放大，建議 4.0 ~ 5.0；若是透視相機則為 FOV)")]
+    public float zoomInLensSize = 4.5f;
+
+    [Tooltip("相機縮放過渡速度")]
+    public float zoomTransitionSpeed = 3.5f;
+
+    [Tooltip("是否自動將相機垂直位移 (FollowOffset.y) 歸零以確保光球處於螢幕正正中心")]
+    public bool centerCameraOnLight = true;
+
+    [Header("✨ 光球飛行設定")]
+    [Tooltip("光球飛行速度")]
+    public float flySpeed = 6.0f;
+
+    [Tooltip("拋物線弧度高度 (讓飛行軌跡自然向上微揚再衝入鏡牆)")]
+    public float arcHeight = 1.2f;
+
+    [Header("⚡ 白光閃屏細部設定")]
+    [Tooltip("白光最高亮度透明度 (0 ~ 1，預設 0.92f)")]
+    [Range(0f, 1f)]
+    public float maxFlashAlpha = 0.92f;
+
+    [Tooltip("消融完成後白光極速爆亮的時間 (秒，預設 0.08 秒)")]
+    public float flashFadeInDuration = 0.08f;
+
+    [Header("💥 結尾碎裂設定 (方案 B)")]
+    [Tooltip("4 顆光球全吸完後，是否觸發鏡牆玻璃碎裂特效")]
+    public bool triggerShatterAtEnd = true;
+
+    // 內部狀態變數
+    private bool hasTriggered = false;
+    private bool isCutsceneRunning = false;
+    private PlayerMovement cachedPlayer;
+    private Transform originalCameraTarget;
+    private float originalLensSize = 6.0f;
+    private bool isOrthographic = true;
+
+    // Cinemachine 快取與原始參數
+    private CinemachineCamera activeVcam3;
+    private CinemachineVirtualCamera activeVcamLegacy;
+    private CinemachineFollow cmFollow;
+    private Vector3 originalFollowOffset = new Vector3(0, 0, -15);
+    private bool hasCachedFollowOffset = false;
+
+    // 全螢幕閃白光 UI 系統
+    private Canvas flashCanvas;
+    private Image flashImage;
+    private Coroutine flashCoroutine;
+
+    private void Awake()
+    {
+        InitializeTargets();
+        CreateFlashUI();
+    }
+
+    private void Start()
+    {
+        FindCinemachineCameras();
+    }
+
+    private void InitializeTargets()
+    {
+        // 1. 自動尋找鏡牆
+        if (mirrorWall == null)
+        {
+            mirrorWall = GameObject.Find("mirror wall_001");
+            if (mirrorWall == null) mirrorWall = GameObject.Find("Mirror Wall");
+        }
+
+        // 2. 自動尋找光球
+        if (fairyLights == null || fairyLights.Length == 0)
+        {
+            GameObject lightsParent = GameObject.Find("FairyLight s");
+            if (lightsParent != null)
+            {
+                List<GameObject> list = new List<GameObject>();
+                for (int i = 0; i < lightsParent.transform.childCount; i++)
+                {
+                    Transform child = lightsParent.transform.GetChild(i);
+                    if (child.gameObject.activeSelf)
+                    {
+                        list.Add(child.gameObject);
+                    }
+                }
+                fairyLights = list.ToArray();
+            }
+        }
+    }
+
+    private void FindCinemachineCameras()
+    {
+        Camera mainCam = Camera.main;
+        isOrthographic = (mainCam != null && mainCam.orthographic);
+
+        // 優先抓取 CinemachineCamera (v3)
+        activeVcam3 = Object.FindAnyObjectByType<CinemachineCamera>();
+        if (activeVcam3 != null)
+        {
+            originalLensSize = isOrthographic ? activeVcam3.Lens.OrthographicSize : activeVcam3.Lens.FieldOfView;
+            originalCameraTarget = activeVcam3.Target.TrackingTarget != null ? activeVcam3.Target.TrackingTarget : activeVcam3.Follow;
+
+            cmFollow = activeVcam3.GetComponent<CinemachineFollow>();
+            if (cmFollow != null)
+            {
+                // 自動將 FollowOffset.y 校正為 0，確保視角高度與主角完全水平對齊
+                cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
+                originalFollowOffset = cmFollow.FollowOffset;
+                hasCachedFollowOffset = true;
+            }
+            return;
+        }
+
+        // 備用抓取 CinemachineVirtualCamera (Legacy)
+        activeVcamLegacy = Object.FindAnyObjectByType<CinemachineVirtualCamera>();
+        if (activeVcamLegacy != null)
+        {
+            originalLensSize = isOrthographic ? activeVcamLegacy.m_Lens.OrthographicSize : activeVcamLegacy.m_Lens.FieldOfView;
+            originalCameraTarget = activeVcamLegacy.Follow;
+        }
+    }
+
+    private void CreateFlashUI()
+    {
+        if (flashCanvas != null) return;
+
+        // 動態建立專屬全螢幕白光 Canvas
+        GameObject canvasObj = new GameObject("ScreenWhiteFlash_Canvas");
+        flashCanvas = canvasObj.AddComponent<Canvas>();
+        flashCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        flashCanvas.sortingOrder = 997; // 位於最上層 (比受傷紅邊高，低於最黑轉場)
+
+        canvasObj.AddComponent<CanvasScaler>();
+
+        GameObject imgObj = new GameObject("WhiteFlash_Image");
+        imgObj.transform.SetParent(canvasObj.transform, false);
+        flashImage = imgObj.AddComponent<Image>();
+        flashImage.color = new Color(1f, 1f, 1f, 0f);
+        flashImage.raycastTarget = false;
+
+        RectTransform rt = flashImage.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.sizeDelta = Vector2.zero;
+        rt.anchoredPosition = Vector2.zero;
+
+        DontDestroyOnLoad(canvasObj);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasTriggered && triggerOnce) return;
+        if (isCutsceneRunning) return;
+
+        // 判斷是否為玩家踩入
+        if (other.CompareTag("Player") || other.name.ToLower().Contains("player") || other.GetComponentInParent<PlayerMovement>() != null)
+        {
+            cachedPlayer = other.GetComponent<PlayerMovement>();
+            if (cachedPlayer == null) cachedPlayer = other.GetComponentInParent<PlayerMovement>();
+
+            StartCutscene();
+        }
+    }
+
+    /// <summary>
+    /// 手動或外部觸發演出
+    /// </summary>
+    [ContextMenu("手動觸發吸入演出 (Start Cutscene)")]
+    public void StartCutscene()
+    {
+        if (hasTriggered && triggerOnce) return;
+        if (isCutsceneRunning) return;
+
+        hasTriggered = true;
+        StartCoroutine(AbsorbSequenceRoutine());
+    }
+
+    private IEnumerator AbsorbSequenceRoutine()
+    {
+        isCutsceneRunning = true;
+        Debug.Log("🎬【鏡牆演出啟動】開始執行 4 顆光球依序飛入鏡牆演出！");
+
+        // 1. 凍結玩家操作
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+        if (cachedPlayer != null && freezePlayerDuringCutscene)
+        {
+            cachedPlayer.isCutsceneFrozen = true;
+            Rigidbody prb = cachedPlayer.GetComponent<Rigidbody>();
+            if (prb != null) prb.linearVelocity = Vector3.zero;
+        }
+
+        // 2. 刷新相機原始目標
+        FindCinemachineCameras();
+        if (cachedPlayer != null && originalCameraTarget == null)
+        {
+            originalCameraTarget = cachedPlayer.transform;
+        }
+
+        // 3. 計算鏡牆 Y 軸中心目標點
+        Vector3 wallCenter = GetMirrorWallCenter();
+
+        // 4. 準備待飛行的光球佇列 (排除為空或已被關閉的物件)
+        List<GameObject> remainingLights = new List<GameObject>();
+        if (fairyLights != null)
+        {
+            foreach (var lightObj in fairyLights)
+            {
+                if (lightObj != null && lightObj.activeSelf)
+                {
+                    remainingLights.Add(lightObj);
+                }
+            }
+        }
+
+        if (remainingLights.Count == 0)
+        {
+            Debug.LogWarning("⚠️【鏡牆演出】找不到任何啟用的光球物件！直接進行收尾。");
+            yield return FinishCutsceneRoutine();
+            yield break;
+        }
+
+        int totalCount = remainingLights.Count;
+        int absorbedIndex = 0;
+
+        // ⏱️ Step A: 踩入觸發後，等待 delayBeforeZoomIn 秒才開始鏡頭 Zoom In
+        if (delayBeforeZoomIn > 0f)
+        {
+            yield return new WaitForSeconds(delayBeforeZoomIn);
+        }
+
+        // ⏱️ Step B: 開始相機 Zoom In 聚焦第一顆即將起飛的光球
+        if (remainingLights.Count > 0 && remainingLights[0] != null)
+        {
+            SetCameraTarget(remainingLights[0].transform, true);
+            if (enableCameraZoom)
+            {
+                StartCoroutine(SmoothZoomLens(zoomInLensSize, zoomTransitionSpeed));
+            }
+        }
+
+        // ⏱️ Step C: Zoom In 後等待 delayBeforeFirstFlight 秒才正式啟動第一顆起飛
+        if (delayBeforeFirstFlight > 0f)
+        {
+            yield return new WaitForSeconds(delayBeforeFirstFlight);
+        }
+
+        // 5. 隨機逐一飛入光球
+        while (remainingLights.Count > 0)
+        {
+            absorbedIndex++;
+            int randomIndex = Random.Range(0, remainingLights.Count);
+            GameObject currentLight = remainingLights[randomIndex];
+            remainingLights.RemoveAt(randomIndex);
+
+            if (currentLight == null) continue;
+
+            Debug.Log($"✨【光球演出】第 {absorbedIndex}/{totalCount} 顆光球 ({currentLight.name}) 起飛！");
+
+            // A. 將相機目標切換至該光球，並將 FollowOffset 調整至正中 (Y=0)
+            SetCameraTarget(currentLight.transform, true);
+
+            // B. 啟動鏡頭平滑 Zoom In
+            if (enableCameraZoom)
+            {
+                StartCoroutine(SmoothZoomLens(zoomInLensSize, zoomTransitionSpeed));
+            }
+
+            // C. 執行拋物線飛行至鏡牆中心
+            yield return FlyLightToWallRoutine(currentLight, wallCenter);
+
+            // D. 觸碰鏡牆：【先執行消融縮小被吸收動畫】
+            yield return MeltAndAbsorbLightRoutine(currentLight);
+
+            // E. 【吸收完全結束後，再觸發全螢幕白光閃爍】
+            TriggerWhiteScreenFlash(whiteFlashDuration);
+
+            // F. ⏱️ 每個光球間隔 intervalBetweenLights 秒後再啟動下一顆光球
+            if (remainingLights.Count > 0)
+            {
+                yield return new WaitForSeconds(intervalBetweenLights);
+            }
+        }
+
+        // 6. 全數吸入完成後的結尾碎裂與相機還原
+        yield return FinishCutsceneRoutine();
+    }
+
+    /// <summary>
+    /// 拋物線飛行協程 (Quadratic Bezier Arc)
+    /// </summary>
+    private IEnumerator FlyLightToWallRoutine(GameObject lightObj, Vector3 targetPos)
+    {
+        Vector3 startPos = lightObj.transform.position;
+        // 計算頂點控制點：起點與終點中點稍微向上微揚
+        Vector3 midControlPoint = (startPos + targetPos) * 0.5f + Vector3.up * arcHeight;
+
+        float distance = Vector3.Distance(startPos, targetPos);
+        float duration = Mathf.Max(0.4f, distance / flySpeed);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // 加速曲線 (Ease-In Cubic)，營造被鏡牆吸力加速吸入的動態感
+            float easeT = t * t * (3f - 2f * t);
+
+            // 二次貝茲曲線公式
+            Vector3 currentPos = (1f - easeT) * (1f - easeT) * startPos +
+                                 2f * (1f - easeT) * easeT * midControlPoint +
+                                 easeT * easeT * targetPos;
+
+            if (lightObj != null)
+            {
+                lightObj.transform.position = currentPos;
+            }
+
+            yield return null;
+        }
+
+        if (lightObj != null)
+        {
+            lightObj.transform.position = targetPos;
+        }
+    }
+
+    /// <summary>
+    /// 光球接觸鏡牆後的【消融縮小與吸收】過渡動畫 (Melt & Scale Down Routine)
+    /// </summary>
+    private IEnumerator MeltAndAbsorbLightRoutine(GameObject lightObj)
+    {
+        if (lightObj == null) yield break;
+
+        Vector3 originalScale = lightObj.transform.localScale;
+        SpriteRenderer[] srs = lightObj.GetComponentsInChildren<SpriteRenderer>(true);
+        ParticleSystem[] pss = lightObj.GetComponentsInChildren<ParticleSystem>(true);
+        Light[] lights = lightObj.GetComponentsInChildren<Light>(true);
+
+        // 停止粒子生成以讓既有粒子自然吸入
+        foreach (var ps in pss)
+        {
+            if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        float timer = 0f;
+        while (timer < meltDuration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / meltDuration);
+
+            // 縮小曲線 (Ease-In Suction): 沿著 X 軸被拉長拉扁同時整體縮小至 0
+            float scaleFactor = Mathf.Lerp(1f, 0f, t * t);
+            if (lightObj != null)
+            {
+                lightObj.transform.localScale = originalScale * scaleFactor;
+            }
+
+            // SpriteRenderers 淡出且變白
+            foreach (var sr in srs)
+            {
+                if (sr != null)
+                {
+                    Color c = sr.color;
+                    c.a = Mathf.Lerp(1f, 0f, t);
+                    sr.color = c;
+                }
+            }
+
+            // Lights 漸暗
+            foreach (var l in lights)
+            {
+                if (l != null)
+                {
+                    l.intensity = Mathf.Lerp(l.intensity, 0f, t);
+                }
+            }
+
+            yield return null;
+        }
+
+        if (lightObj != null)
+        {
+            lightObj.SetActive(false);
+            lightObj.transform.localScale = originalScale; // 還原 localScale 以防未來重新啟用時 scale 為 0
+        }
+    }
+
+    /// <summary>
+    /// 觸發全螢幕柔和白光閃屏
+    /// </summary>
+    private void TriggerWhiteScreenFlash(float totalDuration)
+    {
+        if (flashCoroutine != null) StopCoroutine(flashCoroutine);
+        flashCoroutine = StartCoroutine(WhiteFlashRoutine(totalDuration));
+    }
+
+    private IEnumerator WhiteFlashRoutine(float totalDuration)
+    {
+        if (flashImage == null) yield break;
+
+        // 1. 白光極速爆亮
+        float inTimer = 0f;
+        while (inTimer < flashFadeInDuration)
+        {
+            inTimer += Time.deltaTime;
+            float a = Mathf.Lerp(0f, maxFlashAlpha, inTimer / flashFadeInDuration);
+            flashImage.color = new Color(1f, 1f, 1f, a);
+            yield return null;
+        }
+        flashImage.color = new Color(1f, 1f, 1f, maxFlashAlpha);
+
+        // 2. 柔和緩慢淡出 (剩餘時間)
+        float outDuration = Mathf.Max(0.5f, totalDuration - flashFadeInDuration);
+        float outTimer = 0f;
+        while (outTimer < outDuration)
+        {
+            outTimer += Time.deltaTime;
+            float a = Mathf.Lerp(maxFlashAlpha, 0f, outTimer / outDuration);
+            flashImage.color = new Color(1f, 1f, 1f, a);
+            yield return null;
+        }
+
+        flashImage.color = new Color(1f, 1f, 1f, 0f);
+    }
+
+    /// <summary>
+    /// 平滑縮放鏡頭尺寸
+    /// </summary>
+    private IEnumerator SmoothZoomLens(float targetSize, float speed)
+    {
+        float timer = 0f;
+        while (timer < 1.0f)
+        {
+            timer += Time.deltaTime * speed;
+
+            if (activeVcam3 != null)
+            {
+                var lens = activeVcam3.Lens;
+                if (isOrthographic)
+                {
+                    lens.OrthographicSize = Mathf.Lerp(lens.OrthographicSize, targetSize, Time.deltaTime * speed * 3f);
+                }
+                else
+                {
+                    lens.FieldOfView = Mathf.Lerp(lens.FieldOfView, targetSize, Time.deltaTime * speed * 3f);
+                }
+                activeVcam3.Lens = lens;
+            }
+            else if (activeVcamLegacy != null)
+            {
+                var lens = activeVcamLegacy.m_Lens;
+                if (isOrthographic)
+                {
+                    lens.OrthographicSize = Mathf.Lerp(lens.OrthographicSize, targetSize, Time.deltaTime * speed * 3f);
+                }
+                else
+                {
+                    lens.FieldOfView = Mathf.Lerp(lens.FieldOfView, targetSize, Time.deltaTime * speed * 3f);
+                }
+                activeVcamLegacy.m_Lens = lens;
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 切換 Cinemachine 追蹤目標，並自動校正 FollowOffset 確保光球處於正中心
+    /// </summary>
+    private void SetCameraTarget(Transform target, bool isFocusingLight = false)
+    {
+        if (target == null) return;
+
+        if (activeVcam3 != null)
+        {
+            var t = activeVcam3.Target;
+            t.TrackingTarget = target;
+            activeVcam3.Target = t;
+            activeVcam3.Follow = target;
+
+            // ★ 正中對齊校正：確保相機垂直位移 (FollowOffset.y) 維持為 0，不論主角或光球皆處於畫面正中
+            if (cmFollow != null)
+            {
+                cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
+            }
+        }
+
+        if (activeVcamLegacy != null)
+        {
+            activeVcamLegacy.Follow = target;
+        }
+    }
+
+    /// <summary>
+    /// 演出收尾協程 (觸發鏡牆碎裂、鏡頭還原、解鎖玩家)
+    /// </summary>
+    private IEnumerator FinishCutsceneRoutine()
+    {
+        // ⏱️ Step 1: 等待 delayBeforeShatter 秒後觸發鏡牆碎裂
+        if (delayBeforeShatter > 0f)
+        {
+            yield return new WaitForSeconds(delayBeforeShatter);
+        }
+
+        // 觸發鏡牆玻璃碎裂特效 (方案 B)
+        if (triggerShatterAtEnd && mirrorWall != null)
+        {
+            Debug.Log("💥【鏡牆演出】4 顆光球充能完畢，觸發鏡牆玻璃碎裂特效！");
+
+            Destructible dest = mirrorWall.GetComponent<Destructible>();
+            if (dest == null) dest = mirrorWall.GetComponentInChildren<Destructible>();
+
+            GlassShatterFX gfx = mirrorWall.GetComponent<GlassShatterFX>();
+            if (gfx == null) gfx = mirrorWall.GetComponentInChildren<GlassShatterFX>();
+
+            if (dest != null)
+            {
+                dest.Shatter();
+            }
+            else if (gfx != null)
+            {
+                gfx.ExecuteShatter();
+            }
+            else
+            {
+                // 備用方案：若無碎裂組件，直接隱藏鏡牆以打通道路
+                mirrorWall.SetActive(false);
+            }
+        }
+
+        // ⏱️ Step 2: 碎裂後等待 delayBeforeRestorePlayer 秒再還原相機與玩家控制權
+        if (delayBeforeRestorePlayer > 0f)
+        {
+            yield return new WaitForSeconds(delayBeforeRestorePlayer);
+        }
+
+        // 將相機目標平滑還原回主角 (並還原原始 FollowOffset)
+        if (originalCameraTarget != null)
+        {
+            SetCameraTarget(originalCameraTarget, false);
+        }
+        else if (cachedPlayer != null)
+        {
+            SetCameraTarget(cachedPlayer.transform, false);
+        }
+
+        // 還原相機鏡頭尺寸 (Zoom Out 回原始視野)
+        if (enableCameraZoom)
+        {
+            yield return StartCoroutine(SmoothZoomLens(originalLensSize, zoomTransitionSpeed * 0.8f));
+        }
+
+        // 解除玩家動作凍結
+        if (cachedPlayer != null)
+        {
+            cachedPlayer.isCutsceneFrozen = false;
+        }
+
+        isCutsceneRunning = false;
+        Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
+    }
+
+    /// <summary>
+    /// 計算鏡牆在世界座標中的 Y 軸中心點
+    /// </summary>
+    private Vector3 GetMirrorWallCenter()
+    {
+        if (mirrorWall == null) return transform.position;
+
+        Collider col = mirrorWall.GetComponent<Collider>();
+        if (col != null) return col.bounds.center;
+
+        SpriteRenderer sr = mirrorWall.GetComponent<SpriteRenderer>();
+        if (sr != null) return sr.bounds.center;
+
+        return mirrorWall.transform.position;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.5f);
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+        }
+
+        if (mirrorWall != null)
+        {
+            Gizmos.color = Color.yellow;
+            Vector3 center = GetMirrorWallCenter();
+            Gizmos.DrawWireSphere(center, 0.5f);
+            Gizmos.DrawLine(transform.position, center);
+        }
+    }
+}
