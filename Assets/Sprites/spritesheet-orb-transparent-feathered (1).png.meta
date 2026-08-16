@@ -1,0 +1,2174 @@
+fileFormatVersion: 2
+guid: b12d385dfae335b4ca06fa1e14787ce9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1545996082086287335
+    second: spritesheet-orb-transparent-feathered (1)_0
+  - first:
+      213: -4264343937181603192
+    second: spritesheet-orb-transparent-feathered (1)_1
+  - first:
+      213: 6309974607956503321
+    second: spritesheet-orb-transparent-feathered (1)_2
+  - first:
+      213: 636553973621722368
+    second: spritesheet-orb-transparent-feathered (1)_3
+  - first:
+      213: 7600765315047677130
+    second: spritesheet-orb-transparent-feathered (1)_4
+  - first:
+      213: -5220093717041582518
+    second: spritesheet-orb-transparent-feathered (1)_5
+  - first:
+      213: 1021436183941151530
+    second: spritesheet-orb-transparent-feathered (1)_6
+  - first:
+      213: 1567852266345572895
+    second: spritesheet-orb-transparent-feathered (1)_7
+  - first:
+      213: 4206722231187133019
+    second: spritesheet-orb-transparent-feathered (1)_8
+  - first:
+      213: 4890240172782668851
+    second: spritesheet-orb-transparent-feathered (1)_9
+  - first:
+      213: -5672300856726700936
+    second: spritesheet-orb-transparent-feathered (1)_10
+  - first:
+      213: 4857595015405331966
+    second: spritesheet-orb-transparent-feathered (1)_11
+  - first:
+      213: 4197359028307928579
+    second: spritesheet-orb-transparent-feathered (1)_12
+  - first:
+      213: 7330275222664630302
+    second: spritesheet-orb-transparent-feathered (1)_13
+  - first:
+      213: -2810528217606916475
+    second: spritesheet-orb-transparent-feathered (1)_14
+  - first:
+      213: -5507968196299380600
+    second: spritesheet-orb-transparent-feathered (1)_15
+  - first:
+      213: 4639828979387634728
+    second: spritesheet-orb-transparent-feathered (1)_16
+  - first:
+      213: 5735955387809224710
+    second: spritesheet-orb-transparent-feathered (1)_17
+  - first:
+      213: 4252178546570733553
+    second: spritesheet-orb-transparent-feathered (1)_18
+  - first:
+      213: -2682131109160355880
+    second: spritesheet-orb-transparent-feathered (1)_19
+  - first:
+      213: 6108305244312650366
+    second: spritesheet-orb-transparent-feathered (1)_20
+  - first:
+      213: -7347699276897685210
+    second: spritesheet-orb-transparent-feathered (1)_21
+  - first:
+      213: 896489229486873374
+    second: spritesheet-orb-transparent-feathered (1)_22
+  - first:
+      213: 486528002341310844
+    second: spritesheet-orb-transparent-feathered (1)_23
+  - first:
+      213: 2542054269130617118
+    second: spritesheet-orb-transparent-feathered (1)_24
+  - first:
+      213: 2004062442985963655
+    second: spritesheet-orb-transparent-feathered (1)_25
+  - first:
+      213: -2523700194667482879
+    second: spritesheet-orb-transparent-feathered (1)_26
+  - first:
+      213: -1155532830232734473
+    second: spritesheet-orb-transparent-feathered (1)_27
+  - first:
+      213: -7542276437568005676
+    second: spritesheet-orb-transparent-feathered (1)_28
+  - first:
+      213: 8217631663170907953
+    second: spritesheet-orb-transparent-feathered (1)_29
+  - first:
+      213: 9221953479133123149
+    second: spritesheet-orb-transparent-feathered (1)_30
+  - first:
+      213: 3396580800482708289
+    second: spritesheet-orb-transparent-feathered (1)_31
+  - first:
+      213: 3710579668605908868
+    second: spritesheet-orb-transparent-feathered (1)_32
+  - first:
+      213: -2925730469055867108
+    second: spritesheet-orb-transparent-feathered (1)_33
+  - first:
+      213: 7721439543830330602
+    second: spritesheet-orb-transparent-feathered (1)_34
+  - first:
+      213: -959225343637816887
+    second: spritesheet-orb-transparent-feathered (1)_35
+  - first:
+      213: 5888795441526589265
+    second: spritesheet-orb-transparent-feathered (1)_36
+  - first:
+      213: 8859670310071375191
+    second: spritesheet-orb-transparent-feathered (1)_37
+  - first:
+      213: -5386681725609094344
+    second: spritesheet-orb-transparent-feathered (1)_38
+  - first:
+      213: 7436249361922704628
+    second: spritesheet-orb-transparent-feathered (1)_39
+  - first:
+      213: -8995559228740211604
+    second: spritesheet-orb-transparent-feathered (1)_40
+  - first:
+      213: -8567047785242337047
+    second: spritesheet-orb-transparent-feathered (1)_41
+  - first:
+      213: -3575921481312479121
+    second: spritesheet-orb-transparent-feathered (1)_42
+  - first:
+      213: 7316355646447712392
+    second: spritesheet-orb-transparent-feathered (1)_43
+  - first:
+      213: -4056627916227104486
+    second: spritesheet-orb-transparent-feathered (1)_44
+  - first:
+      213: -7811969546642819130
+    second: spritesheet-orb-transparent-feathered (1)_45
+  - first:
+      213: 7101717158848886602
+    second: spritesheet-orb-transparent-feathered (1)_46
+  - first:
+      213: 5056780842032623515
+    second: spritesheet-orb-transparent-feathered (1)_47
+  - first:
+      213: 6420349644773081088
+    second: spritesheet-orb-transparent-feathered (1)_48
+  - first:
+      213: 5568994188721580453
+    second: spritesheet-orb-transparent-feathered (1)_49
+  - first:
+      213: -2797975025295672022
+    second: spritesheet-orb-transparent-feathered (1)_50
+  - first:
+      213: 6538580173159380749
+    second: spritesheet-orb-transparent-feathered (1)_51
+  - first:
+      213: -2581195796537114892
+    second: spritesheet-orb-transparent-feathered (1)_52
+  - first:
+      213: -4957631352582657654
+    second: spritesheet-orb-transparent-feathered (1)_53
+  - first:
+      213: 2984390184237540888
+    second: spritesheet-orb-transparent-feathered (1)_54
+  - first:
+      213: 8857078429065419587
+    second: spritesheet-orb-transparent-feathered (1)_55
+  - first:
+      213: 8759220831248362498
+    second: spritesheet-orb-transparent-feathered (1)_56
+  - first:
+      213: -1568769951368985549
+    second: spritesheet-orb-transparent-feathered (1)_57
+  - first:
+      213: 8223463403667426086
+    second: spritesheet-orb-transparent-feathered (1)_58
+  - first:
+      213: 4712071684697476296
+    second: spritesheet-orb-transparent-feathered (1)_59
+  - first:
+      213: -5681710951517796714
+    second: spritesheet-orb-transparent-feathered (1)_60
+  - first:
+      213: -8665375809491137902
+    second: spritesheet-orb-transparent-feathered (1)_61
+  - first:
+      213: 5772964484743366455
+    second: spritesheet-orb-transparent-feathered (1)_62
+  - first:
+      213: -5560913771865910941
+    second: spritesheet-orb-transparent-feathered (1)_63
+  - first:
+      213: -6041405628101333055
+    second: spritesheet-orb-transparent-feathered (1)_64
+  - first:
+      213: -2301495610517465260
+    second: spritesheet-orb-transparent-feathered (1)_65
+  - first:
+      213: 8603334159159308109
+    second: spritesheet-orb-transparent-feathered (1)_66
+  - first:
+      213: -128421072973419182
+    second: spritesheet-orb-transparent-feathered (1)_67
+  - first:
+      213: 3668596147546198067
+    second: spritesheet-orb-transparent-feathered (1)_68
+  - first:
+      213: -5125172087872005253
+    second: spritesheet-orb-transparent-feathered (1)_69
+  - first:
+      213: 4633263501237938198
+    second: spritesheet-orb-transparent-feathered (1)_70
+  - first:
+      213: 4637725887947191939
+    second: spritesheet-orb-transparent-feathered (1)_71
+  - first:
+      213: -4132116633518752817
+    second: spritesheet-orb-transparent-feathered (1)_72
+  - first:
+      213: 1640503452063881122
+    second: spritesheet-orb-transparent-feathered (1)_73
+  - first:
+      213: 7337754588208890109
+    second: spritesheet-orb-transparent-feathered (1)_74
+  - first:
+      213: 575376929779134241
+    second: spritesheet-orb-transparent-feathered (1)_75
+  - first:
+      213: 7290844716189834388
+    second: spritesheet-orb-transparent-feathered (1)_76
+  - first:
+      213: 1540043944655204966
+    second: spritesheet-orb-transparent-feathered (1)_77
+  - first:
+      213: -389147059424166
+    second: spritesheet-orb-transparent-feathered (1)_78
+  - first:
+      213: -2453195296140950325
+    second: spritesheet-orb-transparent-feathered (1)_79
+  - first:
+      213: 6917238306001035700
+    second: spritesheet-orb-transparent-feathered (1)_80
+  - first:
+      213: 2661144245019029836
+    second: spritesheet-orb-transparent-feathered (1)_81
+  - first:
+      213: 1507645576728987397
+    second: spritesheet-orb-transparent-feathered (1)_82
+  - first:
+      213: 2831298441482319417
+    second: spritesheet-orb-transparent-feathered (1)_83
+  - first:
+      213: -8332454200155864296
+    second: spritesheet-orb-transparent-feathered (1)_84
+  - first:
+      213: 3185489172111332306
+    second: spritesheet-orb-transparent-feathered (1)_85
+  - first:
+      213: -6511794655999711320
+    second: spritesheet-orb-transparent-feathered (1)_86
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 918e91f11c48b8ae0800000000000000
+      internalID: -1545996082086287335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_1
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88a233858c102d4c0800000000000000
+      internalID: -4264343937181603192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_2
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91b6bf86978819750800000000000000
+      internalID: 6309974607956503321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_3
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00d0616677e75d800800000000000000
+      internalID: 636553973621722368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_4
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: accd68098c75b7960800000000000000
+      internalID: 7600765315047677130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_5
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4eec7deb608e87b0800000000000000
+      internalID: -5220093717041582518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_6
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2bfa882ccedc2e00800000000000000
+      internalID: 1021436183941151530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_7
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1aa1d3545122c510800000000000000
+      internalID: 1567852266345572895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_8
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b52d5a2c497416a30800000000000000
+      internalID: 4206722231187133019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33c4e0d078f9dd340800000000000000
+      internalID: 4890240172782668851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_10
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87c39a78c60f741b0800000000000000
+      internalID: -5672300856726700936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_11
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef561fb0ee4a96340800000000000000
+      internalID: 4857595015405331966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_12
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 306a2153cc3004a30800000000000000
+      internalID: 4197359028307928579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_13
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e10d5c04a7e5ab560800000000000000
+      internalID: 7330275222664630302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_14
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 586f3561a7ffef8d0800000000000000
+      internalID: -2810528217606916475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_15
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8882d61ab14cf83b0800000000000000
+      internalID: -5507968196299380600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_16
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82496f6bfdbf36040800000000000000
+      internalID: 4639828979387634728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_17
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6085bd9e8053a9f40800000000000000
+      internalID: 5735955387809224710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f7a2edebd5c20b30800000000000000
+      internalID: 4252178546570733553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_19
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d7f87d77f727cad0800000000000000
+      internalID: -2682131109160355880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_20
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7249eaa14f05c450800000000000000
+      internalID: 6108305244312650366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_21
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6217e1cff6ab70a90800000000000000
+      internalID: -7347699276897685210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_22
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1b57845438f07c00800000000000000
+      internalID: 896489229486873374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_23
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7195d0f3ae70c600800000000000000
+      internalID: 486528002341310844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_24
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e11bb4fa3e0374320800000000000000
+      internalID: 2542054269130617118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_25
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78041e58c2cdfcb10800000000000000
+      internalID: 2004062442985963655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_26
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 101b2494b040afcd0800000000000000
+      internalID: -2523700194667482879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_27
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f41daf5309b6ffe0800000000000000
+      internalID: -1155532830232734473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_28
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d9d5fc6a83745790800000000000000
+      internalID: -7542276437568005676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_29
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13fed427574ea0270800000000000000
+      internalID: 8217631663170907953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_30
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4258ea44d5faff70800000000000000
+      internalID: 9221953479133123149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_31
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14b0faffd34132f20800000000000000
+      internalID: 3396580800482708289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_32
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 487ba029c80ae7330800000000000000
+      internalID: 3710579668605908868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_33
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c17536bb3a7b567d0800000000000000
+      internalID: -2925730469055867108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_34
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aec39acea50182b60800000000000000
+      internalID: 7721439543830330602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_35
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c97ae4d1a520b2f0800000000000000
+      internalID: -959225343637816887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_36
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 157c12ff04439b150800000000000000
+      internalID: 5888795441526589265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_37
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75511ead43fd3fa70800000000000000
+      internalID: 8859670310071375191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_38
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8335bfaa289ae35b0800000000000000
+      internalID: -5386681725609094344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_39
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f4c0ae456dd23760800000000000000
+      internalID: 7436249361922704628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_40
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6ce3feba8a592380800000000000000
+      internalID: -8995559228740211604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_41
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e065d2fd6bbb1980800000000000000
+      internalID: -8567047785242337047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_42
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f685ea9db56cf5ec0800000000000000
+      internalID: -3575921481312479121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_43
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88870fc52bae88560800000000000000
+      internalID: 7316355646447712392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_44
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a11b9533766f3b7c0800000000000000
+      internalID: -4056627916227104486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_45
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c77f20461f469390800000000000000
+      internalID: -7811969546642819130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_46
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a47fb74212e5e8260800000000000000
+      internalID: 7101717158848886602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_47
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9fea54426b4d2640800000000000000
+      internalID: 5056780842032623515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_48
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00041864cf9a91950800000000000000
+      internalID: 6420349644773081088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_49
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a9e6f675ba094d40800000000000000
+      internalID: 5568994188721580453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_50
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2d36dee9889b29d0800000000000000
+      internalID: -2797975025295672022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_51
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d07b39c4604bdba50800000000000000
+      internalID: 6538580173159380749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_52
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fe7cab4910cd2cd0800000000000000
+      internalID: -2581195796537114892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_53
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a89a8fd2d84f23bb0800000000000000
+      internalID: -4957631352582657654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_54
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81624a28f0faa6920800000000000000
+      internalID: 2984390184237540888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_55
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34b183887e9aaea70800000000000000
+      internalID: 8857078429065419587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_56
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20ca2cb00f00f8970800000000000000
+      internalID: 8759220831248362498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_57
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 334485a7a0c9a3ae0800000000000000
+      internalID: -1568769951368985549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_58
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62b8507556c9f1270800000000000000
+      internalID: 8223463403667426086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_59
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ccc19a4b34a46140800000000000000
+      internalID: 4712071684697476296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_60
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 696c55a1ef18621b0800000000000000
+      internalID: -5681710951517796714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_61
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29a8406cc966eb780800000000000000
+      internalID: -8665375809491137902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_62
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7370316cc90bd1050800000000000000
+      internalID: 5772964484743366455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_63
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 361da51336aa3d2b0800000000000000
+      internalID: -5560913771865910941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_64
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1cf69f8079d982ca0800000000000000
+      internalID: -6041405628101333055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_65
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4575cf2afe17f00e0800000000000000
+      internalID: -2301495610517465260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_66
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4faca8d5de256770800000000000000
+      internalID: 8603334159159308109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_67
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25daebbe6b1c73ef0800000000000000
+      internalID: -128421072973419182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_68
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3309bd652c879e230800000000000000
+      internalID: 3668596147546198067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_69
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7b54a1f32bbfd8b0800000000000000
+      internalID: -5125172087872005253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_70
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 618e1163b98ac4040800000000000000
+      internalID: 4633263501237938198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_71
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 386b9b49f138c5040800000000000000
+      internalID: 4637725887947191939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_72
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcbb1a090d5c7a6c0800000000000000
+      internalID: -4132116633518752817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_73
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a7d119a23d34c610800000000000000
+      internalID: 1640503452063881122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_74
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df00f2fbbe0f4d560800000000000000
+      internalID: 7337754588208890109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_75
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12fa077e4462cf700800000000000000
+      internalID: 575376929779134241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_76
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49c570d04a84e2560800000000000000
+      internalID: 7290844716189834388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-transparent-feathered (1)_77
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6623aa3eec55f5510800000000000000
+      internalID: 1540043944655204966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: b1247829abe60b44eaad0c0f1e98479e
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":9.0,"y":9.0},"gridSpriteSize":{"x":227.0,"y":227.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      spritesheet-orb-transparent-feathered (1)_0: -1545996082086287335
+      spritesheet-orb-transparent-feathered (1)_1: -4264343937181603192
+      spritesheet-orb-transparent-feathered (1)_10: -5672300856726700936
+      spritesheet-orb-transparent-feathered (1)_11: 4857595015405331966
+      spritesheet-orb-transparent-feathered (1)_12: 4197359028307928579
+      spritesheet-orb-transparent-feathered (1)_13: 7330275222664630302
+      spritesheet-orb-transparent-feathered (1)_14: -2810528217606916475
+      spritesheet-orb-transparent-feathered (1)_15: -5507968196299380600
+      spritesheet-orb-transparent-feathered (1)_16: 4639828979387634728
+      spritesheet-orb-transparent-feathered (1)_17: 5735955387809224710
+      spritesheet-orb-transparent-feathered (1)_18: 4252178546570733553
+      spritesheet-orb-transparent-feathered (1)_19: -2682131109160355880
+      spritesheet-orb-transparent-feathered (1)_2: 6309974607956503321
+      spritesheet-orb-transparent-feathered (1)_20: 6108305244312650366
+      spritesheet-orb-transparent-feathered (1)_21: -7347699276897685210
+      spritesheet-orb-transparent-feathered (1)_22: 896489229486873374
+      spritesheet-orb-transparent-feathered (1)_23: 486528002341310844
+      spritesheet-orb-transparent-feathered (1)_24: 2542054269130617118
+      spritesheet-orb-transparent-feathered (1)_25: 2004062442985963655
+      spritesheet-orb-transparent-feathered (1)_26: -2523700194667482879
+      spritesheet-orb-transparent-feathered (1)_27: -1155532830232734473
+      spritesheet-orb-transparent-feathered (1)_28: -7542276437568005676
+      spritesheet-orb-transparent-feathered (1)_29: 8217631663170907953
+      spritesheet-orb-transparent-feathered (1)_3: 636553973621722368
+      spritesheet-orb-transparent-feathered (1)_30: 9221953479133123149
+      spritesheet-orb-transparent-feathered (1)_31: 3396580800482708289
+      spritesheet-orb-transparent-feathered (1)_32: 3710579668605908868
+      spritesheet-orb-transparent-feathered (1)_33: -2925730469055867108
+      spritesheet-orb-transparent-feathered (1)_34: 7721439543830330602
+      spritesheet-orb-transparent-feathered (1)_35: -959225343637816887
+      spritesheet-orb-transparent-feathered (1)_36: 5888795441526589265
+      spritesheet-orb-transparent-feathered (1)_37: 8859670310071375191
+      spritesheet-orb-transparent-feathered (1)_38: -5386681725609094344
+      spritesheet-orb-transparent-feathered (1)_39: 7436249361922704628
+      spritesheet-orb-transparent-feathered (1)_4: 7600765315047677130
+      spritesheet-orb-transparent-feathered (1)_40: -8995559228740211604
+      spritesheet-orb-transparent-feathered (1)_41: -8567047785242337047
+      spritesheet-orb-transparent-feathered (1)_42: -3575921481312479121
+      spritesheet-orb-transparent-feathered (1)_43: 7316355646447712392
+      spritesheet-orb-transparent-feathered (1)_44: -4056627916227104486
+      spritesheet-orb-transparent-feathered (1)_45: -7811969546642819130
+      spritesheet-orb-transparent-feathered (1)_46: 7101717158848886602
+      spritesheet-orb-transparent-feathered (1)_47: 5056780842032623515
+      spritesheet-orb-transparent-feathered (1)_48: 6420349644773081088
+      spritesheet-orb-transparent-feathered (1)_49: 5568994188721580453
+      spritesheet-orb-transparent-feathered (1)_5: -5220093717041582518
+      spritesheet-orb-transparent-feathered (1)_50: -2797975025295672022
+      spritesheet-orb-transparent-feathered (1)_51: 6538580173159380749
+      spritesheet-orb-transparent-feathered (1)_52: -2581195796537114892
+      spritesheet-orb-transparent-feathered (1)_53: -4957631352582657654
+      spritesheet-orb-transparent-feathered (1)_54: 2984390184237540888
+      spritesheet-orb-transparent-feathered (1)_55: 8857078429065419587
+      spritesheet-orb-transparent-feathered (1)_56: 8759220831248362498
+      spritesheet-orb-transparent-feathered (1)_57: -1568769951368985549
+      spritesheet-orb-transparent-feathered (1)_58: 8223463403667426086
+      spritesheet-orb-transparent-feathered (1)_59: 4712071684697476296
+      spritesheet-orb-transparent-feathered (1)_6: 1021436183941151530
+      spritesheet-orb-transparent-feathered (1)_60: -5681710951517796714
+      spritesheet-orb-transparent-feathered (1)_61: -8665375809491137902
+      spritesheet-orb-transparent-feathered (1)_62: 5772964484743366455
+      spritesheet-orb-transparent-feathered (1)_63: -5560913771865910941
+      spritesheet-orb-transparent-feathered (1)_64: -6041405628101333055
+      spritesheet-orb-transparent-feathered (1)_65: -2301495610517465260
+      spritesheet-orb-transparent-feathered (1)_66: 8603334159159308109
+      spritesheet-orb-transparent-feathered (1)_67: -128421072973419182
+      spritesheet-orb-transparent-feathered (1)_68: 3668596147546198067
+      spritesheet-orb-transparent-feathered (1)_69: -5125172087872005253
+      spritesheet-orb-transparent-feathered (1)_7: 1567852266345572895
+      spritesheet-orb-transparent-feathered (1)_70: 4633263501237938198
+      spritesheet-orb-transparent-feathered (1)_71: 4637725887947191939
+      spritesheet-orb-transparent-feathered (1)_72: -4132116633518752817
+      spritesheet-orb-transparent-feathered (1)_73: 1640503452063881122
+      spritesheet-orb-transparent-feathered (1)_74: 7337754588208890109
+      spritesheet-orb-transparent-feathered (1)_75: 575376929779134241
+      spritesheet-orb-transparent-feathered (1)_76: 7290844716189834388
+      spritesheet-orb-transparent-feathered (1)_77: 1540043944655204966
+      spritesheet-orb-transparent-feathered (1)_8: 4206722231187133019
+      spritesheet-orb-transparent-feathered (1)_9: 4890240172782668851
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
