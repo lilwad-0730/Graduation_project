@@ -1,0 +1,2147 @@
+fileFormatVersion: 2
+guid: 5cb311683c933df41a55d693f3fb1427
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5290388253147264752
+    second: spritesheet-orb-smooth-strong-feather_0
+  - first:
+      213: 4182218816688053808
+    second: spritesheet-orb-smooth-strong-feather_1
+  - first:
+      213: -565982594517206580
+    second: spritesheet-orb-smooth-strong-feather_2
+  - first:
+      213: 3120313311162309270
+    second: spritesheet-orb-smooth-strong-feather_3
+  - first:
+      213: 4135394092378734058
+    second: spritesheet-orb-smooth-strong-feather_4
+  - first:
+      213: -7405505695450712780
+    second: spritesheet-orb-smooth-strong-feather_5
+  - first:
+      213: -2420017599160862791
+    second: spritesheet-orb-smooth-strong-feather_6
+  - first:
+      213: -3803991259538713799
+    second: spritesheet-orb-smooth-strong-feather_7
+  - first:
+      213: 8871476995949750537
+    second: spritesheet-orb-smooth-strong-feather_8
+  - first:
+      213: -7757633422891901092
+    second: spritesheet-orb-smooth-strong-feather_9
+  - first:
+      213: 2044407750742193530
+    second: spritesheet-orb-smooth-strong-feather_10
+  - first:
+      213: 1117370206225720983
+    second: spritesheet-orb-smooth-strong-feather_11
+  - first:
+      213: -6007444494268916410
+    second: spritesheet-orb-smooth-strong-feather_12
+  - first:
+      213: 9189243054922197316
+    second: spritesheet-orb-smooth-strong-feather_13
+  - first:
+      213: -5605696738294344257
+    second: spritesheet-orb-smooth-strong-feather_14
+  - first:
+      213: 8331779165018865353
+    second: spritesheet-orb-smooth-strong-feather_15
+  - first:
+      213: -8919645297694691465
+    second: spritesheet-orb-smooth-strong-feather_16
+  - first:
+      213: 3440169886566960428
+    second: spritesheet-orb-smooth-strong-feather_17
+  - first:
+      213: 8255230308306130914
+    second: spritesheet-orb-smooth-strong-feather_18
+  - first:
+      213: -8271582154147689798
+    second: spritesheet-orb-smooth-strong-feather_19
+  - first:
+      213: -2224137064020945462
+    second: spritesheet-orb-smooth-strong-feather_20
+  - first:
+      213: 5889603759101771238
+    second: spritesheet-orb-smooth-strong-feather_21
+  - first:
+      213: 7914882256862650347
+    second: spritesheet-orb-smooth-strong-feather_22
+  - first:
+      213: 336287038741879500
+    second: spritesheet-orb-smooth-strong-feather_23
+  - first:
+      213: -7781683315219643690
+    second: spritesheet-orb-smooth-strong-feather_24
+  - first:
+      213: 9013991353258313581
+    second: spritesheet-orb-smooth-strong-feather_25
+  - first:
+      213: -869046410723447490
+    second: spritesheet-orb-smooth-strong-feather_26
+  - first:
+      213: 9188793660143168730
+    second: spritesheet-orb-smooth-strong-feather_27
+  - first:
+      213: -4391438385700466572
+    second: spritesheet-orb-smooth-strong-feather_28
+  - first:
+      213: 1266712508032941733
+    second: spritesheet-orb-smooth-strong-feather_29
+  - first:
+      213: -913606841089574706
+    second: spritesheet-orb-smooth-strong-feather_30
+  - first:
+      213: 3464865565776171450
+    second: spritesheet-orb-smooth-strong-feather_31
+  - first:
+      213: -2797873992879562920
+    second: spritesheet-orb-smooth-strong-feather_32
+  - first:
+      213: -363730038060657809
+    second: spritesheet-orb-smooth-strong-feather_33
+  - first:
+      213: 7190286032068091636
+    second: spritesheet-orb-smooth-strong-feather_34
+  - first:
+      213: 6874933999103566256
+    second: spritesheet-orb-smooth-strong-feather_35
+  - first:
+      213: 5017974171118660594
+    second: spritesheet-orb-smooth-strong-feather_36
+  - first:
+      213: -6407255638593967488
+    second: spritesheet-orb-smooth-strong-feather_37
+  - first:
+      213: -5833144665075232078
+    second: spritesheet-orb-smooth-strong-feather_38
+  - first:
+      213: 8987887416813683493
+    second: spritesheet-orb-smooth-strong-feather_39
+  - first:
+      213: -5613396936094711092
+    second: spritesheet-orb-smooth-strong-feather_40
+  - first:
+      213: -8382333452492046716
+    second: spritesheet-orb-smooth-strong-feather_41
+  - first:
+      213: 1090949690505920841
+    second: spritesheet-orb-smooth-strong-feather_42
+  - first:
+      213: 6009531960747690252
+    second: spritesheet-orb-smooth-strong-feather_43
+  - first:
+      213: -4713863313612886457
+    second: spritesheet-orb-smooth-strong-feather_44
+  - first:
+      213: 6660854033897035026
+    second: spritesheet-orb-smooth-strong-feather_45
+  - first:
+      213: -8015562000140259472
+    second: spritesheet-orb-smooth-strong-feather_46
+  - first:
+      213: -994551400602158974
+    second: spritesheet-orb-smooth-strong-feather_47
+  - first:
+      213: 7857398906049237774
+    second: spritesheet-orb-smooth-strong-feather_48
+  - first:
+      213: -7780107952014862558
+    second: spritesheet-orb-smooth-strong-feather_49
+  - first:
+      213: 6618611318804630710
+    second: spritesheet-orb-smooth-strong-feather_50
+  - first:
+      213: 7288130817504492232
+    second: spritesheet-orb-smooth-strong-feather_51
+  - first:
+      213: 6707314034577351091
+    second: spritesheet-orb-smooth-strong-feather_52
+  - first:
+      213: 5950978298720922343
+    second: spritesheet-orb-smooth-strong-feather_53
+  - first:
+      213: -8608689904892988952
+    second: spritesheet-orb-smooth-strong-feather_54
+  - first:
+      213: -6424194504706208
+    second: spritesheet-orb-smooth-strong-feather_55
+  - first:
+      213: -3089246824437385515
+    second: spritesheet-orb-smooth-strong-feather_56
+  - first:
+      213: 2731094181590521199
+    second: spritesheet-orb-smooth-strong-feather_57
+  - first:
+      213: -3513651972306862840
+    second: spritesheet-orb-smooth-strong-feather_58
+  - first:
+      213: -7735505631714608710
+    second: spritesheet-orb-smooth-strong-feather_59
+  - first:
+      213: 6473659322226015561
+    second: spritesheet-orb-smooth-strong-feather_60
+  - first:
+      213: 6508090856442980913
+    second: spritesheet-orb-smooth-strong-feather_61
+  - first:
+      213: -5974821476840509570
+    second: spritesheet-orb-smooth-strong-feather_62
+  - first:
+      213: 3416097579701544207
+    second: spritesheet-orb-smooth-strong-feather_63
+  - first:
+      213: -7453119117523837011
+    second: spritesheet-orb-smooth-strong-feather_64
+  - first:
+      213: 8298792861225191953
+    second: spritesheet-orb-smooth-strong-feather_65
+  - first:
+      213: -308229133806291338
+    second: spritesheet-orb-smooth-strong-feather_66
+  - first:
+      213: -4119783278735045627
+    second: spritesheet-orb-smooth-strong-feather_67
+  - first:
+      213: -4889293014755470079
+    second: spritesheet-orb-smooth-strong-feather_68
+  - first:
+      213: 6355027494173495779
+    second: spritesheet-orb-smooth-strong-feather_69
+  - first:
+      213: -4563825158653848642
+    second: spritesheet-orb-smooth-strong-feather_70
+  - first:
+      213: -27057868910633667
+    second: spritesheet-orb-smooth-strong-feather_71
+  - first:
+      213: -3536542324013344185
+    second: spritesheet-orb-smooth-strong-feather_72
+  - first:
+      213: -6464607759279187083
+    second: spritesheet-orb-smooth-strong-feather_73
+  - first:
+      213: -3379665450540676626
+    second: spritesheet-orb-smooth-strong-feather_74
+  - first:
+      213: -6236898154577917887
+    second: spritesheet-orb-smooth-strong-feather_75
+  - first:
+      213: 1981348463373476621
+    second: spritesheet-orb-smooth-strong-feather_76
+  - first:
+      213: 4883279410937430179
+    second: spritesheet-orb-smooth-strong-feather_77
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0190247d9e3c496b0800000000000000
+      internalID: -5290388253147264752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_1
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03e55adfad93a0a30800000000000000
+      internalID: 4182218816688053808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_2
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc97fb834d93528f0800000000000000
+      internalID: -565982594517206580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_3
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69a90c3ac649d4b20800000000000000
+      internalID: 3120313311162309270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_4
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aedbb7a440fd36930800000000000000
+      internalID: 4135394092378734058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_5
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43537885ecb5a3990800000000000000
+      internalID: -7405505695450712780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_6
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b7b2dbb0de5a6ed0800000000000000
+      internalID: -2420017599160862791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_7
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93311869a12853bc0800000000000000
+      internalID: -3803991259538713799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_8
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1821
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90962a02351dd1b70800000000000000
+      internalID: 8871476995949750537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5f94dae089575490800000000000000
+      internalID: -7757633422891901092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_10
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a753b0f74023f5c10800000000000000
+      internalID: 2044407750742193530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_11
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79660b05842b18f00800000000000000
+      internalID: 1117370206225720983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_12
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64d993faf0541aca0800000000000000
+      internalID: -6007444494268916410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_13
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 449ec5b2fdfb68f70800000000000000
+      internalID: 9189243054922197316
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_14
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb5566b44809432b0800000000000000
+      internalID: -5605696738294344257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_15
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ce33f5c10d60a370800000000000000
+      internalID: 8331779165018865353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_16
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77fac6c2cdd073480800000000000000
+      internalID: -8919645297694691465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_17
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1594
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2dc1d7f840fdbf20800000000000000
+      internalID: 3440169886566960428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e710a13a38709270800000000000000
+      internalID: 8255230308306130914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_19
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aba01930bdf653d80800000000000000
+      internalID: -8271582154147689798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_20
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac5504fcf174221e0800000000000000
+      internalID: -2224137064020945462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_21
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6edf0191a631cb150800000000000000
+      internalID: 5889603759101771238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_22
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bef175f4a7f47dd60800000000000000
+      internalID: 7914882256862650347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_23
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cca17cea74bbaa400800000000000000
+      internalID: 336287038741879500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_24
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d2cfb10148e10490800000000000000
+      internalID: -7781683315219643690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_25
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d67876ba061281d70800000000000000
+      internalID: 9013991353258313581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_26
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1367
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3d2083d4e680f3f0800000000000000
+      internalID: -869046410723447490
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_27
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: adce13b4627258f70800000000000000
+      internalID: 9188793660143168730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_28
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4701f471e0a7e03c0800000000000000
+      internalID: -4391438385700466572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_29
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5aef8d19054449110800000000000000
+      internalID: 1266712508032941733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_30
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec83d742b673253f0800000000000000
+      internalID: -913606841089574706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_31
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab1529adfdca51030800000000000000
+      internalID: 3464865565776171450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_32
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85f1c106d64fb29d0800000000000000
+      internalID: -2797873992879562920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_33
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f63514f1575c3faf0800000000000000
+      internalID: -363730038060657809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_34
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fe1fd6ec0709c360800000000000000
+      internalID: 7190286032068091636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_35
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 1140
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b1e2d61c0ca86f50800000000000000
+      internalID: 6874933999103566256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_36
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fbec991cec63a540800000000000000
+      internalID: 5017974171118660594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_37
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08aec7c91fad417a0800000000000000
+      internalID: -6407255638593967488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_38
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b2d9ba15d18c0fa0800000000000000
+      internalID: -5833144665075232078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_39
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52302685cf36bbc70800000000000000
+      internalID: 8987887416813683493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_40
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc20fc84a353912b0800000000000000
+      internalID: -5613396936094711092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_41
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48e765fe228fbab80800000000000000
+      internalID: -8382333452492046716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_42
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9418d62a6f4d32f00800000000000000
+      internalID: 1090949690505920841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_43
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0909ba7a75266350800000000000000
+      internalID: 6009531960747690252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_44
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 913
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74eab589a4ef49eb0800000000000000
+      internalID: -4713863313612886457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_45
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 215192ff37b107c50800000000000000
+      internalID: 6660854033897035026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_46
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07f258244d003c090800000000000000
+      internalID: -8015562000140259472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_47
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 288bd3045c4a232f0800000000000000
+      internalID: -994551400602158974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_48
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e039b9dbca61b0d60800000000000000
+      internalID: 7857398906049237774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_49
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22756f5d901870490800000000000000
+      internalID: -7780107952014862558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_50
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bccab37de70adb50800000000000000
+      internalID: 6618611318804630710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_51
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cabee54d54a42560800000000000000
+      internalID: 7288130817504492232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_52
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b1a9fbd39a251d50800000000000000
+      internalID: 6707314034577351091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_53
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 686
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7eaa159ab3f169250800000000000000
+      internalID: 5950978298720922343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_54
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e1bc5d642ac78880800000000000000
+      internalID: -8608689904892988952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_55
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0673498aa3d29eff0800000000000000
+      internalID: -6424194504706208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_56
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d6f7e5716ac025d0800000000000000
+      internalID: -3089246824437385515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_57
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f65d6dd20bbc6e520800000000000000
+      internalID: 2731094181590521199
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_58
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80d7c46b5200d3fc0800000000000000
+      internalID: -3513651972306862840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_59
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab9fd97cc96f5a490800000000000000
+      internalID: -7735505631714608710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_60
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94d7d2acade07d950800000000000000
+      internalID: 6473659322226015561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_61
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13a60401722615a50800000000000000
+      internalID: 6508090856442980913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_62
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 459
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7feb84d58b251da0800000000000000
+      internalID: -5974821476840509570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_63
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f05ae2446aa686f20800000000000000
+      internalID: 3416097579701544207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_64
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: daf9153a6a3319890800000000000000
+      internalID: -7453119117523837011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_65
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11a00ed632c3b2370800000000000000
+      internalID: 8298792861225191953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_66
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 676bc026c33f8bbf0800000000000000
+      internalID: -308229133806291338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_67
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50c476f7fe693d6c0800000000000000
+      internalID: -4119783278735045627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_68
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10593bc58edb52cb0800000000000000
+      internalID: -4889293014755470079
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_69
+      rect:
+        serializedVersion: 2
+        x: 1362
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e15d08e5d7913850800000000000000
+      internalID: 6355027494173495779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_70
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb35279c2390aa0c0800000000000000
+      internalID: -4563825158653848642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_71
+      rect:
+        serializedVersion: 2
+        x: 1816
+        y: 232
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3dd337f20fdf9ff0800000000000000
+      internalID: -27057868910633667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_72
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74adc046e7dabeec0800000000000000
+      internalID: -3536542324013344185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_73
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57b1eef6e791946a0800000000000000
+      internalID: -6464607759279187083
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_74
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee9ccd0dd240911d0800000000000000
+      internalID: -3379665450540676626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_75
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14808144c261279a0800000000000000
+      internalID: -6236898154577917887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_76
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0364a70ee92f7b10800000000000000
+      internalID: 1981348463373476621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheet-orb-smooth-strong-feather_77
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 5
+        width: 227
+        height: 227
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a087e360c4e4c340800000000000000
+      internalID: 4883279410937430179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 7c24b06017c505a4393a29c0a9ed471a
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":9.0,"y":9.0},"gridSpriteSize":{"x":227.0,"y":227.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      spritesheet-orb-smooth-strong-feather_0: -5290388253147264752
+      spritesheet-orb-smooth-strong-feather_1: 4182218816688053808
+      spritesheet-orb-smooth-strong-feather_10: 2044407750742193530
+      spritesheet-orb-smooth-strong-feather_11: 1117370206225720983
+      spritesheet-orb-smooth-strong-feather_12: -6007444494268916410
+      spritesheet-orb-smooth-strong-feather_13: 9189243054922197316
+      spritesheet-orb-smooth-strong-feather_14: -5605696738294344257
+      spritesheet-orb-smooth-strong-feather_15: 8331779165018865353
+      spritesheet-orb-smooth-strong-feather_16: -8919645297694691465
+      spritesheet-orb-smooth-strong-feather_17: 3440169886566960428
+      spritesheet-orb-smooth-strong-feather_18: 8255230308306130914
+      spritesheet-orb-smooth-strong-feather_19: -8271582154147689798
+      spritesheet-orb-smooth-strong-feather_2: -565982594517206580
+      spritesheet-orb-smooth-strong-feather_20: -2224137064020945462
+      spritesheet-orb-smooth-strong-feather_21: 5889603759101771238
+      spritesheet-orb-smooth-strong-feather_22: 7914882256862650347
+      spritesheet-orb-smooth-strong-feather_23: 336287038741879500
+      spritesheet-orb-smooth-strong-feather_24: -7781683315219643690
+      spritesheet-orb-smooth-strong-feather_25: 9013991353258313581
+      spritesheet-orb-smooth-strong-feather_26: -869046410723447490
+      spritesheet-orb-smooth-strong-feather_27: 9188793660143168730
+      spritesheet-orb-smooth-strong-feather_28: -4391438385700466572
+      spritesheet-orb-smooth-strong-feather_29: 1266712508032941733
+      spritesheet-orb-smooth-strong-feather_3: 3120313311162309270
+      spritesheet-orb-smooth-strong-feather_30: -913606841089574706
+      spritesheet-orb-smooth-strong-feather_31: 3464865565776171450
+      spritesheet-orb-smooth-strong-feather_32: -2797873992879562920
+      spritesheet-orb-smooth-strong-feather_33: -363730038060657809
+      spritesheet-orb-smooth-strong-feather_34: 7190286032068091636
+      spritesheet-orb-smooth-strong-feather_35: 6874933999103566256
+      spritesheet-orb-smooth-strong-feather_36: 5017974171118660594
+      spritesheet-orb-smooth-strong-feather_37: -6407255638593967488
+      spritesheet-orb-smooth-strong-feather_38: -5833144665075232078
+      spritesheet-orb-smooth-strong-feather_39: 8987887416813683493
+      spritesheet-orb-smooth-strong-feather_4: 4135394092378734058
+      spritesheet-orb-smooth-strong-feather_40: -5613396936094711092
+      spritesheet-orb-smooth-strong-feather_41: -8382333452492046716
+      spritesheet-orb-smooth-strong-feather_42: 1090949690505920841
+      spritesheet-orb-smooth-strong-feather_43: 6009531960747690252
+      spritesheet-orb-smooth-strong-feather_44: -4713863313612886457
+      spritesheet-orb-smooth-strong-feather_45: 6660854033897035026
+      spritesheet-orb-smooth-strong-feather_46: -8015562000140259472
+      spritesheet-orb-smooth-strong-feather_47: -994551400602158974
+      spritesheet-orb-smooth-strong-feather_48: 7857398906049237774
+      spritesheet-orb-smooth-strong-feather_49: -7780107952014862558
+      spritesheet-orb-smooth-strong-feather_5: -7405505695450712780
+      spritesheet-orb-smooth-strong-feather_50: 6618611318804630710
+      spritesheet-orb-smooth-strong-feather_51: 7288130817504492232
+      spritesheet-orb-smooth-strong-feather_52: 6707314034577351091
+      spritesheet-orb-smooth-strong-feather_53: 5950978298720922343
+      spritesheet-orb-smooth-strong-feather_54: -8608689904892988952
+      spritesheet-orb-smooth-strong-feather_55: -6424194504706208
+      spritesheet-orb-smooth-strong-feather_56: -3089246824437385515
+      spritesheet-orb-smooth-strong-feather_57: 2731094181590521199
+      spritesheet-orb-smooth-strong-feather_58: -3513651972306862840
+      spritesheet-orb-smooth-strong-feather_59: -7735505631714608710
+      spritesheet-orb-smooth-strong-feather_6: -2420017599160862791
+      spritesheet-orb-smooth-strong-feather_60: 6473659322226015561
+      spritesheet-orb-smooth-strong-feather_61: 6508090856442980913
+      spritesheet-orb-smooth-strong-feather_62: -5974821476840509570
+      spritesheet-orb-smooth-strong-feather_63: 3416097579701544207
+      spritesheet-orb-smooth-strong-feather_64: -7453119117523837011
+      spritesheet-orb-smooth-strong-feather_65: 8298792861225191953
+      spritesheet-orb-smooth-strong-feather_66: -308229133806291338
+      spritesheet-orb-smooth-strong-feather_67: -4119783278735045627
+      spritesheet-orb-smooth-strong-feather_68: -4889293014755470079
+      spritesheet-orb-smooth-strong-feather_69: 6355027494173495779
+      spritesheet-orb-smooth-strong-feather_7: -3803991259538713799
+      spritesheet-orb-smooth-strong-feather_70: -4563825158653848642
+      spritesheet-orb-smooth-strong-feather_71: -27057868910633667
+      spritesheet-orb-smooth-strong-feather_72: -3536542324013344185
+      spritesheet-orb-smooth-strong-feather_73: -6464607759279187083
+      spritesheet-orb-smooth-strong-feather_74: -3379665450540676626
+      spritesheet-orb-smooth-strong-feather_75: -6236898154577917887
+      spritesheet-orb-smooth-strong-feather_76: 1981348463373476621
+      spritesheet-orb-smooth-strong-feather_77: 4883279410937430179
+      spritesheet-orb-smooth-strong-feather_8: 8871476995949750537
+      spritesheet-orb-smooth-strong-feather_9: -7757633422891901092
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
