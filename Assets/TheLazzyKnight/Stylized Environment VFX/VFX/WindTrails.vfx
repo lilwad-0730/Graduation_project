@@ -269,22 +269,6 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
-  - name: TrailsTexture
-    path: TrailsTexture
-    tooltip: Determines which texture will be used for the trails.
-    space: -1
-    spaceable: 0
-    sheetType: m_NamedObject
-    realType: Texture2D
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"334057075f6309048b3acf00abeefcd5","type":3}}'
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
   - name: Color&Transparency
     path: Color&Transparency
     tooltip: Determines color and base transparency of the trails.
@@ -318,6 +302,22 @@ MonoBehaviour:
     max: 1
     enumValues: []
     descendantCount: 0
+  - name: TrailsTexture
+    path: TrailsTexture
+    tooltip: Determines which texture will be used for the trails.
+    space: -1
+    spaceable: 0
+    sheetType: m_NamedObject
+    realType: Texture2D
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"334057075f6309048b3acf00abeefcd5","type":3}}'
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
   - name: Spawn and sizes
     path: 
     tooltip: 
@@ -329,6 +329,72 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: 
       m_SerializableObject: 
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
+  - name: TrailWidth
+    path: TrailWidth
+    tooltip: Determines width of the trails.
+    space: -1
+    spaceable: 0
+    sheetType: m_Float
+    realType: Single
+    defaultValue:
+      m_Type:
+        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089
+      m_SerializableObject: 6
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
+  - name: TrailLength(min/max)
+    path: TrailLength(min/max)
+    tooltip: Determines the length of the trails that will be randomly chosen between
+      min and max value.
+    space: -1
+    spaceable: 0
+    sheetType: m_Vector2f
+    realType: Vector2
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"x":3.0,"y":5.0}'
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
+  - name: ParticlesRate
+    path: ParticlesRate
+    tooltip: Sets the number of trails to be spawned per second.
+    space: -1
+    spaceable: 0
+    sheetType: m_Float
+    realType: Single
+    defaultValue:
+      m_Type:
+        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089
+      m_SerializableObject: 6
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
+  - name: Distance(min/max)
+    path: Distance(min/max)
+    tooltip: Determines the approximate distance in meters the trail will go from
+      its spawn position that will be randomly chosen between min and max value.
+    space: -1
+    spaceable: 0
+    sheetType: m_Vector2f
+    realType: Vector2
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"x":5.0,"y":10.0}'
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -431,72 +497,6 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
-  - name: ParticlesRate
-    path: ParticlesRate
-    tooltip: Sets the number of trails to be spawned per second.
-    space: -1
-    spaceable: 0
-    sheetType: m_Float
-    realType: Single
-    defaultValue:
-      m_Type:
-        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-          PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 6
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: TrailWidth
-    path: TrailWidth
-    tooltip: Determines width of the trails.
-    space: -1
-    spaceable: 0
-    sheetType: m_Float
-    realType: Single
-    defaultValue:
-      m_Type:
-        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-          PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 6
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: TrailLength(min/max)
-    path: TrailLength(min/max)
-    tooltip: Determines the length of the trails that will be randomly chosen between
-      min and max value.
-    space: -1
-    spaceable: 0
-    sheetType: m_Vector2f
-    realType: Vector2
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":3.0,"y":5.0}'
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: Distance(min/max)
-    path: Distance(min/max)
-    tooltip: Determines the approximate distance in meters the trail will go from
-      its spawn position that will be randomly chosen between min and max value.
-    space: -1
-    spaceable: 0
-    sheetType: m_Vector2f
-    realType: Vector2
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":5.0,"y":10.0}'
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
   - name: Waving
     path: 
     tooltip: 
@@ -525,23 +525,6 @@ MonoBehaviour:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
       m_SerializableObject: 1.5
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: Amplitude Z
-    path: Amplitude Z
-    tooltip: Determines how wide the trails can deviate from  Z axis position in
-      WindDirector space.
-    space: -1
-    spaceable: 0
-    sheetType: m_Float
-    realType: Single
-    defaultValue:
-      m_Type:
-        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-          PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 2
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -580,6 +563,23 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
+  - name: Amplitude Z
+    path: Amplitude Z
+    tooltip: Determines how wide the trails can deviate from  Z axis position in
+      WindDirector space.
+    space: -1
+    spaceable: 0
+    sheetType: m_Float
+    realType: Single
+    defaultValue:
+      m_Type:
+        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089
+      m_SerializableObject: 2
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
   - name: Wind
     path: 
     tooltip: 
@@ -591,24 +591,6 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: 
       m_SerializableObject: 
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: Wind Rotation
-    path: Wind Rotation
-    tooltip: "Basically the wind blows towards X direction in WorldSpace. This parameter
-      changes wind direction based on rotation values. This parameter is configured
-      by the WindDirector if it\u2019s on your scene."
-    space: -1
-    spaceable: 0
-    sheetType: m_Vector3f
-    realType: Vector3
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":0.0,"y":0.0,"z":0.0}'
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -628,6 +610,24 @@ MonoBehaviour:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
       m_SerializableObject: 1
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
+  - name: Wind Rotation
+    path: Wind Rotation
+    tooltip: "Basically the wind blows towards X direction in WorldSpace. This parameter
+      changes wind direction based on rotation values. This parameter is configured
+      by the WindDirector if it\u2019s on your scene."
+    space: -1
+    spaceable: 0
+    sheetType: m_Vector3f
+    realType: Vector3
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"x":0.0,"y":0.0,"z":0.0}'
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -666,6 +666,24 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
+  - name: CameraFade
+    path: CameraFade
+    tooltip: The X value determines how far from the camera the particles will start
+      to fade, while the Y value determines the distance from the camera that particle
+      will finally fade.
+    space: -1
+    spaceable: 0
+    sheetType: m_Vector2f
+    realType: Vector2
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"x":4.0,"y":2.0}'
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
   - name: FadeInTime(min/max)
     path: FadeInTime(min/max)
     tooltip: Determines how fast(in seconds) after trail spawn it will reach its
@@ -699,24 +717,6 @@ MonoBehaviour:
         m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_SerializableObject: '{"x":0.75,"y":1.5}'
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
-  - name: CameraFade
-    path: CameraFade
-    tooltip: The X value determines how far from the camera the particles will start
-      to fade, while the Y value determines the distance from the camera that particle
-      will finally fade.
-    space: -1
-    spaceable: 0
-    sheetType: m_Vector2f
-    realType: Vector2
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":4.0,"y":2.0}'
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -3392,7 +3392,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615439}
   m_ExposedName: TrailWidth
   m_Exposed: 1
-  m_Order: 6
+  m_Order: 0
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
@@ -3631,7 +3631,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615552}
   m_ExposedName: Amplitude Y
   m_Exposed: 1
-  m_Order: 0
+  m_Order: 1
   m_Category: Waving
   m_Min:
     m_Type:
@@ -3808,7 +3808,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615557}
   m_ExposedName: WavingFrequency
   m_Exposed: 1
-  m_Order: 14
+  m_Order: 2
   m_Category: Waving
   m_Min:
     m_Type:
@@ -3893,7 +3893,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615559}
   m_ExposedName: WavingFrequencyRandom
   m_Exposed: 1
-  m_Order: 18
+  m_Order: 3
   m_Category: Waving
   m_Min:
     m_Type:
@@ -4315,7 +4315,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615588}
   m_ExposedName: Color&Transparency
   m_Exposed: 1
-  m_Order: 9
+  m_Order: 4
   m_Category: Coloring
   m_Min:
     m_Type:
@@ -4564,7 +4564,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615625}
   m_ExposedName: TransparencyDiffirence
   m_Exposed: 1
-  m_Order: 15
+  m_Order: 5
   m_Category: Coloring
   m_Min:
     m_Type:
@@ -4892,7 +4892,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615636}
   m_ExposedName: TrailLength(min/max)
   m_Exposed: 1
-  m_Order: 8
+  m_Order: 6
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
@@ -5342,7 +5342,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615669}
   m_ExposedName: Wind Force
   m_Exposed: 1
-  m_Order: 11
+  m_Order: 7
   m_Category: Wind
   m_Min:
     m_Type:
@@ -6011,7 +6011,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615759}
   m_ExposedName: ParticlesRate
   m_Exposed: 1
-  m_Order: 4
+  m_Order: 8
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
@@ -7325,7 +7325,7 @@ MonoBehaviour:
   - {fileID: 8926484042661616582}
   m_ExposedName: Wind Rotation
   m_Exposed: 1
-  m_Order: 2
+  m_Order: 9
   m_Category: Wind
   m_Min:
     m_Type:
@@ -9235,7 +9235,7 @@ MonoBehaviour:
   - {fileID: 8926484042661616648}
   m_ExposedName: Wind Force Multiplier
   m_Exposed: 1
-  m_Order: 16
+  m_Order: 10
   m_Category: Wind
   m_Min:
     m_Type:
@@ -11156,7 +11156,7 @@ MonoBehaviour:
   - {fileID: 8926484042661616722}
   m_ExposedName: Amplitude Z
   m_Exposed: 1
-  m_Order: 12
+  m_Order: 11
   m_Category: Waving
   m_Min:
     m_Type:
@@ -11949,7 +11949,7 @@ MonoBehaviour:
   - {fileID: 8926484042661616887}
   m_ExposedName: TrailsTexture
   m_Exposed: 1
-  m_Order: 5
+  m_Order: 12
   m_Category: Coloring
   m_Min:
     m_Type:
@@ -12574,7 +12574,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Texture2D, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"baddf84b55bd2354095cdb1b1c12b34d","type":3}}'
+      m_SerializableObject: '{"obj":{"fileID":2800000,"guid":"334057075f6309048b3acf00abeefcd5","type":3}}'
     m_Space: -1
   m_Property:
     name: mainTexture
@@ -14608,7 +14608,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617445}
   m_ExposedName: Distance(min/max)
   m_Exposed: 1
-  m_Order: 10
+  m_Order: 13
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
@@ -14858,7 +14858,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617467}
   m_ExposedName: CameraFade
   m_Exposed: 1
-  m_Order: 17
+  m_Order: 14
   m_Category: Advanced
   m_Min:
     m_Type:
@@ -16397,7 +16397,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617550}
   m_ExposedName: FadeInTime(min/max)
   m_Exposed: 1
-  m_Order: 7
+  m_Order: 15
   m_Category: Advanced
   m_Min:
     m_Type:
@@ -16551,7 +16551,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617554}
   m_ExposedName: FadeOutTime(min/max)
   m_Exposed: 1
-  m_Order: 13
+  m_Order: 16
   m_Category: Advanced
   m_Min:
     m_Type:
@@ -17354,7 +17354,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617593}
   m_ExposedName: SpawnVolume
   m_Exposed: 1
-  m_Order: 1
+  m_Order: 17
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
@@ -18481,7 +18481,7 @@ MonoBehaviour:
   - {fileID: 8926484042661617692}
   m_ExposedName: Culling Box
   m_Exposed: 1
-  m_Order: 3
+  m_Order: 18
   m_Category: Spawn and sizes
   m_Min:
     m_Type:
