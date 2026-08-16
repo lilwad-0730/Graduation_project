@@ -7,13 +7,14 @@ using Unity.Cinemachine;
 /// <summary>
 /// 鏡牆光球吸入與碎裂演出系統 (Mirror Wall Absorb Cutscene Manager)
 /// - 玩家踏入 Trigger 區自動觸發演出並凍結玩家控制。
+/// - 支援 IResettable 關卡重置：主角若在任何時刻死亡重生，本系統會立即中止演出並 100% 刷新所有 4 顆光球與鏡牆至初始狀態！
 /// - 所有時序參數 (等待時間、飛行時間、消融時長、閃光時長、間隔時間) 皆可在 Inspector 自由調整！
 /// - 4 顆光球隨機依序起飛，瞄準鏡牆 Y 軸中心，帶拋物線弧度加速飛入。
 /// - 相機精準正中 (Dead Center) Zoom In 聚焦至飛行中的光球。
 /// - 抵達鏡牆時先執行【消融縮小被吸收】，完全吸收後再觸發【全螢幕白光閃爍】。
 /// - 全部吸入後觸發鏡牆玻璃碎裂特效 (Destructible / GlassShatterFX)，相機平滑還原追蹤主角，恢復玩家控制。
 /// </summary>
-public class MirrorWallAbsorbCutscene : MonoBehaviour
+public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 {
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
@@ -83,6 +84,9 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     [Tooltip("4 顆光球全吸完後，是否觸發鏡牆玻璃碎裂特效")]
     public bool triggerShatterAtEnd = true;
 
+    // 全域靜態旗標 (供其他系統即時查詢)
+    public static bool IsAnyCutsceneRunning = false;
+
     // 內部狀態變數
     private bool hasTriggered = false;
     private bool isCutsceneRunning = false;
@@ -90,6 +94,10 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     private Transform originalCameraTarget;
     private float originalLensSize = 6.0f;
     private bool isOrthographic = true;
+
+    // 快取光球原始狀態 (供死亡重生 100% 還原)
+    private Vector3[] _initialLightPositions;
+    private Vector3[] _initialLightScales;
 
     // Cinemachine 快取與原始參數
     private CinemachineCamera activeVcam3;
@@ -102,16 +110,54 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     private Canvas flashCanvas;
     private Image flashImage;
     private Coroutine flashCoroutine;
+    private Coroutine mainCutsceneCoroutine;
 
     private void Awake()
     {
         InitializeTargets();
         CreateFlashUI();
+        CacheInitialLightTransforms();
     }
 
     private void Start()
     {
         FindCinemachineCameras();
+    }
+
+    private void Update()
+    {
+        // ★ 核心寫死防護：只要演出正在運行，每幀強制鎖死主角移動與剛體速度，絕不允許任何按鍵或外界腳本解除凍結！
+        if (isCutsceneRunning && freezePlayerDuringCutscene)
+        {
+            IsAnyCutsceneRunning = true;
+            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+            if (cachedPlayer != null)
+            {
+                cachedPlayer.isCutsceneFrozen = true;
+                Rigidbody prb = cachedPlayer.GetComponent<Rigidbody>();
+                if (prb != null)
+                {
+                    prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
+                }
+            }
+        }
+    }
+
+    private void CacheInitialLightTransforms()
+    {
+        if (fairyLights != null && fairyLights.Length > 0)
+        {
+            _initialLightPositions = new Vector3[fairyLights.Length];
+            _initialLightScales = new Vector3[fairyLights.Length];
+            for (int i = 0; i < fairyLights.Length; i++)
+            {
+                if (fairyLights[i] != null)
+                {
+                    _initialLightPositions[i] = fairyLights[i].transform.position;
+                    _initialLightScales[i] = fairyLights[i].transform.localScale;
+                }
+            }
+        }
     }
 
     private void InitializeTargets()
@@ -158,7 +204,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
             cmFollow = activeVcam3.GetComponent<CinemachineFollow>();
             if (cmFollow != null)
             {
-                // 自動將 FollowOffset.y 校正為 0，確保視角高度與主角完全水平對齊
                 cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
                 originalFollowOffset = cmFollow.FollowOffset;
                 hasCachedFollowOffset = true;
@@ -227,7 +272,8 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         if (isCutsceneRunning) return;
 
         hasTriggered = true;
-        StartCoroutine(AbsorbSequenceRoutine());
+        if (mainCutsceneCoroutine != null) StopCoroutine(mainCutsceneCoroutine);
+        mainCutsceneCoroutine = StartCoroutine(AbsorbSequenceRoutine());
     }
 
     private IEnumerator AbsorbSequenceRoutine()
@@ -346,7 +392,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     private IEnumerator FlyLightToWallRoutine(GameObject lightObj, Vector3 targetPos)
     {
         Vector3 startPos = lightObj.transform.position;
-        // 計算頂點控制點：起點與終點中點稍微向上微揚
         Vector3 midControlPoint = (startPos + targetPos) * 0.5f + Vector3.up * arcHeight;
 
         float distance = Vector3.Distance(startPos, targetPos);
@@ -357,11 +402,8 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-
-            // 加速曲線 (Ease-In Cubic)，營造被鏡牆吸力加速吸入的動態感
             float easeT = t * t * (3f - 2f * t);
 
-            // 二次貝茲曲線公式
             Vector3 currentPos = (1f - easeT) * (1f - easeT) * startPos +
                                  2f * (1f - easeT) * easeT * midControlPoint +
                                  easeT * easeT * targetPos;
@@ -381,7 +423,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     }
 
     /// <summary>
-    /// 光球接觸鏡牆後的【消融縮小與吸收】過渡動畫 (Melt & Scale Down Routine)
+    /// 光球接觸鏡牆後的【消融縮小與吸收】過渡動畫
     /// </summary>
     private IEnumerator MeltAndAbsorbLightRoutine(GameObject lightObj)
     {
@@ -392,7 +434,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         ParticleSystem[] pss = lightObj.GetComponentsInChildren<ParticleSystem>(true);
         Light[] lights = lightObj.GetComponentsInChildren<Light>(true);
 
-        // 停止粒子生成以讓既有粒子自然吸入
         foreach (var ps in pss)
         {
             if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
@@ -403,15 +444,12 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         {
             timer += Time.deltaTime;
             float t = Mathf.Clamp01(timer / meltDuration);
-
-            // 縮小曲線 (Ease-In Suction): 沿著 X 軸被拉長拉扁同時整體縮小至 0
             float scaleFactor = Mathf.Lerp(1f, 0f, t * t);
             if (lightObj != null)
             {
                 lightObj.transform.localScale = originalScale * scaleFactor;
             }
 
-            // SpriteRenderers 淡出且變白
             foreach (var sr in srs)
             {
                 if (sr != null)
@@ -422,7 +460,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
                 }
             }
 
-            // Lights 漸暗
             foreach (var l in lights)
             {
                 if (l != null)
@@ -437,13 +474,10 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         if (lightObj != null)
         {
             lightObj.SetActive(false);
-            lightObj.transform.localScale = originalScale; // 還原 localScale 以防未來重新啟用時 scale 為 0
+            lightObj.transform.localScale = originalScale;
         }
     }
 
-    /// <summary>
-    /// 觸發全螢幕柔和白光閃屏
-    /// </summary>
     private void TriggerWhiteScreenFlash(float totalDuration)
     {
         if (flashCoroutine != null) StopCoroutine(flashCoroutine);
@@ -454,7 +488,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
     {
         if (flashImage == null) yield break;
 
-        // 1. 白光極速爆亮
         float inTimer = 0f;
         while (inTimer < flashFadeInDuration)
         {
@@ -465,7 +498,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         }
         flashImage.color = new Color(1f, 1f, 1f, maxFlashAlpha);
 
-        // 2. 柔和緩慢淡出 (剩餘時間)
         float outDuration = Mathf.Max(0.5f, totalDuration - flashFadeInDuration);
         float outTimer = 0f;
         while (outTimer < outDuration)
@@ -479,9 +511,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         flashImage.color = new Color(1f, 1f, 1f, 0f);
     }
 
-    /// <summary>
-    /// 平滑縮放鏡頭尺寸
-    /// </summary>
     private IEnumerator SmoothZoomLens(float targetSize, float speed)
     {
         float timer = 0f;
@@ -520,9 +549,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 切換 Cinemachine 追蹤目標，並自動校正 FollowOffset 確保光球處於正中心
-    /// </summary>
     private void SetCameraTarget(Transform target, bool isFocusingLight = false)
     {
         if (target == null) return;
@@ -534,7 +560,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
             activeVcam3.Target = t;
             activeVcam3.Follow = target;
 
-            // ★ 正中對齊校正：確保相機垂直位移 (FollowOffset.y) 維持為 0，不論主角或光球皆處於畫面正中
             if (cmFollow != null)
             {
                 cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
@@ -547,12 +572,8 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 演出收尾協程 (觸發鏡牆碎裂、鏡頭還原、解鎖玩家)
-    /// </summary>
     private IEnumerator FinishCutsceneRoutine()
     {
-        // ⏱️ Step 1: 等待 delayBeforeShatter 秒後觸發鏡牆碎裂
         if (delayBeforeShatter > 0f)
         {
             yield return new WaitForSeconds(delayBeforeShatter);
@@ -579,18 +600,16 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
             }
             else
             {
-                // 備用方案：若無碎裂組件，直接隱藏鏡牆以打通道路
                 mirrorWall.SetActive(false);
             }
         }
 
-        // ⏱️ Step 2: 碎裂後等待 delayBeforeRestorePlayer 秒再還原相機與玩家控制權
         if (delayBeforeRestorePlayer > 0f)
         {
             yield return new WaitForSeconds(delayBeforeRestorePlayer);
         }
 
-        // 將相機目標平滑還原回主角 (並還原原始 FollowOffset)
+        // 還原相機追蹤主角
         if (originalCameraTarget != null)
         {
             SetCameraTarget(originalCameraTarget, false);
@@ -600,25 +619,130 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour
             SetCameraTarget(cachedPlayer.transform, false);
         }
 
-        // 還原相機鏡頭尺寸 (Zoom Out 回原始視野)
         if (enableCameraZoom)
         {
             yield return StartCoroutine(SmoothZoomLens(originalLensSize, zoomTransitionSpeed * 0.8f));
         }
 
-        // 解除玩家動作凍結
         if (cachedPlayer != null)
         {
             cachedPlayer.isCutsceneFrozen = false;
         }
 
         isCutsceneRunning = false;
+        IsAnyCutsceneRunning = false;
         Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
     }
 
     /// <summary>
-    /// 計算鏡牆在世界座標中的 Y 軸中心點
+    /// 【IResettable 實作】：主角死亡重生時，強制中止演出並 100% 刷新所有光球、鏡牆與相機狀態！
     /// </summary>
+    public void ResetToInitialState()
+    {
+        Debug.Log("🔄【鏡牆演出】收到重生重置訊號！全面中止演出並刷新 4 顆光球與鏡牆...");
+
+        // 1. 中止所有演出協程
+        StopAllCoroutines();
+        mainCutsceneCoroutine = null;
+        flashCoroutine = null;
+        isCutsceneRunning = false;
+        IsAnyCutsceneRunning = false;
+        hasTriggered = false;
+
+        // 2. 隱藏白光閃爍畫面
+        if (flashImage != null)
+        {
+            flashImage.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        // 3. 100% 還原所有 4 顆光球的位置、大小、顯示狀態與粒子
+        if (fairyLights != null)
+        {
+            for (int i = 0; i < fairyLights.Length; i++)
+            {
+                GameObject lightObj = fairyLights[i];
+                if (lightObj != null)
+                {
+                    lightObj.SetActive(true);
+                    if (_initialLightPositions != null && i < _initialLightPositions.Length)
+                    {
+                        lightObj.transform.position = _initialLightPositions[i];
+                    }
+                    if (_initialLightScales != null && i < _initialLightScales.Length)
+                    {
+                        lightObj.transform.localScale = _initialLightScales[i];
+                    }
+
+                    // 還原 SpriteRenderer 透明度
+                    SpriteRenderer[] srs = lightObj.GetComponentsInChildren<SpriteRenderer>(true);
+                    foreach (var sr in srs)
+                    {
+                        if (sr != null)
+                        {
+                            Color c = sr.color;
+                            c.a = 1f;
+                            sr.color = c;
+                        }
+                    }
+
+                    // 重新啟動 ParticleSystem 噴發
+                    ParticleSystem[] pss = lightObj.GetComponentsInChildren<ParticleSystem>(true);
+                    foreach (var ps in pss)
+                    {
+                        if (ps != null)
+                        {
+                            ps.Clear();
+                            ps.Play();
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. 100% 還原鏡牆與碎裂特效
+        if (mirrorWall != null)
+        {
+            mirrorWall.SetActive(true);
+            Destructible dest = mirrorWall.GetComponent<Destructible>();
+            if (dest == null) dest = mirrorWall.GetComponentInChildren<Destructible>();
+            if (dest != null) dest.ResetToInitialState();
+
+            GlassShatterFX gfx = mirrorWall.GetComponent<GlassShatterFX>();
+            if (gfx == null) gfx = mirrorWall.GetComponentInChildren<GlassShatterFX>();
+            if (gfx != null) gfx.ResetToInitialState();
+        }
+
+        // 5. 還原相機鏡頭尺寸與目標
+        FindCinemachineCameras();
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+        if (cachedPlayer != null)
+        {
+            SetCameraTarget(cachedPlayer.transform, false);
+            cachedPlayer.isCutsceneFrozen = false;
+        }
+        else if (originalCameraTarget != null)
+        {
+            SetCameraTarget(originalCameraTarget, false);
+        }
+
+        if (activeVcam3 != null)
+        {
+            var lens = activeVcam3.Lens;
+            if (isOrthographic) lens.OrthographicSize = originalLensSize;
+            else lens.FieldOfView = originalLensSize;
+            activeVcam3.Lens = lens;
+        }
+        else if (activeVcamLegacy != null)
+        {
+            var lens = activeVcamLegacy.m_Lens;
+            if (isOrthographic) lens.OrthographicSize = originalLensSize;
+            else lens.FieldOfView = originalLensSize;
+            activeVcamLegacy.m_Lens = lens;
+        }
+
+        Debug.Log("✅【鏡牆演出】光球、鏡牆與相機已全數刷新重置完畢！");
+    }
+
     private Vector3 GetMirrorWallCenter()
     {
         if (mirrorWall == null) return transform.position;

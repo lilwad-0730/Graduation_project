@@ -81,23 +81,44 @@ public class PlayerRespawnSystem : MonoBehaviour
         return _playerRb;
     }
 
+    private Vector3 _activeRespawnPos; // 當前啟用的明確存檔點座標
+
+    void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // ★ 換場景自動刷新記憶：徹底杜絕跨場景殘留舊存檔點座標！
+        _activeRespawnPos = transform.position;
+        _initialPlayPos = transform.position;
+        Debug.Log($"【存檔點系統】進入新場景 [{scene.name}]，重生點記憶已刷新為初始座標：{_activeRespawnPos}");
+    }
+
     void Start()
     {
         IsAnyRespawning = false; // 強制重置全域重生靜態旗標，防止舊階段殘留鎖死
         _playerRb = GetPlayerRigidbody();
         _mainCam = Camera.main;
 
-        // 起始點即為最基礎的安全點
-        _lastSafeGroundPos = transform.position;
-        _initialPlayPos = transform.position; // 記錄初始位置
+        // 起始點即為最基礎的預設存檔點
+        _activeRespawnPos = transform.position;
+        _initialPlayPos = transform.position;
 
         CreatePersistentUI();
     }
 
-    // 允許外部系統 (如掉落背景切換) 強制更新安全點，避免因為合法長距離掉落而誤判死亡
+    // 允許外部系統 (如手動指定或特製機關) 強制更新存檔點
     public void SetSafeGroundPosition(Vector3 newPos)
     {
-        _lastSafeGroundPos = newPos;
+        _activeRespawnPos = newPos;
+        Debug.Log($"【存檔點系統】外部強制更新重生點至：{_activeRespawnPos}");
     }
 
     void Update()
@@ -137,8 +158,8 @@ public class PlayerRespawnSystem : MonoBehaviour
                     Debug.Log($"【擊飛失敗】掉落超過容忍值！({currentDist} > {failKnockbackDistance}) 開始強制轉場！");
                     _inKnockbackState = false;
                     
-                    // 重點：傳送到剛剛踩穩的地方
-                    StartCoroutine(RespawnSequence(_lastSafeGroundPos));
+                    // 重點：傳送到啟用的存檔點
+                    StartCoroutine(RespawnSequence(_activeRespawnPos));
                 }
 
                 // B. 如何平安解除狀態？當玩家往左的速度幾乎停止、或甚至往右走時，代表安全落地了
@@ -163,18 +184,19 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
-    // 碰觸存檔點 (Cube) 的偵測
+    // 碰觸存檔點 (嚴格限制只有 Tag 為 RespawnPoint 的 Trigger 才能設定存檔點)
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag(respawnPointTag) || other.name.Contains("RespawnPoint"))
+        if (other.CompareTag(respawnPointTag) || other.CompareTag("RespawnPoint"))
         {
-            // 記錄「玩家」當下的座標
-            // 否則如果觸發器放在半空中，誤以為玩家從半空中掉下，觸發死亡
-            _lastSafeGroundPos = transform.position;
-            Debug.Log($"【紀錄存檔點】已更新重生點至 {other.gameObject.name} 的座標：{_lastSafeGroundPos}");
+            Vector3 checkpointPos = other.transform.position;
 
-            // 碰過之後讓存檔點失效（關閉），確保玩家不會因為往回走而不小心踩到舊的存檔點
-            other.gameObject.SetActive(false);
+            // ★ 存檔點推進保護：只向前更新最新經過的存檔點，往回走不會倒退回舊存檔點
+            if (checkpointPos.x >= _activeRespawnPos.x - 1.0f || Vector3.Distance(checkpointPos, _initialPlayPos) > Vector3.Distance(_activeRespawnPos, _initialPlayPos))
+            {
+                _activeRespawnPos = checkpointPos;
+                Debug.Log($"🚩【存檔點系統】已啟動新存檔點 Tag: RespawnPoint [{other.gameObject.name}]！重生座標更新為：{_activeRespawnPos}");
+            }
         }
         // 放坑洞底部的死亡判定區
         else if (other.CompareTag("DeathZone") || other.name.Contains("DeathZone"))
@@ -201,24 +223,24 @@ public class PlayerRespawnSystem : MonoBehaviour
         // }
     }
 
-    // 觸發死亡重生轉場 (預設傳送到最後安全點)
+    // 觸發死亡重生轉場 (預設傳送到當前啟用的明確存檔點)
     public void TriggerRespawn()
     {
         this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
         if (!_isRespawning)
         {
-            Debug.Log("【重生系統】TriggerRespawn() 正式被呼叫！開始啟動 RespawnSequence...");
-            StartCoroutine(RespawnSequence(_lastSafeGroundPos));
+            Debug.Log($"【重生系統】TriggerRespawn() 正式啟動！將重生至存檔點：{_activeRespawnPos}");
+            StartCoroutine(RespawnSequence(_activeRespawnPos));
         }
     }
 
     // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
-        this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
+        this.enabled = true;
         if (!_isRespawning)
         {
-            Debug.Log($"【重生系統】TriggerRespawn({customSpawnPos}) 正式被呼叫！開始啟動 RespawnSequence...");
+            Debug.Log($"【重生系統】TriggerRespawn({customSpawnPos}) 正式啟動！");
             StartCoroutine(RespawnSequence(customSpawnPos));
         }
     }
@@ -244,6 +266,13 @@ public class PlayerRespawnSystem : MonoBehaviour
             Debug.LogError("致命錯誤：無法生成或找到漸黑 UI，轉場將會失去視覺效果！");
         }
 
+        // 強制凍結主角操作，防止漸黑期間按 WASD 破壞重生流程
+        PlayerMovement pmCompStart = GetMovement();
+        if (pmCompStart != null)
+        {
+            pmCompStart.isCutsceneFrozen = true;
+        }
+
         // 清除物理動力
         if (_playerRb != null)
         {
@@ -260,6 +289,10 @@ public class PlayerRespawnSystem : MonoBehaviour
             {
                 _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, timer / fadeDuration));
             }
+            if (_playerRb != null)
+            {
+                _playerRb.linearVelocity = Vector3.zero;
+            }
             yield return null;
         }
         
@@ -273,9 +306,19 @@ public class PlayerRespawnSystem : MonoBehaviour
             petrify.ClearAllNegativeEffects();
         }
 
-        // --- 傳送至最後著陸的安全點 ---
+        // --- 呼叫全場景所有 IResettable 物件進行重置 (包含鏡牆演出、光球、黑影怪物、燭火、可破壞地板等) ---
+        MonoBehaviour[] allScripts = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+        foreach (var script in allScripts)
+        {
+            if (script is IResettable resettable && script.gameObject != this.gameObject)
+            {
+                resettable.ResetToInitialState();
+            }
+        }
+
+        // --- 傳送至明確存檔點 (稍微抬高 0.2f 確保不陷地) ---
         PlayerMovement pmComponent = GetMovement();
-        Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 2f, spawnPos.z);
+        Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 0.2f, spawnPos.z);
         if (pmComponent != null)
         {
             pmComponent.WarpTo(targetPos);

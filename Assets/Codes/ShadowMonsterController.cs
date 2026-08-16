@@ -35,15 +35,29 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Header("燭火清單 (⚠ 請手動拖曳所有燭火物件到此陣列)")]
     public CandleCollectible[] candles;
 
-    [Header("追逐行為設定")]
+    [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
     public bool chaseWhileAppearing = true;
     [Tooltip("一般追逐速度（走路狀態）")]
     public float chaseSpeed = 3.5f;
     [Tooltip("懲罰階段追逐速度")]
     public float punishChaseSpeed = 4.8f;
-    [Tooltip("距離玩家多近算「追上捕獲」")]
-    public float catchDistance = 3.5f;
+    [Tooltip("★【起手距離】：黑影怪在此距離時會停止跑步、高舉雙爪開始揮擊 (預設 6.0，數值越小越靠近才出招)")]
+    public float attackTriggerDistance = 6.0f;
+    [Tooltip("★【命中傷害距離】：爪子揮下時，主角必須在此距離內才會真正受到傷害死亡 (預設 4.8)")]
+    public float clawHitDistance = 4.8f;
+    [Tooltip("垂直高度容許差 (預設 12.0)")]
+    public float verticalCatchTolerance = 12.0f;
+
+    [Header("自動貼地與隱形地板設定")]
+    [Tooltip("是否開啟自動射線貼地 (讓怪物隨地形/隱形地板平滑貼合)")]
+    public bool enableGroundSnap = true;
+    [Tooltip("地面與專屬隱形地板的 LayerMask (預設 Everything)")]
+    public LayerMask groundLayers = ~0;
+    [Tooltip("向下偵測地面的最大射線距離 (預設 25)")]
+    public float groundRaycastDistance = 25.0f;
+    [Tooltip("腳底貼地高度微調偏移")]
+    public float feetOffsetY = 0.0f;
 
     [Header("MonsterMutant7_Run1 動作動畫設定")]
     [Tooltip("待機動畫名稱 (預設 idle1)")]
@@ -425,51 +439,72 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (currentState == MonsterState.Devouring) return;
         currentState = MonsterState.Devouring;
         if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
-        _stateCoroutine = StartCoroutine(DevourSequence());
+        _stateCoroutine = StartCoroutine(ClawAttackSequence());
     }
 
-    /// <summary> 吞噬/捕獲：播放 attack2 攻擊動畫，播放快結束時觸發重生 </summary>
-    private IEnumerator DevourSequence()
+    /// <summary> 真實巨爪揮擊判定演出：抬手前搖 ➔ 巨爪揮下碰撞檢測 ➔ 命中定身與震動 ➔ 轉場重生 </summary>
+    private IEnumerator ClawAttackSequence()
     {
-        Debug.Log("【影子怪物】玩家被捕獲！播放 attack2 攻擊動畫...");
+        Debug.Log("【影子怪物】進入揮爪距離，開始抬手準備揮擊 (attack2)...");
 
-        RemoveFear();
-        UnlockCamera();
-
-        // 1. 播放 attack2 攻擊動畫
+        // 1. 播放 attack2 揮爪動畫 (開始抬手前搖)
         PlayAnimationByName(attackAnimationName);
 
-        // 2. 計算 attack2 動畫時長並等待至快結束 (85% 處)
-        float attackClipLength = 1.6f;
-        if (_animator != null)
+        // 2. 等待巨爪向下揮擊的命中點瞬間 (約 0.55 秒)
+        yield return new WaitForSeconds(0.55f);
+
+        // 3. 巨爪揮至最低點：檢測主角是否在爪擊命中範圍內 (純水平 X 軸判定，不受巨怪腳底 Y 軸高度差影響)
+        bool isHit = false;
+        if (player != null)
         {
-            yield return null; // 等待一幀以獲取當前 State 資訊
-            AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(0);
-            if (info.length > 0)
+            float xDist = Mathf.Abs(transform.position.x - player.position.x);
+            if (xDist <= clawHitDistance)
             {
-                attackClipLength = info.length;
+                isHit = true;
             }
         }
 
-        yield return new WaitForSeconds(attackClipLength * 0.85f);
-
-        Debug.Log("【影子怪物】attack2 攻擊動畫快結束，觸發重生機制與畫面黑化轉場！");
-
-        // 3. 觸發 Respawn 畫面黑化轉場
-        if (respawnSystem != null)
+        if (isHit)
         {
-            respawnSystem.TriggerRespawn();
+            Debug.Log("💥【影子怪物】巨爪命中主角！定身並觸發重擊震動反饋！");
+
+            // 定身主角
+            if (_pm != null)
+            {
+                _pm.isCutsceneFrozen = true;
+                Rigidbody prb = _pm.GetComponent<Rigidbody>();
+                if (prb != null) prb.linearVelocity = Vector3.zero;
+            }
+
+            // 觸發螢幕受傷震動與紅光閃爍
+            if (ScreenFeedbackManager.Instance != null)
+            {
+                ScreenFeedbackManager.Instance.TriggerHitFeedback();
+            }
+
+            // 等待完整揮爪後續動態結束 (約 0.85 秒)
+            yield return new WaitForSeconds(0.85f);
+
+            // 觸發重生機制
+            if (respawnSystem != null)
+            {
+                respawnSystem.TriggerRespawn();
+            }
+
+            if (_pm != null)
+            {
+                _pm.isCutsceneFrozen = false;
+            }
+
+            yield return new WaitForSecondsRealtime(1.5f);
+            ResetToInitialState();
         }
         else
         {
-            Debug.LogWarning("【影子怪物】找不到 PlayerRespawnSystem！");
+            Debug.Log("💨【影子怪物】巨爪揮空 (主角已及時逃出範圍)，攻擊結束後繼續追擊！");
+            yield return new WaitForSeconds(0.85f);
+            currentState = MonsterState.Chasing;
         }
-
-        // 4. 等待畫面黑幕覆蓋
-        yield return new WaitForSecondsRealtime(1.5f);
-
-        // 5. 重置影子怪物與所有燭火回初始狀態
-        ResetToInitialState();
     }
 
     private void TriggerPunishment()
@@ -561,18 +596,41 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         // 面向玩家 (3D Euler 旋轉)
-        if (player.position.x < transform.position.x)
+        if (player.position.x < transform.position.x - 0.2f)
         {
             transform.rotation = Quaternion.Euler(0f, -90f, 0f);
         }
-        else if (player.position.x > transform.position.x)
+        else if (player.position.x > transform.position.x + 0.2f)
         {
             transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         }
 
         float targetX = player.position.x;
+        float xDist = Mathf.Abs(transform.position.x - targetX);
+
+        // ★ 當接近至揮爪起手距離 (約 6.0 單位) 時，就地停步並開始發動揮爪攻擊
+        if (xDist <= attackTriggerDistance)
+        {
+            CheckCatch();
+            return;
+        }
+
         float newX = Mathf.MoveTowards(transform.position.x, targetX, currentSpeed * Time.deltaTime);
-        transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+        float newY = transform.position.y;
+
+        // ★ 自動貼地 / 隱形地板吸附邏輯
+        if (enableGroundSnap)
+        {
+            Vector3 rayOrigin = new Vector3(newX, transform.position.y + 5.0f, transform.position.z);
+            RaycastHit hit;
+            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, groundRaycastDistance, groundLayers, QueryTriggerInteraction.Ignore))
+            {
+                float targetY = hit.point.y + feetOffsetY;
+                newY = Mathf.Lerp(transform.position.y, targetY, Time.deltaTime * 12f);
+            }
+        }
+
+        transform.position = new Vector3(newX, newY, transform.position.z);
     }
 
     private string _currentAnimName = "";
@@ -604,13 +662,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (player == null || currentState == MonsterState.Devouring) return;
 
-        float effectiveCatchDist = catchDistance * _currentScaleMultiplier;
-        float dist = Vector2.Distance(
-            new Vector2(transform.position.x, transform.position.y),
-            new Vector2(player.position.x, player.position.y)
-        );
+        float xDist = Mathf.Abs(transform.position.x - player.position.x);
 
-        if (dist <= effectiveCatchDist)
+        // ★ 核心修復：純粹以水平 X 軸距離為準 (不受怪物腳底 Pivot 與主角走道 Y 軸高差影響)！
+        if (xDist <= attackTriggerDistance)
         {
             TriggerDevour();
         }
@@ -954,6 +1009,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         Debug.Log("【影子怪物】已完整重置至初始狀態（含全部燭火）。");
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // 1. 繪製黃色線框：起手揮爪距離 (Attack Trigger Distance)，涵蓋怪物全身高度
+        Gizmos.color = new Color(1f, 0.9f, 0.2f, 0.7f);
+        Vector3 forwardDir = transform.rotation * Vector3.forward;
+        Vector3 triggerCenter = transform.position + forwardDir * (attackTriggerDistance * 0.5f) + Vector3.up * 15f;
+        Gizmos.DrawWireCube(triggerCenter, new Vector3(attackTriggerDistance, 35f, 4f));
+
+        // 2. 繪製紅色線框：巨爪命中傷害範圍 (Claw Hit Distance)，涵蓋怪物全身高度
+        Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.85f);
+        Vector3 hitCenter = transform.position + forwardDir * (clawHitDistance * 0.5f) + Vector3.up * 15f;
+        Gizmos.DrawWireCube(hitCenter, new Vector3(clawHitDistance, 35f, 4f));
     }
 }
 

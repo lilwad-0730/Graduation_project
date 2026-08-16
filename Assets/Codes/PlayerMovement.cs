@@ -283,20 +283,20 @@ public class PlayerMovement : MonoBehaviour
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
         }
 
-        // 當處於劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
-        if (isCutsceneFrozen)
+        // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
+        if (isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
         {
             rawInput = 0f;
         }
         else if (Mathf.Abs(rawInput) > 0.1f)
         {
-            // 若非演出狀態且玩家主動按鍵，才解除掉落鎖死
+            // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
             isStrictLockingX = false;
             freezeHorizontal = false;
             actuallyFreeze = false;
         }
 
-        float moveInput = (actuallyFreeze || isCutsceneFrozen) ? 0f : rawInput;
+        float moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
 
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -336,12 +336,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 freezeHorizontal = false;
                 Debug.Log("【掉落解鎖】玩家已著地 (isGrounded)，自動解除橫向鎖定，恢復自由控制！");
-                PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
-                if (respawnSystem != null)
-                {
-                    respawnSystem.SetSafeGroundPosition(this.transform.position);
-                    StartCoroutine(EnableRespawnWithDelay());
-                }
+                StartCoroutine(EnableRespawnWithDelay());
             }
         }
 
@@ -599,8 +594,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 陸地跳躍 (非水下)
-        if (!isCutsceneFrozen && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        // 陸地跳躍 (非水下、非演出中、非重生中)
+        if (!isCutsceneFrozen && !PlayerRespawnSystem.IsAnyRespawning && !MirrorWallAbsorbCutscene.IsAnyCutsceneRunning && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
         {
             // 陸地標準跳躍
             isJumping = true;
