@@ -5841,7 +5841,7 @@ Transform:
   m_GameObject: {fileID: 323092138}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.5, y: 5.29, z: 10}
+  m_LocalPosition: {x: 13.5, y: 5.29, z: 0.5}
   m_LocalScale: {x: 3.61289, y: 3.61289, z: 3.61289}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -6955,7 +6955,7 @@ Transform:
   m_GameObject: {fileID: 550460207}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 255.1, y: 5.29, z: 10}
+  m_LocalPosition: {x: 255.1, y: 5.29, z: 0.5}
   m_LocalScale: {x: 3.61289, y: 3.61289, z: 3.61289}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -7734,7 +7734,7 @@ Transform:
   m_GameObject: {fileID: 807431576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 73.9, y: 5.29, z: 10}
+  m_LocalPosition: {x: 73.9, y: 5.29, z: 0.5}
   m_LocalScale: {x: 3.61289, y: 3.61289, z: 3.61289}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -8259,7 +8259,7 @@ Transform:
   m_GameObject: {fileID: 1085260750}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 194.7, y: 5.29, z: 10}
+  m_LocalPosition: {x: 194.7, y: 5.29, z: 0.5}
   m_LocalScale: {x: 3.61289, y: 3.61289, z: 3.61289}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -15399,7 +15399,7 @@ VisualEffect:
       m_Array:
       - m_Value: {x: -0, y: 0, z: 0}
         m_Name: Wind Rotation
-        m_Overridden: 1
+        m_Overridden: 0
       - m_Value: {x: 30, y: 6, z: 30}
         m_Name: SpawnVolume_size
         m_Overridden: 0
@@ -15664,7 +15664,7 @@ Transform:
   m_GameObject: {fileID: 2091913318}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 134.3, y: 5.29, z: 10}
+  m_LocalPosition: {x: 134.3, y: 5.29, z: 0.5}
   m_LocalScale: {x: 3.61289, y: 3.61289, z: 3.61289}
   m_ConstrainProportionsScale: 1
   m_Children: []
