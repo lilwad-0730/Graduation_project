@@ -81,6 +81,10 @@ public class PlayerRespawnSystem : MonoBehaviour
         return _playerRb;
     }
 
+    // 跨場景指定生成點 (由轉場腳本在 LoadScene 前指派)
+    public static string NextSceneSpawnTargetName = "";
+    public static Vector3? NextSceneCustomSpawnPos = null;
+
     private Vector3 _activeRespawnPos; // 當前啟用的明確存檔點座標
 
     void OnEnable()
@@ -96,6 +100,54 @@ public class PlayerRespawnSystem : MonoBehaviour
     private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
         // ★ 換場景自動刷新記憶：徹底杜絕跨場景殘留舊存檔點座標！
+        StartCoroutine(ApplySceneSpawnPositionRoutine(scene));
+    }
+
+    private IEnumerator ApplySceneSpawnPositionRoutine(UnityEngine.SceneManagement.Scene scene)
+    {
+        yield return null; // 等待 1 幀確保場景內所有物件已完成 Awake 與 Start 初始化
+
+        // 1. 若轉場前有指定特定隱形物件名稱 (如 "SpawnPoint_FromSampleScene")
+        if (!string.IsNullOrEmpty(NextSceneSpawnTargetName))
+        {
+            GameObject targetObj = GameObject.Find(NextSceneSpawnTargetName);
+            if (targetObj != null)
+            {
+                Vector3 targetPos = new Vector3(targetObj.transform.position.x, targetObj.transform.position.y + 0.2f, targetObj.transform.position.z);
+                PlayerMovement pm = GetMovement();
+                if (pm != null) pm.WarpTo(targetPos);
+                else transform.position = targetPos;
+
+                _activeRespawnPos = targetObj.transform.position;
+                _initialPlayPos = targetObj.transform.position;
+
+                Debug.Log($"🚩【跨場景出生點】進入新場景 [{scene.name}]，已成功將主角傳送至指定隱形物件 [{NextSceneSpawnTargetName}]：{targetPos}");
+                NextSceneSpawnTargetName = "";
+                yield break;
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️【跨場景出生點】在新場景 [{scene.name}] 中找不到指定的隱形物件 '{NextSceneSpawnTargetName}'，將採用預設位置！");
+                NextSceneSpawnTargetName = "";
+            }
+        }
+        // 2. 若轉場前有指定自訂座標
+        else if (NextSceneCustomSpawnPos.HasValue)
+        {
+            Vector3 targetPos = NextSceneCustomSpawnPos.Value;
+            PlayerMovement pm = GetMovement();
+            if (pm != null) pm.WarpTo(targetPos);
+            else transform.position = targetPos;
+
+            _activeRespawnPos = targetPos;
+            _initialPlayPos = targetPos;
+
+            Debug.Log($"🚩【跨場景出生點】進入新場景 [{scene.name}]，已成功將主角傳送至自訂座標：{targetPos}");
+            NextSceneCustomSpawnPos = null;
+            yield break;
+        }
+
+        // 3. 預設標準流程：以主角在該場景的起始擺放位置為準
         _activeRespawnPos = transform.position;
         _initialPlayPos = transform.position;
         Debug.Log($"【存檔點系統】進入新場景 [{scene.name}]，重生點記憶已刷新為初始座標：{_activeRespawnPos}");

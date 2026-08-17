@@ -363,12 +363,13 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         string lowerName = obj.name.ToLower();
         if (lowerName.Contains("pillar") || lowerName.Contains("shelter") || lowerName.Contains("rock") || lowerName.Contains("zone") || lowerName.Contains("trigger")) return false;
 
-        // 1. Tag 比對 (僅比對精確地表 Tag：Floor, Ground, Terrain)
-        if (obj.CompareTag("Floor") || obj.CompareTag("Ground") || obj.CompareTag("Terrain")) return true;
-        if (!string.IsNullOrEmpty(groundTag) && obj.CompareTag(groundTag)) return true;
+        // 1. 安全 Tag 比對 (使用 obj.tag == "..." 安全比對，防止未定義 Tag 引發 Unity 拋出例外崩潰)
+        string t = obj.tag;
+        if (t == "Floor" || t == "Ground" || t == "Terrain") return true;
+        if (!string.IsNullOrEmpty(groundTag) && t == groundTag) return true;
 
         // 2. 物件名稱比對 (純地表地板)
-        if (lowerName.Contains("floor") || lowerName.Contains("ground_texture") || lowerName.Contains("tile")) return true;
+        if (lowerName.Contains("floor") || lowerName.Contains("ground_texture") || lowerName.Contains("tile") || lowerName.Contains("ground")) return true;
 
         return false;
     }
@@ -534,7 +535,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         // 2. 碰撞到玩家本體：觸發玩家重生，絕不觸發石化效果！
-        if (hitObj.CompareTag("Player") || hitObj.name == "Player")
+        if (hitObj.tag == "Player" || hitObj.name.ToLower().Contains("player") || hitObj.GetComponentInParent<PlayerMovement>() != null)
         {
             if (currentState == BirdState.Diving)
             {

@@ -6668,7 +6668,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -56.3, y: 12.5, z: -9.971252}
+  m_LocalPosition: {x: 209.2, y: -104.9, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -27147,7 +27147,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87a1be3c4eb18764f8705850d25dff5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StormSceneTransition
-  nextSceneName: underwater
+  nextSceneName: desert
+  targetSpawnPointName: SpawnPoint_FromSampleScene
   contactTimeRequired: 5
   fadeDuration: 1.5
   enableMovement: 1
@@ -29453,7 +29454,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -56.3, y: 12.5, z: -9.971252}
+  m_LocalPosition: {x: 209.2, y: -104.9, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35992,11 +35993,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -56.3
+      value: 209.2
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 12.5
+      value: -104.9
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z

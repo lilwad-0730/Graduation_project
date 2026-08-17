@@ -10,8 +10,11 @@ using System.Collections;
 public class WaterOasisTransition : MonoBehaviour, IResettable
 {
     [Header("轉場與場景設定")]
-    [Tooltip("要載入的水下關卡場景名稱")]
-    public string nextSceneName = "UnderwaterScene";
+    [Tooltip("要載入的水下關卡場景名稱 (預設為 underwater)")]
+    public string nextSceneName = "underwater";
+
+    [Tooltip("進入目標場景 (underwater) 後，要指定重生的隱形物件/重生點名稱 (若留空則使用該場景預設位置)")]
+    public string targetSpawnPointName = "SpawnPoint_FromDesert";
 
     [Tooltip("玩家沉入水中的速度 (單位/秒)")]
     public float sinkSpeed = 1.0f;
@@ -104,8 +107,13 @@ public class WaterOasisTransition : MonoBehaviour, IResettable
         }
         yield return new WaitForSeconds(0.2f);
 
-        // 5. 載入下一關卡場景
-        Debug.Log($"【綠洲轉場】下沉完畢，開始載入場景: {nextSceneName}");
+        // 5. 設定跨場景指定出生點並載入下一關卡場景
+        if (!string.IsNullOrEmpty(targetSpawnPointName))
+        {
+            PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+        }
+
+        Debug.Log($"【綠洲轉場】下沉完畢，開始載入場景: '{nextSceneName}'，目標出生點物件為：'{targetSpawnPointName}'");
         SceneManager.LoadScene(nextSceneName);
     }
 

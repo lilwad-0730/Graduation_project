@@ -419,6 +419,59 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 16.72, y: 2.768954, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &101475002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 101475004}
+  - component: {fileID: 101475003}
+  m_Layer: 0
+  m_Name: SpawnPoint_FromSampleScene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &101475003
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101475002}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 9.061951, z: 1}
+  m_Center: {x: 0, y: 0.88533926, z: 0}
+--- !u!4 &101475004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101475002}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -6.08, y: -4.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &178666165
 GameObject:
   m_ObjectHideFlags: 0
@@ -15399,7 +15452,7 @@ VisualEffect:
       m_Array:
       - m_Value: {x: -0, y: 0, z: 0}
         m_Name: Wind Rotation
-        m_Overridden: 0
+        m_Overridden: 1
       - m_Value: {x: 30, y: 6, z: 30}
         m_Name: SpawnVolume_size
         m_Overridden: 0
@@ -15728,3 +15781,4 @@ SceneRoots:
   - {fileID: 239759721}
   - {fileID: 430199731}
   - {fileID: 1978969099}
+  - {fileID: 101475004}

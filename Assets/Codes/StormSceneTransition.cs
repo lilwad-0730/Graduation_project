@@ -11,8 +11,11 @@ using System.Collections;
 public class StormSceneTransition : MonoBehaviour
 {
     [Header("場景切換設定")]
-    [Tooltip("目標切換的關卡場景名稱 (預設為 underwater)")]
-    public string nextSceneName = "underwater";
+    [Tooltip("目標切換的關卡場景名稱 (預設為 desert)")]
+    public string nextSceneName = "desert";
+
+    [Tooltip("進入目標場景 (desert) 後，要指定重生的隱形物件/重生點名稱 (若留空則使用該場景預設位置)")]
+    public string targetSpawnPointName = "SpawnPoint_FromSampleScene";
 
     [Tooltip("主角必須與風暴接觸維持多久才啟動轉場 (秒，預設 5.0)")]
     public float contactTimeRequired = 5.0f;
@@ -44,6 +47,12 @@ public class StormSceneTransition : MonoBehaviour
     private void Start()
     {
         startPosX = transform.position.x;
+
+        // ★ 自動校正目標場景為 desert (解決 Inspector 殘留舊數值 underwater 的問題)
+        if (string.IsNullOrEmpty(nextSceneName) || nextSceneName.Equals("underwater", System.StringComparison.OrdinalIgnoreCase))
+        {
+            nextSceneName = "desert";
+        }
 
         // 確保碰撞體設為 Trigger 模式，純感應主角進入
         Collider col = GetComponent<Collider>();
@@ -169,7 +178,13 @@ public class StormSceneTransition : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        // 4. 直接切換載入水下關卡場景 "underwater"
+        // 4. 設定跨場景指定出生點並切換載入 desert 場景
+        if (!string.IsNullOrEmpty(targetSpawnPointName))
+        {
+            PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+        }
+
+        Debug.Log($"【風暴轉場】開始載入場景 '{nextSceneName}'，指定出生點物件為：'{targetSpawnPointName}'");
         SceneManager.LoadScene(nextSceneName);
     }
 
