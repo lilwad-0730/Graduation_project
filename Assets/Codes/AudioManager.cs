@@ -138,4 +138,30 @@ public class AudioManager : MonoBehaviour
         activeSource.Stop();
         activeSource.clip = null; // 清除紀錄
     }
+
+    /// <summary>
+    /// 全域 2D 音效播放 (支援多個音效同時重疊播放不被中斷)
+    /// </summary>
+    public void PlaySFX(AudioClip clip, float volume = 1.0f)
+    {
+        if (clip == null) return;
+        AudioSource sfxSource = _isUsingSource1 ? _bgmSource1 : _bgmSource2;
+        if (sfxSource != null)
+        {
+            sfxSource.PlayOneShot(clip, volume);
+        }
+        else
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, volume);
+        }
+    }
+
+    /// <summary>
+    /// 3D 空間定點音效播放 (例如推石、落石、狼嚎)
+    /// </summary>
+    public void PlaySFXAt(AudioClip clip, Vector3 position, float volume = 1.0f)
+    {
+        if (clip == null) return;
+        AudioSource.PlayClipAtPoint(clip, position, volume);
+    }
 }

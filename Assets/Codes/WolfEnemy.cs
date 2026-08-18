@@ -34,6 +34,15 @@ public class WolfEnemy : MonoBehaviour
     public float spawnAttachImmunityTime = 1.0f;
     private float enableTime = -999f;
 
+    [Header("🎵 狼群音效 (Wolf SFX)")]
+    [Tooltip("發現玩家/進入追擊時的近距離狼嚎 (例如 狼嚎_近2)")]
+    public AudioClip aggroHowlSFX;
+    [Tooltip("狼群狂奔腳步聲音效 (例如 wolves_running)")]
+    public AudioClip runSFX;
+    [Range(0f, 1f)] public float soundVolume = 0.85f;
+
+    private AudioSource _runAudioSource;
+
     // 狀態鎖
     private bool isChasing = false;
     private bool isAttached = false;
@@ -52,6 +61,10 @@ public class WolfEnemy : MonoBehaviour
 
     public void StartChase()
     {
+        if (!isChasing && aggroHowlSFX != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFXAt(aggroHowlSFX, transform.position, soundVolume);
+        }
         isChasing = true;
     }
 
@@ -124,6 +137,25 @@ public class WolfEnemy : MonoBehaviour
         if (isChasing)
         {
             ChasePlayer();
+
+            if (runSFX != null)
+            {
+                if (_runAudioSource == null)
+                {
+                    _runAudioSource = gameObject.AddComponent<AudioSource>();
+                    _runAudioSource.clip = runSFX;
+                    _runAudioSource.loop = true;
+                    _runAudioSource.spatialBlend = 1f; // 3D 空間音效
+                    _runAudioSource.minDistance = 3f;
+                    _runAudioSource.maxDistance = 20f;
+                    _runAudioSource.volume = soundVolume * 0.75f;
+                }
+                if (!_runAudioSource.isPlaying) _runAudioSource.Play();
+            }
+        }
+        else if (_runAudioSource != null && _runAudioSource.isPlaying)
+        {
+            _runAudioSource.Stop();
         }
     }
 

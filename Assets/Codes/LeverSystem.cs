@@ -38,9 +38,12 @@ public class LeverSystem : MonoBehaviour
     [Tooltip("拉動後的旋轉角度偏移 (僅在視覺效果選為 Rotate 時需要)")]
     public Vector3 pulledRotationOffset = new Vector3(0, 0, -60f);
 
-    [Header("音效設定 (選填)")]
-    [Tooltip("拉動拉桿時播放的音效")]
+    [Header("🎵 音效設定 (選填)")]
+    [Tooltip("拉動拉桿時播放的音效 (例如 拉桿（拉動）)")]
     public AudioClip pullSound;
+    [Tooltip("拉桿到達底端鎖定完成時播放的音效 (例如 拉桿（完成拉動）)")]
+    public AudioClip completedSound;
+    [Range(0f, 1f)] public float soundVolume = 0.9f;
 
     private bool isPulled = false;
     private bool isPlayerInZone = false;
@@ -148,10 +151,24 @@ public class LeverSystem : MonoBehaviour
             }
         }
 
-        // 3. 播放音效
-        if (pullSound != null)
+        // 3. 播放拉桿音效
+        if (pullSound != null && AudioManager.Instance != null)
         {
-            AudioSource.PlayClipAtPoint(pullSound, transform.position);
+            AudioManager.Instance.PlaySFXAt(pullSound, transform.position, soundVolume);
+        }
+
+        if (completedSound != null)
+        {
+            StartCoroutine(PlayCompletedSoundRoutine());
+        }
+    }
+
+    private System.Collections.IEnumerator PlayCompletedSoundRoutine()
+    {
+        yield return new WaitForSeconds(0.28f);
+        if (AudioManager.Instance != null && completedSound != null)
+        {
+            AudioManager.Instance.PlaySFXAt(completedSound, transform.position, soundVolume);
         }
     }
 }

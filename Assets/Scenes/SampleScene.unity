@@ -5432,6 +5432,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!65 &440942130
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6668,7 +6670,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 209.2, y: -104.9, z: -9.971252}
+  m_LocalPosition: {x: 60, y: -123.7, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -7137,6 +7139,9 @@ MonoBehaviour:
   collidersToIgnore: []
   stopChaseHeightDifference: 3
   spawnAttachImmunityTime: 1
+  aggroHowlSFX: {fileID: 0}
+  runSFX: {fileID: 0}
+  soundVolume: 0.85
 --- !u!54 &584289258
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9137,6 +9142,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!65 &710188430
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10972,6 +10979,9 @@ MonoBehaviour:
   - {fileID: 1765964096}
   stopChaseHeightDifference: 3
   spawnAttachImmunityTime: 1
+  aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
+  runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
+  soundVolume: 0.85
 --- !u!136 &931082212
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -11505,6 +11515,9 @@ MonoBehaviour:
   cameraOffsetFromPlayer: {x: 0, y: 5, z: -10}
   fadeDuration: 1
   blackScreenTime: 2
+  deathSFX: {fileID: 0}
+  respawnSFX: {fileID: 0}
+  sfxVolume: 0.9
   customFadeImage: {fileID: 0}
   customMessageText: {fileID: 0}
   customMessageCanvasGroup: {fileID: 0}
@@ -17814,6 +17827,9 @@ MonoBehaviour:
   collidersToIgnore: []
   stopChaseHeightDifference: 3
   spawnAttachImmunityTime: 1
+  aggroHowlSFX: {fileID: 0}
+  runSFX: {fileID: 0}
+  soundVolume: 0.85
 --- !u!54 &1086252309
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -19663,6 +19679,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!114 &1270508895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20672,6 +20690,8 @@ MonoBehaviour:
   massOnUnlock: 5
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!54 &1316536998
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -22918,6 +22938,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RollingRockVisual
   mass: 20
+  impactSFX: {fileID: 8300000, guid: c82b1f686d675c44d807751e599e7df2, type: 3}
+  impactVolume: 0.9
 --- !u!1 &1473894181
 GameObject:
   m_ObjectHideFlags: 0
@@ -24326,6 +24348,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!114 &1547049909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27396,6 +27420,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!65 &1825630383
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -27530,6 +27556,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!65 &1840476259
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -29454,7 +29482,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 209.2, y: -104.9, z: -9.971252}
+  m_LocalPosition: {x: 60, y: -123.7, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34855,6 +34883,8 @@ MonoBehaviour:
   massOnUnlock: 50
   unlockEffectPrefab: {fileID: 0}
   unlockSFX: {fileID: 0}
+  pushRockLoopSFX: {fileID: 0}
+  pushVolume: 0.85
 --- !u!65 &2072297853
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -35427,7 +35457,9 @@ MonoBehaviour:
   visualEffect: 3
   pulledSprite: {fileID: 0}
   pulledRotationOffset: {x: 0, y: 0, z: -60}
-  pullSound: {fileID: 0}
+  pullSound: {fileID: 8300000, guid: e66f65c04e0246344bc8803b976e7d48, type: 3}
+  completedSound: {fileID: 8300000, guid: 4e3a810d19a1e4e40990532a36e9ed95, type: 3}
+  soundVolume: 0.9
 --- !u!1 &2117843347
 GameObject:
   m_ObjectHideFlags: 0
@@ -35971,10 +36003,34 @@ PrefabInstance:
       propertyPath: m_Material
       value: 
       objectReference: {fileID: 1690152680}
+    - target: {fileID: 745830173811474750, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: deathSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 7e6a9bf8692a49a4b8443a871fecf186, type: 3}
+    - target: {fileID: 745830173811474750, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: respawnSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 7fc9b99d32c94584e986d9ffab94f69c, type: 3}
     - target: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 5375380938264212508, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: jumpSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: eb855dd1278d4384ba2dadf3195f58aa, type: 3}
+    - target: {fileID: 5375380938264212508, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: footstepSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: a56b3cd4816295b41831351a9d2d0a82, type: 3}
+    - target: {fileID: 5375380938264212508, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: landHardSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: a338e7ad2c08ae9408c64d84329f7e0c, type: 3}
+    - target: {fileID: 5375380938264212508, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: landSoftSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 7a18d6f602a6d714b939db7dc7b1b801, type: 3}
     - target: {fileID: 5967898630329555174, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -35993,11 +36049,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 209.2
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -104.9
+      value: -123.7
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z

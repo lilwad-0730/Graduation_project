@@ -30,9 +30,12 @@ public class RollingRockVisual : MonoBehaviour
         }
     }
 
-    [Header("物理設定")]
+    [Header("物理與音效設定")]
     [Tooltip("巨石的質量 (重量，預設 20f)")]
     public float mass = 20f;
+    [Tooltip("巨石砸落地面時的撞擊音效 (例如 落石2)")]
+    public AudioClip impactSFX;
+    [Range(0f, 1f)] public float impactVolume = 0.9f;
 
     void Start()
     {
@@ -121,5 +124,20 @@ public class RollingRockVisual : MonoBehaviour
 
         // 僅沿著 Z 軸旋轉視覺子物件（順時針滾動，所以帶負號）
         visualTransform.Rotate(Vector3.forward, -rotationAmount, Space.Self);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (impactSFX != null && collision.relativeVelocity.magnitude > 2.0f)
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFXAt(impactSFX, collision.contacts[0].point, impactVolume);
+            }
+            else
+            {
+                AudioSource.PlayClipAtPoint(impactSFX, collision.contacts[0].point, impactVolume);
+            }
+        }
     }
 }

@@ -37,6 +37,13 @@ public class PlayerRespawnSystem : MonoBehaviour
     private Vector3 _initialPlayPos;    // 剛按下 PLAY 時的初始位置
     
     // --- UI 相關 ---
+    [Header("🎵 重生與死亡音效 (Death & Respawn SFX)")]
+    [Tooltip("角色死亡倒地音效 (例如 主角死亡)")]
+    public AudioClip deathSFX;
+    [Tooltip("角色復活重生音效 (例如 復活)")]
+    public AudioClip respawnSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
+
     [Header("自訂 UI 物件 (若留空，系統會自動幫你生成)")]
     public Image customFadeImage;
     public Text customMessageText;
@@ -332,6 +339,12 @@ public class PlayerRespawnSystem : MonoBehaviour
             _playerRb.angularVelocity = Vector3.zero;
         }
 
+        // 播放角色死亡音效
+        if (deathSFX != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(deathSFX, sfxVolume);
+        }
+
         // 1. 漸黑
         float timer = 0f;
         while (timer < fadeDuration)
@@ -446,6 +459,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             _fadeImage.color = new Color(0, 0, 0, 0f);
             _fadeImage.gameObject.SetActive(false); 
+        }
+
+        // 播放復活重生音效
+        if (respawnSFX != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(respawnSFX, sfxVolume);
         }
 
         // ===================================================================

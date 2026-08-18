@@ -54,6 +54,25 @@ public class PlayerMovement : MonoBehaviour
 
     [Tooltip("是否將鏡頭高度嚴格限制在 SkyBackground 範圍內 (設為 false 則直接跟隨主角)")]
     public bool clampSkyBackgroundHeight = false;
+
+    [Header("🎵 動作音效設定 (Player SFX)")]
+    [Tooltip("地面跑步/走路腳步聲 (例如 Ruined_running)")]
+    public AudioClip footstepSFX;
+    [Tooltip("腳步聲觸發間隔 (秒，預設 0.35)")]
+    public float footstepInterval = 0.35f;
+    [Tooltip("起跳蹬地音效 (例如 起跳)")]
+    public AudioClip jumpSFX;
+    [Tooltip("普通落地音效 (例如 落地1)")]
+    public AudioClip landSoftSFX;
+    [Tooltip("高處墜落重著地回聲音效 (例如 落地_回聲)")]
+    public AudioClip landHardSFX;
+    [Tooltip("滯空時間大於幾秒時，著地改播重著地回聲音效 (秒，預設 0.75)")]
+    public float hardLandAirTimeThreshold = 0.75f;
+    [Range(0f, 1f)] public float sfxVolume = 0.85f;
+
+    private float _footstepTimer = 0f;
+    private float _lastAirTime = 0f;
+    private bool _wasGroundedLastFrame = true;
     
     private Transform cameraTarget;
     private float _smoothYVelocity;
@@ -321,13 +340,46 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 1. 地面狀態判定
+        // 1. 地面狀態與著地/腳步音效判定
         // ==========================================
         isGrounded = preliminaryGrounded;
 
         if (isGrounded)
         {
+            // 剛從空中落地的瞬間
+            if (!_wasGroundedLastFrame && _lastAirTime > 0.15f)
+            {
+                if (_lastAirTime >= hardLandAirTimeThreshold && landHardSFX != null)
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(landHardSFX, sfxVolume);
+                }
+                else if (landSoftSFX != null)
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(landSoftSFX, sfxVolume);
+                }
+            }
+
+            _lastAirTime = 0f;
             currentAirTime = 0f;
+
+            // 地面跑步腳步聲音效循環
+            if (Mathf.Abs(moveInput) > 0.1f && !isJumping && !isCutsceneFrozen)
+            {
+                _footstepTimer += Time.deltaTime;
+                if (_footstepTimer >= footstepInterval)
+                {
+                    _footstepTimer = 0f;
+                    if (footstepSFX != null && AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlaySFX(footstepSFX, sfxVolume * 0.7f);
+                    }
+                }
+            }
+            else
+            {
+                _footstepTimer = footstepInterval * 0.8f;
+            }
+
             // 如果落地且沒有明顯向上的速度，代表跳躍結束
             if (rb.linearVelocity.y <= 0.1f) isJumping = false;
 
@@ -339,11 +391,13 @@ public class PlayerMovement : MonoBehaviour
                 StartCoroutine(EnableRespawnWithDelay());
             }
         }
-
         else
         {
             currentAirTime += Time.deltaTime;
+            _lastAirTime = currentAirTime;
         }
+
+        _wasGroundedLastFrame = isGrounded;
 
         // ==========================================
         // 2. 動畫強行控制 (直接程式碼接管播放)
@@ -602,6 +656,12 @@ public class PlayerMovement : MonoBehaviour
             rb.useGravity = true; // 跳躍時立即還原重力
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+
+            // 播放起跳音效
+            if (jumpSFX != null && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX(jumpSFX, sfxVolume);
+            }
         }
     }
 

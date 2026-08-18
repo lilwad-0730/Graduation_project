@@ -28,6 +28,13 @@ public class UnlockableMovableObject : MonoBehaviour
     [Tooltip("解鎖時播放的音效 (可選)")]
     public AudioClip unlockSFX;
 
+    [Header("🎵 推石音效 (Pushing Rock SFX)")]
+    [Tooltip("推動巨石時播放的摩擦滾動音效 (例如 推石)")]
+    public AudioClip pushRockLoopSFX;
+    [Range(0f, 1f)] public float pushVolume = 0.85f;
+
+    private AudioSource _pushAudioSource;
+
     // 用於記錄目前是否已被解鎖
     public bool IsUnlocked { get; private set; } = false;
 
@@ -71,12 +78,37 @@ public class UnlockableMovableObject : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    void Update()
     {
-        // 釋放事件訂閱避免記憶體殘留
-        if (targetLight != null)
+        if (pushRockLoopSFX != null && rb != null)
         {
-            targetLight.OnAbsorbed -= HandleLightAbsorbed;
+            float speed = rb.linearVelocity.magnitude;
+            if (speed > 0.12f)
+            {
+                if (_pushAudioSource == null)
+                {
+                    _pushAudioSource = gameObject.AddComponent<AudioSource>();
+                    _pushAudioSource.clip = pushRockLoopSFX;
+                    _pushAudioSource.loop = true;
+                    _pushAudioSource.spatialBlend = 1f; // 3D 空間音效
+                    _pushAudioSource.minDistance = 3f;
+                    _pushAudioSource.maxDistance = 25f;
+                }
+
+                _pushAudioSource.volume = Mathf.Clamp01(speed / 2.5f) * pushVolume;
+                if (!_pushAudioSource.isPlaying)
+                {
+                    _pushAudioSource.Play();
+                }
+            }
+            else if (_pushAudioSource != null && _pushAudioSource.isPlaying)
+            {
+                _pushAudioSource.volume = Mathf.MoveTowards(_pushAudioSource.volume, 0f, Time.deltaTime * 5f);
+                if (_pushAudioSource.volume <= 0.01f)
+                {
+                    _pushAudioSource.Stop();
+                }
+            }
         }
     }
 
