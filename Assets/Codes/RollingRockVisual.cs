@@ -72,6 +72,8 @@ public class RollingRockVisual : MonoBehaviour
         // 確保剛體的所有旋轉都被鎖定，防止物理摩擦力導致抖動，改用此腳本完全接管視覺旋轉
         if (rb != null)
         {
+            rb.interpolation = RigidbodyInterpolation.Interpolate; // 與主角內插同步，消除物理刷新率不一致抖動
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous; // 連續碰撞防止穿透與碰撞回彈
             rb.constraints = RigidbodyConstraints.FreezePositionZ | 
                              RigidbodyConstraints.FreezeRotationX | 
                              RigidbodyConstraints.FreezeRotationY | 
@@ -137,6 +139,29 @@ public class RollingRockVisual : MonoBehaviour
             else
             {
                 AudioSource.PlayClipAtPoint(impactSFX, collision.contacts[0].point, impactVolume);
+            }
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponentInParent<PlayerMovement>() != null)
+        {
+            PlayerMovement pm = collision.gameObject.GetComponent<PlayerMovement>();
+            if (pm == null) pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
+            if (pm != null && rb != null)
+            {
+                if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f)
+                {
+                    // ★ 玩家主動推石頭：巨石順應主角推力同步前進，徹底消除球體曲面與斜坡夾角互頂產生的抖動！
+                    float pushSpeed = pm.CurrentMoveInput * pm.BaseSpeed;
+                    rb.linearVelocity = new Vector3(pushSpeed, rb.linearVelocity.y, 0f);
+                }
+                else
+                {
+                    // 玩家停步時：將巨石滾動速度傳送給主角，讓主角順應斜坡向下滑動
+                    pm.ApplyExternalSlopePush(rb.linearVelocity);
+                }
             }
         }
     }

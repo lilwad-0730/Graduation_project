@@ -239,6 +239,12 @@ public class WolfEnemy : MonoBehaviour
         isAttached = true;
         isChasing = false;
 
+        // 咬住主角時立即停止奔跑腳步聲音效！
+        if (_runAudioSource != null && _runAudioSource.isPlaying)
+        {
+            _runAudioSource.Stop();
+        }
+
         // 1. 關閉狼的物理作用，避免跟玩家的物理產生衝突亂飛
         rb.linearVelocity = Vector3.zero;
         rb.isKinematic = true;

@@ -114,9 +114,17 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void Awake()
     {
+        IsAnyCutsceneRunning = false; // 強制重置全域靜態旗標，防止前次測試殘留
+        isCutsceneRunning = false;
         InitializeTargets();
         CreateFlashUI();
         CacheInitialLightTransforms();
+    }
+
+    private void OnDisable()
+    {
+        IsAnyCutsceneRunning = false;
+        isCutsceneRunning = false;
     }
 
     private void Start()

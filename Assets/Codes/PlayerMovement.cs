@@ -18,6 +18,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("動畫控制")]
     [Tooltip("請直接把有 PlayerAnimator Controller 的模型子物件拖曳到這裡！")]
     public Animator animator; 
+    public float CurrentMoveInput { get; private set; }
+    public float BaseSpeed => baseSpeed;
     
     private Collider playerCollider;
     private string currentAnimState = ""; 
@@ -56,10 +58,8 @@ public class PlayerMovement : MonoBehaviour
     public bool clampSkyBackgroundHeight = false;
 
     [Header("🎵 動作音效設定 (Player SFX)")]
-    [Tooltip("地面跑步/走路腳步聲 (例如 Ruined_running)")]
+    [Tooltip("地面跑步/走路音效 (例如 Ruined_running，自動在移動期間持續 Loop 播放，完全免剪輯！)")]
     public AudioClip footstepSFX;
-    [Tooltip("腳步聲觸發間隔 (秒，預設 0.35)")]
-    public float footstepInterval = 0.35f;
     [Tooltip("起跳蹬地音效 (例如 起跳)")]
     public AudioClip jumpSFX;
     [Tooltip("普通落地音效 (例如 落地1)")]
@@ -70,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
     public float hardLandAirTimeThreshold = 0.75f;
     [Range(0f, 1f)] public float sfxVolume = 0.85f;
 
-    private float _footstepTimer = 0f;
+    private AudioSource _footstepSource;
     private float _lastAirTime = 0f;
     private bool _wasGroundedLastFrame = true;
     
@@ -156,6 +156,15 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool isSwimming = false;
 
 
+    private void OnEnable()
+    {
+        isCutsceneFrozen = false;
+        freezeHorizontal = false;
+        isStrictLockingX = false;
+        PlayerRespawnSystem.IsAnyRespawning = false;
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -183,21 +192,9 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 攝影機防震假目標初始化
+        // 攝影機鎖定主角初始化 (確保 Cinemachine 100% 跟隨主角)
         // ==========================================
-        if (smoothCameraY)
-        {
-            GameObject targetObj = new GameObject("PlayerCameraTarget_SmoothY");
-            cameraTarget = targetObj.transform;
-            cameraTarget.position = this.transform.position;
-            
-            // 強制所有攝影機追蹤這個「有避震器」的假目標
-            SetCameraFollow(cameraTarget);
-        }
-        else
-        {
-            SetCameraFollow(this.transform);
-        }
+        SetCameraFollow(this.transform);
 
         // 如果沒有手動設定，才嘗試自動搜尋 (備用)
         if (animator == null)
@@ -303,9 +300,23 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
-        if (isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+        if (PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
         {
             rawInput = 0f;
+        }
+        else if (isCutsceneFrozen)
+        {
+            // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖
+            if (Mathf.Abs(rawInput) > 0.1f)
+            {
+                isCutsceneFrozen = false;
+                freezeHorizontal = false;
+                actuallyFreeze = false;
+            }
+            else
+            {
+                rawInput = 0f;
+            }
         }
         else if (Mathf.Abs(rawInput) > 0.1f)
         {
@@ -316,11 +327,11 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
+        CurrentMoveInput = moveInput;
 
         if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
         if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
 
-        // 【除錯診斷 LOG】：當玩家嘗試按下移動或跳躍鍵時，在 Console 印出目前所有的解鎖狀態與數值
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W) || 
             Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -362,22 +373,30 @@ public class PlayerMovement : MonoBehaviour
             _lastAirTime = 0f;
             currentAirTime = 0f;
 
-            // 地面跑步腳步聲音效循環
-            if (Mathf.Abs(moveInput) > 0.1f && !isJumping && !isCutsceneFrozen)
+            // 地面跑步音效 Loop 控制 (完全免剪輯，走動時自動 Loop 播放，停下或跳躍自動停止)
+            if (footstepSFX != null)
             {
-                _footstepTimer += Time.deltaTime;
-                if (_footstepTimer >= footstepInterval)
+                if (_footstepSource == null)
                 {
-                    _footstepTimer = 0f;
-                    if (footstepSFX != null && AudioManager.Instance != null)
-                    {
-                        AudioManager.Instance.PlaySFX(footstepSFX, sfxVolume * 0.7f);
-                    }
+                    _footstepSource = gameObject.AddComponent<AudioSource>();
+                    _footstepSource.clip = footstepSFX;
+                    _footstepSource.loop = true;
+                    _footstepSource.playOnAwake = false;
+                    _footstepSource.volume = sfxVolume * 0.75f;
                 }
-            }
-            else
-            {
-                _footstepTimer = footstepInterval * 0.8f;
+                else if (_footstepSource.clip != footstepSFX)
+                {
+                    _footstepSource.clip = footstepSFX;
+                }
+
+                if (Mathf.Abs(moveInput) > 0.1f && !isJumping && !isCutsceneFrozen)
+                {
+                    if (!_footstepSource.isPlaying) _footstepSource.Play();
+                }
+                else
+                {
+                    if (_footstepSource.isPlaying) _footstepSource.Stop();
+                }
             }
 
             // 如果落地且沒有明顯向上的速度，代表跳躍結束
@@ -395,6 +414,12 @@ public class PlayerMovement : MonoBehaviour
         {
             currentAirTime += Time.deltaTime;
             _lastAirTime = currentAirTime;
+
+            // 滯空時停止腳步聲
+            if (_footstepSource != null && _footstepSource.isPlaying)
+            {
+                _footstepSource.Stop();
+            }
         }
 
         _wasGroundedLastFrame = isGrounded;
@@ -424,6 +449,13 @@ public class PlayerMovement : MonoBehaviour
                     // 局部 X 軸旋轉 -underwaterSwimUpTiltAngle (-15度) 會將模型的頭部/朝向平滑抬高仰角
                     Quaternion targetRotation = baseRotation * Quaternion.Euler(-underwaterSwimUpTiltAngle, 0f, 0f);
                     animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, targetRotation, Time.deltaTime * 12f);
+                }
+                else if (isGrounded && currentSlopeAngle > 1.0f)
+                {
+                    // ★ 斜坡自適應傾角：身體垂直於斜坡切線 (貼合地面，消除抖動與直立爬坡的違和感)
+                    float slopeAngleZ = Mathf.Atan2(groundHit.normal.x, groundHit.normal.y) * -Mathf.Rad2Deg;
+                    Quaternion slopeRotation = baseRotation * Quaternion.Euler(0f, 0f, facingDirection.x < 0 ? -slopeAngleZ : slopeAngleZ);
+                    animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, slopeRotation, Time.deltaTime * 12f);
                 }
                 else
                 {
@@ -561,7 +593,7 @@ public class PlayerMovement : MonoBehaviour
 
                 if (Mathf.Abs(moveInput) > 0.05f)
                 {
-                    // 沿斜坡切線移動
+                    // ★ 玩家主動按鍵移動/推石：最高優先級！玩家可以施力推動巨石上坡！
                     Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
                     Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
 
@@ -577,6 +609,13 @@ public class PlayerMovement : MonoBehaviour
                     }
 
                     rb.linearVelocity = targetVelocity;
+                }
+                else if (_externalPushTimer > 0f)
+                {
+                    _externalPushTimer -= Time.deltaTime;
+                    // 當玩家放開按鍵 (Idle) 時，才順應巨石重力順勢向下滑動，化解硬頂抖動
+                    Vector3 pushSlopeDir = Vector3.ProjectOnPlane(_externalPushVelocity, groundHit.normal);
+                    rb.linearVelocity = new Vector3(pushSlopeDir.x, pushSlopeDir.y, 0f);
                 }
                 else
                 {
@@ -839,12 +878,21 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private Vector3 _externalPushVelocity = Vector3.zero;
+    private float _externalPushTimer = 0f;
+
+    /// <summary>
+    /// 接收來自落石/巨石的外部推力，順勢沿斜坡下滑化解碰撞抖動
+    /// </summary>
+    public void ApplyExternalSlopePush(Vector3 pushVelocity)
+    {
+        _externalPushVelocity = pushVelocity;
+        _externalPushTimer = 0.12f; // 維持緩衝
+    }
+
     public Transform GetCameraTarget()
     {
-        GameObject customTarget = GameObject.Find("CameraFollowTarget");
-        if (customTarget != null) return customTarget.transform;
-
-        return (smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform;
+        return this.transform;
     }
 
     /// <summary>
@@ -936,41 +984,41 @@ public class PlayerMovement : MonoBehaviour
 
     private void SetCameraFollow(Transform target)
     {
-        // 尋找「所有」新版 CinemachineCamera 並強制修改追蹤目標 (解決 Cinemachine v3 相機跟隨失效問題)
+        if (target == null) target = this.transform;
+
+        // 尋找「所有」新版 CinemachineCamera 並強制修改追蹤目標
         var vcams3 = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
         foreach(var vcam in vcams3)
         {
-            if (vcam != null && target != null)
+            if (vcam != null)
             {
-                GameObject customTarget = GameObject.Find("CameraFollowTarget");
-                Debug.Log($"[SetCameraFollow Debug] customTarget={customTarget?.name}, target={target?.name}");
-                Transform finalTarget = customTarget != null ? customTarget.transform : target;
-
                 var t = vcam.Target;
-                t.TrackingTarget = finalTarget;
+                t.TrackingTarget = target;
                 vcam.Target = t;
-                vcam.Follow = finalTarget;
+                vcam.Follow = target;
+                if (vcam.name.Contains("CinemachineCamera"))
+                {
+                    vcam.Priority.Value = 100; // 給予最高優先級
+                }
 
                 // 確保 FollowOffset 的 Y 軸為 0，與主角高度精確水平對齊 (防止攝影機高於主角)
                 var cmFollow = vcam.GetComponent<CinemachineFollow>();
                 if (cmFollow != null)
                 {
-                    cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, 0f, cmFollow.FollowOffset.z);
+                    cmFollow.FollowOffset = new Vector3(0f, 0f, -10f);
                 }
 
-                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {finalTarget.name}");
+                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name}");
             }
         }
 
         var vcamsLegacy = Object.FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None);
         foreach(var vcam in vcamsLegacy)
         {
-            if (vcam != null && target != null)
+            if (vcam != null)
             {
-                GameObject customTarget = GameObject.Find("CameraFollowTarget");
-                Transform finalTarget = customTarget != null ? customTarget.transform : target;
-
-                vcam.Follow = finalTarget;
+                vcam.Follow = target;
+                vcam.Priority = 100;
             }
         }
     }

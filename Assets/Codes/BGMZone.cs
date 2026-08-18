@@ -6,6 +6,10 @@ public class BGMZone : MonoBehaviour
     [Header("這個區域要播放哪首音樂？")]
     public AudioClip levelMusic;
 
+    [Header("離開區域設定")]
+    [Tooltip("是否在離開此區域時停止音樂？(建議保持 false：讓音樂持續播放，直到進入下一個不同音樂的區域自動 Crossfade 交叉淡入淡出，切換關卡也不會中斷)")]
+    public bool stopOnExit = false;
+
     private void Start()
     {
         // 防呆：確保這個物件身上的 Collider 有勾選 IsTrigger，否則玩家會撞到一堵隱形牆
@@ -19,7 +23,7 @@ public class BGMZone : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // 檢查進來的是不是玩家
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") || other.GetComponentInParent<PlayerMovement>() != null)
         {
             if (levelMusic != null)
             {
@@ -38,13 +42,11 @@ public class BGMZone : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        // 檢查離開的是不是玩家
-        if (other.CompareTag("Player"))
+        // 只有當明確勾選 stopOnExit 時才在離開時停掉音樂
+        if (stopOnExit && (other.CompareTag("Player") || other.GetComponentInParent<PlayerMovement>() != null))
         {
             if (levelMusic != null && AudioManager.Instance != null)
             {
-                // 只有當目前正在播的音樂真的是我們這區的音樂時，我們才把它停掉
-                // (避免玩家先走進B區，才離開A區，結果A區把B區的音樂給關了)
                 if (AudioManager.Instance.GetCurrentClip() == levelMusic)
                 {
                     AudioManager.Instance.StopBGM();
