@@ -5819,6 +5819,7 @@ GameObject:
   - component: {fileID: 323092140}
   - component: {fileID: 323092139}
   - component: {fileID: 323092141}
+  - component: {fileID: 323092142}
   m_Layer: 0
   m_Name: loopable bg_0
   m_TagString: Background
@@ -5915,12 +5916,26 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 16.72, y: 9.41, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &323092142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 323092138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ca2b6d398e2474abd1b1dde7bd4b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  stopOnExit: 0
 --- !u!1 &347544275
 GameObject:
   m_ObjectHideFlags: 0
@@ -6562,6 +6577,7 @@ MonoBehaviour:
   bounceSpinAngle: 180
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
+  flapClip: {fileID: 8300000, guid: 93ab6a83d922f9e49b11fdb1e6386b1e, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!82 &498734893
 AudioSource:
@@ -6912,6 +6928,7 @@ GameObject:
   - component: {fileID: 550460210}
   - component: {fileID: 550460209}
   - component: {fileID: 550460208}
+  - component: {fileID: 550460211}
   m_Layer: 0
   m_Name: loopable bg_0 (4)
   m_TagString: Background
@@ -6934,7 +6951,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -7014,6 +7031,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &550460211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 550460207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ca2b6d398e2474abd1b1dde7bd4b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  stopOnExit: 0
 --- !u!1 &576766074
 GameObject:
   m_ObjectHideFlags: 0
@@ -7691,6 +7722,7 @@ GameObject:
   - component: {fileID: 807431579}
   - component: {fileID: 807431578}
   - component: {fileID: 807431577}
+  - component: {fileID: 807431580}
   m_Layer: 0
   m_Name: loopable bg_0 (1)
   m_TagString: Background
@@ -7713,7 +7745,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -7793,6 +7825,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &807431580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 807431576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ca2b6d398e2474abd1b1dde7bd4b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  stopOnExit: 0
 --- !u!1 &918943784
 GameObject:
   m_ObjectHideFlags: 0
@@ -8150,10 +8196,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 745830173811474750, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: respawnSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: a083e6c19b170c340bca488e2d5d2843, type: 3}
     - target: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 5375380938264212508, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: footstepSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 062dc0a37729fdd41b5c6dc18d910cbd, type: 3}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.615513
@@ -8194,6 +8248,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: petrifySFX
+      value: 
+      objectReference: {fileID: 8300000, guid: b5caaa95841b0d146875491361adb634, type: 3}
+    - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: unpetrifySFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 6a924c0a118b4e5419aa182f53ca5c46, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -8216,6 +8278,7 @@ GameObject:
   - component: {fileID: 1085260753}
   - component: {fileID: 1085260752}
   - component: {fileID: 1085260751}
+  - component: {fileID: 1085260754}
   m_Layer: 0
   m_Name: loopable bg_0 (3)
   m_TagString: Background
@@ -8238,7 +8301,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -8318,6 +8381,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1085260754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085260750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ca2b6d398e2474abd1b1dde7bd4b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  stopOnExit: 0
 --- !u!1 &1132697906
 GameObject:
   m_ObjectHideFlags: 0
@@ -14039,6 +14116,55 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1657680602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1657680604}
+  - component: {fileID: 1657680603}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!320 &1657680603
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657680602}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 2f1d4d500b788414795ba46d17121d8c, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []
+--- !u!4 &1657680604
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657680602}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.84296, y: 0.78416, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1657807653
 GameObject:
   m_ObjectHideFlags: 0
@@ -15621,6 +15747,7 @@ GameObject:
   - component: {fileID: 2091913321}
   - component: {fileID: 2091913320}
   - component: {fileID: 2091913319}
+  - component: {fileID: 2091913322}
   m_Layer: 0
   m_Name: loopable bg_0 (2)
   m_TagString: Background
@@ -15643,7 +15770,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -15723,6 +15850,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2091913322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2091913318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3ca2b6d398e2474abd1b1dde7bd4b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BGMZone
+  levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  stopOnExit: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -15782,3 +15923,4 @@ SceneRoots:
   - {fileID: 430199731}
   - {fileID: 1978969099}
   - {fileID: 101475004}
+  - {fileID: 1657680604}

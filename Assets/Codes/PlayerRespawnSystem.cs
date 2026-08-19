@@ -575,8 +575,6 @@ public class PlayerRespawnSystem : MonoBehaviour
                 
                 // 確保文字一開始是隱藏的
                 _messageText.gameObject.SetActive(false);
-
-                CreateResetButton(customFadeImage.canvas.gameObject);
                 return;
             }
 
@@ -619,7 +617,6 @@ public class PlayerRespawnSystem : MonoBehaviour
                     _messageCanvasGroup = textTrans.GetComponent<CanvasGroup>();
                 }
 
-                CreateResetButton(existingCanvas);
                 return;
             }
 
@@ -674,87 +671,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             glow.effectDistance = new Vector2(2, -2);
 
             _messageText.gameObject.SetActive(false);
-
-            CreateResetButton(canvasObj);
         }
         catch (System.Exception ex)
         {
             Debug.LogError("生成 UI 當機: " + ex.Message);
         }
-    }
-
-    private void CreateResetButton(GameObject canvasObj)
-    {
-        // 避免重複生成
-        if (canvasObj.transform.Find("ResetToStartButton") != null) return;
-
-        // 確保有 EventSystem
-        if (UnityEngine.EventSystems.EventSystem.current == null)
-        {
-            GameObject eventObj = new GameObject("EventSystem_System");
-            eventObj.AddComponent<UnityEngine.EventSystems.EventSystem>();
-            eventObj.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-        }
-
-        GameObject buttonObj = new GameObject("ResetToStartButton");
-        buttonObj.transform.SetParent(canvasObj.transform, false);
-
-        // 設定大小與位置 (左下角，微調邊距)
-        RectTransform rect = buttonObj.AddComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0, 0);
-        rect.anchorMax = new Vector2(0, 0);
-        rect.pivot = new Vector2(0, 0);
-        rect.sizeDelta = new Vector2(130, 42);
-        rect.anchoredPosition = new Vector2(30, 30);
-
-        // 加上精美的背景框
-        Image img = buttonObj.AddComponent<Image>();
-        img.color = new Color(0.12f, 0.12f, 0.16f, 0.85f); // 質感深暗色調
-
-        // 加上精緻的邊框 (Outline)
-        Outline outline = buttonObj.AddComponent<Outline>();
-        outline.effectColor = new Color(0.35f, 0.35f, 0.45f, 0.8f); // 柔和深藍灰色邊框
-        outline.effectDistance = new Vector2(1.5f, -1.5f);
-
-        // 加上 Button 元件並設定過渡效果 (Hover & Pressed)
-        Button btn = buttonObj.AddComponent<Button>();
-        btn.targetGraphic = img;
-        btn.transition = Selectable.Transition.ColorTint;
-
-        ColorBlock colors = btn.colors;
-        colors.normalColor = new Color(0.12f, 0.12f, 0.16f, 0.85f);
-        colors.highlightedColor = new Color(0.22f, 0.22f, 0.3f, 0.9f); // 懸停時稍微亮起
-        colors.pressedColor = new Color(0.08f, 0.08f, 0.1f, 0.95f);    // 按下時變暗
-        colors.selectedColor = new Color(0.12f, 0.12f, 0.16f, 0.85f);
-        btn.colors = colors;
-
-        // 綁定點擊事件
-        btn.onClick.AddListener(TriggerResetToStart);
-
-        // 加上文字子物件
-        GameObject textObj = new GameObject("ButtonText");
-        textObj.transform.SetParent(buttonObj.transform, false);
-
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.sizeDelta = Vector2.zero; // 填滿按鈕
-
-        Text text = textObj.AddComponent<Text>();
-        // 使用與系統訊息相同的字體
-        Font fallbackFont = (Font)Resources.GetBuiltinResource(typeof(Font), "LegacyRuntime.ttf");
-        if (fallbackFont == null) fallbackFont = Font.CreateDynamicFontFromOSFont("Arial", 14);
-        text.font = fallbackFont;
-        text.fontSize = 15;
-        text.fontStyle = FontStyle.Bold;
-        text.alignment = TextAnchor.MiddleCenter;
-        text.color = new Color(0.95f, 0.95f, 0.95f, 1f); // 柔和的白字
-        text.text = "↺ 重設至起點";
-
-        // 給文字加上微弱的陰影，增加質感
-        Shadow txtShadow = textObj.AddComponent<Shadow>();
-        txtShadow.effectColor = new Color(0, 0, 0, 0.5f);
-        txtShadow.effectDistance = new Vector2(1, -1);
     }
 
     /// <summary>

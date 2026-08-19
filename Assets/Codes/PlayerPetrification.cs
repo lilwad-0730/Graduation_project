@@ -18,6 +18,14 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Tooltip("開局或重生後，保護玩家免受石化的免疫時間 (秒，預設 5)")]
     public float respawnGracePeriod = 5.0f;
 
+    [Header("🎵 石化與解石音效 (Petrification SFX)")]
+    [Tooltip("主角被石化時播放的音效 (例如 石化.mp3)")]
+    public AudioClip petrifySFX;
+    [Tooltip("主角解除石化恢復行動時播放的音效 (例如 解除石化.mp3)")]
+    public AudioClip unpetrifySFX;
+    [Range(0f, 1f)]
+    public float sfxVolume = 0.9f;
+
     [Header("狀態監控")]
     public int currentPetrifyCount = 0;
     public bool isPetrified = false;
@@ -146,6 +154,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         // 視覺變色 (全黑/石化灰)
         ApplyPetrifyVisual(true);
 
+        // 播放石化音效
+        if (petrifySFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(petrifySFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(petrifySFX, transform.position, sfxVolume);
+        }
+
         // 檢查是否達到 3 次
         if (currentPetrifyCount >= maxPetrifyCount)
         {
@@ -173,6 +188,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         EnsureComponents();
         isPetrified = false;
         Debug.Log("【石化系統】石化解除，玩家恢復行動！");
+
+        // 播放解除石化音效
+        if (unpetrifySFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(unpetrifySFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, sfxVolume);
+        }
 
         graceTimer = 3.0f;
 

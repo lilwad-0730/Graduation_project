@@ -72,8 +72,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public string groundTag = "Floor";
 
     [Header("音效設定")]
-    [Tooltip("俯衝前發出的叫聲音效")]
+    [Tooltip("俯衝前發出的叫聲音效 (例如 鳥鳴.mp3)")]
     public AudioClip warningClip;
+    [Tooltip("高速俯衝飛行的振翅音效 (例如 鳥振翅1.mp3, 鳥振翅4.mp3)")]
+    public AudioClip flapClip;
 
     private AudioSource audioSource;
     private Rigidbody rb;
@@ -309,8 +311,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 3. 警報期等待
         yield return new WaitForSeconds(warningDuration);
 
-        // 4. 程式切換為俯衝飛行動畫 (flying)
+        // 4. 程式切換為俯衝飛行動畫 (flying) 並播放振翅音效
         PlayAnim(diveAnimName);
+        if (audioSource != null && flapClip != null)
+        {
+            audioSource.PlayOneShot(flapClip);
+        }
         currentState = BirdState.Diving;
         rb.isKinematic = false;
 
