@@ -71,6 +71,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("捕獲玩家攻擊動畫名稱 (預設 attack2)")]
     public string attackAnimationName = "attack2";
 
+    [Header("🎵 怪物音效設定 (Monster SFX)")]
+    [Tooltip("怪物登場 / 巨影過頂音效 (例如 水下_巨影過頂.wav)")]
+    public AudioClip appearSFX;
+    [Tooltip("怪物追擊咆哮 / 獸吼音效 (例如 獸吼.mp3)")]
+    public AudioClip roarSFX;
+    [Tooltip("怪物揮爪攻擊音效 (例如 獸吼.mp3)")]
+    public AudioClip attackSFX;
+    [Tooltip("吃到燭火受擊音效")]
+    public AudioClip hitSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.95f;
+
     [Header("動態追逐與距離設定")]
     [Tooltip("與玩家X距離大於此門檻時，切換為奔跑動畫 run2（預設30）")]
     public float runDistanceThreshold = 30.0f;
@@ -356,6 +367,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         currentState = MonsterState.Appearing;
         Debug.Log("【影子怪物】開始登場（漸漸顯示）...");
 
+        if (appearSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(appearSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(appearSFX, transform.position, sfxVolume);
+        }
+
         transform.localScale = _baseScale * _currentScaleMultiplier;
         SetVisualAlpha(0f);
 
@@ -377,6 +394,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         SetVisualAlpha(1f);
         transform.localScale = _baseScale * _currentScaleMultiplier;
 
+        if (roarSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(roarSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(roarSFX, transform.position, sfxVolume);
+        }
+
         currentState = MonsterState.Chasing;
         Debug.Log("【影子怪物】登場完成，全力追逐！");
     }
@@ -387,6 +410,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _isHitShrinking = true;
 
         PlayAnimationByName(hitAnimationName);
+
+        if (hitSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(hitSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(hitSFX, transform.position, sfxVolume);
+        }
 
         float startMult = _currentScaleMultiplier;
         float elapsed = 0f;
@@ -449,6 +478,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         // 1. 播放 attack2 揮爪動畫 (開始抬手前搖)
         PlayAnimationByName(attackAnimationName);
+
+        if (attackSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(attackSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(attackSFX, transform.position, sfxVolume);
+        }
 
         // 2. 等待巨爪向下揮擊的命中點瞬間 (約 0.55 秒)
         yield return new WaitForSeconds(0.55f);

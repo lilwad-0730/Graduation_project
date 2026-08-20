@@ -49,6 +49,11 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
     [Tooltip("閃光持續時間（秒）")]
     public float reliefFlashDuration = 0.5f;
 
+    [Header("🎵 緩解音效 (Relief SFX)")]
+    [Tooltip("吃到日記紙條緩解窒息時播放的音效 (例如 水下_日誌接觸_02.wav)")]
+    public AudioClip reliefSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
+
     [Header("【視覺 - 暗化顏色】")]
     [Tooltip("暗化顏色（預設純黑）")]
     public Color vignetteColor = Color.black;
@@ -185,6 +190,12 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
     {
         isRelieving = true;
         isPaused    = false;
+
+        if (reliefSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(reliefSFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(reliefSFX, Camera.main != null ? Camera.main.transform.position : Vector3.zero, sfxVolume);
+        }
 
         if (imgFlash != null) StartCoroutine(FlashEffect());
 

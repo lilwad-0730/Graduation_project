@@ -57,8 +57,8 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("是否將鏡頭高度嚴格限制在 SkyBackground 範圍內 (設為 false 則直接跟隨主角)")]
     public bool clampSkyBackgroundHeight = false;
 
-    [Header("🎵 動作音效設定 (Player SFX)")]
-    [Tooltip("地面跑步/走路音效 (例如 Ruined_running，自動在移動期間持續 Loop 播放，完全免剪輯！)")]
+    [Header("🎵 陸地動作音效設定 (Land Action SFX)")]
+    [Tooltip("地面跑步/走路音效 (例如 Ruined_running / 跑步，自動在移動期間持續 Loop 播放)")]
     public AudioClip footstepSFX;
     [Tooltip("起跳蹬地音效 (例如 起跳)")]
     public AudioClip jumpSFX;
@@ -68,9 +68,17 @@ public class PlayerMovement : MonoBehaviour
     public AudioClip landHardSFX;
     [Tooltip("滯空時間大於幾秒時，著地改播重著地回聲音效 (秒，預設 0.75)")]
     public float hardLandAirTimeThreshold = 0.75f;
+
+    [Header("🌊 水下游泳音效設定 (Underwater SFX)")]
+    [Tooltip("水下游泳/划水音效 (例如 水下_游動_01.wav，水下移動時自動 Loop 播放)")]
+    public AudioClip swimSFX;
+    [Tooltip("水下單發氣泡音效 (例如 水下_氣泡單發_01, 02, 03，游泳時隨機播放)")]
+    public AudioClip[] underwaterBubbleSFX;
+    
     [Range(0f, 1f)] public float sfxVolume = 0.85f;
 
     private AudioSource _footstepSource;
+    private AudioSource _swimSource;
     private float _lastAirTime = 0f;
     private bool _wasGroundedLastFrame = true;
     
@@ -373,8 +381,8 @@ public class PlayerMovement : MonoBehaviour
             _lastAirTime = 0f;
             currentAirTime = 0f;
 
-            // 地面跑步音效 Loop 控制 (完全免剪輯，走動時自動 Loop 播放，停下或跳躍自動停止)
-            if (footstepSFX != null)
+            // 陸地跑步音效 Loop 控制 (水下時不播陸地跑步聲)
+            if (footstepSFX != null && !isUnderwater)
             {
                 if (_footstepSource == null)
                 {
@@ -415,11 +423,44 @@ public class PlayerMovement : MonoBehaviour
             currentAirTime += Time.deltaTime;
             _lastAirTime = currentAirTime;
 
-            // 滯空時停止腳步聲
+            // 陸地滯空時停止腳步聲
             if (_footstepSource != null && _footstepSource.isPlaying)
             {
                 _footstepSource.Stop();
             }
+        }
+
+        // ==========================================
+        // 水下游泳音效 Loop 控制 (只要在水下且有移動/上浮按鍵就播放)
+        // ==========================================
+        if (isUnderwater && swimSFX != null)
+        {
+            if (_swimSource == null)
+            {
+                _swimSource = gameObject.AddComponent<AudioSource>();
+                _swimSource.clip = swimSFX;
+                _swimSource.loop = true;
+                _swimSource.playOnAwake = false;
+                _swimSource.volume = sfxVolume * 0.85f;
+            }
+            else if (_swimSource.clip != swimSFX)
+            {
+                _swimSource.clip = swimSFX;
+            }
+
+            bool isMovingInWater = (Mathf.Abs(moveInput) > 0.1f || isPressingSwimUp || Mathf.Abs(rb.linearVelocity.y) > 0.3f) && !isCutsceneFrozen;
+            if (isMovingInWater)
+            {
+                if (!_swimSource.isPlaying) _swimSource.Play();
+            }
+            else
+            {
+                if (_swimSource.isPlaying) _swimSource.Stop();
+            }
+        }
+        else if (_swimSource != null && _swimSource.isPlaying)
+        {
+            _swimSource.Stop();
         }
 
         _wasGroundedLastFrame = isGrounded;

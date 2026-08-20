@@ -17,12 +17,17 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class CandleCollectible : MonoBehaviour, IResettable
 {
-    [Header("燭火設定")]
+    [Header("燭火/道具設定")]
     [Tooltip("收集後是否立刻隱藏（保留 GameObject 本身，僅隱藏視覺）")]
     public bool hideOnCollect = true;
 
     [Tooltip("收集時是否播放粒子特效 Prefab（可留空）")]
     public GameObject collectFxPrefab;
+
+    [Header("🎵 收集音效 (Collect SFX)")]
+    [Tooltip("收集燭火或育兒道具時播放的音效 (例如 水下_育兒物品_奶瓶, 水下_育兒物品_搖鈴, 水下_物件接觸_01 等)")]
+    public AudioClip collectSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
     [Header("【狀態觀察 (勿手動修改)】")]
     public bool isCollected = false;
@@ -68,6 +73,13 @@ public class CandleCollectible : MonoBehaviour, IResettable
             ShadowMonsterController.Instance.OnCandleCollected(this);
         else
             Debug.LogWarning($"【燭火】找不到 ShadowMonsterController！請確認場景中有影子怪物物件。");
+
+        // 播放收集音效
+        if (collectSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(collectSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(collectSFX, transform.position, sfxVolume);
+        }
 
         // 播放收集特效
         if (collectFxPrefab != null)

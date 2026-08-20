@@ -35,8 +35,12 @@ public class NoteRelief : MonoBehaviour
     [Tooltip("偵測玩家的 Tag")]
     public string playerTag = "Player";
 
-    [Tooltip("是否只能被吃一次 (防止重複觸發)")]
-    public bool consumeOnce = true;
+    [Header("🎵 音效設定")]
+    [Tooltip("玩家接觸/吸收紙條時播放的音效 (例如 水下_日誌接觸_02.wav)")]
+    public AudioClip collectSFX;
+    [Tooltip("紙條出現/破隱時播放的音效 (例如 水下_日誌破隱.wav)")]
+    public AudioClip revealSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
     private bool consumed = false;
 
@@ -46,6 +50,12 @@ public class NoteRelief : MonoBehaviour
             noteAnimator = GetComponentInChildren<Animator>();
         if (noteAnimator == null)
             noteAnimator = GetComponent<Animator>();
+
+        if (revealSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(revealSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(revealSFX, transform.position, sfxVolume);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -74,6 +84,13 @@ public class NoteRelief : MonoBehaviour
         consumed = true;
 
         Debug.Log($"[NoteRelief] 玩家吸收了「{noteName}」！觸發窒息緩解效果。");
+
+        // 播放日記接觸/吸收音效
+        if (collectSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(collectSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(collectSFX, transform.position, sfxVolume);
+        }
 
         // 1. 播放吸收動畫
         if (noteAnimator != null)
