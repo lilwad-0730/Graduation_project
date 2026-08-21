@@ -42,6 +42,8 @@ public class GuidanceLight : MonoBehaviour
     public float absorbTriggerDistance = 0.8f;
     [Tooltip("吸收過程淡出時間")]
     public float fadeOutDuration = 1.0f;
+    [Tooltip("淡入還原時間")]
+    public float fadeInDuration = 1.0f;
     [Header("🎵 光絮音效 (Guidance SFX)")]
     [Tooltip("光絮懸停等待音效 (例如 玻璃館_光球懸停.wav)")]
     public AudioClip hoverSFX;
