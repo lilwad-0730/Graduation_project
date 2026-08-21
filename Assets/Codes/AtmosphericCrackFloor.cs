@@ -34,6 +34,11 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
     [Tooltip("微幅震動幅度")]
     public float shakeIntensity = 0.03f;
 
+    [Header("🎵 龜裂音效 (Crack SFX)")]
+    [Tooltip("踩踏產生龜裂時播放的音效 (例如 玻璃館_玻璃輕脆.wav / 玻璃碎裂.mp3 / 玻璃館_踩玻璃.mp3)")]
+    public AudioClip crackSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
+
     private bool hasCracked = false;
     private Vector3 originalPosition;
     private GameObject crackOverlayObject;
@@ -73,6 +78,13 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
     {
         if (hasCracked) return;
         hasCracked = true;
+
+        if (crackSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(crackSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(crackSFX, transform.position, sfxVolume);
+        }
+
         StartCoroutine(CrackRoutine());
     }
 

@@ -74,12 +74,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Header("🎵 怪物音效設定 (Monster SFX)")]
     [Tooltip("怪物登場 / 巨影過頂音效 (例如 水下_巨影過頂.wav)")]
     public AudioClip appearSFX;
-    [Tooltip("怪物追擊咆哮 / 獸吼音效 (例如 獸吼.mp3)")]
+    [Tooltip("怪物追擊咆哮 / 獸吼音效 (例如 玻璃館_怪物吼叫_01.wav, 獸吼.mp3)")]
     public AudioClip roarSFX;
     [Tooltip("怪物揮爪攻擊音效 (例如 獸吼.mp3)")]
     public AudioClip attackSFX;
-    [Tooltip("吃到燭火受擊音效")]
+    [Tooltip("抓到主角受擊音效 (例如 玻璃館_被抓住.wav)")]
+    public AudioClip catchPlayerSFX;
+    [Tooltip("吃到燭火受擊縮小音效 (例如 玻璃館_降級_1色散 / 2顫抖 / 3暈眩)")]
     public AudioClip hitSFX;
+    [Tooltip("漏吃燭火懲罰送回音效 (例如 玻璃館_送回上一盞.wav)")]
+    public AudioClip punishTeleportSFX;
+    [Tooltip("玩家全收集勝利、怪物消散脫離音效 (例如 玻璃館_追逐_脫離.wav)")]
+    public AudioClip vanishSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.95f;
 
     [Header("動態追逐與距離設定")]
@@ -438,6 +444,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private IEnumerator VanishSequence()
     {
         currentState = MonsterState.Vanishing;
+
+        if (vanishSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(vanishSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(vanishSFX, transform.position, sfxVolume);
+        }
+
         // 恢復玩家的移動速度
         if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;
         RemoveFear();
@@ -503,6 +516,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             Debug.Log("💥【影子怪物】巨爪命中主角！定身並觸發重擊震動反饋！");
 
+            if (catchPlayerSFX != null)
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(catchPlayerSFX, player.position, sfxVolume);
+                else AudioSource.PlayClipAtPoint(catchPlayerSFX, player.position, sfxVolume);
+            }
+
             // 定身主角
             if (_pm != null)
             {
@@ -546,6 +565,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (currentState == MonsterState.Punishing) return;
         currentState = MonsterState.Punishing;
+
+        if (punishTeleportSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(punishTeleportSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(punishTeleportSFX, transform.position, sfxVolume);
+        }
 
         _currentScaleMultiplier = 1f;
         transform.localScale = _baseScale;

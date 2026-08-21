@@ -84,6 +84,17 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     [Tooltip("4 顆光球全吸完後，是否觸發鏡牆玻璃碎裂特效")]
     public bool triggerShatterAtEnd = true;
 
+    [Header("🎵 鏡牆演出音效 (Cutscene SFX)")]
+    [Tooltip("光球起飛衝向鏡牆音效 (例如 玻璃館_光離開_01.wav)")]
+    public AudioClip lightTakeoffSFX;
+    [Tooltip("光球觸碰鏡牆消融縮小音效 (例如 玻璃館_入鏡慢.wav)")]
+    public AudioClip lightEnterMirrorSFX;
+    [Tooltip("全螢幕白光閃爍共鳴音效 (例如 玻璃館_冷縫共鳴 / 玻璃館_合體.wav)")]
+    public AudioClip flashResonanceSFX;
+    [Tooltip("鏡牆玻璃碎裂音效 (例如 玻璃碎裂.mp3 / 玻璃館_破鏡牆.wav)")]
+    public AudioClip mirrorShatterSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.95f;
+
     // 全域靜態旗標 (供其他系統即時查詢)
     public static bool IsAnyCutsceneRunning = false;
 
@@ -402,6 +413,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         Vector3 startPos = lightObj.transform.position;
         Vector3 midControlPoint = (startPos + targetPos) * 0.5f + Vector3.up * arcHeight;
 
+        // 播放光球起飛音效
+        if (lightTakeoffSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(lightTakeoffSFX, startPos, sfxVolume);
+            else AudioSource.PlayClipAtPoint(lightTakeoffSFX, startPos, sfxVolume);
+        }
+
         float distance = Vector3.Distance(startPos, targetPos);
         float duration = Mathf.Max(0.4f, distance / flySpeed);
         float elapsed = 0f;
@@ -436,6 +454,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     private IEnumerator MeltAndAbsorbLightRoutine(GameObject lightObj)
     {
         if (lightObj == null) yield break;
+
+        // 播放光球入鏡消融音效
+        if (lightEnterMirrorSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(lightEnterMirrorSFX, lightObj.transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(lightEnterMirrorSFX, lightObj.transform.position, sfxVolume);
+        }
 
         Vector3 originalScale = lightObj.transform.localScale;
         SpriteRenderer[] srs = lightObj.GetComponentsInChildren<SpriteRenderer>(true);
@@ -488,6 +513,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void TriggerWhiteScreenFlash(float totalDuration)
     {
+        // 播放白光閃爍共鳴音效
+        if (flashResonanceSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(flashResonanceSFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(flashResonanceSFX, Camera.main != null ? Camera.main.transform.position : Vector3.zero, sfxVolume);
+        }
+
         if (flashCoroutine != null) StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(WhiteFlashRoutine(totalDuration));
     }
@@ -591,6 +623,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         if (triggerShatterAtEnd && mirrorWall != null)
         {
             Debug.Log("💥【鏡牆演出】4 顆光球充能完畢，觸發鏡牆玻璃碎裂特效！");
+
+            // 播放鏡牆碎裂音效
+            if (mirrorShatterSFX != null)
+            {
+                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(mirrorShatterSFX, mirrorWall.transform.position, sfxVolume);
+                else AudioSource.PlayClipAtPoint(mirrorShatterSFX, mirrorWall.transform.position, sfxVolume);
+            }
 
             Destructible dest = mirrorWall.GetComponent<Destructible>();
             if (dest == null) dest = mirrorWall.GetComponentInChildren<Destructible>();

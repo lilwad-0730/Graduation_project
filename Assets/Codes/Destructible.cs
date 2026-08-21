@@ -30,6 +30,11 @@ public class Destructible : MonoBehaviour, IResettable
     [Tooltip("碎裂爆裂力道")]
     public float explosionForce = 4.5f;
 
+    [Header("🎵 碎裂音效 (Shatter SFX)")]
+    [Tooltip("碎裂時播放的音效 (例如 玻璃碎裂.mp3 / 玻璃館_破鏡牆.wav)")]
+    public AudioClip shatterSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.95f;
+
     private bool hasShattered = false;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
@@ -48,6 +53,13 @@ public class Destructible : MonoBehaviour, IResettable
     {
         if (hasShattered) return;
         hasShattered = true;
+
+        // 播放碎裂音效
+        if (shatterSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(shatterSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(shatterSFX, transform.position, sfxVolume);
+        }
 
         if (shatteredPrefab != null)
         {

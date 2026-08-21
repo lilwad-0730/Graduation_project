@@ -42,8 +42,14 @@ public class GuidanceLight : MonoBehaviour
     public float absorbTriggerDistance = 0.8f;
     [Tooltip("吸收過程淡出時間")]
     public float fadeOutDuration = 1.0f;
-    [Tooltip("傳送後淡入時間")]
-    public float fadeInDuration = 1.0f;
+    [Header("🎵 光絮音效 (Guidance SFX)")]
+    [Tooltip("光絮懸停等待音效 (例如 玻璃館_光球懸停.wav)")]
+    public AudioClip hoverSFX;
+    [Tooltip("光絮起飛前往下一個路徑點音效 (例如 玻璃館_光離開_01.wav)")]
+    public AudioClip flyAwaySFX;
+    [Tooltip("光絮被吸收/合體音效 (例如 玻璃館_合體.wav / 玻璃館_解體_03.wav)")]
+    public AudioClip absorbSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
     // 狀態屬性，便於外部偵測
     public bool IsAbsorbing { get; private set; } = false;
@@ -211,6 +217,13 @@ public class GuidanceLight : MonoBehaviour
         // 2. 停頓一下 (讓玩家感覺到「觸發了」某件事)
         yield return new WaitForSeconds(flyDelay);
 
+        // 播放光球起飛音效
+        if (flyAwaySFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(flyAwaySFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(flyAwaySFX, transform.position, sfxVolume);
+        }
+
         // 3. 切換目標點
         currentWaypointIndex++;
         Transform nextWP = waypoints[currentWaypointIndex];
@@ -240,6 +253,13 @@ public class GuidanceLight : MonoBehaviour
     {
         IsAbsorbing = true;
         if (pm != null) pm.isCutsceneFrozen = true;
+
+        // 播放光球吸收/合體音效
+        if (absorbSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(absorbSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(absorbSFX, transform.position, sfxVolume);
+        }
 
         // 1. 停止粒子發射
         foreach (var ps in particleSystems)
