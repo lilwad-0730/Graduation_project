@@ -80,7 +80,7 @@ public class NoteRelief : MonoBehaviour
 
     private void Absorb()
     {
-        if (consumeOnce && consumed) return;
+        if (consumed) return;
         consumed = true;
 
         Debug.Log($"[NoteRelief] 玩家吸收了「{noteName}」！觸發窒息緩解效果。");

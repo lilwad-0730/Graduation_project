@@ -448,7 +448,8 @@ public class PlayerMovement : MonoBehaviour
                 _swimSource.clip = swimSFX;
             }
 
-            bool isMovingInWater = (Mathf.Abs(moveInput) > 0.1f || isPressingSwimUp || Mathf.Abs(rb.linearVelocity.y) > 0.3f) && !isCutsceneFrozen;
+            bool isPressingUpKey = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+            bool isMovingInWater = (Mathf.Abs(moveInput) > 0.1f || isPressingUpKey || Mathf.Abs(rb.linearVelocity.y) > 0.3f) && !isCutsceneFrozen;
             if (isMovingInWater)
             {
                 if (!_swimSource.isPlaying) _swimSource.Play();
