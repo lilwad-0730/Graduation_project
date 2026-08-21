@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/desert.unity
     guid: 8dc312877f0127141a17d86c4dea85c0
+  - enabled: 1
+    path: Assets/Scenes/dark glasses.unity
+    guid: 7e614449caa0f494bb0f66cb13d276c2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

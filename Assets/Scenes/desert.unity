@@ -5935,6 +5935,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BGMZone
   levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  playOnStart: 1
   stopOnExit: 0
 --- !u!1 &347544275
 GameObject:
@@ -6514,6 +6515,80 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cfd0ad5bc00316e4db89f86b376918d1, type: 3}
+--- !u!1 &468753309
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 468753312}
+  - component: {fileID: 468753311}
+  - component: {fileID: 468753310}
+  m_Layer: 0
+  m_Name: Transition_To_Underwater
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &468753310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468753309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33639b92a51991b44a5395fbe98174f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneTransitionZone
+  nextSceneName: underwater
+  targetSpawnPointName: 
+  transitionMode: 1
+  fadeDuration: 1.2
+  sinkSpeed: 1.2
+  targetSinkDepth: 2.5
+  transitionSFX: {fileID: 0}
+  sfxVolume: 0.9
+--- !u!65 &468753311
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468753309}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.8224945, y: 13.942949, z: 1}
+  m_Center: {x: -2.1487503, y: 1.3947439, z: 0}
+--- !u!4 &468753312
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468753309}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 250.14, y: -1.47, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &498734890
 GameObject:
   m_ObjectHideFlags: 0
@@ -7044,6 +7119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BGMZone
   levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  playOnStart: 1
   stopOnExit: 0
 --- !u!1 &576766074
 GameObject:
@@ -7838,6 +7914,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BGMZone
   levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  playOnStart: 1
   stopOnExit: 0
 --- !u!1 &918943784
 GameObject:
@@ -8210,7 +8287,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 062dc0a37729fdd41b5c6dc18d910cbd, type: 3}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.615513
+      value: 224.6
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -8394,6 +8471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BGMZone
   levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  playOnStart: 1
   stopOnExit: 0
 --- !u!1 &1132697906
 GameObject:
@@ -15863,6 +15941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BGMZone
   levelMusic: {fileID: 8300000, guid: 17e16e677f0a3c84c8b512ec6b3d28dc, type: 3}
+  playOnStart: 1
   stopOnExit: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -15924,3 +16003,4 @@ SceneRoots:
   - {fileID: 1978969099}
   - {fileID: 101475004}
   - {fileID: 1657680604}
+  - {fileID: 468753312}

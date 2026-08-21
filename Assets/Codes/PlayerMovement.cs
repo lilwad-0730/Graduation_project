@@ -448,8 +448,19 @@ public class PlayerMovement : MonoBehaviour
                 _swimSource.clip = swimSFX;
             }
 
-            bool isPressingUpKey = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
-            bool isMovingInWater = (Mathf.Abs(moveInput) > 0.1f || isPressingUpKey || Mathf.Abs(rb.linearVelocity.y) > 0.3f) && !isCutsceneFrozen;
+            // 只有當玩家主動按下 WASD、方向鍵或空白鍵時才判定為正在划水移動
+            bool hasActiveSwimInput = (Mathf.Abs(moveInput) > 0.1f)
+                                   || Input.GetKey(KeyCode.W) 
+                                   || Input.GetKey(KeyCode.S) 
+                                   || Input.GetKey(KeyCode.A) 
+                                   || Input.GetKey(KeyCode.D) 
+                                   || Input.GetKey(KeyCode.Space) 
+                                   || Input.GetKey(KeyCode.UpArrow) 
+                                   || Input.GetKey(KeyCode.DownArrow) 
+                                   || Input.GetKey(KeyCode.LeftArrow) 
+                                   || Input.GetKey(KeyCode.RightArrow);
+
+            bool isMovingInWater = hasActiveSwimInput && !isCutsceneFrozen;
             if (isMovingInWater)
             {
                 if (!_swimSource.isPlaying) _swimSource.Play();
@@ -672,15 +683,12 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                // 平地或空中：非水下時開啟正常重力
-                if (!isUnderwater)
-                {
-                    rb.useGravity = true;
-                }
+                // 平地、空中或水下：開啟正常重力 (水下靠 FixedUpdate 的反向浮力來精確調控重力比例)
+                rb.useGravity = true;
 
                 Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
 
-                if (isGrounded && !isJumping && Mathf.Abs(moveInput) <= 0.05f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     targetVelocity.y = 0f;
                 }
@@ -1083,6 +1091,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isUnderwater && rb != null && !rb.isKinematic)
         {
+            // 確保重力開啟
+            rb.useGravity = true;
+
             // 1. 基礎浮力與微重力抵消 (Counter-Gravity / Buoyancy)
             float gravityMagnitude = Mathf.Abs(Physics.gravity.y);
             float baseCounterForce = gravityMagnitude * (1f - Mathf.Clamp01(underwaterGravityScale)) * rb.mass;
@@ -1104,28 +1115,37 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 vel = rb.linearVelocity;
 
-            // 3. 水下游泳推進與垂直水阻
+            // 3. 水下游泳推進與下潛控制 (W/Space 向上游，S/下方向鍵 主動下潛)
             bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+            bool isPressingSwimDown = !isCutsceneFrozen && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+
             if (isPressingSwimUp && !isSwimExhausted)
             {
                 // 按住 W / Space / 上方向鍵 向上游泳推進
                 vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
             }
+            else if (isPressingSwimDown)
+            {
+                // 按住 S / 下方向鍵 主動向下快速下潛
+                vel.y = Mathf.MoveTowards(vel.y, -underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
+            }
             else if (vel.y > 0.1f)
             {
-                // 【核心修復】：水阻僅作用於向上衝勢 (vel.y > 0)，放開 W 鍵時向上速度平滑減速；
-                // 絕不對向下掉落 (vel.y < 0) 進行抹平，否則每幀拉回 0 會導致玩家卡在空中無法正常下沉！
+                // 放開向上按鍵時，向上速度平滑減速 (水阻)，之後順應水中重力自然向下沉降
                 vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime * 4f);
             }
 
-            // 4. 水中最大沉降速度動態限制 (Terminal Sinking Speed Limit with Depth)
-            float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
-                ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
-                : underwaterMaxFallSpeed;
-
-            if (vel.y < effectiveMaxFallSpeed)
+            // 4. 水中最大自然沉降速度動態限制 (當沒有按 S 主動下潛時，限制自然下沉速度)
+            if (!isPressingSwimDown)
             {
-                vel.y = effectiveMaxFallSpeed;
+                float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
+                    ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
+                    : underwaterMaxFallSpeed;
+
+                if (vel.y < effectiveMaxFallSpeed)
+                {
+                    vel.y = effectiveMaxFallSpeed;
+                }
             }
 
             rb.linearVelocity = vel;
