@@ -12,12 +12,28 @@ public class MenuSpriteHoverEffect : MonoBehaviour, IPointerEnterHandler, IPoint
     public Sprite hoverSprite;     // 接觸/選取時 Sprite (如 menu_selcted)
 
     private Image uiImage;
-    private SpriteRenderer spriteRenderer;
+    
+    [Header("音效設置")]
+    [SerializeField] private AudioClip rolloverSound;
+    [SerializeField, Range(0f, 1f)] private float rolloverVolume = 1f;
 
-    private void Awake()
+    private AudioSource audioSource;
+private SpriteRenderer spriteRenderer;
+
+private void Awake()
     {
         uiImage = GetComponent<Image>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.spatialBlend = 0f;
 
         // 自動載入預設圖片
         if (defaultSprite == null)
@@ -26,8 +42,8 @@ public class MenuSpriteHoverEffect : MonoBehaviour, IPointerEnterHandler, IPoint
             else if (spriteRenderer != null && spriteRenderer.sprite != null) defaultSprite = spriteRenderer.sprite;
         }
 
-        // 初始化為預設 Sprite
-        SetSprite(defaultSprite);
+        // 初始化為預設 Sprite，不播放音效
+        SetSprite(defaultSprite, false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -50,33 +66,41 @@ public class MenuSpriteHoverEffect : MonoBehaviour, IPointerEnterHandler, IPoint
         OnHoverExit();
     }
 
-    public void OnHoverEnter()
+public void OnHoverEnter()
     {
-        if (hoverSprite != null)
-        {
-            SetSprite(hoverSprite);
-        }
+        SetSprite(hoverSprite, true);
     }
 
-    public void OnHoverExit()
+public void OnHoverExit()
     {
-        if (defaultSprite != null)
-        {
-            SetSprite(defaultSprite);
-        }
+        // 恢復預設 Sprite，但不播放音效
+        SetSprite(defaultSprite, false);
     }
 
-    private void SetSprite(Sprite s)
+private void SetSprite(Sprite sprite, bool playSound)
     {
-        if (s == null) return;
-
-        if (uiImage != null)
+        if (sprite == null)
         {
-            uiImage.sprite = s;
+            return;
         }
-        if (spriteRenderer != null)
+
+        bool spriteChanged = false;
+
+        if (uiImage != null && uiImage.sprite != sprite)
         {
-            spriteRenderer.sprite = s;
+            uiImage.sprite = sprite;
+            spriteChanged = true;
+        }
+
+        if (spriteRenderer != null && spriteRenderer.sprite != sprite)
+        {
+            spriteRenderer.sprite = sprite;
+            spriteChanged = true;
+        }
+
+        if (spriteChanged && playSound && rolloverSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(rolloverSound, rolloverVolume);
         }
     }
 }
