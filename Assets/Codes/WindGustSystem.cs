@@ -8,7 +8,31 @@ public enum WindState { Blowing, Calm }
 /// </summary>
 public class WindGustSystem : MonoBehaviour, IResettable
 {
-    public static bool IsPlayerSheltered = false;
+    private static int _shelteredCount = 0;
+    public static bool IsPlayerSheltered
+    {
+        get => _shelteredCount > 0;
+        set
+        {
+            if (!value) _shelteredCount = 0;
+            else if (_shelteredCount == 0) _shelteredCount = 1;
+        }
+    }
+
+    public static void RegisterPlayerShelter()
+    {
+        _shelteredCount++;
+    }
+
+    public static void UnregisterPlayerShelter()
+    {
+        _shelteredCount = Mathf.Max(0, _shelteredCount - 1);
+    }
+
+    public static void ClearShelterCount()
+    {
+        _shelteredCount = 0;
+    }
 
     [Header("時間與強度設定")]
     [Tooltip("每次吹風的持續時間 (秒，預設 3)")]
@@ -33,13 +57,20 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     private void Start()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            playerRb = playerObj.GetComponent<Rigidbody>();
-        }
-
+        EnsurePlayerReference();
         ResetWindCycle();
+    }
+
+    private void EnsurePlayerReference()
+    {
+        if (playerRb == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerRb = playerObj.GetComponent<Rigidbody>();
+            }
+        }
     }
 
     private void Update()

@@ -89,13 +89,15 @@ public class VerticalConveyorPlatform2D : MonoBehaviour
     public float BottomY => bottomY;
     public float MoveSpeed => moveSpeed;
 
+    private static bool _isGeneratingClones = false;
+
     private void Awake()
     {
         // 抓取當前 X 座標
         fixedX = transform.position.x;
 
-        // 若開啟自動生成多個平台，且本身尚未生成過子物件
-        if (autoGenerateClonePlatforms && spawnedPlatforms.Count == 0)
+        // 若開啟自動生成多個平台，且非克隆生成過程中
+        if (autoGenerateClonePlatforms && !_isGeneratingClones && spawnedPlatforms.Count == 0)
         {
             GeneratePlatforms();
         }
@@ -119,46 +121,54 @@ public class VerticalConveyorPlatform2D : MonoBehaviour
 
     private void GeneratePlatforms()
     {
-        // 將第一個平台 (自己) 作為第一個範本
-        SetupRigidbody();
-        spawnedPlatforms.Add(this);
-
-        // 確保單一平台複製品不會再重複生成
-        autoGenerateClonePlatforms = false;
-
-        float totalSpan = Mathf.Abs(topY - bottomY);
-        if (totalPlatformCount <= 0 && spacingY > 0)
+        _isGeneratingClones = true;
+        try
         {
-            totalPlatformCount = Mathf.FloorToInt(totalSpan / spacingY);
-        }
+            // 將第一個平台 (自己) 作為第一個範本
+            SetupRigidbody();
+            spawnedPlatforms.Add(this);
 
-        // 起始 Y 座標
-        float startY = (direction == MoveDirection.TopToBottom) ? topY : bottomY;
-        float step = (direction == MoveDirection.TopToBottom) ? -spacingY : spacingY;
+            // 確保單一平台複製品不會再重複生成
+            autoGenerateClonePlatforms = false;
 
-        // 設定第一個平台位置
-        transform.position = new Vector3(fixedX, startY, transform.position.z);
-
-        // 複製建立其餘平台
-        for (int i = 1; i < totalPlatformCount; i++)
-        {
-            float targetY = startY + (step * i);
-            GameObject clone = Instantiate(gameObject, new Vector3(fixedX, targetY, transform.position.z), transform.rotation, transform.parent);
-            clone.name = $"{gameObject.name}_{i + 1}";
-
-            var cloneComp = clone.GetComponent<VerticalConveyorPlatform2D>();
-            if (cloneComp != null)
+            float totalSpan = Mathf.Abs(topY - bottomY);
+            if (totalPlatformCount <= 0 && spacingY > 0)
             {
-                cloneComp.autoGenerateClonePlatforms = false;
-                cloneComp.fixedX = fixedX;
-                cloneComp.topY = topY;
-                cloneComp.bottomY = bottomY;
-                cloneComp.moveSpeed = moveSpeed;
-                cloneComp.direction = direction;
-                cloneComp.playerLayer = playerLayer;
-                cloneComp.playerTag = playerTag;
-                spawnedPlatforms.Add(cloneComp);
+                totalPlatformCount = Mathf.FloorToInt(totalSpan / spacingY);
             }
+
+            // 起始 Y 座標
+            float startY = (direction == MoveDirection.TopToBottom) ? topY : bottomY;
+            float step = (direction == MoveDirection.TopToBottom) ? -spacingY : spacingY;
+
+            // 設定第一個平台位置
+            transform.position = new Vector3(fixedX, startY, transform.position.z);
+
+            // 複製建立其餘平台
+            for (int i = 1; i < totalPlatformCount; i++)
+            {
+                float targetY = startY + (step * i);
+                GameObject clone = Instantiate(gameObject, new Vector3(fixedX, targetY, transform.position.z), transform.rotation, transform.parent);
+                clone.name = $"{gameObject.name}_{i + 1}";
+
+                var cloneComp = clone.GetComponent<VerticalConveyorPlatform2D>();
+                if (cloneComp != null)
+                {
+                    cloneComp.autoGenerateClonePlatforms = false;
+                    cloneComp.fixedX = fixedX;
+                    cloneComp.topY = topY;
+                    cloneComp.bottomY = bottomY;
+                    cloneComp.moveSpeed = moveSpeed;
+                    cloneComp.direction = direction;
+                    cloneComp.playerLayer = playerLayer;
+                    cloneComp.playerTag = playerTag;
+                    spawnedPlatforms.Add(cloneComp);
+                }
+            }
+        }
+        finally
+        {
+            _isGeneratingClones = false;
         }
     }
 

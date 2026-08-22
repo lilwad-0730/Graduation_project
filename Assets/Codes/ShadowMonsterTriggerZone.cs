@@ -15,7 +15,7 @@ using UnityEngine;
 ///   重生後怪物回到 Dormant 狀態，玩家若再次進入此觸發區會再次啟動怪物（符合重置需求）。
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class ShadowMonsterTriggerZone : MonoBehaviour
+public class ShadowMonsterTriggerZone : MonoBehaviour, IResettable
 {
     [Tooltip("觸發後是否只允許啟動一次（建議關閉，讓重生後重新觸發）")]
     public bool triggerOnce = false;
@@ -52,5 +52,11 @@ public class ShadowMonsterTriggerZone : MonoBehaviour
         if (go.CompareTag("Player")) return true;
         if (go.GetComponent<PlayerMovement>() != null) return true;
         return false;
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        _hasTriggered = false;
     }
 }

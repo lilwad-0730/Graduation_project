@@ -23,9 +23,9 @@ public class HorizontalMovingPlatform : MonoBehaviour, IResettable
     [Tooltip("是否自動平滑漸進 (SmoothStep 緩入緩出)")]
     public bool smoothMovement = true;
 
-    [Header("玩家防滑落機制")]
-    [Tooltip("當玩家站在平台上時，是否自動設為平台的子物件")]
-    public bool parentPlayerOnRide = true;
+    [Header("玩家防滑落機制 (由 PlayerMovement 剛體速度直接接管)")]
+    [Tooltip("若開啟，將玩家設為子物件 (預設關閉：PlayerMovement 已原生依據 Velocity 平滑帶動，避免 2 倍速滑動與縮放變形)")]
+    public bool parentPlayerOnRide = false;
 
     /// <summary>
     /// 平台目前在世界座標下的即時移動速度向量

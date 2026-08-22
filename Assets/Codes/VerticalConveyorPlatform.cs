@@ -94,14 +94,16 @@ public class VerticalConveyorPlatform : MonoBehaviour
     public float BottomY => bottomY;
     public float MoveSpeed => moveSpeed;
 
+    private static bool _isGeneratingClones = false;
+
     private void Awake()
     {
         // 快取位置座標
         fixedX = transform.position.x;
         fixedZ = transform.position.z;
 
-        // 若開啟自動生成多個平台
-        if (autoGenerateClonePlatforms && spawnedPlatforms.Count == 0)
+        // 若開啟自動生成多個平台，且非克隆生成過程中
+        if (autoGenerateClonePlatforms && !_isGeneratingClones && spawnedPlatforms.Count == 0)
         {
             GeneratePlatforms();
         }
@@ -124,11 +126,14 @@ public class VerticalConveyorPlatform : MonoBehaviour
 
     private void GeneratePlatforms()
     {
-        SetupRigidbody();
-        spawnedPlatforms.Add(this);
+        _isGeneratingClones = true;
+        try
+        {
+            SetupRigidbody();
+            spawnedPlatforms.Add(this);
 
-        // 確保單一平台複製品不會再重複生成
-        autoGenerateClonePlatforms = false;
+            // 確保單一平台複製品不會再重複生成
+            autoGenerateClonePlatforms = false;
 
         float totalSpan = Mathf.Abs(topY - bottomY);
         int autoCalculatedCount = (spacingY > 0) ? Mathf.CeilToInt(totalSpan / spacingY) : 1;
@@ -166,6 +171,11 @@ public class VerticalConveyorPlatform : MonoBehaviour
                 cloneComp.playerTag = playerTag;
                 spawnedPlatforms.Add(cloneComp);
             }
+        }
+        }
+        finally
+        {
+            _isGeneratingClones = false;
         }
     }
 

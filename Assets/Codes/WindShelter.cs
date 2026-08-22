@@ -87,11 +87,14 @@ public class WindShelter : MonoBehaviour, IResettable
     {
         if (playerObj.CompareTag("Player") || playerObj.name == "Player" || playerObj.GetComponentInParent<PlayerMovement>() != null)
         {
-            isPlayerInside = true;
-            if (!hasCollapsed)
+            if (!isPlayerInside)
             {
-                WindGustSystem.IsPlayerSheltered = true;
-                Debug.Log($"【掩體偵測】玩家躲入掩體 '{gameObject.name}'。 (isTrueShelter: {isTrueShelter})");
+                isPlayerInside = true;
+                if (!hasCollapsed)
+                {
+                    WindGustSystem.RegisterPlayerShelter();
+                    Debug.Log($"【掩體偵測】玩家躲入掩體 '{gameObject.name}'。 (isTrueShelter: {isTrueShelter})");
+                }
             }
         }
     }
@@ -100,24 +103,28 @@ public class WindShelter : MonoBehaviour, IResettable
     {
         if (playerObj.CompareTag("Player") || playerObj.name == "Player" || playerObj.GetComponentInParent<PlayerMovement>() != null)
         {
-            isPlayerInside = false;
-            WindGustSystem.IsPlayerSheltered = false;
-            Debug.Log($"【掩體偵測】玩家離開掩體 '{gameObject.name}'。");
-
-            if (!isTrueShelter && collapseCoroutine != null)
+            if (isPlayerInside)
             {
-                StopCoroutine(collapseCoroutine);
-                collapseCoroutine = null;
+                isPlayerInside = false;
+                if (!hasCollapsed)
+                {
+                    WindGustSystem.UnregisterPlayerShelter();
+                }
+                Debug.Log($"【掩體偵測】玩家離開掩體 '{gameObject.name}'。");
+
+                if (!isTrueShelter && collapseCoroutine != null)
+                {
+                    StopCoroutine(collapseCoroutine);
+                    collapseCoroutine = null;
+                }
             }
         }
     }
 
     private void OnTriggerEnter(Collider other) => HandlePlayerEnter(other.gameObject);
-    private void OnTriggerStay(Collider other) => HandlePlayerEnter(other.gameObject);
     private void OnTriggerExit(Collider other) => HandlePlayerExit(other.gameObject);
 
     private void OnTriggerEnter2D(Collider2D other) => HandlePlayerEnter(other.gameObject);
-    private void OnTriggerStay2D(Collider2D other) => HandlePlayerEnter(other.gameObject);
     private void OnTriggerExit2D(Collider2D other) => HandlePlayerExit(other.gameObject);
 
     private IEnumerator CollapseSequence()
@@ -138,7 +145,10 @@ public class WindShelter : MonoBehaviour, IResettable
         }
 
         // 2. 碎石爆開發生的同時，掩體保護才正式宣告失效！
-        WindGustSystem.IsPlayerSheltered = false;
+        if (isPlayerInside)
+        {
+            WindGustSystem.UnregisterPlayerShelter();
+        }
         collapseCoroutine = null;
     }
 
@@ -150,8 +160,11 @@ public class WindShelter : MonoBehaviour, IResettable
             StopCoroutine(collapseCoroutine);
             collapseCoroutine = null;
         }
+        if (isPlayerInside && !hasCollapsed)
+        {
+            WindGustSystem.UnregisterPlayerShelter();
+        }
         isPlayerInside = false;
         hasCollapsed = false;
-        // 註：若假掩體被 Shatter 關閉，Destructible.cs 的 Reset 亦會將其 activeSelf 設回原樣，因此這裡僅重置變數。
     }
 }

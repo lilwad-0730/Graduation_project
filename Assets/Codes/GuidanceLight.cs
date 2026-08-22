@@ -45,10 +45,6 @@ public class GuidanceLight : MonoBehaviour
     [Tooltip("淡入還原時間")]
     public float fadeInDuration = 1.0f;
     [Header("🎵 光絮音效 (Guidance SFX)")]
-    [Tooltip("光絮懸停等待音效 (例如 玻璃館_光球懸停.wav)")]
-    public AudioClip hoverSFX;
-    [Tooltip("光絮起飛前往下一個路徑點音效 (例如 玻璃館_光離開_01.wav)")]
-    public AudioClip flyAwaySFX;
     [Tooltip("光絮被吸收/合體音效 (例如 玻璃館_合體.wav / 玻璃館_解體_03.wav)")]
     public AudioClip absorbSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
@@ -64,13 +60,13 @@ public class GuidanceLight : MonoBehaviour
     private Vector3 logicPosition; 
     private bool isLockingPlayer = false; // 是否正在鎖定玩家看動畫
 
-    // 視覺元件快取與原始參數
     private SpriteRenderer[] spriteRenderers;
     private Light[] lights;
     private ParticleSystem[] particleSystems;
     private Color[] originalSpriteColors;
     private float[] originalLightIntensities;
     private Coroutine absorbCoroutine;
+    private AudioSource hoverAudioSource;
 
     void Start()
     {
@@ -101,6 +97,12 @@ public class GuidanceLight : MonoBehaviour
 
     void Update()
     {
+        // 鏡牆演出進行中時，完全交由 MirrorWallCutsceneManager 主控發聲與動態
+        if (MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+        {
+            return;
+        }
+
         if (waypoints == null || waypoints.Length == 0 || player == null) return;
         
         PlayerMovement pm = player.GetComponent<PlayerMovement>();
@@ -218,13 +220,6 @@ public class GuidanceLight : MonoBehaviour
 
         // 2. 停頓一下 (讓玩家感覺到「觸發了」某件事)
         yield return new WaitForSeconds(flyDelay);
-
-        // 播放光球起飛音效
-        if (flyAwaySFX != null)
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(flyAwaySFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(flyAwaySFX, transform.position, sfxVolume);
-        }
 
         // 3. 切換目標點
         currentWaypointIndex++;
@@ -346,6 +341,11 @@ public class GuidanceLight : MonoBehaviour
 
     private void SetVisualAlpha(float alpha)
     {
+        if (hoverAudioSource != null)
+        {
+            hoverAudioSource.volume = sfxVolume * alpha;
+        }
+
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
@@ -366,6 +366,12 @@ public class GuidanceLight : MonoBehaviour
 
     private void RestoreVisuals()
     {
+        if (hoverAudioSource != null)
+        {
+            hoverAudioSource.volume = sfxVolume;
+            if (!hoverAudioSource.isPlaying) hoverAudioSource.Play();
+        }
+
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
