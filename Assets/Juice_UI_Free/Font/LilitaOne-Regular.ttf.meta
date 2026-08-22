@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: c57b9d15f837a3c4f905243843be82b4
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Lilita One
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 353086
+  packageName: Juice UI Free
+  packageVersion: v2.0.0 Free
+  assetPath: Assets/Juice_UI_Free/Font/LilitaOne-Regular.ttf
+  uploadId: 864848

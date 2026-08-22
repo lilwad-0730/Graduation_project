@@ -1,0 +1,46 @@
+================================================================================
+THIRD-PARTY NOTICES for Juice UI Free
+================================================================================
+
+This package contains content from the following third parties, used under the licenses specified below.
+
+--------------------------------------------------------------------------------
+I. FONTS
+--------------------------------------------------------------------------------
+
+This asset uses the following fonts, all of which are licensed under the
+SIL OPEN FONT LICENSE Version 1.1.
+
+A copy of the full license text is included at the end of this document.
+
+1. Font: Lilita One
+   - Creator: Juan Montoreano
+   - Source: https://fonts.google.com/specimen/Lilita+One?query=lil
+
+3. Font: Passion One
+   - Creator: Fontstage
+   - Source: https://fonts.google.com/specimen/Passion+One?query=Passion+One
+
+**--------------------------------------------------------------------------------
+II. AUDIO
+--------------------------------------------------------------------------------
+
+All audio files included in this package are from the "UI Audio" pack by Kenney.
+These assets are licensed under the Creative Commons Zero v1.0 Universal license (CC0 1.0), 
+effectively placing them in the public domain.
+
+- Creator: Kenney Vleugels
+- Source: https://kenney.nl/assets/ui-audio
+- License: https://creativecommons.org/publicdomain/zero/1.0/
+
+--------------------------------------------------------------------------------**
+III. ART
+--------------------------------------------------------------------------------
+
+All other art assets (sprites, icons, logos) included in this 
+package were created by the publisher and are covered by the standard 
+Unity Asset Store EULA.
+
+--------------------------------------------------------------------------------
+IV. SIL OPEN FONT LICENSE Version 1.1 - FULL TEXT
+--------------------------------------------------------------------------------

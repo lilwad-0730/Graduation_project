@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: 567d38dc9b6fa554ebb79980c7167029
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Passion One
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 353086
+  packageName: Juice UI Free
+  packageVersion: v2.0.0 Free
+  assetPath: Assets/Juice_UI_Free/Font/PassionOne-Black.ttf
+  uploadId: 864848
