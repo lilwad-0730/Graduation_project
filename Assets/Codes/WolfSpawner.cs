@@ -5,7 +5,7 @@ using System.Collections;
 /// 狼動態生成出生點系統。
 /// 當主角觸發後，複製生成一隻全新的狼，漸漸淡入顯示，並在主角離開設定距離後啟動追逐。
 /// </summary>
-public class WolfSpawner : MonoBehaviour
+public class WolfSpawner : MonoBehaviour, IResettable
 {
     [Header("狼的模板 (可拉場景中的狼物件，或專案的狼預製體 Prefab)")]
     [Tooltip("複製生成新狼的模板物件。必須掛載了 WolfEnemy, WolfSpriteAnimator 等腳本。")]
@@ -239,6 +239,21 @@ public class WolfSpawner : MonoBehaviour
                 Color c = sr.color;
                 sr.color = new Color(c.r, c.g, c.b, 1f);
             }
+        }
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        StopAllCoroutines();
+        hasSpawned = false;
+        isWolfActivated = false;
+        if (spawnedWolf != null)
+        {
+            Destroy(spawnedWolf);
+            spawnedWolf = null;
+            spawnedWolfEnemy = null;
+            spawnedWolfCollider = null;
         }
     }
 }

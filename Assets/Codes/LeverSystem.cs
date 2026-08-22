@@ -3,8 +3,9 @@ using UnityEngine;
 /// <summary>
 /// 控制拉桿機關解鎖巨石掉落的系統。
 /// 支援三種視覺效果：圖片水平翻轉 (FlipX)、旋轉角度 (Rotate) 與圖片切換 (SpriteSwap)。
+/// 支援 IResettable：玩家重生時可完整復原拉桿與巨石初始鎖定狀態。
 /// </summary>
-public class LeverSystem : MonoBehaviour
+public class LeverSystem : MonoBehaviour, IResettable
 {
     [Header("目標物體")]
     [Tooltip("要被解鎖掉落的巨石 Rigidbody (例如 rock-new)")]
@@ -49,6 +50,8 @@ public class LeverSystem : MonoBehaviour
     private bool isPlayerInZone = false;
     private Sprite originalSprite;
     private Quaternion originalRotation;
+    private Vector3 _rockInitialPosition;
+    private Quaternion _rockInitialRotation;
 
     private void Start()
     {
@@ -64,6 +67,8 @@ public class LeverSystem : MonoBehaviour
         // 初始狀態下，確保目標巨石是鎖定的 (Kinematic 鎖死，不受重力影響)
         if (targetRock != null)
         {
+            _rockInitialPosition = targetRock.transform.position;
+            _rockInitialRotation = targetRock.transform.rotation;
             targetRock.isKinematic = true;
         }
     }
@@ -169,6 +174,42 @@ public class LeverSystem : MonoBehaviour
         if (AudioManager.Instance != null && completedSound != null)
         {
             AudioManager.Instance.PlaySFXAt(completedSound, transform.position, soundVolume);
+        }
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        StopAllCoroutines();
+        isPulled = false;
+        isPlayerInZone = false;
+
+        if (targetRock != null)
+        {
+            targetRock.isKinematic = true;
+            targetRock.linearVelocity = Vector3.zero;
+            targetRock.angularVelocity = Vector3.zero;
+            if (_rockInitialPosition != Vector3.zero)
+            {
+                targetRock.transform.position = _rockInitialPosition;
+                targetRock.transform.rotation = _rockInitialRotation;
+            }
+        }
+
+        if (leverRenderer != null)
+        {
+            leverRenderer.flipX = false;
+            leverRenderer.transform.localRotation = originalRotation;
+            if (originalSprite != null)
+            {
+                leverRenderer.sprite = originalSprite;
+            }
+        }
+
+        if (leverAnimator != null)
+        {
+            leverAnimator.Rebind();
+            leverAnimator.Update(0f);
         }
     }
 }

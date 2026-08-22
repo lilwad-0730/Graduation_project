@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class SequentialRevealTrigger : MonoBehaviour
+public class SequentialRevealTrigger : MonoBehaviour, IResettable
 {
     public enum RevealType
     {
@@ -354,5 +354,24 @@ public class SequentialRevealTrigger : MonoBehaviour
             }
         }
         _activeSequenceCoroutine = null;
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        if (_activeSequenceCoroutine != null)
+        {
+            StopCoroutine(_activeSequenceCoroutine);
+            _activeSequenceCoroutine = null;
+        }
+        _isTriggered = false;
+        _activeStones.Clear();
+        foreach (var state in _cachedStates)
+        {
+            if (state != null)
+            {
+                SetTargetVisibility(state, false, 0f);
+            }
+        }
     }
 }

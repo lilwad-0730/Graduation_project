@@ -85,6 +85,10 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     public bool triggerShatterAtEnd = true;
 
     [Header("🎵 鏡牆演出音效 (Cutscene SFX)")]
+    [Tooltip("演繹啟動前，玩家靠近光球群時的懸停氛圍音效 (例如 玻璃館_光球懸停.wav)")]
+    public AudioClip lightHoverSFX;
+    [Tooltip("玩家距離光球多近時開始聽到懸停音效 (米，預設 16 米)")]
+    public float hoverHearDistance = 16f;
     [Tooltip("光球起飛衝向鏡牆音效 (例如 玻璃館_光離開_01.wav)")]
     public AudioClip lightTakeoffSFX;
     [Tooltip("光球觸碰鏡牆消融縮小音效 (例如 玻璃館_入鏡慢.wav)")]
@@ -127,6 +131,20 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     {
         IsAnyCutsceneRunning = false; // 強制重置全域靜態旗標，防止前次測試殘留
         isCutsceneRunning = false;
+
+        // ★ 核心除錯：自動停用場景中殘留的 Timeline PlayableDirector，防止遊戲一開始自動搶播光離開音效
+        var directors = Object.FindObjectsByType<UnityEngine.Playables.PlayableDirector>(FindObjectsSortMode.None);
+        foreach (var pd in directors)
+        {
+            if (pd != null && (pd.gameObject.name == "GameObject" || (pd.playableAsset != null && pd.playableAsset.name.Contains("Timeline"))))
+            {
+                pd.Stop();
+                pd.playOnAwake = false;
+                pd.enabled = false;
+                Debug.Log($"🔇【音效防呆】已成功停用開局誤播音效的 Timeline 物件：{pd.gameObject.name}");
+            }
+        }
+
         InitializeTargets();
         CreateFlashUI();
         CacheInitialLightTransforms();
@@ -143,8 +161,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         FindCinemachineCameras();
     }
 
+    private AudioSource hoverAudioSource;
+
     private void Update()
     {
+        // ★ 懸停音效管理：僅在演出啟動前、玩家靠近光球時播放；一旦演繹開始即永久停止！
+        UpdateHoverAudio();
+
         // ★ 核心寫死防護：只要演出正在運行，每幀強制鎖死主角移動與剛體速度，絕不允許任何按鍵或外界腳本解除凍結！
         if (isCutsceneRunning && freezePlayerDuringCutscene)
         {
@@ -158,6 +181,62 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 {
                     prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
                 }
+            }
+        }
+    }
+
+    private void UpdateHoverAudio()
+    {
+        if (lightHoverSFX == null) return;
+
+        // ★ 一旦演繹啟動或演繹進行中，立即徹底停止懸停音效
+        if (hasTriggered || isCutsceneRunning)
+        {
+            if (hoverAudioSource != null && hoverAudioSource.isPlaying)
+            {
+                hoverAudioSource.Stop();
+            }
+            return;
+        }
+
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+        if (cachedPlayer == null) return;
+
+        Vector3 lightCenter = GetMirrorWallCenter();
+        if (fairyLights != null && fairyLights.Length > 0 && fairyLights[0] != null)
+        {
+            lightCenter = fairyLights[0].transform.position;
+        }
+
+        float dist = Vector3.Distance(cachedPlayer.transform.position, lightCenter);
+
+        // 依使用者音訊原味播放，靠近直接播放，遠離直接停止，不另做多餘程式漸變
+        if (dist <= hoverHearDistance)
+        {
+            if (hoverAudioSource == null)
+            {
+                hoverAudioSource = gameObject.GetComponent<AudioSource>();
+                if (hoverAudioSource == null) hoverAudioSource = gameObject.AddComponent<AudioSource>();
+                hoverAudioSource.clip = lightHoverSFX;
+                hoverAudioSource.loop = true;
+                hoverAudioSource.playOnAwake = false;
+                hoverAudioSource.spatialBlend = 0.5f;
+                hoverAudioSource.minDistance = 4f;
+                hoverAudioSource.maxDistance = hoverHearDistance * 1.5f;
+            }
+
+            hoverAudioSource.volume = sfxVolume;
+
+            if (!hoverAudioSource.isPlaying)
+            {
+                hoverAudioSource.Play();
+            }
+        }
+        else
+        {
+            if (hoverAudioSource != null && hoverAudioSource.isPlaying)
+            {
+                hoverAudioSource.Stop();
             }
         }
     }
@@ -204,6 +283,19 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                     }
                 }
                 fairyLights = list.ToArray();
+            }
+        }
+
+        // 3. 確保 4 顆鏡牆光球不會被額外的 GuidanceLight 腳本干擾 (徹底消除組件衝突)
+        if (fairyLights != null)
+        {
+            foreach (var lightObj in fairyLights)
+            {
+                if (lightObj != null)
+                {
+                    GuidanceLight gl = lightObj.GetComponent<GuidanceLight>();
+                    if (gl != null) gl.enabled = false;
+                }
             }
         }
     }
@@ -291,6 +383,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         if (isCutsceneRunning) return;
 
         hasTriggered = true;
+
+        // ★ 演繹開始：立即永久停止懸停氛圍音效！
+        if (hoverAudioSource != null && hoverAudioSource.isPlaying)
+        {
+            hoverAudioSource.Stop();
+        }
+
         if (mainCutsceneCoroutine != null) StopCoroutine(mainCutsceneCoroutine);
         mainCutsceneCoroutine = StartCoroutine(AbsorbSequenceRoutine());
     }
@@ -405,6 +504,20 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         yield return FinishCutsceneRoutine();
     }
 
+    private AudioSource sfxAudioSource;
+
+    private void PlayDirectSFX(AudioClip clip, float volume = 1f)
+    {
+        if (clip == null) return;
+        if (sfxAudioSource == null)
+        {
+            sfxAudioSource = gameObject.AddComponent<AudioSource>();
+            sfxAudioSource.playOnAwake = false;
+            sfxAudioSource.spatialBlend = 0f; // 2D 全螢幕立體聲，零衰減保證 100% 清晰播放
+        }
+        sfxAudioSource.PlayOneShot(clip, volume);
+    }
+
     /// <summary>
     /// 拋物線飛行協程 (Quadratic Bezier Arc)
     /// </summary>
@@ -413,11 +526,11 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         Vector3 startPos = lightObj.transform.position;
         Vector3 midControlPoint = (startPos + targetPos) * 0.5f + Vector3.up * arcHeight;
 
-        // 播放光球起飛音效
+        // ★ 核心：每一顆光球起飛瞬間必定播放一次光離開音效！
         if (lightTakeoffSFX != null)
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(lightTakeoffSFX, startPos, sfxVolume);
-            else AudioSource.PlayClipAtPoint(lightTakeoffSFX, startPos, sfxVolume);
+            PlayDirectSFX(lightTakeoffSFX, sfxVolume);
+            Debug.Log($"🔊【鏡牆演出】光球 ({lightObj.name}) 起飛！成功播放光離開音效！");
         }
 
         float distance = Vector3.Distance(startPos, targetPos);
@@ -458,8 +571,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         // 播放光球入鏡消融音效
         if (lightEnterMirrorSFX != null)
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(lightEnterMirrorSFX, lightObj.transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(lightEnterMirrorSFX, lightObj.transform.position, sfxVolume);
+            PlayDirectSFX(lightEnterMirrorSFX, sfxVolume);
         }
 
         Vector3 originalScale = lightObj.transform.localScale;
@@ -511,15 +623,10 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         }
     }
 
+    private AudioSource flashAudioSource;
+
     private void TriggerWhiteScreenFlash(float totalDuration)
     {
-        // 播放白光閃爍共鳴音效
-        if (flashResonanceSFX != null)
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(flashResonanceSFX, sfxVolume);
-            else AudioSource.PlayClipAtPoint(flashResonanceSFX, Camera.main != null ? Camera.main.transform.position : Vector3.zero, sfxVolume);
-        }
-
         if (flashCoroutine != null) StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(WhiteFlashRoutine(totalDuration));
     }
@@ -528,27 +635,67 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     {
         if (flashImage == null) yield break;
 
+        // ★ 啟動白光共鳴音效：即使音效檔案未經剪輯，也精準配合白光淡入淡出並在閃光結束時即刻停用
+        if (flashResonanceSFX != null)
+        {
+            if (flashAudioSource == null)
+            {
+                flashAudioSource = gameObject.AddComponent<AudioSource>();
+                flashAudioSource.playOnAwake = false;
+                flashAudioSource.spatialBlend = 0f; // 2D 全螢幕音效
+            }
+            flashAudioSource.clip = flashResonanceSFX;
+            flashAudioSource.volume = 0f;
+            flashAudioSource.time = 0f;
+            flashAudioSource.Play();
+        }
+
         float inTimer = 0f;
         while (inTimer < flashFadeInDuration)
         {
             inTimer += Time.deltaTime;
-            float a = Mathf.Lerp(0f, maxFlashAlpha, inTimer / flashFadeInDuration);
+            float norm = Mathf.Clamp01(inTimer / flashFadeInDuration);
+            float a = Mathf.Lerp(0f, maxFlashAlpha, norm);
             flashImage.color = new Color(1f, 1f, 1f, a);
+
+            if (flashAudioSource != null && flashAudioSource.isPlaying)
+            {
+                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+            }
+
             yield return null;
         }
+
         flashImage.color = new Color(1f, 1f, 1f, maxFlashAlpha);
+        if (flashAudioSource != null && flashAudioSource.isPlaying)
+        {
+            flashAudioSource.volume = sfxVolume;
+        }
 
         float outDuration = Mathf.Max(0.5f, totalDuration - flashFadeInDuration);
         float outTimer = 0f;
         while (outTimer < outDuration)
         {
             outTimer += Time.deltaTime;
-            float a = Mathf.Lerp(maxFlashAlpha, 0f, outTimer / outDuration);
+            float norm = Mathf.Clamp01(outTimer / outDuration);
+            float a = Mathf.Lerp(maxFlashAlpha, 0f, norm);
             flashImage.color = new Color(1f, 1f, 1f, a);
+
+            if (flashAudioSource != null && flashAudioSource.isPlaying)
+            {
+                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+            }
+
             yield return null;
         }
 
         flashImage.color = new Color(1f, 1f, 1f, 0f);
+
+        // ★ 白光閃爍結束瞬間：立即徹底停止音效，絕不拖尾或超時！
+        if (flashAudioSource != null && flashAudioSource.isPlaying)
+        {
+            flashAudioSource.Stop();
+        }
     }
 
     private IEnumerator SmoothZoomLens(float targetSize, float speed)
@@ -627,8 +774,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             // 播放鏡牆碎裂音效
             if (mirrorShatterSFX != null)
             {
-                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(mirrorShatterSFX, mirrorWall.transform.position, sfxVolume);
-                else AudioSource.PlayClipAtPoint(mirrorShatterSFX, mirrorWall.transform.position, sfxVolume);
+                PlayDirectSFX(mirrorShatterSFX, sfxVolume);
             }
 
             Destructible dest = mirrorWall.GetComponent<Destructible>();
@@ -695,6 +841,16 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         isCutsceneRunning = false;
         IsAnyCutsceneRunning = false;
         hasTriggered = false;
+
+        if (hoverAudioSource != null)
+        {
+            hoverAudioSource.Stop();
+        }
+
+        if (flashAudioSource != null)
+        {
+            flashAudioSource.Stop();
+        }
 
         // 2. 隱藏白光閃爍畫面
         if (flashImage != null)

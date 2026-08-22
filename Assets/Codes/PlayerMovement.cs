@@ -163,6 +163,10 @@ public class PlayerMovement : MonoBehaviour
     // 動畫接軌預留標籤
     [HideInInspector] public bool isSwimming = false;
 
+    // 天空背景邊界快取 (避免每幀 FindObjectsByType)
+    private float _nextSkyBoundsCheckTime = 0f;
+    private Bounds _cachedSkyBounds = new Bounds();
+    private bool _hasCachedSkyBounds = false;
 
     private void OnEnable()
     {
@@ -175,6 +179,18 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        // ★ 自動停用場景中殘留的 Timeline PlayableDirector，防止開局自動播放光離開音效
+        var directors = Object.FindObjectsByType<UnityEngine.Playables.PlayableDirector>(FindObjectsSortMode.None);
+        foreach (var pd in directors)
+        {
+            if (pd != null && (pd.gameObject.name == "GameObject" || (pd.playableAsset != null && pd.playableAsset.name.Contains("Timeline"))))
+            {
+                pd.Stop();
+                pd.playOnAwake = false;
+                pd.enabled = false;
+            }
+        }
+
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
         
@@ -807,35 +823,41 @@ public class PlayerMovement : MonoBehaviour
                 if (clampSkyBackgroundHeight)
                 {
                     // 限制在 SkyBackground 高度範圍內 (不論主角上下移動，鏡頭視野絕不超出 SkyBackground 頂部與底部)
-                    Bounds skyBounds = new Bounds();
-                    bool hasSkyBounds = false;
-                    GameObject[] skyGos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-                    foreach (var go in skyGos)
+                    // 快取計算 SkyBackground 包圍盒，避免每幀執行全場景 FindObjectsByType 造成卡頓
+                    if (!_hasCachedSkyBounds || Time.time >= _nextSkyBoundsCheckTime)
                     {
-                        if (go != null && go.name.Contains("SkyBackground") && go.activeInHierarchy)
-                        {
-                            SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
-                            Collider col = go.GetComponent<Collider>();
-                            Bounds b = new Bounds();
-                            if (sr != null && sr.sprite != null) b = sr.bounds;
-                            else if (col != null) b = col.bounds;
+                        _nextSkyBoundsCheckTime = Time.time + 2.0f;
+                        _cachedSkyBounds = new Bounds();
+                        _hasCachedSkyBounds = false;
 
-                            if (b.size.sqrMagnitude > 0.1f)
+                        GameObject[] skyGos = GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+                        foreach (var go in skyGos)
+                        {
+                            if (go != null && go.name.Contains("SkyBackground") && go.activeInHierarchy)
                             {
-                                if (!hasSkyBounds) { skyBounds = b; hasSkyBounds = true; }
-                                else { skyBounds.Encapsulate(b); }
+                                SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+                                Collider col = go.GetComponent<Collider>();
+                                Bounds b = new Bounds();
+                                if (sr != null && sr.sprite != null) b = sr.bounds;
+                                else if (col != null) b = col.bounds;
+
+                                if (b.size.sqrMagnitude > 0.1f)
+                                {
+                                    if (!_hasCachedSkyBounds) { _cachedSkyBounds = b; _hasCachedSkyBounds = true; }
+                                    else { _cachedSkyBounds.Encapsulate(b); }
+                                }
                             }
                         }
                     }
 
-                    if (hasSkyBounds)
+                    if (_hasCachedSkyBounds)
                     {
                         Camera mainCam = Camera.main;
                         float halfHeight = (mainCam != null && mainCam.orthographic) ? mainCam.orthographicSize : 10f;
-                        float skyMinY = skyBounds.min.y + halfHeight;
-                        float skyMaxY = skyBounds.max.y - halfHeight;
+                        float skyMinY = _cachedSkyBounds.min.y + halfHeight;
+                        float skyMaxY = _cachedSkyBounds.max.y - halfHeight;
                         if (skyMinY <= skyMaxY) newY = Mathf.Clamp(newY, skyMinY, skyMaxY);
-                        else newY = skyBounds.center.y;
+                        else newY = _cachedSkyBounds.center.y;
                     }
                 }
 
@@ -1051,14 +1073,14 @@ public class PlayerMovement : MonoBehaviour
                     vcam.Priority.Value = 100; // 給予最高優先級
                 }
 
-                // 確保 FollowOffset 的 Y 軸為 0，與主角高度精確水平對齊 (防止攝影機高於主角)
+                // 攝影機視角與高度完全尊重美術原版設定，僅將 Z 軸深度拉遠 (-50f)，提供充足的 3D 深度空間，防止怪物手臂等 3D 結構穿透近平面被裁切
                 var cmFollow = vcam.GetComponent<CinemachineFollow>();
                 if (cmFollow != null)
                 {
-                    cmFollow.FollowOffset = new Vector3(0f, 0f, -10f);
+                    cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, cmFollow.FollowOffset.y, -50f);
                 }
 
-                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name}");
+                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name} (Z深度=-50)");
             }
         }
 

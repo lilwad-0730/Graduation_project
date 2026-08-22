@@ -155,9 +155,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void Update()
     {
-        // 核心修復 1：自動偵測玩家距離並觸發俯衝
+        // 核心修復 1：自動偵測玩家距離並觸發俯衝 (若玩家在遮陽傘下則規避不攻擊)
         if (autoDetectPlayer && currentState == BirdState.Idle)
         {
+            if (UmbrellaZone.IsPlayerUnderUmbrella)
+            {
+                return; // 玩家在遮陽傘下安全避難，不觸發俯衝
+            }
+
             if (playerTrans == null) EnsureComponents();
 
             if (playerTrans != null)
@@ -463,7 +468,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             yield return null;
         }
 
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
     private IEnumerator FadeAndDestroyCoroutineAfterBounce()
@@ -479,7 +484,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             yield return null;
         }
 
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -644,19 +649,21 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             yield return null;
         }
 
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
     // --- IResettable 實作 ---
     public void ResetToInitialState()
     {
         StopAllCoroutines();
+        gameObject.SetActive(true);
         currentState = BirdState.Idle;
         transform.position = originalPosition;
         transform.rotation = originalRotation;
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
         }
         SetAlpha(1.0f);

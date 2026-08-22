@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
-public class WolfEnemy : MonoBehaviour
+public class WolfEnemy : MonoBehaviour, IResettable
 {
     [Header("追蹤設定")]
     [Tooltip("背對狼逃跑時，狼的追擊速度 (快速追擊，跑速設為 6)")]
@@ -48,10 +48,17 @@ public class WolfEnemy : MonoBehaviour
     private bool isAttached = false;
     private bool isStunned = false; // 被 StopAttackObject 打到時的硬直狀態
 
+    private Vector3 _initialPosition;
+    private Quaternion _initialRotation;
+    private Transform _initialParent;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        _initialPosition = transform.position;
+        _initialRotation = transform.rotation;
+        _initialParent = transform.parent;
     }
 
     private void OnEnable()
@@ -296,5 +303,36 @@ public class WolfEnemy : MonoBehaviour
         yield return new WaitForSeconds(time);
         isStunned = false;
         isChasing = false; // 重新判斷距離再決定要不要追
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        StopAllCoroutines();
+        if (isAttached)
+        {
+            transform.SetParent(_initialParent);
+        }
+        isAttached = false;
+        isChasing = false;
+        isStunned = false;
+
+        transform.position = _initialPosition;
+        transform.rotation = _initialRotation;
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        if (col != null)
+        {
+            col.isTrigger = false;
+        }
+        if (_runAudioSource != null && _runAudioSource.isPlaying)
+        {
+            _runAudioSource.Stop();
+        }
     }
 }

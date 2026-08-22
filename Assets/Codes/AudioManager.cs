@@ -13,6 +13,7 @@ public class AudioManager : MonoBehaviour
     // 我們需要兩個 AudioSource 來做完美的交叉淡入淡出 (Crossfade)
     private AudioSource _bgmSource1;
     private AudioSource _bgmSource2;
+    private AudioSource _sfxSource;
     private bool _isUsingSource1 = true;
 
     private Coroutine _fadeCoroutine;
@@ -31,7 +32,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        // 動態生成兩個 AudioSource，不用手動掛載
+        // 動態生成兩個 BGM AudioSource
         _bgmSource1 = gameObject.AddComponent<AudioSource>();
         _bgmSource1.loop = true;
         _bgmSource1.playOnAwake = false;
@@ -39,6 +40,12 @@ public class AudioManager : MonoBehaviour
         _bgmSource2 = gameObject.AddComponent<AudioSource>();
         _bgmSource2.loop = true;
         _bgmSource2.playOnAwake = false;
+
+        // 動態生成獨立的 SFX 音效 AudioSource (不受 BGM 淡入淡出影響)
+        _sfxSource = gameObject.AddComponent<AudioSource>();
+        _sfxSource.loop = false;
+        _sfxSource.playOnAwake = false;
+        _sfxSource.volume = 1f;
     }
 
     /// <summary>
@@ -140,15 +147,14 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 全域 2D 音效播放 (支援多個音效同時重疊播放不被中斷)
+    /// 全域 2D 音效播放 (支援多個音效同時重疊播放不被中斷，且不受 BGM 音量調整影響)
     /// </summary>
     public void PlaySFX(AudioClip clip, float volume = 1.0f)
     {
         if (clip == null) return;
-        AudioSource sfxSource = _isUsingSource1 ? _bgmSource1 : _bgmSource2;
-        if (sfxSource != null)
+        if (_sfxSource != null)
         {
-            sfxSource.PlayOneShot(clip, volume);
+            _sfxSource.PlayOneShot(clip, volume);
         }
         else
         {

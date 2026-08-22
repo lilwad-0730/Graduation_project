@@ -298,12 +298,12 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
         }
 
         GameObject canvasObj = new GameObject("SuffocationCanvas");
+        canvasObj.transform.SetParent(transform, false);
         overlayCanvas = canvasObj.AddComponent<Canvas>();
         overlayCanvas.renderMode   = RenderMode.ScreenSpaceOverlay;
         overlayCanvas.sortingOrder = 95;
         canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
         canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-        DontDestroyOnLoad(canvasObj);
     }
 
     private void CreateAllLayers()
@@ -359,5 +359,9 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
         if (matMain  != null) Destroy(matMain);
         if (matMid   != null) Destroy(matMid);
         if (matOuter != null) Destroy(matOuter);
+        if (overlayCanvas != null && overlayCanvas.gameObject != null)
+        {
+            Destroy(overlayCanvas.gameObject);
+        }
     }
 }

@@ -1,7 +1,7 @@
-                                                                                            using UnityEngine;
+using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public class JumpBoostZone : MonoBehaviour
+public class JumpBoostZone : MonoBehaviour, IResettable
 {
     [Header("目標光絮與加成設定")]
     [Tooltip("要監聽的光絮球 (GuidanceLight)")]
@@ -155,5 +155,26 @@ public class JumpBoostZone : MonoBehaviour
         }
 
         Debug.Log($"【跳躍加成區】已移除跳躍加成，恢復原始跳躍力: {player.jumpForce}");
+    }
+
+    // --- IResettable 實作 ---
+    public void ResetToInitialState()
+    {
+        if (isBoostApplied && activePlayer != null)
+        {
+            RemoveBoost(activePlayer);
+        }
+        else if (isBoostApplied)
+        {
+            PlayerMovement p = FindFirstObjectByType<PlayerMovement>();
+            if (p != null) RemoveBoost(p);
+        }
+        IsLightAbsorbed = false;
+        isPlayerInside = false;
+        isBoostApplied = false;
+        if (activeEffectInstance != null)
+        {
+            Destroy(activeEffectInstance);
+        }
     }
 }
