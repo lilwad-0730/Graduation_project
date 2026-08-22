@@ -8,7 +8,9 @@ using TMPro;
 public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [Header("場景物件")]
-    [SerializeField] private SpriteRenderer trackRenderer;
+    
+    [SerializeField] private BoxCollider2D interactionCollider;
+[SerializeField] private SpriteRenderer trackRenderer;
     [SerializeField] private SpriteRenderer volumePointRenderer;
     [SerializeField] private Camera inputCamera;
     [SerializeField] private TMP_Text volumePercentText;
@@ -20,11 +22,16 @@ public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHa
 
     public float Value { get; private set; }
 
-    private void Awake()
+private void Awake()
     {
         if (trackRenderer == null)
         {
             trackRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        if (interactionCollider == null)
+        {
+            interactionCollider = GetComponent<BoxCollider2D>();
         }
 
         if (inputCamera == null)
@@ -52,9 +59,9 @@ public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHa
         PlayerPrefs.Save();
     }
 
-    private void UpdateFromPointer(Vector2 screenPosition, Camera eventCamera)
+private void UpdateFromPointer(Vector2 screenPosition, Camera eventCamera)
     {
-        if (trackRenderer == null || volumePointRenderer == null)
+        if (trackRenderer == null || interactionCollider == null || volumePointRenderer == null)
         {
             return;
         }
@@ -79,32 +86,30 @@ public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHa
         }
 
         Vector3 worldPosition = pointerRay.GetPoint(intersectionDistance);
-        Bounds trackBounds = trackRenderer.bounds;
-        float pointHalfWidth = Mathf.Min(volumePointRenderer.bounds.extents.x, trackBounds.extents.x);
-        float minimumX = trackBounds.min.x + pointHalfWidth;
-        float maximumX = trackBounds.max.x - pointHalfWidth;
+        Bounds movementBounds = interactionCollider.bounds;
+        float minimumX = movementBounds.min.x;
+        float maximumX = movementBounds.max.x;
         float volume = Mathf.InverseLerp(minimumX, maximumX, Mathf.Clamp(worldPosition.x, minimumX, maximumX));
 
         ApplyVolume(volume);
     }
 
-    private void ApplyVolume(float volume)
+private void ApplyVolume(float volume)
     {
-        if (trackRenderer == null || volumePointRenderer == null)
+        if (trackRenderer == null || interactionCollider == null || volumePointRenderer == null)
         {
             return;
         }
 
         Value = Mathf.Clamp01(volume);
 
-        Bounds trackBounds = trackRenderer.bounds;
-        float pointHalfWidth = Mathf.Min(volumePointRenderer.bounds.extents.x, trackBounds.extents.x);
-        float minimumX = trackBounds.min.x + pointHalfWidth;
-        float maximumX = trackBounds.max.x - pointHalfWidth;
+        Bounds movementBounds = interactionCollider.bounds;
+        float minimumX = movementBounds.min.x;
+        float maximumX = movementBounds.max.x;
 
         Vector3 pointPosition = volumePointRenderer.transform.position;
         pointPosition.x = Mathf.Lerp(minimumX, maximumX, Value);
-        pointPosition.y = trackBounds.center.y;
+        pointPosition.y = trackRenderer.bounds.center.y;
         volumePointRenderer.transform.position = pointPosition;
 
         AudioListener.volume = Value;
