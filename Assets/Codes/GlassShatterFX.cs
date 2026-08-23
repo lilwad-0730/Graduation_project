@@ -156,16 +156,16 @@ public class GlassShatterFX : MonoBehaviour, IResettable
         if (mainCol != null) mainCol.enabled = false;
         if (mainRb != null)
         {
+            if (!mainRb.isKinematic) mainRb.linearVelocity = Vector3.zero;
             mainRb.isKinematic = true;
             mainRb.useGravity = false;
-            mainRb.linearVelocity = Vector3.zero;
         }
 
         Transform overlay = transform.Find("CrackOverlay");
         if (overlay != null) overlay.gameObject.SetActive(false);
 
         // 3. 播放 Stage 2 瞬間反光亮點 (Glass Burst Flash)
-        if (flashObj != null)
+        if (flashObj != null && gameObject.activeInHierarchy)
         {
             StartCoroutine(FlashRoutine());
         }
@@ -456,9 +456,9 @@ public class GlassShatterFX : MonoBehaviour, IResettable
         if (mainCol != null) mainCol.enabled = true;
         if (mainRb != null)
         {
+            if (!mainRb.isKinematic) mainRb.linearVelocity = Vector3.zero;
             mainRb.isKinematic = true;
             mainRb.useGravity = false;
-            mainRb.linearVelocity = Vector3.zero;
         }
 
         if (flashObj != null) flashObj.SetActive(false);

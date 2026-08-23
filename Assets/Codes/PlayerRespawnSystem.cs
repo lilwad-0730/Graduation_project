@@ -372,7 +372,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // --- 呼叫全場景所有 IResettable 物件進行重置 (包含鏡牆演出、光球、黑影怪物、燭火、可破壞地板等) ---
-        MonoBehaviour[] allScripts = Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+        MonoBehaviour[] allScripts = Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var script in allScripts)
         {
             if (script is IResettable resettable && script.gameObject != this.gameObject)

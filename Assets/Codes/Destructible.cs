@@ -49,6 +49,8 @@ public class Destructible : MonoBehaviour, IResettable
         isInitiallyActive = gameObject.activeSelf;
     }
 
+    private GameObject createdShatteredInstance;
+
     public void Shatter()
     {
         if (hasShattered) return;
@@ -63,12 +65,11 @@ public class Destructible : MonoBehaviour, IResettable
 
         if (shatteredPrefab != null)
         {
-            GameObject shatteredInstance = Instantiate(shatteredPrefab, transform.position, transform.rotation);
-            shatteredInstance.transform.localScale = transform.localScale;
-            ShatteredObject shatteredComp = shatteredInstance.GetComponent<ShatteredObject>();
-            if (shatteredComp == null) shatteredComp = shatteredInstance.AddComponent<ShatteredObject>();
+            createdShatteredInstance = Instantiate(shatteredPrefab, transform.position, transform.rotation);
+            createdShatteredInstance.transform.localScale = transform.localScale;
+            ShatteredObject shatteredComp = createdShatteredInstance.GetComponent<ShatteredObject>();
+            if (shatteredComp == null) shatteredComp = createdShatteredInstance.AddComponent<ShatteredObject>();
             shatteredComp.disappearDelay = disappearDelay;
-            gameObject.SetActive(false);
         }
         else
         {
@@ -77,29 +78,51 @@ public class Destructible : MonoBehaviour, IResettable
 
             if (sr != null && sr.sprite != null)
             {
-                ShatterSpriteToMicroGlassQuads(sr);
-                gameObject.SetActive(false);
+                createdShatteredInstance = ShatterSpriteToMicroGlassQuads(sr);
             }
-            else
-            {
-                gameObject.SetActive(false);
-            }
+        }
+
+        // 隱藏本體視覺與碰撞，保持 GameObject 啟動狀態以利粒子系統與協程播放完畢
+        SpriteRenderer[] allSrs = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var sr in allSrs) if (sr != null) sr.enabled = false;
+
+        Collider[] allCols = GetComponentsInChildren<Collider>(true);
+        foreach (var col in allCols) if (col != null) col.enabled = false;
+
+        // 若沒有其他 FX 組件，才將 GameObject 關閉
+        if (GetComponent<GlassShatterFX>() == null && GetComponentInChildren<ParticleSystem>() == null)
+        {
+            gameObject.SetActive(false);
         }
     }
 
     public void ResetToInitialState()
     {
+        // 徹底銷毀先前生成的碎裂切片
+        if (createdShatteredInstance != null)
+        {
+            Destroy(createdShatteredInstance);
+            createdShatteredInstance = null;
+        }
+
         gameObject.SetActive(isInitiallyActive);
         transform.position = initialPosition;
         transform.rotation = initialRotation;
         transform.localScale = initialScale;
         hasShattered = false;
+
+        // 100% 復原所有視覺渲染與碰撞體
+        SpriteRenderer[] allSrs = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var sr in allSrs) if (sr != null) sr.enabled = true;
+
+        Collider[] allCols = GetComponentsInChildren<Collider>(true);
+        foreach (var col in allCols) if (col != null) col.enabled = true;
     }
 
     /// <summary>
     /// 生成長寬比例吻合的高密度細小不規則玻璃切片 (Aspect-Ratio Aware Micro Glass Quads)
     /// </summary>
-    private void ShatterSpriteToMicroGlassQuads(SpriteRenderer sr)
+    private GameObject ShatterSpriteToMicroGlassQuads(SpriteRenderer sr)
     {
         Sprite sprite = sr.sprite;
         Texture2D texture = sprite.texture;
@@ -155,6 +178,7 @@ public class Destructible : MonoBehaviour, IResettable
         ShatteredObject shatteredComp = root.AddComponent<ShatteredObject>();
         shatteredComp.disappearDelay = disappearDelay;
         shatteredComp.explosionForce = explosionForce;
+        return root;
     }
 
     private void CreateSingleMicroQuadShard(Transform parent, Sprite sprite, Texture2D texture, Rect rect, Bounds bounds, Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, SpriteRenderer origSr, int gridX, int gridY)
