@@ -18,7 +18,8 @@ public class MenuSpriteHoverEffect : MonoBehaviour, IPointerEnterHandler, IPoint
     [SerializeField, Range(0f, 1f)] private float rolloverVolume = 1f;
 
     private AudioSource audioSource;
-private SpriteRenderer spriteRenderer;
+    private SpriteRenderer spriteRenderer;
+    private bool isSelected;
 
 private void Awake()
     {
@@ -73,9 +74,16 @@ public void OnHoverEnter()
 
 public void OnHoverExit()
     {
-        // 恢復預設 Sprite，但不播放音效
-        SetSprite(defaultSprite, false);
+        // 已選中的分類必須維持選取 Sprite。
+        SetSprite(isSelected ? hoverSprite : defaultSprite, false);
     }
+
+public void SetSelected(bool selected)
+    {
+        isSelected = selected;
+        SetSprite(isSelected ? hoverSprite : defaultSprite, false);
+    }
+
 
 private void SetSprite(Sprite sprite, bool playSound)
     {
