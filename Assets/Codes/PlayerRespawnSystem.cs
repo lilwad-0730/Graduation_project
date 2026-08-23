@@ -160,6 +160,47 @@ public class PlayerRespawnSystem : MonoBehaviour
         Debug.Log($"【存檔點系統】進入新場景 [{scene.name}]，重生點記憶已刷新為初始座標：{_activeRespawnPos}");
     }
 
+    private AudioSource _directAudioSource;
+
+    private void PlayDirectSFX(AudioClip clip, float volume)
+    {
+        if (clip == null) return;
+        if (_directAudioSource == null)
+        {
+            _directAudioSource = gameObject.AddComponent<AudioSource>();
+            _directAudioSource.playOnAwake = false;
+            _directAudioSource.spatialBlend = 0f; // 2D 零衰減直出，保證 100% 清晰響亮
+        }
+        _directAudioSource.PlayOneShot(clip, volume);
+    }
+
+    private void AutoLoadMissingSFX()
+    {
+        #if UNITY_EDITOR
+        if (respawnSFX == null)
+        {
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+            if (sceneName.Contains("underwater"))
+            {
+                respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/水下/復活.wav");
+            }
+            else if (sceneName.Contains("desert"))
+            {
+                respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/復活.wav");
+            }
+            else
+            {
+                respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/廢墟/復活.wav");
+            }
+        }
+
+        if (deathSFX == null)
+        {
+            deathSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/廢墟/主角死亡（衣服倒下）.mp3");
+        }
+        #endif
+    }
+
     void Start()
     {
         IsAnyRespawning = false; // 強制重置全域重生靜態旗標，防止舊階段殘留鎖死
@@ -170,6 +211,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         _activeRespawnPos = transform.position;
         _initialPlayPos = transform.position;
 
+        AutoLoadMissingSFX();
         CreatePersistentUI();
     }
 
@@ -339,10 +381,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             _playerRb.angularVelocity = Vector3.zero;
         }
 
-        // 播放角色死亡音效
-        if (deathSFX != null && AudioManager.Instance != null)
+        // 播放角色死亡音效 (直出播放，保證 100% 聽得到)
+        if (deathSFX != null)
         {
-            AudioManager.Instance.PlaySFX(deathSFX, sfxVolume);
+            PlayDirectSFX(deathSFX, sfxVolume);
+            Debug.Log($"💀【死亡系統】播放死亡音效: {deathSFX.name}");
         }
 
         // 1. 漸黑
@@ -461,10 +504,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.gameObject.SetActive(false); 
         }
 
-        // 播放復活重生音效
-        if (respawnSFX != null && AudioManager.Instance != null)
+        // 播放復活重生音效 (直出播放，保證 100% 聽得到)
+        if (respawnSFX != null)
         {
-            AudioManager.Instance.PlaySFX(respawnSFX, sfxVolume);
+            PlayDirectSFX(respawnSFX, sfxVolume);
+            Debug.Log($"✨【重生系統】播放復活重生音效: {respawnSFX.name}");
         }
 
         // ===================================================================

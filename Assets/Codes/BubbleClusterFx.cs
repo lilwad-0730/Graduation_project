@@ -34,7 +34,27 @@ public class BubbleClusterFx : MonoBehaviour
     [Tooltip("泡泡 Mesh (預設使用 Sphere)")]
     public Mesh bubbleMesh;
 
+    [Header("🎵 泡泡音效 (Bubble SFX)")]
+    [Tooltip("靠近泡泡群時播放的循環環境音效 (例如 水下_氣泡_loop.wav)")]
+    public AudioClip bubbleLoopSFX;
+
+    [Tooltip("玩家靠近泡泡群的感應距離 (公尺)")]
+    public float hearDistance = 8.0f;
+
+    [Tooltip("穿過/碰撞泡泡時播放的單發氣泡音效 (例如 水下_氣泡單發_02.wav)")]
+    public AudioClip bubbleBurstSFX;
+
+    [Tooltip("單發氣泡音效冷卻時間 (秒，避免連續觸發重疊炸音)")]
+    public float burstCooldown = 0.4f;
+
+    [Range(0f, 1f)] public float sfxVolume = 0.85f;
+
     private List<BubbleInstanceData> _bubbles = new List<BubbleInstanceData>();
+    private AudioSource loopAudioSource;
+    private AudioSource burstAudioSource;
+    private Transform playerTransform;
+    private float lastBurstTime = -999f;
+    private BoxCollider triggerCollider;
 
     private class BubbleInstanceData
     {
@@ -252,6 +272,105 @@ public class BubbleClusterFx : MonoBehaviour
                 col.a = b.baseAlpha * fadeAlpha;
                 b.materialInstance.SetColor("_BaseColor", col);
             }
+        }
+
+        UpdateBubbleAudio();
+    }
+
+    private void Start()
+    {
+        if (Application.isPlaying)
+        {
+            SetupAudioTriggerCollider();
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerTransform = p.transform;
+        }
+    }
+
+    private void SetupAudioTriggerCollider()
+    {
+        triggerCollider = GetComponent<BoxCollider>();
+        if (triggerCollider == null)
+        {
+            triggerCollider = gameObject.AddComponent<BoxCollider>();
+        }
+        triggerCollider.isTrigger = true;
+        triggerCollider.size = new Vector3(areaWidth * 0.9f, floatHeight * 0.85f, 4.0f);
+        triggerCollider.center = Vector3.zero;
+    }
+
+    private void UpdateBubbleAudio()
+    {
+        if (!Application.isPlaying) return;
+
+        if (bubbleLoopSFX != null)
+        {
+            if (playerTransform == null)
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) playerTransform = p.transform;
+            }
+
+            if (playerTransform != null)
+            {
+                float dist = Vector3.Distance(transform.position, playerTransform.position);
+                if (dist <= hearDistance)
+                {
+                    if (loopAudioSource == null)
+                    {
+                        loopAudioSource = gameObject.AddComponent<AudioSource>();
+                        loopAudioSource.clip = bubbleLoopSFX;
+                        loopAudioSource.loop = true;
+                        loopAudioSource.playOnAwake = false;
+                        loopAudioSource.spatialBlend = 0.5f; // 3D 空間感
+                        loopAudioSource.minDistance = 2f;
+                        loopAudioSource.maxDistance = hearDistance * 1.5f;
+                    }
+
+                    float volumeFactor = Mathf.Clamp01(1f - (dist / hearDistance));
+                    loopAudioSource.volume = sfxVolume * Mathf.SmoothStep(0.2f, 1f, volumeFactor);
+
+                    if (!loopAudioSource.isPlaying)
+                    {
+                        loopAudioSource.Play();
+                    }
+                }
+                else
+                {
+                    if (loopAudioSource != null && loopAudioSource.isPlaying)
+                    {
+                        loopAudioSource.Stop();
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        CheckAndPlayBurstSFX(other.gameObject);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        CheckAndPlayBurstSFX(other.gameObject);
+    }
+
+    private void CheckAndPlayBurstSFX(GameObject go)
+    {
+        if (bubbleBurstSFX == null) return;
+        if (!go.CompareTag("Player") && go.GetComponentInParent<PlayerMovement>() == null) return;
+
+        if (Time.time - lastBurstTime >= burstCooldown)
+        {
+            lastBurstTime = Time.time;
+            if (burstAudioSource == null)
+            {
+                burstAudioSource = gameObject.AddComponent<AudioSource>();
+                burstAudioSource.playOnAwake = false;
+                burstAudioSource.spatialBlend = 0.3f;
+            }
+            burstAudioSource.PlayOneShot(bubbleBurstSFX, sfxVolume);
         }
     }
 }

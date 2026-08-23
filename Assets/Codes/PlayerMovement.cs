@@ -204,15 +204,24 @@ public class PlayerMovement : MonoBehaviour
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
 
         // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
+        PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
+        noFriction.dynamicFriction = 0f;
+        noFriction.staticFriction = 0f;
+        noFriction.frictionCombine = PhysicsMaterialCombine.Minimum;
+        noFriction.bounciness = 0f;
+        noFriction.bounceCombine = PhysicsMaterialCombine.Minimum;
+
         if (playerCollider != null)
         {
-            PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
-            noFriction.dynamicFriction = 0f;
-            noFriction.staticFriction = 0f;
-            noFriction.frictionCombine = PhysicsMaterialCombine.Minimum;
-            noFriction.bounciness = 0f;
-            noFriction.bounceCombine = PhysicsMaterialCombine.Minimum;
             playerCollider.material = noFriction;
+        }
+
+        // ★ 水下場景 Z 軸精確居中校準與岩石深度全角度密封 (水下岩石洞穴中心為 Z = -0.4f)
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("underwater"))
+        {
+            initialZ = -0.4f;
+            transform.position = new Vector3(transform.position.x, transform.position.y, -0.4f);
+            UnderwaterRockColliderHelper.SealUnderwaterRockGaps();
         }
 
         // ==========================================
@@ -1018,12 +1027,13 @@ public class PlayerMovement : MonoBehaviour
             if (_fallingBGEntered) return;
             _fallingBGEntered = true;
 
-            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始強制掉落！");
+            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始順暢高速向下墜落！");
             freezeHorizontal = true;
 
-            // 把速度歸零後，直接施加一個向下的初始力，讓物理引擎「知道」你在掉落
-            rb.linearVelocity = Vector3.zero;
-            rb.AddForce(Vector3.down * 5f, ForceMode.VelocityChange);
+            // ★ 核心修復：絕不把向下速度歸零！保留既有動量並確保向下的重力加速度
+            float currentDownSpeed = rb.linearVelocity.y;
+            float targetDownSpeed = Mathf.Min(currentDownSpeed, -8f); // 至少維持 -8f 以上的向下加速衝力，絕不減速！
+            rb.linearVelocity = new Vector3(0f, targetDownSpeed, 0f);
 
             // 關閉重生系統，避免掉落出畫面後被傳送回去
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
@@ -1276,5 +1286,23 @@ public class PlayerMovement : MonoBehaviour
         }
 
         return found;
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (!isUnderwater || collision.contactCount == 0) return;
+
+        // 當水下在凹凸不平的岩石夾角間游動時，輔助法線平滑滑動，杜絕在夾角處卡住
+        bool hasInput = Mathf.Abs(CurrentMoveInput) > 0.05f || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D);
+        if (hasInput && rb != null && !rb.isKinematic)
+        {
+            Vector3 avgNormal = Vector3.zero;
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                avgNormal += collision.GetContact(i).normal;
+            }
+            avgNormal = avgNormal.normalized;
+            rb.AddForce(new Vector3(avgNormal.x, avgNormal.y, 0f) * 2.0f, ForceMode.Acceleration);
+        }
     }
 }

@@ -120,7 +120,7 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
     }
 
     /// <summary>
-    /// 找出包含玩家座標或離玩家最近的 CameraBoundary Collider
+    /// 找出包含玩家座標或離玩家最近的 CameraBoundary Collider (2.5D 深度自適應)
     /// </summary>
     Collider GetActiveBoundary(Vector3 point)
     {
@@ -134,9 +134,16 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         {
             if (col == null || !col.enabled) continue;
             Bounds b = col.bounds;
-            if (b.Contains(point)) return col; // 玩家直接身在該 CameraBoundary 碰撞盒內！
 
-            float d = Vector3.Distance(point, b.ClosestPoint(point));
+            // 2.5D 判定：忽略前後 Z 軸公差，只要主角落在該邊界箱的 X/Y 範圍內即視為身處該區域！
+            bool isInside2D = point.x >= b.min.x && point.x <= b.max.x && point.y >= b.min.y && point.y <= b.max.y;
+            if (isInside2D) return col;
+
+            // 計算 2D 歐幾里得距離
+            float dx = Mathf.Max(0f, Mathf.Max(b.min.x - point.x, point.x - b.max.x));
+            float dy = Mathf.Max(0f, Mathf.Max(b.min.y - point.y, point.y - b.max.y));
+            float d = Mathf.Sqrt(dx * dx + dy * dy);
+
             if (d < minDist)
             {
                 minDist = d;
@@ -179,7 +186,7 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         Vector3 camPos = transform.position;
         Vector3 clampedPos = camPos;
 
-        // 3. 【實體碰撞攔截】視野 4 個邊緣撞擊 CameraBoundary 碰撞體時硬性擋住，絕不允許跨越
+        // 3. 【實體碰撞攔截】若主角處於邊界範圍內，視野 4 個邊緣硬性擋住；若主角在過渡下墜區，允許鏡頭向下跟隨
         if (collideX)
         {
             float minX = bounds.min.x + halfWidth;
@@ -192,8 +199,22 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         {
             float minY = bounds.min.y + halfHeight;
             float maxY = bounds.max.y - halfHeight;
-            if (minY <= maxY) clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
-            else clampedPos.y = bounds.center.y;
+            if (minY <= maxY)
+            {
+                // 如果主角已經低於該邊界的底部 (正在向下方場景墜落)，允許相機追蹤主角下移，不再死卡在上方頂部
+                if (targetPos.y < bounds.min.y)
+                {
+                    clampedPos.y = Mathf.Min(camPos.y, targetPos.y);
+                }
+                else
+                {
+                    clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
+                }
+            }
+            else
+            {
+                clampedPos.y = bounds.center.y;
+            }
         }
 
         // 寫回 Main Camera 座標

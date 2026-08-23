@@ -38,11 +38,30 @@ public class NoteRelief : MonoBehaviour
     [Header("🎵 音效設定")]
     [Tooltip("玩家接觸/吸收紙條時播放的音效 (例如 水下_日誌接觸_02.wav)")]
     public AudioClip collectSFX;
-    [Tooltip("紙條出現/破隱時播放的音效 (例如 水下_日誌破隱.wav)")]
+    [Tooltip("日誌發亮觸發音效 (進入發亮範圍瞬間播放一次，例如 水下_物件接觸_01.wav)")]
+    public AudioClip glowSFX;
+    [Tooltip("日誌發亮音效的感應距離 (公尺)")]
+    public float glowHearDistance = 4.5f;
+    [Tooltip("紙條出現/破隱時播放的音效 (例如 水下_日誌破障.wav)")]
     public AudioClip revealSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
     private bool consumed = false;
+    private bool hasPlayedGlowSFX = false;
+    private AudioSource directAudioSource;
+    private Transform playerTransform;
+
+    private void PlayDirectSFX(AudioClip clip, float volume)
+    {
+        if (clip == null) return;
+        if (directAudioSource == null)
+        {
+            directAudioSource = gameObject.AddComponent<AudioSource>();
+            directAudioSource.playOnAwake = false;
+            directAudioSource.spatialBlend = 0f; // 2D 零衰減直出，保證 100% 清晰響亮
+        }
+        directAudioSource.PlayOneShot(clip, volume);
+    }
 
     private void Start()
     {
@@ -53,28 +72,55 @@ public class NoteRelief : MonoBehaviour
 
         if (revealSFX != null)
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(revealSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(revealSFX, transform.position, sfxVolume);
+            PlayDirectSFX(revealSFX, sfxVolume);
+        }
+
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null) playerTransform = p.transform;
+    }
+
+    private void Update()
+    {
+        UpdateGlowAudio();
+    }
+
+    private void UpdateGlowAudio()
+    {
+        if (consumed || glowSFX == null || hasPlayedGlowSFX) return;
+
+        if (playerTransform == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerTransform = p.transform;
+            if (playerTransform == null) return;
+        }
+
+        float dist = Vector3.Distance(transform.position, playerTransform.position);
+        if (dist <= glowHearDistance)
+        {
+            hasPlayedGlowSFX = true;
+            PlayDirectSFX(glowSFX, sfxVolume);
+            Debug.Log($"✨【日誌音效】主角靠近發亮區間，播放發亮音效 (水下_物件接觸_01)！");
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.CompareTag(playerTag) && other.GetComponentInParent<PlayerMovement>() == null) return;
         Absorb();
     }
 
     // 也支援 2D 碰撞
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.CompareTag(playerTag) && other.GetComponentInParent<PlayerMovement>() == null) return;
         Absorb();
     }
 
     // 亦支援直接碰撞 (非 Trigger)
     private void OnCollisionEnter(Collision collision)
     {
-        if (!collision.gameObject.CompareTag(playerTag)) return;
+        if (!collision.gameObject.CompareTag(playerTag) && collision.gameObject.GetComponentInParent<PlayerMovement>() == null) return;
         Absorb();
     }
 
@@ -85,11 +131,10 @@ public class NoteRelief : MonoBehaviour
 
         Debug.Log($"[NoteRelief] 玩家吸收了「{noteName}」！觸發窒息緩解效果。");
 
-        // 播放日記接觸/吸收音效
+        // 播放日記接觸/吸收音效 (直出播放保證 100% 聽得到)
         if (collectSFX != null)
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(collectSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(collectSFX, transform.position, sfxVolume);
+            PlayDirectSFX(collectSFX, sfxVolume);
         }
 
         // 1. 播放吸收動畫
