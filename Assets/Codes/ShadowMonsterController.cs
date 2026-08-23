@@ -191,10 +191,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // Unity 生命週期
     // ──────────────────────────────────────────────────────────────────────────
 
-    void Awake()
+    private bool _isInitialized = false;
+
+    public void EnsureInitialized()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        if (_isInitialized) return;
+        _isInitialized = true;
+
+        if (Instance == null) Instance = this;
 
         _baseScale = transform.localScale;
         if (_baseScale == Vector3.zero || Mathf.Abs(_baseScale.x) < 0.01f)
@@ -202,19 +206,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _baseScale = Vector3.one;
         }
         _initialPosition = transform.position;
-    }
 
-    void Start()
-    {
         // 自動修正動畫名稱設定，確保目標為 walk4 與 run2
         if (string.IsNullOrEmpty(walkAnimationName) || walkAnimationName.Equals("Walk", System.StringComparison.OrdinalIgnoreCase))
             walkAnimationName = "walk4";
         if (string.IsNullOrEmpty(runAnimationName) || runAnimationName.Equals("Run", System.StringComparison.OrdinalIgnoreCase))
             runAnimationName = "run2";
 
-        _mainCam = Camera.main;
+        if (_mainCam == null) _mainCam = Camera.main;
 
-        _animator = GetComponent<Animator>();
+        if (_animator == null) _animator = GetComponent<Animator>();
         if (_animator == null) _animator = GetComponentInChildren<Animator>();
 
         // 自動檢查並確保 Avatar (3D骨骼繫結) 存在，解決動畫有執行但模型不動問題
@@ -246,18 +247,26 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         // 快取視覺組件
         _renderers = GetComponentsInChildren<Renderer>(true);
-        _mpb = new MaterialPropertyBlock();
-        _originalColors = new Color[_renderers.Length];
-        for (int i = 0; i < _renderers.Length; i++)
+        if (_mpb == null) _mpb = new MaterialPropertyBlock();
+
+        if (_renderers != null)
         {
-            if (_renderers[i] == null) continue;
-            Material mat = _renderers[i].sharedMaterial;
-            if (mat != null && mat.HasProperty("_BaseColor"))
-                _originalColors[i] = mat.GetColor("_BaseColor");
-            else if (mat != null && mat.HasProperty("_Color"))
-                _originalColors[i] = mat.GetColor("_Color");
-            else
-                _originalColors[i] = Color.white;
+            _originalColors = new Color[_renderers.Length];
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] == null) continue;
+                Material mat = _renderers[i].sharedMaterial;
+                if (mat != null && mat.HasProperty("_BaseColor"))
+                    _originalColors[i] = mat.GetColor("_BaseColor");
+                else if (mat != null && mat.HasProperty("_Color"))
+                    _originalColors[i] = mat.GetColor("_Color");
+                else
+                    _originalColors[i] = Color.white;
+            }
+        }
+        else
+        {
+            _originalColors = new Color[0];
         }
 
         EnsurePlayerReference();
@@ -267,6 +276,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         SetupCandles();
         CreateHaloEffect();
+    }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+
+        EnsureInitialized();
+    }
+
+    void Start()
+    {
+        EnsureInitialized();
 
         // 初始狀態：播放待機動畫，保持全尺寸但隱藏 Alpha 透明度
         PlayAnimationByName(idleAnimationName);
@@ -985,28 +1007,35 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private void SetVisualAlpha(float alpha)
     {
+        EnsureInitialized();
+
         bool showVisuals = alpha > 0.001f;
 
-        for (int i = 0; i < _renderers.Length; i++)
+        if (_renderers != null && _originalColors != null)
         {
-            if (_renderers[i] == null) continue;
-            _renderers[i].enabled = showVisuals;
+            if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
-            if (showVisuals)
+            for (int i = 0; i < _renderers.Length; i++)
             {
-                Color c = _originalColors[i];
-                c.a = c.a * alpha;
+                if (_renderers[i] == null) continue;
+                _renderers[i].enabled = showVisuals;
 
-                _renderers[i].GetPropertyBlock(_mpb);
-                if (_renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor"))
-                    _mpb.SetColor("_BaseColor", c);
-                else
-                    _mpb.SetColor("_Color", c);
+                if (showVisuals)
+                {
+                    Color c = (i < _originalColors.Length) ? _originalColors[i] : Color.white;
+                    c.a = c.a * alpha;
 
-                _renderers[i].SetPropertyBlock(_mpb);
+                    _renderers[i].GetPropertyBlock(_mpb);
+                    if (_renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor"))
+                        _mpb.SetColor("_BaseColor", c);
+                    else
+                        _mpb.SetColor("_Color", c);
 
-                if (_renderers[i] is SpriteRenderer sr)
-                    sr.color = c;
+                    _renderers[i].SetPropertyBlock(_mpb);
+
+                    if (_renderers[i] is SpriteRenderer sr)
+                        sr.color = c;
+                }
             }
         }
 
@@ -1039,6 +1068,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        EnsureInitialized();
+
         StopAllCoroutines();
         _stateCoroutine = null;
         _hitShrinkCoroutine = null;

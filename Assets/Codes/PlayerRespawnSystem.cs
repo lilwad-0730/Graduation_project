@@ -375,7 +375,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // 清除物理動力
-        if (_playerRb != null)
+        if (_playerRb != null && !_playerRb.isKinematic)
         {
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
@@ -397,7 +397,7 @@ public class PlayerRespawnSystem : MonoBehaviour
             {
                 _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, timer / fadeDuration));
             }
-            if (_playerRb != null)
+            if (_playerRb != null && !_playerRb.isKinematic)
             {
                 _playerRb.linearVelocity = Vector3.zero;
             }
@@ -753,7 +753,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // 停止物理慣性
-        if (_playerRb != null)
+        if (_playerRb != null && !_playerRb.isKinematic)
         {
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
