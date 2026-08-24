@@ -22,8 +22,8 @@ public class TeleportTrigger : MonoBehaviour
     [Tooltip("是否啟用防跳過規則：若玩家 X 軸超過階梯位置且未踩到階梯觸發傳送，自動判定為墜落虛空並重生")]
     public bool enableBypassDeathCheck = true;
 
-    [Tooltip("防跳過警戒線的 X 座標偏移 (相對於階梯 Transform.position.x)。設為 0.5 代表主角 X 軸一旦越過階梯中心右方 0.5 米即觸發重生)")]
-    public float bypassOffsetX = 0.5f;
+    [Tooltip("防跳過警戒線相對於「階梯最右側邊界」的外推距離 (米，預設 0.6f)。主角 X 軸必須完全越過階梯最右端 0.6 米才判定為逃課跳過)")]
+    public float bypassOffsetX = 0.6f;
 
     [Tooltip("防跳過檢查的 Y 軸高度範圍 (向下 15 米、向上 60 米均受保護，防止大跳繞過)")]
     public float checkYDown = 15f;
@@ -104,10 +104,10 @@ public class TeleportTrigger : MonoBehaviour
                 float stairY = transform.position.y;
                 if (playerPos.y >= (stairY - checkYDown) && playerPos.y <= (stairY + checkYUp))
                 {
-                    // 計算防跳過警戒線 X (以階梯 Transform.position.x 為基準)
-                    float failSafeLineX = transform.position.x + bypassOffsetX;
+                    // 計算防跳過警戒線 X (以階梯物件最右側邊緣為基準，再加上微量外推緩衝)
+                    float failSafeLineX = GetRightEdgeX();
 
-                    // 若玩家 X 軸已經超過階梯防線，且未處於傳送過渡中
+                    // 若玩家 X 軸已經徹底越過階梯右側防線，且未處於傳送過渡中
                     if (playerPos.x > failSafeLineX)
                     {
                         PlayerRespawnSystem respawnSystem = _cachedPlayer.GetComponent<PlayerRespawnSystem>();
@@ -116,13 +116,39 @@ public class TeleportTrigger : MonoBehaviour
 
                         if (respawnSystem != null && !respawnSystem.IsRespawning)
                         {
-                            Debug.LogWarning($"⚠️【階梯防越界判定】玩家 (X:{playerPos.x:F2}, Y:{playerPos.y:F2}) 越過了階梯防線 (X:{failSafeLineX:F2}) 且未踩中階梯！立即重生回最近存檔點！");
+                            Debug.LogWarning($"⚠️【階梯防越界判定】玩家 (X:{playerPos.x:F2}, Y:{playerPos.y:F2}) 徹底越過了階梯最右側防線 (X:{failSafeLineX:F2}) 且未踩中階梯！立即重生回最近存檔點！");
                             respawnSystem.TriggerRespawn();
                         }
                     }
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// 計算階梯物件的「最右側世界邊緣 X 座標」
+    /// </summary>
+    public float GetRightEdgeX()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            return col.bounds.max.x + bypassOffsetX;
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            return col2d.bounds.max.x + bypassOffsetX;
+        }
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+        if (sr != null)
+        {
+            return sr.bounds.max.x + bypassOffsetX;
+        }
+
+        return transform.position.x + (transform.lossyScale.x * 0.5f) + bypassOffsetX;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -226,13 +252,13 @@ public class TeleportTrigger : MonoBehaviour
         if (enableBypassDeathCheck)
         {
             Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.85f);
-            float lineX = transform.position.x + bypassOffsetX;
+            float lineX = GetRightEdgeX();
             Vector3 top = new Vector3(lineX, transform.position.y + checkYUp, transform.position.z);
             Vector3 bot = new Vector3(lineX, transform.position.y - checkYDown, transform.position.z);
             Gizmos.DrawLine(top, bot);
 
             #if UNITY_EDITOR
-            UnityEditor.Handles.Label(new Vector3(lineX, transform.position.y + 2f, transform.position.z), "⛔ 防跳過警戒線 (越過且未踩階梯即重生)");
+            UnityEditor.Handles.Label(new Vector3(lineX, transform.position.y + 2f, transform.position.z), "⛔ 防跳過警戒線 (越過階梯右側即重生)");
             #endif
         }
 

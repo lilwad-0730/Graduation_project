@@ -47,6 +47,26 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
+    [Header("🌪️ 風暴吸入物理牽引 (Wind Suction - 地形與斜坡適應)")]
+    [HideInInspector] public bool isWindSuctionActive = false;
+    [HideInInspector] public float windSuctionTargetX = 0f;
+    [HideInInspector] public float windSuctionSpeed = 3.0f;
+
+    public void StartWindSuction(float targetX, float speed)
+    {
+        isWindSuctionActive = true;
+        windSuctionTargetX = targetX;
+        windSuctionSpeed = speed;
+        isCutsceneFrozen = false;
+        freezeHorizontal = false;
+        isStrictLockingX = false;
+    }
+
+    public void StopWindSuction()
+    {
+        isWindSuctionActive = false;
+    }
+
     [Header("攝影機緩衝與防震設定 (取代原本的 Y 軸鎖死)")]
     [Tooltip("開啟此選項，會讓攝影機平滑跟隨玩家的上下跳躍 (減震效果，防止跳躍時畫面跟著狂震)")]
     public bool smoothCameraY = true;
@@ -202,6 +222,9 @@ public class PlayerMovement : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; 
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
+        rb.maxDepenetrationVelocity = 2.0f; // ★ 消除斜坡/平地夾角被強力彈開反彈引發的劇烈抖動
+        rb.solverIterations = 16;
+        rb.solverVelocityIterations = 16;
 
         // 賦予無摩擦力物理材質，避免卡在牆壁、物件邊緣
         PhysicsMaterial noFriction = new PhysicsMaterial("NoFrictionMaterial");
@@ -332,38 +355,63 @@ public class PlayerMovement : MonoBehaviour
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
         }
 
-        // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
-        if (PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+        float moveInput = 0f;
+
+        if (isWindSuctionActive)
         {
-            rawInput = 0f;
-        }
-        else if (isCutsceneFrozen)
-        {
-            // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖
-            if (Mathf.Abs(rawInput) > 0.1f)
+            // ★ 風暴吸入模式：位移由風暴引力牽引，但允許玩家按 A/D 自由左右轉身面向 (原地跑掙扎演出)
+            float diffX = windSuctionTargetX - transform.position.x;
+            if (Mathf.Abs(diffX) > 0.05f)
             {
-                isCutsceneFrozen = false;
-                freezeHorizontal = false;
-                actuallyFreeze = false;
+                moveInput = Mathf.Sign(diffX);
             }
             else
             {
+                moveInput = 0f;
+            }
+
+            // 玩家按鍵時優先面向玩家按鍵方向，沒按時面向吸入方向
+            if (rawInput > 0.1f) facingDirection = Vector3.right;
+            else if (rawInput < -0.1f) facingDirection = Vector3.left;
+            else if (moveInput > 0.05f) facingDirection = Vector3.right;
+            else if (moveInput < -0.05f) facingDirection = Vector3.left;
+        }
+        else
+        {
+            // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
+            if (PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+            {
                 rawInput = 0f;
             }
-        }
-        else if (Mathf.Abs(rawInput) > 0.1f)
-        {
-            // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
-            isStrictLockingX = false;
-            freezeHorizontal = false;
-            actuallyFreeze = false;
+            else if (isCutsceneFrozen)
+            {
+                // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖
+                if (Mathf.Abs(rawInput) > 0.1f)
+                {
+                    isCutsceneFrozen = false;
+                    freezeHorizontal = false;
+                    actuallyFreeze = false;
+                }
+                else
+                {
+                    rawInput = 0f;
+                }
+            }
+            else if (Mathf.Abs(rawInput) > 0.1f)
+            {
+                // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
+                isStrictLockingX = false;
+                freezeHorizontal = false;
+                actuallyFreeze = false;
+            }
+
+            moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
+
+            if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
+            if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
         }
 
-        float moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
         CurrentMoveInput = moveInput;
-
-        if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
-        if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
 
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W) || 
             Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
@@ -406,32 +454,6 @@ public class PlayerMovement : MonoBehaviour
             _lastAirTime = 0f;
             currentAirTime = 0f;
 
-            // 陸地跑步音效 Loop 控制 (水下時不播陸地跑步聲)
-            if (footstepSFX != null && !isUnderwater)
-            {
-                if (_footstepSource == null)
-                {
-                    _footstepSource = gameObject.AddComponent<AudioSource>();
-                    _footstepSource.clip = footstepSFX;
-                    _footstepSource.loop = true;
-                    _footstepSource.playOnAwake = false;
-                    _footstepSource.volume = sfxVolume * 0.75f;
-                }
-                else if (_footstepSource.clip != footstepSFX)
-                {
-                    _footstepSource.clip = footstepSFX;
-                }
-
-                if (Mathf.Abs(moveInput) > 0.1f && !isJumping && !isCutsceneFrozen)
-                {
-                    if (!_footstepSource.isPlaying) _footstepSource.Play();
-                }
-                else
-                {
-                    if (_footstepSource.isPlaying) _footstepSource.Stop();
-                }
-            }
-
             // 如果落地且沒有明顯向上的速度，代表跳躍結束
             if (rb.linearVelocity.y <= 0.1f) isJumping = false;
 
@@ -447,12 +469,46 @@ public class PlayerMovement : MonoBehaviour
         {
             currentAirTime += Time.deltaTime;
             _lastAirTime = currentAirTime;
+        }
 
-            // 陸地滯空時停止腳步聲
-            if (_footstepSource != null && _footstepSource.isPlaying)
+        // ==========================================
+        // 陸地跑步音效 Loop 控制 (微包絡淡入淡出，消除波形硬切雜音與延遲)
+        // ==========================================
+        if (footstepSFX != null && !isUnderwater)
+        {
+            if (_footstepSource == null)
+            {
+                _footstepSource = gameObject.AddComponent<AudioSource>();
+                _footstepSource.clip = footstepSFX;
+                _footstepSource.loop = true;
+                _footstepSource.playOnAwake = false;
+                _footstepSource.volume = 0f;
+            }
+            else if (_footstepSource.clip != footstepSFX)
+            {
+                _footstepSource.clip = footstepSFX;
+            }
+
+            bool shouldPlayFootstep = isGrounded && !isJumping && !isCutsceneFrozen && Mathf.Abs(moveInput) > 0.1f;
+            float maxFootstepVol = sfxVolume * 0.75f;
+            float targetFootstepVol = shouldPlayFootstep ? maxFootstepVol : 0f;
+
+            // 50ms 快速微淡入淡出，保證無延遲且絕無波形截斷雜音
+            _footstepSource.volume = Mathf.MoveTowards(_footstepSource.volume, targetFootstepVol, Time.deltaTime * (maxFootstepVol / 0.05f));
+
+            if (_footstepSource.volume > 0.001f)
+            {
+                if (!_footstepSource.isPlaying) _footstepSource.Play();
+            }
+            else if (_footstepSource.isPlaying && !shouldPlayFootstep)
             {
                 _footstepSource.Stop();
             }
+        }
+        else if (_footstepSource != null && _footstepSource.isPlaying)
+        {
+            _footstepSource.Stop();
+            _footstepSource.volume = 0f;
         }
 
         // ==========================================
@@ -528,15 +584,9 @@ public class PlayerMovement : MonoBehaviour
                     Quaternion targetRotation = baseRotation * Quaternion.Euler(-underwaterSwimUpTiltAngle, 0f, 0f);
                     animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, targetRotation, Time.deltaTime * 12f);
                 }
-                else if (isGrounded && currentSlopeAngle > 1.0f)
-                {
-                    // ★ 斜坡自適應傾角：身體垂直於斜坡切線 (貼合地面，消除抖動與直立爬坡的違和感)
-                    float slopeAngleZ = Mathf.Atan2(groundHit.normal.x, groundHit.normal.y) * -Mathf.Rad2Deg;
-                    Quaternion slopeRotation = baseRotation * Quaternion.Euler(0f, 0f, facingDirection.x < 0 ? -slopeAngleZ : slopeAngleZ);
-                    animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, slopeRotation, Time.deltaTime * 12f);
-                }
                 else
                 {
+                    // 陸地移動（包含斜坡）：保持正立左右朝向，絕不往 Z 軸深處傾倒穿透背景貼圖
                     animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, baseRotation, Time.deltaTime * 12f);
                 }
             }
@@ -633,6 +683,10 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float finalSpeed = currentSpeed * (isUnderwater ? underwaterHorizontalSpeedMultiplier : 1.0f);
+        if (isWindSuctionActive)
+        {
+            finalSpeed = windSuctionSpeed;
+        }
         if (pulledObject != null)
         {
             // 強化型剛體搜尋：防呆，以防推拉的碰撞器 (Collider) 與剛體 (Rigidbody) 不在同一個物件層級上
@@ -711,9 +765,18 @@ public class PlayerMovement : MonoBehaviour
                 // 平地、空中或水下：開啟正常重力 (水下靠 FixedUpdate 的反向浮力來精確調控重力比例)
                 rb.useGravity = true;
 
-                Vector3 targetVelocity = new Vector3(moveInput * finalSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+                float targetX = moveInput * finalSpeed;
 
-                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                // ★ 夾角推移緩衝：如果玩家在平地受到巨石撞擊且未按移動鍵，順應巨石推力平滑滑動，徹底消除平地/斜坡交界夾角的抖動
+                if (Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer > 0f)
+                {
+                    _externalPushTimer -= Time.deltaTime;
+                    targetX = _externalPushVelocity.x * 0.85f;
+                }
+
+                Vector3 targetVelocity = new Vector3(targetX, rb.linearVelocity.y, rb.linearVelocity.z);
+
+                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     targetVelocity.y = 0f;
                 }
@@ -770,6 +833,13 @@ public class PlayerMovement : MonoBehaviour
             rb.useGravity = true; // 跳躍時立即還原重力
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+
+            // ★ 起跳瞬間零延遲切斷腳步聲音量，完美銜接起跳音效！
+            if (_footstepSource != null)
+            {
+                _footstepSource.volume = 0f;
+                _footstepSource.Stop();
+            }
 
             // 播放起跳音效
             if (jumpSFX != null && AudioManager.Instance != null)

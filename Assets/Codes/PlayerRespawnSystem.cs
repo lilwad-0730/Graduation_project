@@ -44,6 +44,16 @@ public class PlayerRespawnSystem : MonoBehaviour
     public AudioClip respawnSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
+    [Header("🎬 電影級沉浸轉場設定 (Cinematic Respawn Effects)")]
+    [Tooltip("是否啟用關卡自適應大氣深淵色 (水下深海黑、荒漠暮沙黑、天空玄青灰，而非死板純黑)")]
+    public bool enableAtmosphericAbyssColor = true;
+
+    [Tooltip("是否啟用聽覺低通沉浸濾波 (死亡時背景音樂沉悶如水下心跳，重生瞬間清澈甦醒)")]
+    public bool enableAudioLowPassMuffle = true;
+
+    [Tooltip("是否顯示重生提示文字 (若為 false 則為純淨無字電影模式，推薦度最高)")]
+    public bool showRespawnText = false;
+
     [Header("自訂 UI 物件 (若留空，系統會自動幫你生成)")]
     public Image customFadeImage;
     public Text customMessageText;
@@ -54,13 +64,14 @@ public class PlayerRespawnSystem : MonoBehaviour
     private CanvasGroup _messageCanvasGroup;
     private bool _isWaitingForPlayerMove = false;
     private Coroutine _textFadeCoroutine;
+    private AudioLowPassFilter _audioFilter;
 
-    // 將字串改為全英文，避免 Arial 字體在您的 Unity 環境中不支援中文導致整行隱形！
+    // 詩意極簡中英文短語 (僅在 showRespawnText = true 時顯示於螢幕正下方)
     private string[] encouragements = { 
-        "♥ Take a deep breath... ♥", 
-        "✿ You're doing great! ✿", 
-        "★ It's okay to fall. ★", 
-        "♪ You can do this! ♪" 
+        "Take a deep breath...", 
+        "Breathe and awaken.", 
+        "The journey continues.", 
+        "Rise again." 
     };
 
     private PlayerPetrification GetPetrification()
@@ -347,7 +358,7 @@ public class PlayerRespawnSystem : MonoBehaviour
     }
 
     // ===================================
-    // 原本的轉場演出 (僅傳送，不重載場景)
+    // 電影級沉浸轉場演出 (Cinematic Respawn Sequence)
     // ===================================
     IEnumerator RespawnSequence(Vector3 spawnPos)
     {
@@ -381,21 +392,31 @@ public class PlayerRespawnSystem : MonoBehaviour
             _playerRb.angularVelocity = Vector3.zero;
         }
 
-        // 播放角色死亡音效 (直出播放，保證 100% 聽得到)
-        if (deathSFX != null)
+        // 播放重生音效 (一觸發重生就立即響起，保證 100% 聽得到)
+        if (respawnSFX != null)
+        {
+            PlayDirectSFX(respawnSFX, sfxVolume);
+            Debug.Log($"✨【重生系統】一觸發重生立即播放重生音效: {respawnSFX.name}");
+        }
+        else if (deathSFX != null)
         {
             PlayDirectSFX(deathSFX, sfxVolume);
             Debug.Log($"💀【死亡系統】播放死亡音效: {deathSFX.name}");
         }
 
-        // 1. 漸黑
+        // 取得關卡專屬大氣深淵色與啟動聽覺沉水濾波
+        Color abyssColor = enableAtmosphericAbyssColor ? GetAtmosphericAbyssColor() : Color.black;
+        SetAudioMuffle(true, fadeDuration);
+
+        // 1. S型非線性電影沉入深淵 (SmoothStep Easing)
         float timer = 0f;
         while (timer < fadeDuration)
         {
             timer += Time.unscaledDeltaTime; // 使用不受時間暫停影響的真實時間
+            float t = Mathf.SmoothStep(0f, 1f, timer / fadeDuration);
             if (_fadeImage != null)
             {
-                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(0f, 1f, timer / fadeDuration));
+                _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, t);
             }
             if (_playerRb != null && !_playerRb.isKinematic)
             {
@@ -405,7 +426,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
         
         if (_fadeImage != null)
-            _fadeImage.color = new Color(0, 0, 0, 1f);
+            _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, 1f);
 
         // --- 【重生規則】先清除所有負面效果，再傳送 ---
         PlayerPetrification petrify = GetPetrification();
@@ -476,39 +497,36 @@ public class PlayerRespawnSystem : MonoBehaviour
             }
         }
 
-        // --- 強制顯示螢光鼓勵文字 (英文保證顯示) ---
-        if (_messageText != null && _messageCanvasGroup != null)
+        // --- 詩意微光文字 (可自由在 Inspector 開關) ---
+        if (showRespawnText && _messageText != null && _messageCanvasGroup != null)
         {
             _messageText.text = encouragements[Random.Range(0, encouragements.Length)];
             _messageCanvasGroup.alpha = 1f;
             _messageText.gameObject.SetActive(true);
         }
 
-        // 2. 黑屏延長維持
+        // 2. 深淵停頓
         yield return new WaitForSecondsRealtime(blackScreenTime);
 
-        // 3. 漸亮
+        // 聽覺破曉恢復
+        SetAudioMuffle(false, fadeDuration);
+
+        // 3. S型非線性破曉甦醒 (SmoothStep Easing)
         timer = 0f;
         while (timer < fadeDuration)
         {
             timer += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(1f, 0f, timer / fadeDuration);
             if (_fadeImage != null)
             {
-                _fadeImage.color = new Color(0, 0, 0, Mathf.Lerp(1f, 0f, timer / fadeDuration));
+                _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, t);
             }
             yield return null;
         }
         if (_fadeImage != null)
         {
-            _fadeImage.color = new Color(0, 0, 0, 0f);
+            _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, 0f);
             _fadeImage.gameObject.SetActive(false); 
-        }
-
-        // 播放復活重生音效 (直出播放，保證 100% 聽得到)
-        if (respawnSFX != null)
-        {
-            PlayDirectSFX(respawnSFX, sfxVolume);
-            Debug.Log($"✨【重生系統】播放復活重生音效: {respawnSFX.name}");
         }
 
         // ===================================================================
@@ -695,24 +713,24 @@ public class PlayerRespawnSystem : MonoBehaviour
             if (fallbackFont == null) fallbackFont = Font.CreateDynamicFontFromOSFont("Arial", 50);
             if (fallbackFont != null) _messageText.font = fallbackFont;
 
-            _messageText.fontSize = 55; 
-            _messageText.fontStyle = FontStyle.Italic; // 柔和的斜體
-            _messageText.color = new Color(1f, 0.6f, 0.8f, 1f); // 溫馨顯眼的粉紅色
-            _messageText.alignment = TextAnchor.UpperRight;
+            _messageText.fontSize = 32; 
+            _messageText.fontStyle = FontStyle.Normal;
+            _messageText.color = new Color(0.92f, 0.94f, 0.98f, 0.8f); // 典雅半透明月光銀白
+            _messageText.alignment = TextAnchor.LowerCenter; // 螢幕正下方置中
             _messageText.horizontalOverflow = HorizontalWrapMode.Overflow;
             _messageText.verticalOverflow = VerticalWrapMode.Overflow;
 
             RectTransform textRect = _messageText.GetComponent<RectTransform>();
-            textRect.anchorMin = new Vector2(1, 1); 
-            textRect.anchorMax = new Vector2(1, 1);
-            textRect.pivot = new Vector2(1, 1);     
-            textRect.sizeDelta = new Vector2(800, 150);
-            textRect.anchoredPosition = new Vector2(-50, -50); 
+            textRect.anchorMin = new Vector2(0.5f, 0f); 
+            textRect.anchorMax = new Vector2(0.5f, 0f);
+            textRect.pivot = new Vector2(0.5f, 0f);     
+            textRect.sizeDelta = new Vector2(900, 100);
+            textRect.anchoredPosition = new Vector2(0, 80); // 距螢幕底邊 80px
             
-            Color glowColor = new Color(1f, 0.4f, 0.6f, 0.5f); // 配合粉紅色的柔和外發光
+            Color glowColor = new Color(0.8f, 0.85f, 1f, 0.25f); // 空靈微光
             Outline glow = textObj.AddComponent<Outline>();
             glow.effectColor = glowColor;
-            glow.effectDistance = new Vector2(2, -2);
+            glow.effectDistance = new Vector2(1, -1);
 
             _messageText.gameObject.SetActive(false);
         }
@@ -720,6 +738,70 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             Debug.LogError("生成 UI 當機: " + ex.Message);
         }
+    }
+
+    private Color GetAtmosphericAbyssColor()
+    {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+        if (sceneName.Contains("underwater"))
+        {
+            return new Color(0.015f, 0.035f, 0.08f, 1f); // 深海幽藍黑 #040914
+        }
+        else if (sceneName.Contains("desert"))
+        {
+            return new Color(0.08f, 0.045f, 0.02f, 1f); // 暮光流沙黑 #140C05
+        }
+        else if (sceneName.Contains("dark"))
+        {
+            return new Color(0.02f, 0.02f, 0.03f, 1f); // 黯鏡墨夜黑 #050508
+        }
+        else
+        {
+            return new Color(0.04f, 0.045f, 0.065f, 1f); // 廢墟/天空玄青冷灰黑 #0A0C11
+        }
+    }
+
+    private void SetupAudioFilter()
+    {
+        Camera cam = Camera.main ?? Object.FindFirstObjectByType<Camera>();
+        if (cam != null)
+        {
+            _audioFilter = cam.GetComponent<AudioLowPassFilter>();
+            if (_audioFilter == null)
+            {
+                _audioFilter = cam.gameObject.AddComponent<AudioLowPassFilter>();
+            }
+            _audioFilter.cutoffFrequency = 22000f;
+            _audioFilter.enabled = false;
+        }
+    }
+
+    private void SetAudioMuffle(bool muffle, float duration = 0.4f)
+    {
+        if (!enableAudioLowPassMuffle) return;
+        if (_audioFilter == null) SetupAudioFilter();
+        if (_audioFilter != null)
+        {
+            _audioFilter.enabled = true;
+            StopCoroutine("AudioMuffleRoutine");
+            StartCoroutine(AudioMuffleRoutine(muffle ? 400f : 22000f, duration, !muffle));
+        }
+    }
+
+    private IEnumerator AudioMuffleRoutine(float targetFreq, float duration, bool disableOnFinish)
+    {
+        if (_audioFilter == null) yield break;
+        float startFreq = _audioFilter.cutoffFrequency;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+            _audioFilter.cutoffFrequency = Mathf.Lerp(startFreq, targetFreq, t);
+            yield return null;
+        }
+        _audioFilter.cutoffFrequency = targetFreq;
+        if (disableOnFinish) _audioFilter.enabled = false;
     }
 
     /// <summary>

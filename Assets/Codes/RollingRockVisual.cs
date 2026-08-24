@@ -74,6 +74,9 @@ public class RollingRockVisual : MonoBehaviour
         {
             rb.interpolation = RigidbodyInterpolation.Interpolate; // 與主角內插同步，消除物理刷新率不一致抖動
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous; // 連續碰撞防止穿透與碰撞回彈
+            rb.maxDepenetrationVelocity = 2.0f; // ★ 消除斜坡/平地夾角被強力彈開反彈引發的劇烈抖動
+            rb.solverIterations = 16;
+            rb.solverVelocityIterations = 16;
             rb.constraints = RigidbodyConstraints.FreezePositionZ | 
                              RigidbodyConstraints.FreezeRotationX | 
                              RigidbodyConstraints.FreezeRotationY | 
@@ -159,8 +162,8 @@ public class RollingRockVisual : MonoBehaviour
                 }
                 else
                 {
-                    // 玩家停步時：將巨石滾動速度傳送給主角，讓主角順應斜坡向下滑動
-                    pm.ApplyExternalSlopePush(rb.linearVelocity);
+                    // 玩家停步/被撞擊時：將巨石水平滾動速度傳遞給主角，讓主角在平地或斜坡夾角順暢滑開，化解互頂死鎖震顫
+                    pm.ApplyExternalSlopePush(new Vector3(rb.linearVelocity.x, 0f, 0f));
                 }
             }
         }

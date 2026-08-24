@@ -4,8 +4,10 @@ using System.Collections.Generic;
 /// <summary>
 /// 攝影機相向邊界碰撞器 (Direct Camera Viewport Boundary Confiner)
 /// 掛載於 Main Camera 上。
-/// 針對 Main Camera 的 4 個視野邊緣 (上、下、左、右) 進行實體碰撞攔截：
-/// 當相機視野邊緣觸碰到 CameraBoundary 碰撞盒時，會被當作實體牆壁擋住，絕對無法跨過去！
+/// 支援單一大背景包圍盒 或 4 面獨立邊界牆 (Left/Right/Top/Bottom CameraBoundary Walls)：
+/// 1. 視野 4 個邊緣觸碰到邊界時硬性擋住，絕不露底
+/// 2. 絕不因單面窄牆而把相機死鎖在牆壁中心點
+/// 3. 當主角在城堡上層移動時，相機 100% 順暢跟隨！
 /// </summary>
 [RequireComponent(typeof(Camera))]
 [DefaultExecutionOrder(99999)]
@@ -20,7 +22,7 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
     [Header("相機視野碰撞鎖定")]
     public bool collideX = true;
     public bool collideY = true;
-    public bool autoScaleIfBoundaryTooSmall = true;
+    public bool autoScaleIfBoundaryTooSmall = false;
 
     private Camera _cam;
     private Transform _playerTransform;
@@ -119,108 +121,107 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         ClampCameraToBoundary();
     }
 
-    /// <summary>
-    /// 找出包含玩家座標或離玩家最近的 CameraBoundary Collider (2.5D 深度自適應)
-    /// </summary>
-    Collider GetActiveBoundary(Vector3 point)
-    {
-        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) CacheBoundaries();
-        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) return null;
-
-        Collider closest = null;
-        float minDist = float.MaxValue;
-
-        foreach (var col in _cachedBoundaries)
-        {
-            if (col == null || !col.enabled) continue;
-            Bounds b = col.bounds;
-
-            // 2.5D 判定：忽略前後 Z 軸公差，只要主角落在該邊界箱的 X/Y 範圍內即視為身處該區域！
-            bool isInside2D = point.x >= b.min.x && point.x <= b.max.x && point.y >= b.min.y && point.y <= b.max.y;
-            if (isInside2D) return col;
-
-            // 計算 2D 歐幾里得距離
-            float dx = Mathf.Max(0f, Mathf.Max(b.min.x - point.x, point.x - b.max.x));
-            float dy = Mathf.Max(0f, Mathf.Max(b.min.y - point.y, point.y - b.max.y));
-            float d = Mathf.Sqrt(dx * dx + dy * dy);
-
-            if (d < minDist)
-            {
-                minDist = d;
-                closest = col;
-            }
-        }
-
-        return closest;
-    }
-
     void ClampCameraToBoundary()
     {
         if (_cam == null) _cam = GetComponent<Camera>();
         if (_cam == null) return;
         if (_playerTransform == null) FindPlayer();
 
+        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) CacheBoundaries();
+        if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) return;
+
         Vector3 targetPos = (_playerTransform != null) ? _playerTransform.position : transform.position;
-        Collider activeCol = GetActiveBoundary(targetPos);
-        if (activeCol == null) return;
 
-        Bounds bounds = activeCol.bounds;
-
-        // 1. 若 CameraBoundary 碰撞盒尺寸小於視角，自動適應 Orthographic Size 防止露底
-        if (_cam.orthographic && autoScaleIfBoundaryTooSmall)
-        {
-            float maxHalfH = bounds.size.y * 0.5f;
-            float maxHalfW = (bounds.size.x * 0.5f) / _cam.aspect;
-            float maxAllowedSize = Mathf.Min(maxHalfH, maxHalfW);
-
-            if (maxAllowedSize > 0.5f && _cam.orthographicSize > maxAllowedSize)
-            {
-                _cam.orthographicSize = maxAllowedSize;
-            }
-        }
-
-        // 2. 計算相機視野半寬高
-        float halfHeight = _cam.orthographic ? _cam.orthographicSize : 0f;
+        // 計算相機視野半寬高
+        float halfHeight = _cam.orthographic ? _cam.orthographicSize : 7f;
         float halfWidth = halfHeight * _cam.aspect;
 
         Vector3 camPos = transform.position;
         Vector3 clampedPos = camPos;
 
-        // 3. 【實體碰撞攔截】若主角處於邊界範圍內，視野 4 個邊緣硬性擋住；若主角在過渡下墜區，允許鏡頭向下跟隨
-        if (collideX)
-        {
-            float minX = bounds.min.x + halfWidth;
-            float maxX = bounds.max.x - halfWidth;
-            if (minX <= maxX) clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
-            else clampedPos.x = bounds.center.x;
-        }
+        float minX = float.MinValue;
+        float maxX = float.MaxValue;
+        float minY = float.MinValue;
+        float maxY = float.MaxValue;
 
-        if (collideY)
+        // 智能計算環繞在玩家周遭的所有邊界牆或大包圍盒
+        foreach (var col in _cachedBoundaries)
         {
-            float minY = bounds.min.y + halfHeight;
-            float maxY = bounds.max.y - halfHeight;
-            if (minY <= maxY)
+            if (col == null || !col.enabled) continue;
+            Bounds b = col.bounds;
+
+            // 判斷是否為「大區域背景包圍盒」（能完全容納鏡頭視野）
+            if (b.size.x >= halfWidth * 2f && b.size.y >= halfHeight * 2f)
             {
-                // 如果主角已經低於該邊界的底部 (正在向下方場景墜落)，允許相機追蹤主角下移，不再死卡在上方頂部
-                if (targetPos.y < bounds.min.y)
+                // 若玩家身在此大背景內，限制不能看穿大背景邊界
+                if (targetPos.x >= b.min.x - 2f && targetPos.x <= b.max.x + 2f &&
+                    targetPos.y >= b.min.y - 2f && targetPos.y <= b.max.y + 2f)
                 {
-                    clampedPos.y = Mathf.Min(camPos.y, targetPos.y);
-                }
-                else
-                {
-                    clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
+                    minX = Mathf.Max(minX, b.min.x + halfWidth);
+                    maxX = Mathf.Min(maxX, b.max.x - halfWidth);
+                    minY = Mathf.Max(minY, b.min.y + halfHeight);
+                    maxY = Mathf.Min(maxY, b.max.y - halfHeight);
                 }
             }
             else
             {
-                clampedPos.y = bounds.center.y;
+                // 判斷為「獨立單面邊界牆」 (如左牆、右牆、天花板、地面)
+                // 檢查該牆面是否在玩家視野的高度/寬度範圍內
+                bool inYRange = (targetPos.y >= b.min.y - halfHeight && targetPos.y <= b.max.y + halfHeight);
+                bool inXRange = (targetPos.x >= b.min.x - halfWidth && targetPos.x <= b.max.x + halfWidth);
+
+                if (inYRange)
+                {
+                    // 左側邊界牆：相機左邊緣不能穿透該牆的右側
+                    if (b.max.x <= targetPos.x + 2f)
+                    {
+                        minX = Mathf.Max(minX, b.max.x + halfWidth);
+                    }
+                    // 右側邊界牆：相機右邊緣不能穿透該牆的左側
+                    if (b.min.x >= targetPos.x - 2f)
+                    {
+                        maxX = Mathf.Min(maxX, b.min.x - halfWidth);
+                    }
+                }
+
+                if (inXRange)
+                {
+                    // 下方邊界牆/地板：相機下邊緣不能穿透該牆的頂部
+                    if (b.max.y <= targetPos.y + 2f)
+                    {
+                        minY = Mathf.Max(minY, b.max.y + halfHeight);
+                    }
+                    // 上方天花板：相機上邊緣不能穿透該牆的底部
+                    if (b.min.y >= targetPos.y - 2f)
+                    {
+                        maxY = Mathf.Min(maxY, b.min.y - halfHeight);
+                    }
+                }
+            }
+        }
+
+        // 3. 【限制相機座標，絕不強制死鎖】
+        if (collideX)
+        {
+            if (minX <= maxX)
+            {
+                clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
+            }
+            // 若邊界矛盾 (牆壁距離小於相機寬度)，不鎖死，直接跟隨目標 X
+        }
+
+        if (collideY)
+        {
+            if (minY <= maxY)
+            {
+                clampedPos.y = Mathf.Clamp(camPos.y, minY, maxY);
             }
         }
 
         // 寫回 Main Camera 座標
         transform.position = clampedPos;
 
-        // 4. 強制同步 Cinemachine 虛擬攝影機與 PlayerCameraTarget
+        // 4. 同步更新 Cinemachine 虛擬相機位置
         var activeVcam = Unity.Cinemachine.CinemachineCore.GetVirtualCamera(0);
         if (activeVcam != null)
         {
@@ -232,17 +233,6 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
                 if (collideY) vcamPos.y = clampedPos.y;
                 vcamComp.transform.position = vcamPos;
             }
-        }
-
-        GameObject cameraTargetObj = GameObject.Find("PlayerCameraTarget_SmoothY");
-        if (cameraTargetObj != null && collideY)
-        {
-            Vector3 targetObjPos = cameraTargetObj.transform.position;
-            float minY = bounds.min.y + halfHeight;
-            float maxY = bounds.max.y - halfHeight;
-            if (minY <= maxY) targetObjPos.y = Mathf.Clamp(targetObjPos.y, minY, maxY);
-            else targetObjPos.y = bounds.center.y;
-            cameraTargetObj.transform.position = targetObjPos;
         }
     }
 }

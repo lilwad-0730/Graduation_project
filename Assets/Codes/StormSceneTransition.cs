@@ -3,163 +3,134 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 
 /// <summary>
-/// 廢墟風暴水下關卡切換傳送門 (StormSceneTransition)。
-/// 純粹的場景切換機制，完全不包含任何受傷、閃紅邊、扣血或重生系統。
-/// 當主角與風暴接觸累積滿 5 秒時，自動淡出並切換載入 "underwater" 水下場景。
+/// 廢墟風暴吸入式關卡切換傳送門 (StormSceneTransition)。
+/// 獨立掛載於世界地面的固定 Trigger 碰撞框上（不隨相機移動）：
+/// 1. 【地面物理 100% 完整保留】：主角始終穩踏在地面碰撞體上，絕對不竄改 Y 座標，杜絕任何跌出界外問題！
+/// 2. 【僅平滑拉引 X 軸至中心】：進入邊界後，將主角水平 X 軸以指數平滑拉向 Trigger 中心的 X。
+/// 3. 【原地掙扎奔跑】：玩家按方向鍵時動作依然奔跑，呈現頂風掙扎但被風暴吸入的電影感。
+/// 4. 【聯動背景龍捲風】：進入時可通知背景龍捲風啟動跟隨相機，隨後黑屏淡出載入 desert！
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class StormSceneTransition : MonoBehaviour
 {
-    [Header("場景切換設定")]
+    [Header("🎯 場景切換設定")]
     [Tooltip("目標切換的關卡場景名稱 (預設為 desert)")]
     public string nextSceneName = "desert";
 
     [Tooltip("進入目標場景 (desert) 後，要指定重生的隱形物件/重生點名稱 (若留空則使用該場景預設位置)")]
     public string targetSpawnPointName = "SpawnPoint_FromSampleScene";
 
-    [Tooltip("主角必須與風暴接觸維持多久才啟動轉場 (秒，預設 5.0)")]
-    public float contactTimeRequired = 5.0f;
+    [Header("🌪️ 風暴吸入與演出設定 (僅平滑拉引 X 軸，絕不改變地面 Y 軸)")]
+    [Tooltip("水平吸入中心 X 座標所需時間 (秒，數值越大吸入速度越慢、掙扎時間越長，建議 1.5 ~ 3.5)")]
+    [Range(0.5f, 6.0f)]
+    public float suctionDuration = 2.0f;
 
-    [Tooltip("轉場淡出時間 (秒，預設 1.5)")]
-    public float fadeDuration = 1.5f;
+    [Tooltip("黑屏淡出時間 (秒，預設 1.2 秒)")]
+    public float fadeDuration = 1.2f;
 
-    [Header("風暴巡邏移動 (風暴橫掃)")]
-    [Tooltip("是否開啟風暴左右平滑橫掃移動")]
-    public bool enableMovement = true;
+    [Tooltip("關聯的背景龍捲風視覺物件 (可拖入 1 個或多個龍捲風，踏入時會一併啟動相機跟隨)")]
+    public TornadoFollowCamera[] backgroundTornadoes;
 
-    [Tooltip("風暴左右橫掃移動的單側距離 (例如 6 代表往左 6 米、往右 6 米)")]
-    public float sweepDistance = 6.0f;
-
-    [Tooltip("風暴橫掃移動的速度")]
-    public float sweepSpeed = 2.0f;
-
-    [Header("即時進度觀察 (唯讀)")]
-    [Tooltip("目前接觸時間計數")]
-    public float currentContactTimer = 0f;
-    public bool isPlayerInside = false;
+    [Tooltip("進入風暴時播放的狂風暴風咆哮音效 (選填)")]
+    public AudioClip stormVortexSFX;
+    [Range(0f, 1f)] public float sfxVolume = 0.95f;
 
     private bool isTransitioning = false;
-    private float startPosX;
-    private Transform playerTransform;
-    private PlayerMovement playerMovement;
     private UnityEngine.UI.Image fadeImage;
 
     private void Start()
     {
-        startPosX = transform.position.x;
-
-        // ★ 自動校正目標場景為 desert (解決 Inspector 殘留舊數值 underwater 的問題)
         if (string.IsNullOrEmpty(nextSceneName) || nextSceneName.Equals("underwater", System.StringComparison.OrdinalIgnoreCase))
         {
             nextSceneName = "desert";
         }
 
-        // 確保碰撞體設為 Trigger 模式，純感應主角進入
+        // 確保碰撞體設為 Trigger 模式，並給予足夠 Z 軸厚度防漏碰
         Collider col = GetComponent<Collider>();
         if (col != null)
         {
             col.isTrigger = true;
-        }
-
-        // 防呆防護：如果該物件被誤設了會引發受傷重生的 Tag，自動更正為 Untagged
-        string currentTag = gameObject.tag;
-        if (currentTag == "WolfEnemy" || currentTag == "Enemy" || currentTag == "Hazard")
-        {
-            gameObject.tag = "Untagged";
-            Debug.Log($"【風暴轉場】已自動重置 '{gameObject.name}' 的 Tag 為 Untagged，確保不會誤觸發受傷與重生系統。");
-        }
-
-        // 防呆防護：如果物件上誤掛了 WolfEnemy 等攻擊腳本，將其停用
-        WolfEnemy wolfScript = GetComponent<WolfEnemy>();
-        if (wolfScript != null)
-        {
-            wolfScript.enabled = false;
-            Debug.LogWarning($"【風暴轉場】偵測到 '{gameObject.name}' 上被誤掛了 WolfEnemy 攻擊腳本，已為您自動停用！");
-        }
-    }
-
-    private void Update()
-    {
-        if (isTransitioning) return;
-
-        // 1. 執行風暴左右橫掃巡邏移動
-        if (enableMovement)
-        {
-            float offsetX = Mathf.Sin(Time.time * sweepSpeed) * sweepDistance;
-            transform.position = new Vector3(startPosX + offsetX, transform.position.y, transform.position.z);
-        }
-
-        // 2. 當主角在風暴範圍內時進行接觸計時 (純計時，無受傷扣血)
-        if (isPlayerInside)
-        {
-            currentContactTimer += Time.deltaTime;
-
-            // 接觸滿 5 秒，觸發純切換場景
-            if (currentContactTimer >= contactTimeRequired)
+            if (col is BoxCollider box)
             {
-                StartSceneTransition();
-            }
-        }
-        else
-        {
-            // 離開風暴後重置計時
-            if (currentContactTimer > 0f)
-            {
-                currentContactTimer = Mathf.Max(0f, currentContactTimer - Time.deltaTime * 2f);
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
             }
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isTransitioning) return;
+        TryStartStormTransition(other.gameObject);
+    }
 
-        if (other.tag == "Player" || other.GetComponentInParent<PlayerMovement>() != null)
+    private void OnTriggerStay(Collider other)
+    {
+        TryStartStormTransition(other.gameObject);
+    }
+
+    private void TryStartStormTransition(GameObject hitObj)
+    {
+        if (isTransitioning || hitObj == null) return;
+
+        PlayerMovement pm = hitObj.GetComponent<PlayerMovement>() ?? 
+                           hitObj.GetComponentInParent<PlayerMovement>() ?? 
+                           hitObj.GetComponentInChildren<PlayerMovement>();
+
+        if (pm == null && (hitObj.CompareTag("Player") || hitObj.name.Contains("Player") || hitObj.transform.root.name.Contains("Player")))
         {
-            isPlayerInside = true;
+            pm = Object.FindFirstObjectByType<PlayerMovement>();
+        }
 
-            PlayerMovement pm = other.GetComponent<PlayerMovement>();
-            if (pm == null) pm = other.GetComponentInParent<PlayerMovement>();
-            if (pm != null)
+        if (pm != null)
+        {
+            isTransitioning = true;
+            StartCoroutine(VortexSuctionAndTransition(pm));
+        }
+    }
+
+    private IEnumerator VortexSuctionAndTransition(PlayerMovement pm)
+    {
+        Debug.Log($"🌪️【風暴吸入轉場】主角踏入固定轉場區域！啟動水平 X 引力吸入與原地奔跑演出...");
+
+        // 1. 啟動背景龍捲風跟隨 (若有指定)
+        if (backgroundTornadoes != null)
+        {
+            foreach (var t in backgroundTornadoes)
             {
-                playerMovement = pm;
-                playerTransform = pm.transform;
+                if (t != null) t.ActivateFollow();
             }
-
-            Debug.Log($"【風暴切換場景】主角進入風暴範圍！開始計算切換進度 ({currentContactTimer:F1}/{contactTimeRequired} 秒)...");
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (isTransitioning) return;
-
-        if (other.tag == "Player" || other.GetComponentInParent<PlayerMovement>() != null)
+        // 2. 播放狂風暴風音效
+        if (stormVortexSFX != null)
         {
-            isPlayerInside = false;
-            Debug.Log("【風暴切換場景】主角離開風暴，切換進度重置。");
+            AudioSource.PlayClipAtPoint(stormVortexSFX, transform.position, sfxVolume);
         }
-    }
 
-    private void StartSceneTransition()
-    {
-        isTransitioning = true;
-        Debug.Log($"【風暴切換場景】接觸滿 {contactTimeRequired} 秒！開始切換載入水下場景：'{nextSceneName}'");
-        StartCoroutine(TransitionSequence());
-    }
+        // 3. 透過 PlayerMovement 原生物理牽引 (100% 適應地形斜坡與地面碰撞，絕不穿模)
+        float distanceX = Mathf.Abs(transform.position.x - pm.transform.position.x);
+        float calculatedSpeed = Mathf.Clamp(distanceX / Mathf.Max(0.5f, suctionDuration), 1.8f, 6.0f);
 
-    private IEnumerator TransitionSequence()
-    {
-        // 1. 鎖定玩家移動控制
-        if (playerMovement != null)
+        pm.StartWindSuction(transform.position.x, calculatedSpeed);
+
+        float elapsed = 0f;
+        while (elapsed < suctionDuration)
         {
-            playerMovement.isCutsceneFrozen = true;
+            elapsed += Time.deltaTime;
+            yield return null;
         }
 
-        // 2. 生成畫面淡出 UI (純黑屏淡出，絕無閃紅邊/受傷/扣血/重生效果)
+        pm.StopWindSuction();
+        pm.isCutsceneFrozen = true;
+
+        // 4. 到達中心，啟動畫面黑屏淡出
         CreateFadeImage();
 
-        // 3. 漸漸淡出
         float timer = 0f;
         while (timer < fadeDuration)
         {
@@ -178,13 +149,13 @@ public class StormSceneTransition : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        // 4. 設定跨場景指定出生點並切換載入 desert 場景
+        // 6. 設定跨場景指定出生點並切換載入 desert 場景
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
             PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
         }
 
-        Debug.Log($"【風暴轉場】開始載入場景 '{nextSceneName}'，指定出生點物件為：'{targetSpawnPointName}'");
+        Debug.Log($"✨【風暴轉場完成】主角抵達風暴核心！載入場景：'{nextSceneName}'，指定出生點：'{targetSpawnPointName}'");
         SceneManager.LoadScene(nextSceneName);
     }
 
@@ -210,5 +181,28 @@ public class StormSceneTransition : MonoBehaviour
         rect.anchorMax = Vector2.one;
         rect.sizeDelta = Vector2.zero;
         rect.anchoredPosition = Vector2.zero;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(1f, 0.55f, 0.1f, 0.8f);
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+        }
+        else
+        {
+            Gizmos.DrawWireSphere(transform.position, 2.0f);
+        }
+
+        // 畫出吸入中心垂直線 (橘色)
+        Gizmos.color = new Color(1f, 0.3f, 0f, 0.9f);
+        Gizmos.DrawLine(new Vector3(transform.position.x, transform.position.y - 5f, transform.position.z),
+                        new Vector3(transform.position.x, transform.position.y + 15f, transform.position.z));
+
+        #if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, $"🌪️ 固定風暴吸入轉場區 (僅吸入 X 軸 ➔ {nextSceneName})");
+        #endif
     }
 }
