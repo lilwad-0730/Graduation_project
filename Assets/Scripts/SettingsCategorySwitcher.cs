@@ -61,7 +61,7 @@ private void SetSelectedTab(Category category)
             guideRoot = transform.Find("Guide");
     }
 
-    private static void SetCategoryContents(Transform categoryRoot, bool visible)
+private static void SetCategoryContents(Transform categoryRoot, bool visible)
     {
         if (categoryRoot == null)
             return;
@@ -71,15 +71,40 @@ private void SetSelectedTab(Category category)
         for (int i = 0; i < categoryRoot.childCount; i++)
         {
             Transform child = categoryRoot.GetChild(i);
-            bool isTabButton =
-                child.GetComponent<SettingsCategoryTab>() != null ||
-                child.name.IndexOf("_graybox", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isCategoryTab = child.GetComponent<SettingsCategoryTab>() != null;
+            bool isCategoryTextCanvas =
+                child.GetComponent<Canvas>() != null &&
+                child.name.EndsWith("TextCanvas", StringComparison.OrdinalIgnoreCase);
 
-            child.gameObject.SetActive(isTabButton || visible);
+            if (isCategoryTextCanvas)
+            {
+                child.gameObject.SetActive(true);
+                SetCategoryTextCanvasContents(child, visible);
+            }
+            else
+            {
+                child.gameObject.SetActive(isCategoryTab || visible);
+            }
         }
     }
 
-    private void SetCategoryCanvasText(Category category)
+private static void SetCategoryTextCanvasContents(Transform canvasRoot, bool visible)
+    {
+        for (int i = 0; i < canvasRoot.childCount; i++)
+        {
+            GameObject child = canvasRoot.GetChild(i).gameObject;
+            string objectName = child.name.Trim().ToLowerInvariant();
+            bool isCategoryLabel =
+                objectName == "text_setting_ui (volume)" ||
+                objectName == "text_setting_ui (windows)" ||
+                objectName == "text_setting_ui (guide)";
+
+            child.SetActive(isCategoryLabel || visible);
+        }
+    }
+
+
+private void SetCategoryCanvasText(Category category)
     {
         Transform canvasRoot = transform.Find("SettingsTextCanvas");
         if (canvasRoot == null)
@@ -94,7 +119,9 @@ private void SetSelectedTab(Category category)
             {
                 child.SetActive(category == Category.Volume);
             }
-            else if (objectName.Contains("windows_content"))
+            else if (objectName.Contains("display") ||
+                     objectName.Contains("resolution") ||
+                     objectName.Contains("windows_content"))
             {
                 child.SetActive(category == Category.Windows);
             }
