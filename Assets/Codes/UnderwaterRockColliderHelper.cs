@@ -1,8 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// 自動為水下關卡的 3D 旋轉岩石生成防漏 2.5D 實體碰撞投影，
-/// 徹底解決 3D 幾何體在特定旋轉角度下因切面空隙導致主角掉出世界的物理缺陷。
+/// 水下岩石精準碰撞管理器 (Underwater Rock Collider Helper)
+/// 1. 【100% 貼合岩石表面】：全面採用 MeshCollider (使用岩石自身 3D 網格)，完美貼合岩石每個有機弧度與縫隙，絕無多餘方塊凸起！
+/// 2. 【清理多餘方塊碰撞體】：自動清理冗餘的 BoxCollider，徹底消除「透明空氣牆」堵住通道的問題。
+/// 3. 【無摩擦力平滑物理】：確保所有岩石碰撞體賦予平滑無摩擦材質，主角滑動遊行完全不卡角。
 /// </summary>
 public class UnderwaterRockColliderHelper : MonoBehaviour
 {
@@ -22,11 +24,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             bounceCombine = PhysicsMaterialCombine.Minimum
         };
 
-        // 搜尋全場景中所有的岩石容器與岩石物件
-        GameObject rocksContainer = GameObject.Find("Rocks_Container");
-        MeshRenderer[] renderers = rocksContainer != null 
-            ? rocksContainer.GetComponentsInChildren<MeshRenderer>(true) 
-            : Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
+        // 搜尋全場景中所有的岩石
+        MeshRenderer[] renderers = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
 
         foreach (var mr in renderers)
         {
@@ -34,38 +33,44 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             string n = mr.name;
             if (!n.Contains("Rocks") && !n.Contains("Rock") && !n.Contains("rock") && !n.Contains("Stone")) continue;
 
-            // 確保 MeshCollider 具備平滑無摩擦材質
+            // 1. 如果身上有過去自動新增的多餘 BoxCollider，將其移除，防止方塊尖角凸出堵死通道
+            BoxCollider[] boxes = mr.GetComponents<BoxCollider>();
+            foreach (var b in boxes)
+            {
+                // 若非自定義 Trigger，安全移除
+                if (!b.isTrigger)
+                {
+                    if (Application.isPlaying)
+                    {
+                        Destroy(b);
+                    }
+                    else
+                    {
+                        DestroyImmediate(b);
+                    }
+                }
+            }
+
+            // 2. 確保擁有精準貼合網格的 MeshCollider
             MeshCollider mc = mr.GetComponent<MeshCollider>();
+            if (mc == null)
+            {
+                mc = mr.gameObject.AddComponent<MeshCollider>();
+            }
+
+            MeshFilter mf = mr.GetComponent<MeshFilter>();
+            if (mf != null && mf.sharedMesh != null && mc.sharedMesh == null)
+            {
+                mc.sharedMesh = mf.sharedMesh;
+            }
+
             if (mc != null)
             {
                 mc.material = noFriction;
-            }
-
-            // 為每一塊 3D 旋轉岩石掛載一個深度貫穿的 BoxCollider 輔助碰撞體
-            // 該碰撞體與岩石的視覺邊界完全吻合，且在 Z 軸前後延展，保證 100% 密封任何 3D 旋轉角度產生的切面空洞！
-            BoxCollider helperBox = mr.GetComponent<BoxCollider>();
-            if (helperBox == null)
-            {
-                helperBox = mr.gameObject.AddComponent<BoxCollider>();
-            }
-
-            helperBox.isTrigger = false;
-            helperBox.material = noFriction;
-
-            // 取得該岩石在 Local 空間的精確 Mesh 尺寸，並將 Z 軸厚度延展以跨越 2.5D 移動基準線
-            MeshFilter mf = mr.GetComponent<MeshFilter>();
-            if (mf != null && mf.sharedMesh != null)
-            {
-                Bounds localBounds = mf.sharedMesh.bounds;
-                Vector3 size = localBounds.size;
-                float lossyZ = Mathf.Abs(mr.transform.lossyScale.z);
-                float requiredZ = (lossyZ > 0.001f) ? (3.5f / lossyZ) : 4.0f;
-                size.z = Mathf.Max(size.z, requiredZ);
-                helperBox.size = size;
-                helperBox.center = localBounds.center;
+                mc.enabled = true;
             }
         }
 
-        Debug.Log($"[UnderwaterRockColliderHelper] 已為水下岩石建立 2.5D 深度密封碰撞體，徹底解決特定角度穿模掉落問題！");
+        Debug.Log("[UnderwaterRockColliderHelper] 已全面將水下岩石切換為精準 MeshCollider，完美貼合石頭表面，暢通狹窄通道！");
     }
 }
