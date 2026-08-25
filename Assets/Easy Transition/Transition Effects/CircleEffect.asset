@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CircleEffect
   m_EditorClassIdentifier: 
   transitionMaterial: {fileID: 2100000, guid: d1366fece584d4548986e1f1067ef4a6, type: 2}
-  middleDelay: 0
-  duration: 3
+  middleDelay: 1
+  duration: 5
   easingCurve:
     serializedVersion: 2
     m_Curve:
@@ -50,4 +50,4 @@ MonoBehaviour:
     m_RotationOrder: 4
   fadeOutAnimation: 1
   fadeInAnimation: 0
-  smoothness: 0.027
+  smoothness: 0.1

@@ -531,7 +531,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartMenuSceneTransition
   targetSceneName: SampleScene
-  transitionEffect: {fileID: 11400000, guid: dbffdc90bb07e4b4f99c070ea6cffdff, type: 2}
+  transitionEffect: {fileID: 11400000, guid: 7cb3a7472a36ad5468072f6ca7b2d68f, type: 2}
 --- !u!1 &164848392
 GameObject:
   m_ObjectHideFlags: 0
@@ -1918,7 +1918,7 @@ PrefabInstance:
     - target: {fileID: 2541666409870520583, guid: 9e231ba446800aa4ebe635b040ef13bd, type: 3}
       propertyPath: defaultTransition
       value: 
-      objectReference: {fileID: 11400000, guid: dbffdc90bb07e4b4f99c070ea6cffdff, type: 2}
+      objectReference: {fileID: 11400000, guid: 7cb3a7472a36ad5468072f6ca7b2d68f, type: 2}
     - target: {fileID: 2541666409870520583, guid: 9e231ba446800aa4ebe635b040ef13bd, type: 3}
       propertyPath: OnTransitionStart.m_PersistentCalls.m_Calls.Array.size
       value: 0
