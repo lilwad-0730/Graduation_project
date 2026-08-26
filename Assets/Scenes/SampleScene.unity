@@ -6303,7 +6303,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 194.8, y: -111.6, z: -9.971252}
+  m_LocalPosition: {x: -15.5, y: 2.5, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6543,7 +6543,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1631650301638393880, guid: 00269f8a354af4149b97e71280eb8776, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 1631650301638393880, guid: 00269f8a354af4149b97e71280eb8776, type: 3}
       propertyPath: m_ConstrainProportionsScale
@@ -26083,7 +26083,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a012019dab7e5847b1837a8e13e03c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TornadoFollowCamera
-  enableSweep: 1
+  enableSweep: 0
   sweepDistance: 4.5
   sweepSpeed: 1.3
   autoFollowOnStart: 0
@@ -26849,6 +26849,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2156088547611864307, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4352851065904126833, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: InitialModule.startColor.maxColor.a
       value: 0.89411765
@@ -26887,7 +26891,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_ConstrainProportionsScale
@@ -28037,7 +28041,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 194.8, y: -111.6, z: -9.971252}
+  m_LocalPosition: {x: -15.5, y: 2.5, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -33676,7 +33680,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a012019dab7e5847b1837a8e13e03c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TornadoFollowCamera
-  enableSweep: 1
+  enableSweep: 0
   sweepDistance: 4.5
   sweepSpeed: 1.3
   autoFollowOnStart: 0
@@ -34345,11 +34349,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 194.8
+      value: -15.5
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -111.6
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z
