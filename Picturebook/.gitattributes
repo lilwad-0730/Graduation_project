@@ -1,0 +1,9 @@
+# Unity 的這些是文字檔，要能 diff 和合併，不要被當成二進位
+*.meta   -text diff
+*.unity  -text diff
+*.prefab -text diff
+*.asset  -text diff
+*.cs     text diff=csharp
+
+# 註：這裡原本有 Git LFS 規則，已移除。
+# 團隊成員都沒有安裝 git-lfs，開 LFS 會讓沒裝的人 clone 到指標檔而不是圖片。
