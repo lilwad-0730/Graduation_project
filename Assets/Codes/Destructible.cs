@@ -36,6 +36,8 @@ public class Destructible : MonoBehaviour, IResettable
     [Range(0f, 1f)] public float sfxVolume = 0.95f;
 
     private bool hasShattered = false;
+    public bool HasShattered => hasShattered;
+    public event System.Action OnShattered;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
     private Vector3 initialScale;
@@ -55,6 +57,7 @@ public class Destructible : MonoBehaviour, IResettable
     {
         if (hasShattered) return;
         hasShattered = true;
+        OnShattered?.Invoke();
 
         // 播放碎裂音效
         if (shatterSFX != null)
