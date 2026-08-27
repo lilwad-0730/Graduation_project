@@ -24,6 +24,9 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
     public bool collideY = true;
     public bool autoScaleIfBoundaryTooSmall = false;
 
+    public static bool isBypassed = false; // 過場演出時旁路邊界限制
+    public static Transform customTarget = null; // 自訂目標 (例如追蹤巨石時防穿幫邊界計算)
+
     private Camera _cam;
     private Transform _playerTransform;
     private Collider[] _cachedBoundaries;
@@ -123,6 +126,7 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
 
     void ClampCameraToBoundary()
     {
+        if (isBypassed || !enabled) return;
         if (_cam == null) _cam = GetComponent<Camera>();
         if (_cam == null) return;
         if (_playerTransform == null) FindPlayer();
@@ -130,7 +134,7 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) CacheBoundaries();
         if (_cachedBoundaries == null || _cachedBoundaries.Length == 0) return;
 
-        Vector3 targetPos = (_playerTransform != null) ? _playerTransform.position : transform.position;
+        Vector3 targetPos = (customTarget != null) ? customTarget.position : ((_playerTransform != null) ? _playerTransform.position : transform.position);
 
         // 計算相機視野半寬高
         float halfHeight = _cam.orthographic ? _cam.orthographicSize : 7f;

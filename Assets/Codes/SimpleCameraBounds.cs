@@ -33,6 +33,9 @@ public class SimpleCameraBounds : MonoBehaviour
     [Header("邊界鎖定設定")]
     public bool clampYAxis = true;
 
+    public static bool isBypassed = false; // 過場演出時旁路邊界限制
+    public static Transform customTarget = null; // 自訂目標 (例如追蹤巨石時防穿幫邊界計算)
+
     // ─── 內部狀態 ───
     private Camera _cam;
     private Bounds _skyZoneBounds;
@@ -150,6 +153,7 @@ public class SimpleCameraBounds : MonoBehaviour
 
     void LateUpdate()
     {
+        if (isBypassed || !enabled) return;
         if (_playerTransform == null) FindPlayer();
         if (_playerTransform == null) return;
 
@@ -161,7 +165,7 @@ public class SimpleCameraBounds : MonoBehaviour
             RebuildZoneClusters();
         }
 
-        float playerY = _playerTransform.position.y;
+        float playerY = (customTarget != null) ? customTarget.position.y : _playerTransform.position.y;
         bool isGrounded = (_playerMovement != null) ? _playerMovement.isGrounded : true;
         bool isFallingInAir = (_playerMovement != null) && _playerMovement.freezeHorizontal && !isGrounded;
 

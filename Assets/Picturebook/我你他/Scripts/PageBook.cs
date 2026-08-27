@@ -83,6 +83,16 @@ public class PageBook : MonoBehaviour
 #endif
     }
 
+    void Start()
+    {
+        if (BookTransitionManager.isChapterMode)
+        {
+            GoTo(BookTransitionManager.chapterStartPage);
+            var exhibit = GetComponent<ExhibitMode>();
+            if (exhibit != null) exhibit.enableAutoPlay = false;
+        }
+    }
+
     void LoadPagesIfNeeded()
     {
         if (pages != null && pages.Length > 0) return;
@@ -246,7 +256,23 @@ public class PageBook : MonoBehaviour
         if (dir > 0)
         {
             bool last = index >= pages.Length - 1;
-            if (last && !loopAtEnd) return false;
+            if (BookTransitionManager.isChapterMode && BookTransitionManager.chapterEndPage >= 0)
+            {
+                if (index >= BookTransitionManager.chapterEndPage)
+                {
+                    BookTransitionManager.CompleteChapterAndLoadNext();
+                    return false;
+                }
+            }
+            if (last)
+            {
+                if (BookTransitionManager.isChapterMode)
+                {
+                    BookTransitionManager.CompleteChapterAndLoadNext();
+                    return false;
+                }
+                if (!loopAtEnd) return false;
+            }
             toIdx = last ? 0 : index + 1;
             SetTex(curlMat, Page(index));
             SetTex(underMat, Page(toIdx));
@@ -373,5 +399,24 @@ public class PageBook : MonoBehaviour
     {
         Vector3 w = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -cam.transform.position.z));
         return curlT.InverseTransformPoint(w).x;
+    }
+
+    void OnGUI()
+    {
+        if (BookTransitionManager.isChapterMode)
+        {
+            bool isAtChapterEnd = (BookTransitionManager.chapterEndPage >= 0 && index >= BookTransitionManager.chapterEndPage) || (index >= PageCount - 1);
+            if (isAtChapterEnd)
+            {
+                float btnW = 180f;
+                float btnH = 44f;
+                float pad = 24f;
+                Rect rect = new Rect(Screen.width - btnW - pad, Screen.height - btnH - pad, btnW, btnH);
+                if (GUI.Button(rect, "進入下一關 ➔"))
+                {
+                    BookTransitionManager.CompleteChapterAndLoadNext();
+                }
+            }
+        }
     }
 }
