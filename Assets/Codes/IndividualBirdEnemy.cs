@@ -457,29 +457,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private IEnumerator FadeAndDestroyCoroutine()
     {
-        yield return new WaitForSeconds(stuckDuration);
+        // 俯衝插地後停留 1.2 秒
+        yield return new WaitForSeconds(Mathf.Min(stuckDuration, 1.2f));
 
         float elapsed = 0f;
-        while (elapsed < fadeDuration)
+        float realFadeDuration = fadeDuration > 0.05f ? fadeDuration : 1.0f;
+        while (elapsed < realFadeDuration)
         {
             elapsed += Time.deltaTime;
-            float alpha = 1.0f - (elapsed / fadeDuration);
-            SetAlpha(alpha);
-            yield return null;
-        }
-
-        gameObject.SetActive(false);
-    }
-
-    private IEnumerator FadeAndDestroyCoroutineAfterBounce()
-    {
-        yield return new WaitForSeconds(1.2f);
-
-        float elapsed = 0f;
-        while (elapsed < fadeDuration)
-        {
-            elapsed += Time.deltaTime;
-            float alpha = 1.0f - (elapsed / fadeDuration);
+            float alpha = Mathf.Clamp01(1.0f - (elapsed / realFadeDuration));
             SetAlpha(alpha);
             yield return null;
         }
@@ -503,19 +489,23 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 c.a = alpha;
                 sr.color = c;
             }
-            else if (r.material != null)
+            else if (r.materials != null)
             {
-                if (r.material.HasProperty("_Color"))
+                foreach (var mat in r.materials)
                 {
-                    Color c = r.material.color;
-                    c.a = alpha;
-                    r.material.color = c;
-                }
-                if (r.material.HasProperty("_BaseColor"))
-                {
-                    Color c = r.material.GetColor("_BaseColor");
-                    c.a = alpha;
-                    r.material.SetColor("_BaseColor", c);
+                    if (mat == null) continue;
+                    if (mat.HasProperty("_Color"))
+                    {
+                        Color c = mat.color;
+                        c.a = alpha;
+                        mat.color = c;
+                    }
+                    if (mat.HasProperty("_BaseColor"))
+                    {
+                        Color c = mat.GetColor("_BaseColor");
+                        c.a = alpha;
+                        mat.SetColor("_BaseColor", c);
+                    }
                 }
             }
         }
@@ -579,16 +569,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 撞擊護盾時反彈飛開效果：播放 DIE 動畫，並依據 Inspector 填寫的數值進行 100% 精確掌控的 2D 拋物線彈飛與漸隱！
+    /// 撞擊護盾時反彈飛開效果：播放 DIE 動畫，並依據自然物理拋物線彈飛至地面後漸隱！
     /// </summary>
     public void BounceOff(PlayerShield shield)
     {
         if (currentState == BirdState.Bounced) return;
 
-        StopAllCoroutines(); // 說明：立即停止俯衝攜程與其他運動
+        StopAllCoroutines(); // 立即停止俯衝與其他運動
         currentState = BirdState.Bounced;
 
-        // 關閉物理隨機運動，採用 100% 精確控制的拋物線插值
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
@@ -596,7 +585,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             rb.isKinematic = true;
         }
 
-        // 恢復動畫速度並強制觸發 DIE 動畫
+        // 恢復動畫速度並播放 DIE 動畫
         if (animator != null) animator.speed = 1f;
         PlayAnim(dieAnimName);
 
@@ -604,24 +593,39 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 100% 可控拋物線反彈協程：飛行距離(bounceDistance)、弧度高度(bounceHeight)、飛行時間(bounceDuration)
+    /// 自然物理拋物線反彈協程：撞擊護盾後向上躍起拋物線墜落至地面，倒地後平滑漸漸隱形消失
     /// </summary>
     private IEnumerator ControlledBounceCoroutine(PlayerShield shield)
     {
         Vector3 startPos = transform.position;
         Vector3 shieldCenter = (shield != null ? shield.transform.position : (playerTrans != null ? playerTrans.position : startPos - Vector3.right));
 
-        float realBounceDuration = bounceDuration > 0.05f ? bounceDuration : 0.6f;
+        float realBounceDuration = bounceDuration > 0.05f ? bounceDuration : 0.85f;
         float realFadeDuration = fadeDuration > 0.05f ? fadeDuration : 1.0f;
-        float realBounceDist = bounceDistance > 0.1f ? bounceDistance : 2.5f;
+        float realBounceDist = bounceDistance > 0.1f ? bounceDistance : 3.5f;
 
+        // 反彈水平方向 (沿著撞擊相反方向向外彈出)
         float dirX = (startPos.x >= shieldCenter.x) ? 1.0f : -1.0f;
-        Vector3 targetPos = new Vector3(startPos.x + dirX * realBounceDist, startPos.y, originalPosition.z);
+        float targetX = startPos.x + dirX * realBounceDist;
+
+        // 計算地表 Y 座標 (往下射線偵測地面，保證落地不懸空)
+        float targetY = startPos.y - 2.5f;
+        RaycastHit hit;
+        if (Physics.Raycast(new Vector3(targetX, startPos.y + 2f, originalPosition.z), Vector3.down, out hit, 40f))
+        {
+            targetY = hit.point.y + 0.2f;
+        }
+        else if (playerTrans != null)
+        {
+            targetY = playerTrans.position.y - 0.5f;
+        }
+
+        Vector3 targetPos = new Vector3(targetX, targetY, originalPosition.z);
 
         Quaternion startRot = transform.rotation;
         Quaternion endRot = startRot * Quaternion.Euler(0, 0, dirX * -bounceSpinAngle);
 
-        Debug.Log($"【鳥群反彈】100% 可控反彈啟動！距離: {realBounceDist}m, 高度: {bounceHeight}m, 時間: {realBounceDuration}s");
+        Debug.Log($"【鳥群反彈】自然拋物線反彈啟動！起點: {startPos}, 落地目標: {targetPos}");
 
         float elapsed = 0f;
         while (elapsed < realBounceDuration)
@@ -629,8 +633,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / realBounceDuration);
 
+            // 水平與垂直線性插值 ＋ 自然向上拋物線弧度
             Vector3 currentPos = Vector3.Lerp(startPos, targetPos, t);
-            float arcY = 4f * bounceHeight * t * (1f - t);
+            float arcY = 4f * bounceHeight * Mathf.Sin(t * Mathf.PI * 0.5f) * (1f - t);
             currentPos.y += arcY;
             currentPos.z = originalPosition.z;
 
@@ -640,11 +645,23 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             yield return null;
         }
 
+        // 確保完全觸地
+        transform.position = targetPos;
+
+        // 倒在地上稍微停頓
+        if (animator != null)
+        {
+            animator.speed = 0.5f;
+        }
+
+        yield return new WaitForSeconds(0.4f);
+
+        // 漸漸隱形消失
         float fadeElapsed = 0f;
         while (fadeElapsed < realFadeDuration)
         {
             fadeElapsed += Time.deltaTime;
-            float alpha = 1.0f - (fadeElapsed / realFadeDuration);
+            float alpha = Mathf.Clamp01(1.0f - (fadeElapsed / realFadeDuration));
             SetAlpha(alpha);
             yield return null;
         }
@@ -667,6 +684,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             rb.isKinematic = true;
         }
         SetAlpha(1.0f);
+        if (animator != null)
+        {
+            animator.speed = 1f;
+        }
         PlayAnim(idleAnimName);
     }
 }

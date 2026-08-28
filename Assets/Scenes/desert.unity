@@ -5866,6 +5866,8 @@ MonoBehaviour:
   skyBackgroundTag: Background
   ruinedZoneYThreshold: -85
   clampYAxis: 1
+  autoFitSceneHeightAndLockY: 1
+  orthoSizeTransitionSpeed: 5
 --- !u!114 &308089455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6767,6 +6769,8 @@ MonoBehaviour:
   nextSceneName: underwater
   targetSpawnPointName: 
   transitionMode: 1
+  comicStartPage: 0
+  comicEndPage: 13
   fadeDuration: 1.2
   sinkSpeed: 1.2
   targetSinkDepth: 2.5
@@ -15619,7 +15623,7 @@ Transform:
   m_GameObject: {fileID: 1876345100}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15.584488, y: 19.57, z: 0}
+  m_LocalPosition: {x: 15.57884, y: 19.57, z: 0}
   m_LocalScale: {x: 0.2902, y: 0.2902, z: 0.2902}
   m_ConstrainProportionsScale: 0
   m_Children: []
