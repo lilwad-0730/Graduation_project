@@ -71,6 +71,26 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("捕獲玩家攻擊動畫名稱 (預設 attack2)")]
     public string attackAnimationName = "attack2";
 
+    [Header("🎵 怪物追逐專屬背景音樂 (Chase BGM)")]
+    [Tooltip("怪物追逐時播放的專屬背景音樂 (例如 玻璃館_追逐_loop.wav 或 EyesInTheVoid.mp3，留空時自動載入 玻璃館_追逐_loop)")]
+    public AudioClip chaseBGM;
+    [Range(0f, 1f)]
+    [Tooltip("追逐音樂音量 (預設 0.85)")]
+    public float chaseBGMVolume = 0.85f;
+    [Tooltip("追逐音樂淡入時間 (秒，預設 1.0)")]
+    public float chaseBGMFadeInDuration = 1.0f;
+    [Tooltip("怪物死亡/消散時追逐音樂淡出時間 (秒，預設 1.5)")]
+    public float chaseBGMFadeOutDuration = 1.5f;
+    [Tooltip("空間 2D/3D 混合 (0 = 全景環繞電影級BGM，1 = 純3D定位音效，建議 0.15 保持音樂清晰且具方向感)")]
+    [Range(0f, 1f)]
+    public float spatialBlend = 0.15f;
+
+    [Header("💡 音效進階增強 (Proximity & Victory)")]
+    [Tooltip("當怪物極度逼近主角時 (距離 < 8米)，是否自動增強追逐音樂緊張度/音量")]
+    public bool enableProximityTension = true;
+    [Tooltip("怪物全收集死亡消散時播放的解脫勝利氛圍音效 (例如 玻璃館_追逐_脫離.wav)")]
+    public AudioClip victoryReliefSFX;
+
     [Header("🎵 怪物音效設定 (Monster SFX)")]
     [Tooltip("怪物登場 / 巨影過頂音效 (例如 水下_巨影過頂.wav)")]
     public AudioClip appearSFX;
@@ -186,6 +206,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // Coroutine 追蹤
     private Coroutine _stateCoroutine;
     private Coroutine _hitShrinkCoroutine;
+    private Coroutine _chaseBgmFadeCoroutine;
+
+    // 追逐專屬 AudioSource
+    private AudioSource _chaseAudioSource;
 
     // ──────────────────────────────────────────────────────────────────────────
     // Unity 生命週期
@@ -276,6 +300,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         SetupCandles();
         CreateHaloEffect();
+        SetupChaseAudioSource();
     }
 
     void Awake()
@@ -308,17 +333,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                     MoveTowardPlayer(chaseSpeed);
                     CheckCatch();
                 }
+                if (enableProximityTension) UpdateProximityAudioTension();
                 break;
 
             case MonsterState.Chasing:
                 MoveTowardPlayer(chaseSpeed);
                 CheckCatch();
+                if (enableProximityTension) UpdateProximityAudioTension();
                 break;
 
             case MonsterState.Punishing:
                 MoveTowardPlayer(punishChaseSpeed);
                 CheckCatch();
                 if (_camLocked) ClampPlayerToCameraView();
+                if (enableProximityTension) UpdateProximityAudioTension();
                 break;
         }
     }
@@ -395,6 +423,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         currentState = MonsterState.Appearing;
         Debug.Log("【影子怪物】開始登場（漸漸顯示）...");
 
+        // 啟動追逐專屬背景音樂 (平滑淡入)
+        StartChaseBGM();
+
         if (appearSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(appearSFX, transform.position, sfxVolume);
@@ -467,7 +498,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         currentState = MonsterState.Vanishing;
 
-        if (vanishSFX != null)
+        // 停止追逐背景音樂 (平滑淡出)
+        StopChaseBGM(false);
+
+        if (victoryReliefSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(victoryReliefSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(victoryReliefSFX, transform.position, sfxVolume);
+        }
+        else if (vanishSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(vanishSFX, transform.position, sfxVolume);
             else AudioSource.PlayClipAtPoint(vanishSFX, transform.position, sfxVolume);
@@ -537,6 +576,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (isHit)
         {
             Debug.Log("💥【影子怪物】巨爪命中主角！定身並觸發重擊震動反饋！");
+
+            // 命中主角時立即中斷追逐音樂
+            StopChaseBGM(true);
 
             if (catchPlayerSFX != null)
             {
@@ -1077,6 +1119,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _currentAnimName = "";
         _chaseTimer = 0f;  // 重置追逐計時，確保下次出場先播 walk4
 
+        // 立即停止追逐背景音樂
+        StopChaseBGM(true);
+
         currentState = MonsterState.Dormant;
         _candlesCollected = 0;
         _currentScaleMultiplier = 1f;
@@ -1099,7 +1144,126 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             }
         }
 
-        Debug.Log("【影子怪物】已完整重置至初始狀態（含全部燭火）。");
+        Debug.Log("【影子怪物】已完整重置至初始狀態（含全部燭火與音樂）。");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // 🎵 追逐專屬背景音樂核心管理 (Chase BGM Management)
+    // ──────────────────────────────────────────────────────────────────────────
+
+    private void SetupChaseAudioSource()
+    {
+        if (_chaseAudioSource == null)
+        {
+            _chaseAudioSource = gameObject.GetComponent<AudioSource>();
+            if (_chaseAudioSource == null) _chaseAudioSource = gameObject.AddComponent<AudioSource>();
+            _chaseAudioSource.loop = true;
+            _chaseAudioSource.playOnAwake = false;
+            _chaseAudioSource.spatialBlend = spatialBlend;
+            _chaseAudioSource.volume = 0f;
+            _chaseAudioSource.rolloffMode = AudioRolloffMode.Linear;
+            _chaseAudioSource.minDistance = 5f;
+            _chaseAudioSource.maxDistance = 60f;
+        }
+
+        if (chaseBGM == null)
+        {
+#if UNITY_EDITOR
+            chaseBGM = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/玻璃館/玻璃館_追逐_loop.wav");
+#endif
+        }
+
+        if (victoryReliefSFX == null)
+        {
+#if UNITY_EDITOR
+            victoryReliefSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/玻璃館/玻璃館_追逐_脫離.wav");
+#endif
+        }
+
+        if (_chaseAudioSource != null && chaseBGM != null)
+        {
+            _chaseAudioSource.clip = chaseBGM;
+        }
+    }
+
+    public void StartChaseBGM()
+    {
+        if (_chaseAudioSource == null) SetupChaseAudioSource();
+        if (_chaseAudioSource == null || _chaseAudioSource.clip == null) return;
+
+        if (_chaseBgmFadeCoroutine != null) StopCoroutine(_chaseBgmFadeCoroutine);
+        _chaseBgmFadeCoroutine = StartCoroutine(FadeChaseBgmRoutine(chaseBGMVolume, chaseBGMFadeInDuration, true));
+        Debug.Log($"🎵【影子怪物】追逐背景音樂啟動淡入播放（{_chaseAudioSource.clip.name}，音量 {chaseBGMVolume}）");
+    }
+
+    public void StopChaseBGM(bool immediate = false)
+    {
+        if (_chaseAudioSource == null) return;
+
+        if (_chaseBgmFadeCoroutine != null) StopCoroutine(_chaseBgmFadeCoroutine);
+
+        if (immediate)
+        {
+            _chaseAudioSource.Stop();
+            _chaseAudioSource.volume = 0f;
+            _chaseAudioSource.pitch = 1.0f;
+        }
+        else
+        {
+            _chaseBgmFadeCoroutine = StartCoroutine(FadeChaseBgmRoutine(0f, chaseBGMFadeOutDuration, false));
+        }
+    }
+
+    private IEnumerator FadeChaseBgmRoutine(float targetVolume, float duration, bool playIfStarting)
+    {
+        if (_chaseAudioSource == null) yield break;
+
+        if (playIfStarting && !_chaseAudioSource.isPlaying)
+        {
+            _chaseAudioSource.volume = 0f;
+            _chaseAudioSource.pitch = 1.0f;
+            _chaseAudioSource.Play();
+        }
+
+        float startVol = _chaseAudioSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            _chaseAudioSource.volume = Mathf.Lerp(startVol, targetVolume, t);
+            yield return null;
+        }
+
+        _chaseAudioSource.volume = targetVolume;
+
+        if (!playIfStarting && targetVolume <= 0.001f)
+        {
+            _chaseAudioSource.Stop();
+            _chaseAudioSource.pitch = 1.0f;
+        }
+
+        _chaseBgmFadeCoroutine = null;
+    }
+
+    private void UpdateProximityAudioTension()
+    {
+        if (_chaseAudioSource == null || !_chaseAudioSource.isPlaying || player == null || _chaseBgmFadeCoroutine != null) return;
+
+        float dist = Mathf.Abs(player.position.x - transform.position.x);
+        if (dist < 8.5f)
+        {
+            // 怪物越靠近，追逐音樂音量與緊張度稍微提高
+            float t = Mathf.InverseLerp(8.5f, 2.5f, dist);
+            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t);
+            _chaseAudioSource.pitch = Mathf.Lerp(1.0f, 1.05f, t);
+        }
+        else
+        {
+            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume, Time.deltaTime * 0.5f);
+            _chaseAudioSource.pitch = Mathf.MoveTowards(_chaseAudioSource.pitch, 1.0f, Time.deltaTime * 0.5f);
+        }
     }
 
     private void OnDrawGizmosSelected()

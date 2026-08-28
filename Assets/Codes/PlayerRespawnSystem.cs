@@ -199,6 +199,10 @@ public class PlayerRespawnSystem : MonoBehaviour
             {
                 respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/復活.wav");
             }
+            else if (sceneName.Contains("glass"))
+            {
+                respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/水下/復活.wav");
+            }
             else
             {
                 respawnSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/廢墟/復活.wav");
@@ -392,16 +396,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             _playerRb.angularVelocity = Vector3.zero;
         }
 
-        // 播放重生音效 (一觸發重生就立即響起，保證 100% 聽得到)
-        if (respawnSFX != null)
-        {
-            PlayDirectSFX(respawnSFX, sfxVolume);
-            Debug.Log($"✨【重生系統】一觸發重生立即播放重生音效: {respawnSFX.name}");
-        }
-        else if (deathSFX != null)
+        // 播放死亡音效 (觸發死亡當下立即響起)
+        if (deathSFX != null)
         {
             PlayDirectSFX(deathSFX, sfxVolume);
-            Debug.Log($"💀【死亡系統】播放死亡音效: {deathSFX.name}");
+            Debug.Log($"💀【死亡系統】觸發死亡，播放死亡音效: {deathSFX.name}");
         }
 
         // 取得關卡專屬大氣深淵色與啟動聽覺沉水濾波
@@ -511,7 +510,14 @@ public class PlayerRespawnSystem : MonoBehaviour
         // 聽覺破曉恢復
         SetAudioMuffle(false, fadeDuration);
 
-        // 3. S型非線性破曉甦醒 (SmoothStep Easing)
+        // ★【重生音效】在畫面黑化停頓後、開始漸漸變亮破曉甦醒時播放 (重生的一半)
+        if (respawnSFX != null)
+        {
+            PlayDirectSFX(respawnSFX, sfxVolume);
+            Debug.Log($"✨【重生系統】黑屏甦醒，開始漸漸變亮並播放重生音效: {respawnSFX.name}");
+        }
+
+        // 3. S型非線性破曉甦醒 (SmoothStep Easing 漸漸變亮)
         timer = 0f;
         while (timer < fadeDuration)
         {
