@@ -19,7 +19,7 @@ public sealed class CameraViewportAnchor : MonoBehaviour
         UpdatePosition();
     }
 
-    private void UpdatePosition()
+private void UpdatePosition()
     {
         if (targetCamera == null)
         {
@@ -33,7 +33,15 @@ public sealed class CameraViewportAnchor : MonoBehaviour
 
         Vector3 anchoredPosition = targetCamera.ViewportToWorldPoint(
             new Vector3(viewportPosition.x, viewportPosition.y, distanceFromCamera));
+        bool positionChanged = transform.position != anchoredPosition;
 
         transform.position = anchoredPosition;
+
+        // When the settings panel opens it pauses the game before the next
+        // physics step. Keep 2D colliders aligned with the newly anchored UI.
+        if (Application.isPlaying && positionChanged)
+        {
+            Physics2D.SyncTransforms();
+        }
     }
 }
