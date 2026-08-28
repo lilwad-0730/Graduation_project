@@ -7,6 +7,7 @@ using UnityEngine;
 /// 完全不修改父子關係，不移動任何東西，相對位置永遠不變。
 /// 若要開啟視差跟隨，請勾選 enableParallax 並設定 factor 數值。
 /// </summary>
+[DefaultExecutionOrder(10000)]
 public class ParallaxBackground : MonoBehaviour
 {
     [Header("視差設定 (預設完全靜止)")]
@@ -25,8 +26,11 @@ public class ParallaxBackground : MonoBehaviour
     private bool _initialized = false;
 
     void Start()
-    {
-        Init();
+        {
+        // Cinemachine positions the output camera during the first frame.
+        // Let the first LateUpdate capture the settled camera position so
+        // enabling parallax does not create a startup jump.
+        _initialized = false;
     }
 
     void Init()
