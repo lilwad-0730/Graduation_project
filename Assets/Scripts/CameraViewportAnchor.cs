@@ -21,17 +21,16 @@ public sealed class CameraViewportAnchor : MonoBehaviour
 
 private void UpdatePosition()
     {
-        if (targetCamera == null)
-        {
-            targetCamera = Camera.main;
-        }
+        // Keep the serialized reference optional so this component remains reusable in prefabs.
+        // Camera.main is used only as a runtime/editor fallback and is not written back to the asset.
+        Camera cameraToUse = targetCamera != null ? targetCamera : Camera.main;
 
-        if (targetCamera == null)
+        if (cameraToUse == null)
         {
             return;
         }
 
-        Vector3 anchoredPosition = targetCamera.ViewportToWorldPoint(
+        Vector3 anchoredPosition = cameraToUse.ViewportToWorldPoint(
             new Vector3(viewportPosition.x, viewportPosition.y, distanceFromCamera));
         bool positionChanged = transform.position != anchoredPosition;
 
