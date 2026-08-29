@@ -58,6 +58,8 @@ public class StoryCardZoneHook : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!takeOver || _fired || _zone == null) return;
+        // ★死亡防護：重生流程進行中不觸發轉場卡
+        if (PlayerRespawnSystem.IsAnyRespawning) return;
         if (!IsPlayer(other)) return;
 
         _fired = true;

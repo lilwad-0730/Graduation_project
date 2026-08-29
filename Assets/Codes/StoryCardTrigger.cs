@@ -43,6 +43,10 @@ public class StoryCardTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (_fired && onlyOnce) return;
+        // ★死亡防護：死亡／重生流程進行中，經過觸發區不播卡。
+        //   死亡本身也不會重播卡片——死亡只是傳回重生點，不重載場景，
+        //   「只播一次」的記憶還在。只有整個遊戲重開才會再看到卡片。
+        if (PlayerRespawnSystem.IsAnyRespawning) return;
         if (!IsPlayer(other)) return;
 
         _fired = true;
