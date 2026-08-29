@@ -92,6 +92,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private Vector3 originalPosition;
     private Quaternion originalRotation;
 
+    private Vector3 originalScale = Vector3.one;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -105,6 +107,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         originalPosition = transform.position;
         originalRotation = transform.rotation;
+        originalScale = transform.localScale != Vector3.zero ? transform.localScale : Vector3.one;
 
         // 預設播放待機飛行動畫 (flying)
         PlayAnim(idleAnimName);
@@ -334,9 +337,47 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             targetPosition = transform.position + Vector3.down * 15f;
         }
 
-        // 5. 持續朝目標飛行，直到碰撞發生
+        // 5. 持續朝目標飛行，直到碰撞發生或防呆超時
+        float diveTimer = 0f;
+        float maxDiveDuration = 3.5f; // 最大俯衝時間保底
+        Vector3 lastCheckPos = transform.position;
+        float stagnationTimer = 0f;
+
         while (currentState == BirdState.Diving)
         {
+            diveTimer += Time.deltaTime;
+            stagnationTimer += Time.deltaTime;
+
+            // 超時防呆：若俯衝超過 3.5 秒未撞擊，自動視為撞地/撞擊物體並淡出
+            if (diveTimer >= maxDiveDuration)
+            {
+                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝超過最大時長 ({maxDiveDuration}s)，觸發超時防呆淡出！");
+                OnHitGround();
+                yield break;
+            }
+
+            // 停滯卡死防呆：每 0.25 秒檢測一次位移，若卡在障礙物表面位移小於 0.05 米，自動判定撞擊
+            if (stagnationTimer >= 0.25f)
+            {
+                float movedDist = Vector3.Distance(transform.position, lastCheckPos);
+                if (movedDist < 0.05f)
+                {
+                    Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝受阻停滯（0.25s 位移 {movedDist:F3}m < 0.05m），自動判定撞擊！");
+                    OnHitGround();
+                    yield break;
+                }
+                lastCheckPos = transform.position;
+                stagnationTimer = 0f;
+            }
+
+            // 最低高度防穿防呆：若掉落到玩家下方過深（地表以下），自動觸發撞地
+            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 3.0f))
+            {
+                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝低於地表高度，觸發防穿防呆！");
+                OnHitGround();
+                yield break;
+            }
+
             if (behaviorType == BirdBehavior.HomingPlayer && playerTrans != null)
             {
                 targetPosition = new Vector3(playerTrans.position.x, playerTrans.position.y - 1.8f, playerTrans.position.z);
@@ -364,25 +405,42 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 自動判斷物件是否為地表/地形 (支援 Tag = Floor / Ground / Terrain 等)
+    /// 自動判斷物件是否為地表、地形、掩體、岩石、石柱或實體障礙物
     /// </summary>
-    private bool IsGroundObject(GameObject obj)
+    private bool IsGroundOrObstacleObject(GameObject obj, Collider col)
     {
         if (obj == null) return false;
 
-        // 核心排除：石柱/掩體/岩石/區域觸發器絕對不是地表，不能讓鳥在柱子上方插地！
-        string lowerName = obj.name.ToLower();
-        if (lowerName.Contains("pillar") || lowerName.Contains("shelter") || lowerName.Contains("rock") || lowerName.Contains("zone") || lowerName.Contains("trigger")) return false;
+        // 1. 排除玩家與護盾（由專用邏輯處理）
+        if (obj.CompareTag("Player") || obj.name.ToLower().Contains("player") || obj.GetComponentInParent<PlayerMovement>() != null || obj.GetComponentInParent<PlayerShield>() != null)
+        {
+            return false;
+        }
 
-        // 1. 安全 Tag 比對 (使用 obj.tag == "..." 安全比對，防止未定義 Tag 引發 Unity 拋出例外崩潰)
-        string t = obj.tag;
-        if (t == "Floor" || t == "Ground" || t == "Terrain") return true;
-        if (!string.IsNullOrEmpty(groundTag) && t == groundTag) return true;
+        // 2. 排除純無形無碰撞的區域觸發器 (例如 遮陽傘區域、BGM區域、攻擊觸發區、鏡頭切換區等)
+        if (col != null && col.isTrigger)
+        {
+            string lowerName = obj.name.ToLower();
+            if (lowerName.Contains("umbrellazone") || lowerName.Contains("birdattack") || 
+                lowerName.Contains("bgmzone") || lowerName.Contains("ambientsound") || 
+                lowerName.Contains("cameraswitch") || lowerName.Contains("confiner") || 
+                lowerName.Contains("bound") || lowerName.Contains("detector"))
+            {
+                return false;
+            }
 
-        // 2. 物件名稱比對 (純地表地板)
-        if (lowerName.Contains("floor") || lowerName.Contains("ground_texture") || lowerName.Contains("tile") || lowerName.Contains("ground")) return true;
+            // 若此 Trigger 是掛在純 TriggerZone 腳本上，則排除
+            if (obj.GetComponent<UmbrellaZone>() != null || obj.GetComponent<BirdAttackTriggerZone>() != null ||
+                obj.GetComponent<BGMZone>() != null || obj.GetComponent<AmbientSoundTrigger>() != null ||
+                obj.GetComponent<CameraSwitchZone>() != null || obj.GetComponent<JumpTriggerZone>() != null ||
+                obj.GetComponent<JumpBoostZone>() != null)
+            {
+                return false;
+            }
+        }
 
-        return false;
+        // 3. 所有其他實體碰撞體（包含 Floor, Ground, Rock, Pillar, Shelter, Wall, 掩體, 石頭, 地面等）皆視為有效撞擊表面！
+        return true;
     }
 
     private Quaternion stuckRotation; // 快取俯衝到地面的精確 2D 插地角度
@@ -451,30 +509,127 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             animator.speed = 0f;
         }
 
-        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地表！立刻停格鎖定姿態插在地面，{stuckDuration} 秒後漸漸消失。");
+        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地表/掩體！立刻停格鎖定姿態插在表面，{stuckDuration} 秒後漸漸消失。");
         StartCoroutine(FadeAndDestroyCoroutine());
     }
 
     private IEnumerator FadeAndDestroyCoroutine()
     {
-        // 俯衝插地後停留 1.2 秒
+        // 俯衝插地/撞擊後停留 1.2 秒
         yield return new WaitForSeconds(Mathf.Min(stuckDuration, 1.2f));
+
+        // 啟動淡出前將材質設定為透明渲染模式
+        SetupMaterialsForFade();
 
         float elapsed = 0f;
         float realFadeDuration = fadeDuration > 0.05f ? fadeDuration : 1.0f;
         while (elapsed < realFadeDuration)
         {
             elapsed += Time.deltaTime;
-            float alpha = Mathf.Clamp01(1.0f - (elapsed / realFadeDuration));
+            float t = Mathf.Clamp01(elapsed / realFadeDuration);
+            float alpha = 1.0f - t;
+            
+            // 1. 遞迴調整透明度 Alpha
             SetAlpha(alpha);
+            
+            // 2. 平滑縮放至 0 (雙重保障：即使 Shader 是 Opaque 也絕對能呈現絲滑縮小漸隱消失)
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
+            
             yield return null;
         }
 
+        SetAlpha(0f);
         gameObject.SetActive(false);
+        transform.localScale = originalScale;
     }
 
     /// <summary>
-    /// 遞迴降低所有 Renderer (MeshRenderer / SpriteRenderer) 的透明度
+    /// 將所有 Renderer 的材質切換為 Transparent / Fade 模式以支援透明度漸變
+    /// </summary>
+    private void SetupMaterialsForFade()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (var r in renderers)
+        {
+            if (r == null || r is SpriteRenderer) continue;
+            if (r.materials != null)
+            {
+                foreach (var mat in r.materials)
+                {
+                    if (mat == null) continue;
+
+                    // URP Lit / Unlit Transparent 設定
+                    if (mat.HasProperty("_Surface"))
+                    {
+                        mat.SetFloat("_Surface", 1); // 1 = Transparent
+                        mat.SetFloat("_Blend", 0);   // 0 = Alpha
+                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                        mat.SetInt("_ZWrite", 0);
+                        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                        mat.renderQueue = 3000;
+                        mat.SetOverrideTag("RenderType", "Transparent");
+                    }
+                    // Built-in Standard Shader Fade 設定
+                    else if (mat.HasProperty("_Mode"))
+                    {
+                        mat.SetFloat("_Mode", 2); // 2 = Fade
+                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                        mat.SetInt("_ZWrite", 0);
+                        mat.DisableKeyword("_ALPHATEST_ON");
+                        mat.EnableKeyword("_ALPHABLEND_ON");
+                        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                        mat.renderQueue = 3000;
+                        mat.SetOverrideTag("RenderType", "Transparent");
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 將材質恢復為 Opaque 不透明模式
+    /// </summary>
+    private void RestoreMaterialsOpaque()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (var r in renderers)
+        {
+            if (r == null || r is SpriteRenderer) continue;
+            if (r.materials != null)
+            {
+                foreach (var mat in r.materials)
+                {
+                    if (mat == null) continue;
+                    if (mat.HasProperty("_Surface"))
+                    {
+                        mat.SetFloat("_Surface", 0); // 0 = Opaque
+                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                        mat.SetInt("_ZWrite", 1);
+                        mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                        mat.renderQueue = 2000;
+                        mat.SetOverrideTag("RenderType", "Opaque");
+                    }
+                    else if (mat.HasProperty("_Mode"))
+                    {
+                        mat.SetFloat("_Mode", 0); // 0 = Opaque
+                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                        mat.SetInt("_ZWrite", 1);
+                        mat.DisableKeyword("_ALPHABLEND_ON");
+                        mat.renderQueue = 2000;
+                        mat.SetOverrideTag("RenderType", "Opaque");
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 遞迴降低所有 Renderer (MeshRenderer / SkinnedMeshRenderer / SpriteRenderer) 的透明度
     /// </summary>
     private void SetAlpha(float alpha)
     {
@@ -513,15 +668,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void OnTriggerEnter(Collider other)
     {
-        HandleCollision(other.gameObject);
+        HandleCollision(other.gameObject, other);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        HandleCollision(collision.gameObject);
+        HandleCollision(collision.gameObject, collision.collider);
     }
 
-    private void HandleCollision(GameObject hitObj)
+    private void HandleCollision(GameObject hitObj, Collider col)
     {
         if (currentState == BirdState.Bounced || currentState == BirdState.Stuck) return;
 
@@ -536,7 +691,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         // 2. 碰撞到玩家本體：觸發玩家重生，絕不觸發石化效果！
-        if (hitObj.tag == "Player" || hitObj.name.ToLower().Contains("player") || hitObj.GetComponentInParent<PlayerMovement>() != null)
+        if (hitObj.CompareTag("Player") || hitObj.name.ToLower().Contains("player") || hitObj.GetComponentInParent<PlayerMovement>() != null)
         {
             if (currentState == BirdState.Diving)
             {
@@ -553,8 +708,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
         }
 
-        // 3. 俯衝期間碰撞到 Floor 地面 (純物理碰撞觸發，不使用任何射線) ➔ 立刻以當前角度精確插進地面！
-        if (currentState == BirdState.Diving && IsGroundObject(hitObj))
+        // 3. 俯衝期間碰撞到 Floor 地面、掩體、岩石等實體障礙物 ➔ 立刻以當前角度精確插在物件表面淡出！
+        if (currentState == BirdState.Diving && IsGroundOrObstacleObject(hitObj, col))
         {
             OnHitGround();
         }
@@ -657,16 +812,24 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         yield return new WaitForSeconds(0.4f);
 
         // 漸漸隱形消失
+        SetupMaterialsForFade();
+
         float fadeElapsed = 0f;
         while (fadeElapsed < realFadeDuration)
         {
             fadeElapsed += Time.deltaTime;
-            float alpha = Mathf.Clamp01(1.0f - (fadeElapsed / realFadeDuration));
+            float t = Mathf.Clamp01(fadeElapsed / realFadeDuration);
+            float alpha = 1.0f - t;
+            
             SetAlpha(alpha);
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
+            
             yield return null;
         }
 
+        SetAlpha(0f);
         gameObject.SetActive(false);
+        transform.localScale = originalScale;
     }
 
     // --- IResettable 實作 ---
@@ -677,12 +840,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         currentState = BirdState.Idle;
         transform.position = originalPosition;
         transform.rotation = originalRotation;
+        transform.localScale = originalScale;
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
         }
+        RestoreMaterialsOpaque();
         SetAlpha(1.0f);
         if (animator != null)
         {
