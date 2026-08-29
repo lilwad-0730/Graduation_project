@@ -4949,6 +4949,7 @@ GameObject:
   - component: {fileID: 905386343641854082}
   - component: {fileID: 2210544286784234902}
   - component: {fileID: 1635697813176770314}
+  - component: {fileID: 822538882949828754}
   m_Layer: 0
   m_Name: gearwheel
   m_TagString: Untagged
@@ -5124,6 +5125,22 @@ MonoBehaviour:
   useCustomAlpha: 1
   defaultAlpha: 0.683
   hoverAlpha: 1
+--- !u!114 &822538882949828754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8009304010759979189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74213b39c5302624ab7f73434e2cb2d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsHudGearwheelPresenter
+  viewportAnchor: {x: 0.95, y: 0.92}
+  referenceResolution: {x: 2560, y: 1440}
+  buttonSize: {x: 180, y: 174}
+  hudSortingOrder: 2000
 --- !u!1 &8171106486434880424
 GameObject:
   m_ObjectHideFlags: 0
