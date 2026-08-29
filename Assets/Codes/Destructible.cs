@@ -55,6 +55,13 @@ public class Destructible : MonoBehaviour, IResettable
         initialRotation = transform.rotation;
         initialScale = transform.localScale;
         isInitiallyActive = gameObject.activeSelf;
+
+#if UNITY_EDITOR
+        if (shatterSFX == null)
+        {
+            shatterSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/石柱崩解.mp3");
+        }
+#endif
     }
 
     private GameObject createdShatteredInstance;
