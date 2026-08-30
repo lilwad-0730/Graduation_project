@@ -1152,6 +1152,7 @@ GameObject:
   - component: {fileID: 6180437329144619743}
   - component: {fileID: 4994709555652226299}
   - component: {fileID: 2346033726057942785}
+  - component: {fileID: 967688049403842471}
   m_Layer: 0
   m_Name: SETTING
   m_TagString: Untagged
@@ -1225,6 +1226,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1edf72a55c24bf44c9890e2a56759369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseGameWhileActive
+--- !u!114 &967688049403842471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041740516557059868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db0b1c8b720cc514ab61f005a74db4cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsPopupOverlayPresenter
+  minimumOverlaySortingOrder: 2002
 --- !u!1 &2197528862338983540
 GameObject:
   m_ObjectHideFlags: 0
