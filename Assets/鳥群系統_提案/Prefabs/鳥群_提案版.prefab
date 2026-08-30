@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7401000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7401000000000000002}
+  - component: {fileID: 7401000000000000003}
+  - component: {fileID: 7401000000000000004}
+  m_Layer: 0
+  m_Name: 鳥群_提案版
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7401000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7401000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7401000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7401000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64f81d52bd8cd9c7dd6d35383019bb77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  birdPrefab: {fileID: 100100000, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
+  birdAnimator: {fileID: 9100000, guid: a24ec9cf4c2103646a47e0497a925d6b, type: 2}
+  flyStateName: flying
+  warnStateName: worried
+  count: 11
+  birdScale: 9.5
+  scaleJitter: 0.3
+  anchor: 0
+  followLag: 0.55
+  cameraFallbackViewport: {x: 0.5, y: 0.8}
+  depthZ: 0.3
+  scatterCenter: {x: 0, y: 8}
+  scatterSize: {x: 30, y: 10}
+  minHeightAbovePlayer: 1.5
+  orbitRadius: {x: 4.5, y: 1.6}
+  radiusJitter: 0.45
+  periodSeconds: 9
+  periodJitter: 0.35
+  wanderAngle: 0.6
+  wanderRadius: 0.35
+  driftAmplitude: 3.2
+  flockWander: 1.2
+  noiseSpeed: 0.18
+  attackEnabled: 0
+  attackInterval: 7
+  attackRange: 16
+  warningSeconds: 1.2
+  diveSpeed: 22
+  hitRadius: 1.1
+  diveTimeout: 2.2
+  returnSeconds: 1.6
+  warningCry: {fileID: 0}
+  cryVolume: 0.8
+  tintDistant: 1
+  distantTint: {r: 0.42, g: 0.4, b: 0.46, a: 1}
+--- !u!114 &7401000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7401000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69c506c8425dfb47ade766ffef4bef26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  newFlock: {fileID: 7401000000000000003}
+  oldFlockRootName: BirdEnemy
+  takeOverOnStart: 0
+  enableNewAttack: 1
+  logResult: 1
