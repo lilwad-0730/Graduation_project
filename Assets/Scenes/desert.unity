@@ -59290,3 +59290,66 @@ SceneRoots:
   - {fileID: 541617750}
   - {fileID: 2071087496}
   - {fileID: 910000021}
+  - {fileID: 9120000000000000002}
+--- !u!1 &9120000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9120000000000000002}
+  - component: {fileID: 9120000000000000003}
+  m_Layer: 0
+  m_Name: BirdFlock_Circling
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9120000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9120000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.7, y: 16.2, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9120000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9120000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67ecd1295b32746b3b0039b66432a8fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  birdPrefab: {fileID: 100100000, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
+  birdAnimator: {fileID: 9100000, guid: a24ec9cf4c2103646a47e0497a925d6b, type: 2}
+  flyStateName: flying
+  count: 9
+  birdScale: 9.5
+  radiusX: 15
+  radiusY: 3.4
+  periodSeconds: 13
+  radiusJitter: 0.3
+  periodJitter: 0.22
+  bobAmplitude: 0.5
+  clockwise: 0
+  followCamera: 1
+  viewportPosition: {x: 0.5, y: 0.82}
+  followLag: 1.6
+  depthZ: 0.3
+  tintDistant: 1
+  distantTint: {r: 0.42, g: 0.4, b: 0.46, a: 1}
