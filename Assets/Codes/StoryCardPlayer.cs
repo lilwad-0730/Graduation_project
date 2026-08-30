@@ -210,6 +210,23 @@ public class StoryCardPlayer : MonoBehaviour
         {
             diaryPhotoPages = BuildDefaultDiaryPhotoPages();
         }
+        AutoHookCollectibleNotes();
+    }
+
+    /// <summary>
+    /// 幫場景裡每一張日誌紙（CollectibleNote）自動補上 StoryCardNoteHook：
+    /// 撿到第 1／2／3 張 → D1／D2／D3。組員之後加紙也不用手掛。
+    /// </summary>
+    private static void AutoHookCollectibleNotes()
+    {
+        CollectibleNote[] notes = Object.FindObjectsByType<CollectibleNote>(FindObjectsSortMode.None);
+        for (int i = 0; i < notes.Length; i++)
+        {
+            if (notes[i] != null && notes[i].GetComponent<StoryCardNoteHook>() == null)
+            {
+                notes[i].gameObject.AddComponent<StoryCardNoteHook>();
+            }
+        }
     }
 
     private void OnEnable()
@@ -229,6 +246,9 @@ public class StoryCardPlayer : MonoBehaviour
     /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 播放器是 DontDestroyOnLoad：新場景的日誌紙也要補掛鉤
+        AutoHookCollectibleNotes();
+
         if (_playing) return;
         if (!_built || _canvas == null || !_canvas.enabled) return;
         StartCoroutine(AutoReleaseRoutine());
@@ -292,6 +312,22 @@ public class StoryCardPlayer : MonoBehaviour
     public Coroutine PlayDetached(string cardId, bool curtainFadeIn, bool curtainFadeOut)
     {
         return StartCoroutine(Play(cardId, curtainFadeIn, curtainFadeOut));
+    }
+
+    /// <summary>
+    /// ★宿主可能當場被銷毀時用這個（例：撿到會消失的日誌紙）：
+    /// 凍結與解凍都由播放器自己管，卡片播完一定會把玩家還回來。
+    /// </summary>
+    public Coroutine PlayFrozen(string cardId, PlayerMovement pm)
+    {
+        return StartCoroutine(PlayFrozenRoutine(cardId, pm));
+    }
+
+    private IEnumerator PlayFrozenRoutine(string cardId, PlayerMovement pm)
+    {
+        if (pm != null) pm.isCutsceneFrozen = true;
+        yield return Play(cardId, true, true);
+        if (pm != null) pm.isCutsceneFrozen = false;
     }
 
     public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut)
