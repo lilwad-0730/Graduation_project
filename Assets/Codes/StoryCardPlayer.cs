@@ -97,6 +97,8 @@ public class StoryCardPlayer : MonoBehaviour
         public string dateText = "";
         [Tooltip("整張相片的微傾角（度），像隨手夾進日誌的樣子")]
         public float tiltDegrees = 0f;
+        [Tooltip("這一份日誌用的紙紋（Resources 路徑）。日誌隨閱讀順序老化：摺痕→狐斑→水漬與裂縫。留空＝用共用 paperResourcePath")]
+        public string paperResource = "";
     }
 
     [Header("日誌照片頁（清單留空＝用內建的 D1–D3 三張）")]
@@ -158,6 +160,7 @@ public class StoryCardPlayer : MonoBehaviour
     private TextMeshProUGUI _dateLabel;
     private bool _photoBuilt;
     private bool _paperLoadTried;
+    private Sprite _activePaperSprite;   // 這一次播放實際用的紙紋（每份日誌可以不同）
     private static readonly Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
 
     /// <summary>正在播卡片。轉場程式可以用這個判斷要不要放行。</summary>
@@ -296,9 +299,16 @@ public class StoryCardPlayer : MonoBehaviour
             _paperLoadTried = true;
             paperSprite = LoadSpriteFromResources(paperResourcePath);
         }
+        // 這一份日誌若指定了自己的紙紋（日誌隨閱讀順序老化），這一次播放用它
+        _activePaperSprite = _paper ? paperSprite : null;
+        if (_paper && _pendingPhoto != null && !string.IsNullOrEmpty(_pendingPhoto.paperResource))
+        {
+            Sprite perCardPaper = LoadSpriteFromResources(_pendingPhoto.paperResource);
+            if (perCardPaper != null) _activePaperSprite = perCardPaper;
+        }
 
         _canvas.enabled = true;
-        if (_curtain != null) _curtain.sprite = _paper ? paperSprite : null;
+        if (_curtain != null) _curtain.sprite = _paper ? _activePaperSprite : null;
         if (_label != null) _label.color = _paper ? paperInkColor : textColor;
         SetCurtainAlpha(curtainFadeIn ? 0f : 1f);
         SetLabelAlpha(0f);
@@ -571,7 +581,7 @@ public class StoryCardPlayer : MonoBehaviour
         if (_curtain != null)
         {
             Color c = _paper
-                ? (paperSprite != null ? Color.white : paperColor)
+                ? (_activePaperSprite != null ? Color.white : paperColor)
                 : bgColor;
             _curtain.color = new Color(c.r, c.g, c.b, a);
         }
@@ -830,6 +840,7 @@ public class StoryCardPlayer : MonoBehaviour
         d1.glyphResource = "Diary/diary_glyph_1";   // 兩形依偎
         d1.dateText = "1998.6.21";
         d1.tiltDegrees = -2.4f;
+        d1.paperResource = "Diary/diary_paper_1";   // 平整微黃，一道攤平的摺痕
         list.Add(d1);
 
         DiaryPhotoPage d2 = new DiaryPhotoPage();
@@ -838,6 +849,7 @@ public class StoryCardPlayer : MonoBehaviour
         d2.glyphResource = "Diary/diary_glyph_3";   // 一排形，唯獨她那形有鬆脫的線頭
         d2.dateText = "2004.1.22";
         d2.tiltDegrees = 1.8f;
+        d2.paperResource = "Diary/diary_paper_2";   // 十字摺痕、狐斑增生
         list.Add(d2);
 
         DiaryPhotoPage d3 = new DiaryPhotoPage();
@@ -846,6 +858,7 @@ public class StoryCardPlayer : MonoBehaviour
         d3.glyphResource = "Diary/diary_glyph_2";   // 三形，小的被抱著
         d3.dateText = "2003.11.3";
         d3.tiltDegrees = -1.2f;
+        d3.paperResource = "Diary/diary_paper_3";   // 乾水漬、邊角最深、右緣裂縫透光
         list.Add(d3);
 
         return list;
