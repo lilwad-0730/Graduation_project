@@ -326,7 +326,13 @@ public class StoryCardPlayer : MonoBehaviour
     private IEnumerator PlayFrozenRoutine(string cardId, PlayerMovement pm)
     {
         if (pm != null) pm.isCutsceneFrozen = true;
+        // ★世界暫停：撿紙引發的其他演出（巨石消散特寫、窒息計時、紙的縮小動畫）
+        //   全部等卡片播完才繼續，玩家一段都不會錯過。
+        //   卡片本身全走 unscaledDeltaTime，暫停中照播。
+        float prevTimeScale = Time.timeScale;
+        Time.timeScale = 0f;
         yield return Play(cardId, true, true);
+        Time.timeScale = prevTimeScale;
         if (pm != null) pm.isCutsceneFrozen = false;
     }
 
