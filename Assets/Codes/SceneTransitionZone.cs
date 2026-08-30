@@ -25,7 +25,10 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         InstantFade,
 
         [Tooltip("綠洲沉水模式：觸碰水面後，主角緩慢沉入水底並伴隨黑屏淡出 (適用於荒漠綠洲 -> 水下)")]
-        SinkWater
+        SinkWater,
+
+        [Tooltip("📖 漫畫繪本轉場模式：進入繪本播放該章節漫畫，翻閱完畢後自動進入下一關卡")]
+        ComicPictureBook
     }
 
     [Header("🎯 目標關卡設定 (Target Scene)")]
@@ -38,6 +41,13 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
     [Header("🎬 轉場演出模式 (Transition Mode)")]
     [Tooltip("選擇轉場演出方式")]
     public TransitionMode transitionMode = TransitionMode.InstantFade;
+
+    [Header("📖 漫畫轉場設定 (僅在 ComicPictureBook 模式生效)")]
+    [Tooltip("本章節漫畫起始頁碼 (0 起算)")]
+    public int comicStartPage = 0;
+
+    [Tooltip("本章節漫畫結束頁碼 (翻完此頁後進入 nextSceneName)")]
+    public int comicEndPage = 13;
 
     [Tooltip("黑屏淡出時間 (秒，預設 1.2)")]
     public float fadeDuration = 1.2f;
@@ -196,7 +206,15 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
 
         yield return new WaitForSeconds(0.2f);
 
-        // 5. 設定跨場景出生點
+        // 5. 判斷轉場模式
+        if (transitionMode == TransitionMode.ComicPictureBook)
+        {
+            Debug.Log($"📖【關卡轉場】啟動漫畫繪本中繼轉場 (頁碼 {comicStartPage} ~ {comicEndPage}) ➔ 下一關: [{nextSceneName}]");
+            BookTransitionManager.OpenComicTransition(comicStartPage, comicEndPage, nextSceneName.Trim(), targetSpawnPointName);
+            yield break;
+        }
+
+        // 設定跨場景出生點
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
             PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;

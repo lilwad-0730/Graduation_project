@@ -33,6 +33,16 @@ public class SimpleCameraBounds : MonoBehaviour
     [Header("邊界鎖定設定")]
     public bool clampYAxis = true;
 
+    [Header("🎮 橫向捲軸模式 (Super Mario 經典上下鎖定貼合)")]
+    [Tooltip("是否自動將相機高度縮放貼合當前背景高度，並鎖死 Y 軸只進行 X 軸左右追蹤 (如同荒原與經典橫向捲軸，上下完全貼合不破圖)")]
+    public bool autoFitSceneHeightAndLockY = true;
+
+    [Tooltip("相機尺寸平滑過渡速度 (預設 5.0)")]
+    public float orthoSizeTransitionSpeed = 5.0f;
+
+    public static bool isBypassed = false; // 過場演出時旁路邊界限制
+    public static Transform customTarget = null; // 自訂目標 (例如追蹤巨石時防穿幫邊界計算)
+
     // ─── 內部狀態 ───
     private Camera _cam;
     private Bounds _skyZoneBounds;
@@ -150,6 +160,7 @@ public class SimpleCameraBounds : MonoBehaviour
 
     void LateUpdate()
     {
+        if (isBypassed || !enabled) return;
         if (_playerTransform == null) FindPlayer();
         if (_playerTransform == null) return;
 
@@ -161,7 +172,7 @@ public class SimpleCameraBounds : MonoBehaviour
             RebuildZoneClusters();
         }
 
-        float playerY = _playerTransform.position.y;
+        float playerY = (customTarget != null) ? customTarget.position.y : _playerTransform.position.y;
         bool isGrounded = (_playerMovement != null) ? _playerMovement.isGrounded : true;
         bool isFallingInAir = (_playerMovement != null) && _playerMovement.freezeHorizontal && !isGrounded;
 
@@ -218,7 +229,28 @@ public class SimpleCameraBounds : MonoBehaviour
             clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
 
         // ── Y 軸邊界 Clamp（掉落途中跳過）──
-        if (clampYAxis && !isFallingInAir)
+        if (autoFitSceneHeightAndLockY && _cam.orthographic && activeZone.size.y > 2f && !isFallingInAir)
+        {
+            float targetHalfHeight = activeZone.size.y * 0.5f;
+            if (Mathf.Abs(_cam.orthographicSize - targetHalfHeight) > 0.01f)
+            {
+                _cam.orthographicSize = Mathf.Lerp(_cam.orthographicSize, targetHalfHeight, Time.deltaTime * orthoSizeTransitionSpeed);
+
+                // 同步 Cinemachine 虛擬相機的 OrthographicSize
+                var vcams3 = Object.FindObjectsByType<Unity.Cinemachine.CinemachineCamera>(FindObjectsSortMode.None);
+                foreach (var vcam in vcams3)
+                {
+                    if (vcam != null) vcam.Lens.OrthographicSize = _cam.orthographicSize;
+                }
+            }
+
+            halfHeight = _cam.orthographicSize;
+            halfWidth = halfHeight * _cam.aspect;
+
+            // Y 軸鎖死在場景背景垂直正中心 (如同 Super Mario Bros，上下完全貼合不破圖)
+            clampedPos.y = activeZone.center.y;
+        }
+        else if (clampYAxis && !isFallingInAir)
         {
             float minY = activeZone.min.y + halfHeight;
             float maxY = activeZone.max.y - halfHeight;

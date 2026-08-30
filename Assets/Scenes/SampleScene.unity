@@ -6278,7 +6278,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 7
+  orthographic size: 7.8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -6303,7 +6303,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -15.5, y: 2.5, z: -9.971252}
+  m_LocalPosition: {x: 94.2, y: -112, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -28016,7 +28016,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 7
+    OrthographicSize: 7.8
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -28043,7 +28043,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -15.5, y: 2.5, z: -9.971252}
+  m_LocalPosition: {x: 94.2, y: -112, z: -9.971252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -33863,6 +33863,17 @@ MonoBehaviour:
   pullSound: {fileID: 8300000, guid: e66f65c04e0246344bc8803b976e7d48, type: 3}
   completedSound: {fileID: 8300000, guid: 4e3a810d19a1e4e40990532a36e9ed95, type: 3}
   soundVolume: 0.9
+  enableCameraCutscene: 1
+  maxCameraY: -120
+  minCameraY: -127.5
+  minCameraX: 95
+  maxCameraX: 118
+  panToRockXDuration: 0.35
+  targetWall: {fileID: 0}
+  holdAfterShatterDuration: 1
+  panBackToPlayerDuration: 0.8
+  maxCutsceneTimeout: 6
+  cameraOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &2117843347
 GameObject:
   m_ObjectHideFlags: 0
@@ -34351,11 +34362,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15.5
+      value: 94.2
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.5
+      value: -112
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z

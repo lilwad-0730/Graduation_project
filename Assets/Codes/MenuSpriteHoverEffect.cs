@@ -17,6 +17,12 @@ public class MenuSpriteHoverEffect : MonoBehaviour, IPointerEnterHandler, IPoint
     [SerializeField] private AudioClip rolloverSound;
     [SerializeField, Range(0f, 1f)] private float rolloverVolume = 1f;
 
+    [Header("透明度設置（可選）")]
+    [SerializeField] private bool useCustomAlpha = false;
+    [SerializeField, Range(0f, 1f)] private float defaultAlpha = 1f;
+    [SerializeField, Range(0f, 1f)] private float hoverAlpha = 1f;
+
+
     private AudioSource audioSource;
     private SpriteRenderer spriteRenderer;
     private bool isSelected;
@@ -44,7 +50,7 @@ private void Awake()
         }
 
         // 初始化為預設 Sprite，不播放音效
-        SetSprite(defaultSprite, false);
+        SetSprite(defaultSprite, false, false); 
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -69,23 +75,23 @@ private void Awake()
 
 public void OnHoverEnter()
     {
-        SetSprite(hoverSprite, true);
+        SetSprite(hoverSprite, true, true);
     }
 
 public void OnHoverExit()
     {
         // 已選中的分類必須維持選取 Sprite。
-        SetSprite(isSelected ? hoverSprite : defaultSprite, false);
+        SetSprite(isSelected ? hoverSprite : defaultSprite, false, isSelected);
     }
 
 public void SetSelected(bool selected)
     {
         isSelected = selected;
-        SetSprite(isSelected ? hoverSprite : defaultSprite, false);
+        SetSprite(isSelected ? hoverSprite : defaultSprite, false, isSelected);
     }
 
 
-private void SetSprite(Sprite sprite, bool playSound)
+private void SetSprite(Sprite sprite, bool playSound, bool hoverState)
     {
         if (sprite == null)
         {
@@ -106,9 +112,34 @@ private void SetSprite(Sprite sprite, bool playSound)
             spriteChanged = true;
         }
 
+        ApplyAlpha(hoverState ? hoverAlpha : defaultAlpha);
+
         if (spriteChanged && playSound && rolloverSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(rolloverSound, rolloverVolume);
+        }
+    }
+
+
+private void ApplyAlpha(float alpha)
+    {
+        if (!useCustomAlpha)
+        {
+            return;
+        }
+
+        if (uiImage != null)
+        {
+            Color imageColor = uiImage.color;
+            imageColor.a = alpha;
+            uiImage.color = imageColor;
+        }
+
+        if (spriteRenderer != null)
+        {
+            Color rendererColor = spriteRenderer.color;
+            rendererColor.a = alpha;
+            spriteRenderer.color = rendererColor;
         }
     }
 }

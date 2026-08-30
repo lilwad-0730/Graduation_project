@@ -34,7 +34,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
     // 組件快取
     private Collider _col;
-    private SpriteRenderer[] _srs;
+    private Renderer[] _renderers;
     private Light[] _lights;
     private ParticleSystem[] _particles;
 
@@ -46,9 +46,19 @@ public class CandleCollectible : MonoBehaviour, IResettable
         _col.isTrigger = true;
 
         // 快取子物件中所有視覺組件（包括含在子物件中的）
-        _srs = GetComponentsInChildren<SpriteRenderer>(true);
+        CacheVisualComponents();
+    }
+
+    private void CacheVisualComponents()
+    {
+        _renderers = GetComponentsInChildren<Renderer>(true);
         _lights = GetComponentsInChildren<Light>(true);
         _particles = GetComponentsInChildren<ParticleSystem>(true);
+    }
+
+    private void RefreshVisualComponents()
+    {
+        CacheVisualComponents();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -88,8 +98,9 @@ public class CandleCollectible : MonoBehaviour, IResettable
         // 隱藏燭火視覺組件（但 GameObject 保持 Active 以支援重置）
         if (hideOnCollect)
         {
-            foreach (var sr in _srs)
-                if (sr != null) sr.enabled = false;
+            RefreshVisualComponents();
+            foreach (var renderer in _renderers)
+                if (renderer != null) renderer.enabled = false;
 
             foreach (var l in _lights)
                 if (l != null) l.enabled = false;
@@ -127,8 +138,8 @@ public class CandleCollectible : MonoBehaviour, IResettable
         _col.enabled = true;
 
         // 恢復所有視覺組件
-        foreach (var sr in _srs)
-            if (sr != null) sr.enabled = true;
+        foreach (var renderer in _renderers)
+            if (renderer != null) renderer.enabled = true;
 
         foreach (var l in _lights)
             if (l != null) l.enabled = true;

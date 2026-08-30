@@ -31,11 +31,19 @@ public class Destructible : MonoBehaviour, IResettable
     public float explosionForce = 4.5f;
 
     [Header("🎵 碎裂音效 (Shatter SFX)")]
-    [Tooltip("碎裂時播放的音效 (例如 玻璃碎裂.mp3 / 玻璃館_破鏡牆.wav)")]
+    [Tooltip("碎裂時播放的音效 (例如 玻璃碎裂.mp3 / 石柱崩解.mp3)")]
     public AudioClip shatterSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.95f;
 
+    [Tooltip("碎裂後的延續流沙/揚沙音效 (例如 沙聲2.mp3)")]
+    public AudioClip followUpSandSFX;
+    [Tooltip("流沙音效接續延遲 (秒，預設 0.6)")]
+    public float sandSFXDelay = 0.6f;
+    [Range(0f, 1f)] public float sandSFXVolume = 0.85f;
+
     private bool hasShattered = false;
+    public bool HasShattered => hasShattered;
+    public event System.Action OnShattered;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
     private Vector3 initialScale;
@@ -47,6 +55,13 @@ public class Destructible : MonoBehaviour, IResettable
         initialRotation = transform.rotation;
         initialScale = transform.localScale;
         isInitiallyActive = gameObject.activeSelf;
+
+#if UNITY_EDITOR
+        if (shatterSFX == null)
+        {
+            shatterSFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/石柱崩解.mp3");
+        }
+#endif
     }
 
     private GameObject createdShatteredInstance;
@@ -55,12 +70,19 @@ public class Destructible : MonoBehaviour, IResettable
     {
         if (hasShattered) return;
         hasShattered = true;
+        OnShattered?.Invoke();
 
         // 播放碎裂音效
         if (shatterSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(shatterSFX, transform.position, sfxVolume);
             else AudioSource.PlayClipAtPoint(shatterSFX, transform.position, sfxVolume);
+        }
+
+        // 接續播放流沙碎屑隨風吹散音效
+        if (followUpSandSFX != null)
+        {
+            StartCoroutine(PlayFollowUpSandSFX());
         }
 
         if (shatteredPrefab != null)
@@ -89,7 +111,27 @@ public class Destructible : MonoBehaviour, IResettable
         Collider[] allCols = GetComponentsInChildren<Collider>(true);
         foreach (var col in allCols) if (col != null) col.enabled = false;
 
-        // 若沒有其他 FX 組件，才將 GameObject 關閉
+        // 若有延續流沙音效，由協程在播放完成後才關閉 GameObject
+        if (followUpSandSFX != null)
+        {
+            StartCoroutine(PlayFollowUpSandSFX());
+        }
+        else if (GetComponent<GlassShatterFX>() == null && GetComponentInChildren<ParticleSystem>() == null)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    private IEnumerator PlayFollowUpSandSFX()
+    {
+        yield return new WaitForSeconds(sandSFXDelay);
+        if (followUpSandSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(followUpSandSFX, transform.position, sandSFXVolume);
+            else AudioSource.PlayClipAtPoint(followUpSandSFX, transform.position, sandSFXVolume);
+        }
+
+        yield return new WaitForSeconds(1.5f);
         if (GetComponent<GlassShatterFX>() == null && GetComponentInChildren<ParticleSystem>() == null)
         {
             gameObject.SetActive(false);

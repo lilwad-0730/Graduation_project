@@ -83,6 +83,17 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             animator = GetComponentInChildren<Animator>();
             if (animator == null) animator = GetComponentInParent<Animator>();
         }
+
+#if UNITY_EDITOR
+        if (petrifySFX == null)
+        {
+            petrifySFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/石化.mp3");
+        }
+        if (unpetrifySFX == null)
+        {
+            unpetrifySFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/解除石化.mp3");
+        }
+#endif
     }
 
     private void Update()
@@ -118,7 +129,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 觸發石化
+    /// 觸發石化 (嚴格單次觸發，免疫期或已石化狀態下絕不重複播放音效)
     /// </summary>
     public void Petrify()
     {
@@ -134,7 +145,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         
         isPetrified = true;
         currentPetrifyCount++;
-        Debug.LogWarning($"【石化系統】玩家被石化！次數：{currentPetrifyCount}/{maxPetrifyCount}");
+        Debug.LogWarning($"🔊【石化系統】主角被石化！播放石化音效 (次數：{currentPetrifyCount}/{maxPetrifyCount})");
 
         // 停止角色動作與物理
         if (playerMovement != null) playerMovement.enabled = false;
@@ -154,7 +165,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         // 視覺變色 (全黑/石化灰)
         ApplyPetrifyVisual(true);
 
-        // 播放石化音效
+        // 僅在進入石化瞬間播放一次石化音效
         if (petrifySFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(petrifySFX, sfxVolume);
@@ -181,22 +192,26 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         Unpetrify();
     }
 
+    /// <summary>
+    /// 解除石化 (嚴格單次觸發，並給予 5 秒充足的移動避難緩衝期)
+    /// </summary>
     public void Unpetrify()
     {
         if (!isPetrified) return;
         
         EnsureComponents();
         isPetrified = false;
-        Debug.Log("【石化系統】石化解除，玩家恢復行動！");
+        Debug.Log("🔊【石化系統】石化解除！播放解除石化音效，並給予 5 秒避難免疫期。");
 
-        // 播放解除石化音效
+        // 僅在解除石化瞬間播放一次音效
         if (unpetrifySFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(unpetrifySFX, sfxVolume);
             else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, sfxVolume);
         }
 
-        graceTimer = 3.0f;
+        // 給予 5 秒免疫緩衝期，讓玩家有充裕時間跑進掩體
+        graceTimer = 5.0f;
 
         if (rb != null)
         {

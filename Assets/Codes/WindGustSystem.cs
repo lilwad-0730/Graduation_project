@@ -34,41 +34,133 @@ public class WindGustSystem : MonoBehaviour, IResettable
         _shelteredCount = 0;
     }
 
+    public static WindGustSystem Instance { get; private set; }
+
     [Header("時間與強度設定")]
     [Tooltip("每次吹風的持續時間 (秒，預設 3)")]
     public float blowDuration = 3.0f;
-    [Tooltip("每次風停的持續時間 (秒，預設 1)")]
-    public float pauseDuration = 1.0f;
+    [Tooltip("每次風停的持續時間 (秒，預設 2.5)")]
+    public float pauseDuration = 2.5f;
     [Tooltip("逆風的推力強度 (建議 15 ~ 25，可配合玩家質量調整)")]
     public float windForce = 18.0f;
 
     [Header("視覺與音效回饋")]
-    [Tooltip("吹風時啟動的風力粒子系統 (可為空)")]
+    [Tooltip("吹風時啟動的風力粒子系統 (可為空，系統自動搜尋)")]
     public ParticleSystem windParticles;
-    [Tooltip("播放風聲的 AudioSource (可為空)")]
+
+    [Tooltip("吹風時播放的風聲音效檔 (請直接拖入 強風3.mp3 或 風聲2.mp3，切勿放入石化音效)")]
+    public AudioClip windSoundClip;
+
+    [Tooltip("播放風聲的 AudioSource (可為空，系統自動建立)")]
     public AudioSource windAudioSource;
 
     private float timer = 0f;
     private WindState currentState = WindState.Calm;
     private Rigidbody playerRb;
+    private PlayerPetrification playerPetrify;
     private bool hasAppliedWindThisGust = false;
 
     public WindState CurrentState => currentState;
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void AutoEnsureInDesertScene()
+    {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+        if (sceneName.Contains("desert") || sceneName.Contains("荒漠") || sceneName.Contains("荒原"))
+        {
+            if (Instance == null && FindFirstObjectByType<WindGustSystem>() == null)
+            {
+                GameObject go = new GameObject("WindGustSystem_AutoCreated");
+                go.AddComponent<WindGustSystem>();
+                Debug.LogWarning("【陣風系統】荒漠關卡未掛載 WindGustSystem，已自動生成並啟動陣風吹風石化機制！");
+            }
+        }
+    }
+
     private void Start()
     {
-        EnsurePlayerReference();
+        EnsureComponents();
         ResetWindCycle();
+    }
+
+    private void EnsureComponents()
+    {
+        EnsurePlayerReference();
+
+        if (windParticles == null)
+        {
+            GameObject windObj = GameObject.Find("WindParticles");
+            if (windObj != null) windParticles = windObj.GetComponent<ParticleSystem>();
+            if (windParticles == null)
+            {
+                DesertWindDustFX fx = FindFirstObjectByType<DesertWindDustFX>();
+                if (fx != null) windParticles = fx.GetComponent<ParticleSystem>();
+            }
+        }
+
+        if (windAudioSource == null)
+        {
+            windAudioSource = GetComponent<AudioSource>();
+            if (windAudioSource == null) windAudioSource = gameObject.AddComponent<AudioSource>();
+            windAudioSource.playOnAwake = false;
+            windAudioSource.loop = true;
+        }
+
+        // 防呆校驗：若風聲音效被誤設為石化音效，強制清除並提示
+        if (windSoundClip != null && (windSoundClip.name.Contains("石化") || windSoundClip.name.Contains("Petrif")))
+        {
+            Debug.LogError($"[WindGustSystem 錯誤防呆] 偵測到 windSoundClip 誤設為石化音效 '{windSoundClip.name}'！已自動重置，防止循環播放石化聲！");
+            windSoundClip = null;
+        }
+
+        if (windSoundClip != null && windAudioSource != null)
+        {
+            windAudioSource.clip = windSoundClip;
+        }
     }
 
     private void EnsurePlayerReference()
     {
-        if (playerRb == null)
+        if (playerRb == null || playerPetrify == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj == null)
+            {
+                PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
+                if (pm != null) playerObj = pm.gameObject;
+            }
+            if (playerObj == null)
+            {
+                PlayerRespawnSystem respawn = FindFirstObjectByType<PlayerRespawnSystem>();
+                if (respawn != null) playerObj = respawn.gameObject;
+            }
+
             if (playerObj != null)
             {
                 playerRb = playerObj.GetComponent<Rigidbody>();
+                if (playerRb == null) playerRb = playerObj.GetComponentInParent<Rigidbody>();
+                if (playerRb == null) playerRb = playerObj.GetComponentInChildren<Rigidbody>();
+
+                playerPetrify = playerObj.GetComponent<PlayerPetrification>();
+                if (playerPetrify == null) playerPetrify = playerObj.GetComponentInParent<PlayerPetrification>();
+                if (playerPetrify == null) playerPetrify = playerObj.GetComponentInChildren<PlayerPetrification>();
+
+                // 若玩家身上缺少 PlayerPetrification，自動為其掛載
+                if (playerPetrify == null)
+                {
+                    playerPetrify = playerObj.AddComponent<PlayerPetrification>();
+                    Debug.LogWarning($"[WindGustSystem] 偵測到玩家 '{playerObj.name}' 未掛載 PlayerPetrification，已自動掛載！");
+                }
             }
         }
     }
@@ -96,19 +188,21 @@ public class WindGustSystem : MonoBehaviour, IResettable
     private void FixedUpdate()
     {
         // 僅在吹風狀態且玩家未被掩體保護時，觸發石化或施加向左推力
-        if (currentState == WindState.Blowing && !IsPlayerSheltered && playerRb != null)
+        if (currentState == WindState.Blowing && !IsPlayerSheltered)
         {
-            PlayerPetrification petrify = playerRb.GetComponent<PlayerPetrification>();
-            if (petrify != null)
+            EnsurePlayerReference();
+
+            if (playerPetrify != null)
             {
                 // 一次陣風期間只會觸發一次石化懲罰，防止下一幀無縫連鎖石化
-                if (!petrify.isPetrified && !hasAppliedWindThisGust)
+                if (!playerPetrify.isPetrified && !hasAppliedWindThisGust)
                 {
                     hasAppliedWindThisGust = true;
-                    petrify.Petrify();
+                    Debug.LogWarning("【陣風石化】玩家在無掩體保護下被逆風沙塵吹襲，觸發石化！");
+                    playerPetrify.Petrify();
                 }
             }
-            else
+            else if (playerRb != null)
             {
                 playerRb.AddForce(Vector3.left * windForce, ForceMode.Acceleration);
             }
@@ -124,21 +218,29 @@ public class WindGustSystem : MonoBehaviour, IResettable
         {
             hasAppliedWindThisGust = false; // 重置此趟陣風的石化標記
             Debug.Log("【陣風系統】起風了！逆風來襲！只能在掩體內躲避！");
-            if (windParticles != null && !windParticles.isPlaying)
+            if (windParticles != null)
             {
-                windParticles.Play();
+                DesertWindDustFX fx = windParticles.GetComponent<DesertWindDustFX>();
+                if (fx != null) fx.Play();
+                else if (!windParticles.isPlaying) windParticles.Play(true);
             }
-            if (windAudioSource != null && !windAudioSource.isPlaying)
+            if (windAudioSource != null)
             {
-                windAudioSource.Play();
+                if (windSoundClip != null) windAudioSource.clip = windSoundClip;
+                if (windAudioSource.clip != null && !windAudioSource.isPlaying)
+                {
+                    windAudioSource.Play();
+                }
             }
         }
         else
         {
-            Debug.Log("【陣风系統】風停了！抓緊時間前進！");
-            if (windParticles != null && windParticles.isPlaying)
+            Debug.Log("【陣風系統】風停了！抓緊時間前進！");
+            if (windParticles != null)
             {
-                windParticles.Stop();
+                DesertWindDustFX fx = windParticles.GetComponent<DesertWindDustFX>();
+                if (fx != null) fx.Stop();
+                else if (windParticles.isPlaying) windParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
             if (windAudioSource != null && windAudioSource.isPlaying)
             {
