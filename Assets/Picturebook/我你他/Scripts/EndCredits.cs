@@ -71,6 +71,8 @@ public class EndCredits : MonoBehaviour
     public float endingAutoRollSeconds = 2.5f;
     [Tooltip("名單捲完後載入的場景。留空＝停在標題卡（展場模式）")]
     public string sceneAfterCredits = "MainMenuScene";
+    [Tooltip("名單結束後、切回主選單前，全黑停留幾秒")]
+    public float endingTailHold = 1.2f;
 
     /// <summary>
     /// ★由玻璃館結局設 true：進 Book 場景後直接跳到結尾漫畫，
@@ -166,12 +168,26 @@ public class EndCredits : MonoBehaviour
     {
         // ★結局模式：從玻璃館進來，直接翻到結尾漫畫，並讓名單自動接上
         if (!EndingMode || book == null) return;
+
+        // 1　關掉畢展自動翻頁：不然玩家看得慢一點就被丟回第一頁，結局毀了
+        ExhibitMode exhibit = book.GetComponent<ExhibitMode>();
+        if (exhibit == null) exhibit = Object.FindObjectOfType<ExhibitMode>();
+        if (exhibit != null) exhibit.enabled = false;
+
+        // 2　清掉章節轉場殘留狀態：避免翻到最後一頁被判成「章節結束」而跳關
+        BookTransitionManager.isChapterMode = false;
+        BookTransitionManager.chapterEndPage = -1;
+        BookTransitionManager.nextSceneAfterBook = "";
+
+        // 3　跳到結尾漫畫，並讓名單在最後一頁後自動接上
         if (endingStartPage >= 0 && endingStartPage < book.PageCount)
         {
             book.GoTo(endingStartPage, false);
         }
         if (endingAutoRollSeconds > 0f) autoRollAfterSeconds = endingAutoRollSeconds;
         armOnLastPage = true;
+
+        Debug.Log("🎬【結局】已跳至結尾漫畫第 " + (endingStartPage + 1) + " 頁，翻完自動捲名單 → " + sceneAfterCredits);
     }
 
     /// <summary>
@@ -363,6 +379,20 @@ public class EndCredits : MonoBehaviour
 
     private IEnumerator Finish(bool skipped)
     {
+        // ★結局模式：名單結束（含被跳過）→ 維持全黑直接切主選單，
+        //   不淡出、不露出繪本最後一頁，收得乾淨。
+        if (EndingMode)
+        {
+            _rolling = false;
+            EndingMode = false;
+            if (!string.IsNullOrEmpty(sceneAfterCredits))
+            {
+                yield return Wait(endingTailHold);
+                SceneManager.LoadScene(sceneAfterCredits);
+                yield break;
+            }
+        }
+
         if (fadeOut > 0f || skipped)
         {
             yield return Fade(1f, 0f, skipped ? 0.6f : fadeOut);
@@ -370,17 +400,6 @@ public class EndCredits : MonoBehaviour
         }
         // fadeOut = 0 且沒被跳過 → 停在標題卡，展場就讓它停著
         _rolling = false;
-
-        // ★結局模式：名單結束（含被跳過）→ 回主選單，整局收束
-        if (EndingMode)
-        {
-            EndingMode = false;
-            if (!string.IsNullOrEmpty(sceneAfterCredits))
-            {
-                SceneManager.LoadScene(sceneAfterCredits);
-                yield break;
-            }
-        }
 
         if (returnToFirstPageOnSkip && skipped && book != null)
         {
