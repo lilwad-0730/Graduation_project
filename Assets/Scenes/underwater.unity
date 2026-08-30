@@ -43040,7 +43040,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cards: []
-  fontAsset: {fileID: 11400000, guid: 094fbe163c931e0448f28dadfe8ee055, type: 2}
+  fontAsset: {fileID: 11400000, guid: 8427bab51d56e584abc8c18d812578c4, type: 2}
   fontResourcePath: 
 --- !u!114 &910000050
 MonoBehaviour:

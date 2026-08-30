@@ -18880,7 +18880,7 @@ MonoBehaviour:
   cards: []
   bgColor: {r: 0.051, g: 0.0667, b: 0.1569, a: 1}
   textColor: {r: 0.9098, g: 0.8784, b: 0.8235, a: 1}
-  fontAsset: {fileID: 11400000, guid: 094fbe163c931e0448f28dadfe8ee055, type: 2}
+  fontAsset: {fileID: 11400000, guid: 8427bab51d56e584abc8c18d812578c4, type: 2}
   fontResourcePath: 
   fontSize: 48
   lineSpacing: 65

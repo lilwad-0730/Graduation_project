@@ -13,6 +13,10 @@ using System.Collections;
 [RequireComponent(typeof(Collider))]
 public class StormSceneTransition : MonoBehaviour
 {
+
+    [Header("📜 過場文字卡")]
+    [Tooltip("黑幕全黑後、載入下一關前要播的文字卡。留空＝不播")]
+    public string storyCardId = "M2";
     [Header("🎯 場景切換設定")]
     [Tooltip("目標切換的關卡場景名稱 (預設為 desert)")]
     public string nextSceneName = "desert";
@@ -153,6 +157,13 @@ public class StormSceneTransition : MonoBehaviour
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
             PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+        }
+
+        // ★【文字卡】畫面此時已全黑 → 播 M2 →（維持全黑）→ 才載入荒原
+        //   順序：龍捲風帶走她 → 讀她的心聲 → 落在荒原
+        if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(storyCardId))
+        {
+            yield return StoryCardPlayer.Instance.Play(storyCardId, false, false);
         }
 
         Debug.Log($"✨【風暴轉場完成】主角抵達風暴核心！載入場景：'{nextSceneName}'，指定出生點：'{targetSpawnPointName}'");

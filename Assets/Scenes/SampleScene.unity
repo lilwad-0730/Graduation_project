@@ -10504,7 +10504,7 @@ MonoBehaviour:
   cards: []
   bgColor: {r: 0.051, g: 0.0667, b: 0.1569, a: 1}
   textColor: {r: 0.9098, g: 0.8784, b: 0.8235, a: 1}
-  fontAsset: {fileID: 11400000, guid: 094fbe163c931e0448f28dadfe8ee055, type: 2}
+  fontAsset: {fileID: 11400000, guid: 8427bab51d56e584abc8c18d812578c4, type: 2}
   fontResourcePath: 
   fontSize: 48
   lineSpacing: 65
@@ -10549,22 +10549,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardId: M1
-  freezePlayer: 1
-  onlyOnce: 1
-  disableAfterPlay: 0
---- !u!114 &910000011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1488007601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 884bb78516a74e05f7f4a6bec3ace578, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardId: M2
   freezePlayer: 1
   onlyOnce: 1
   disableAfterPlay: 0
@@ -22231,7 +22215,6 @@ GameObject:
   - component: {fileID: 1488007604}
   - component: {fileID: 1488007603}
   - component: {fileID: 1488007602}
-  - component: {fileID: 910000011}
   m_Layer: 0
   m_Name: Storm_TransitionTrigger
   m_TagString: Untagged

@@ -16,6 +16,17 @@ using Unity.Cinemachine;
 /// </summary>
 public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 {
+
+    // ══════════════════════════════════════════
+    // 結局出口（吸入演出結束後接上結尾）
+    // ══════════════════════════════════════════
+    [Header("🎬 結局出口")]
+    [Tooltip("演出結束後接結尾漫畫與片尾名單（整局的最後一段）")]
+    public bool playEndingAfterCutscene = true;
+    [Tooltip("接結尾前要播的過場文字卡")]
+    public string endingCardId = "M5";
+    [Tooltip("結尾漫畫所在的場景名稱")]
+    public string endingBookScene = "Book";
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
     public GameObject mirrorWall;
@@ -825,6 +836,21 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         isCutsceneRunning = false;
         IsAnyCutsceneRunning = false;
         Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
+
+        // ★【結局】鏡牆吸入演完 → 過場文字 M5 →（維持全黑）→ 結尾漫畫 → 片尾名單 → 主選單
+        if (playEndingAfterCutscene)
+        {
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
+
+            if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(endingCardId))
+            {
+                yield return StoryCardPlayer.Instance.Play(endingCardId, true, false);
+            }
+
+            EndCredits.EndingMode = true;
+            Debug.Log("🎬【結局】載入結尾漫畫場景：" + endingBookScene);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
+        }
     }
 
     /// <summary>

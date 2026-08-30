@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
@@ -59,6 +60,24 @@ public class EndCredits : MonoBehaviour
     public bool armOnLastPage = true;
     [Tooltip("大於 0＝到最後一頁後等這麼多秒自動開始（展場用）。0＝只等按鍵")]
     public float autoRollAfterSeconds = 0f;
+
+    // ══════════════════════════════════════════
+    // 結局流程（玻璃館結束 → 這裡）
+    // ══════════════════════════════════════════
+    [Header("結局流程")]
+    [Tooltip("結尾漫畫的起始頁（0 起算）。第 63 頁＝62")]
+    public int endingStartPage = 62;
+    [Tooltip("結局模式下，翻到最後一頁後等這麼多秒自動捲名單（不必等玩家按鍵）")]
+    public float endingAutoRollSeconds = 2.5f;
+    [Tooltip("名單捲完後載入的場景。留空＝停在標題卡（展場模式）")]
+    public string sceneAfterCredits = "MainMenuScene";
+
+    /// <summary>
+    /// ★由玻璃館結局設 true：進 Book 場景後直接跳到結尾漫畫，
+    ///   翻完自動捲名單，名單結束回主選單。
+    ///   自由翻閱（從主選單「製作名單和來源」進來）不受影響。
+    /// </summary>
+    public static bool EndingMode;
 
     // ══════════════════════════════════════════
     // 版面
@@ -141,6 +160,18 @@ public class EndCredits : MonoBehaviour
         LoadCredits();
         if (book == null) book = GetComponent<PageBook>();
         if (book == null) book = Object.FindObjectOfType<PageBook>();
+    }
+
+    private void Start()
+    {
+        // ★結局模式：從玻璃館進來，直接翻到結尾漫畫，並讓名單自動接上
+        if (!EndingMode || book == null) return;
+        if (endingStartPage >= 0 && endingStartPage < book.PageCount)
+        {
+            book.GoTo(endingStartPage, false);
+        }
+        if (endingAutoRollSeconds > 0f) autoRollAfterSeconds = endingAutoRollSeconds;
+        armOnLastPage = true;
     }
 
     /// <summary>
@@ -339,6 +370,17 @@ public class EndCredits : MonoBehaviour
         }
         // fadeOut = 0 且沒被跳過 → 停在標題卡，展場就讓它停著
         _rolling = false;
+
+        // ★結局模式：名單結束（含被跳過）→ 回主選單，整局收束
+        if (EndingMode)
+        {
+            EndingMode = false;
+            if (!string.IsNullOrEmpty(sceneAfterCredits))
+            {
+                SceneManager.LoadScene(sceneAfterCredits);
+                yield break;
+            }
+        }
 
         if (returnToFirstPageOnSkip && skipped && book != null)
         {
