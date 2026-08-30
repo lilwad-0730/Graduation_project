@@ -3535,7 +3535,6 @@ GameObject:
   - component: {fileID: 273002719}
   - component: {fileID: 273002718}
   - component: {fileID: 273002717}
-  - component: {fileID: 273002716}
   m_Layer: 0
   m_Name: TutorialText_1
   m_TagString: Untagged
@@ -3543,20 +3542,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &273002716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273002715}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f042af64d2d193441bd29aa47d1fb860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialZone
-  tutorialText: {fileID: 273002715}
-  fadeDuration: 0.5
 --- !u!114 &273002717
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3577,7 +3562,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u8A66\u8457\u6309\u4E0BAD\u9375\u524D\u5F8C\u79FB\u52D5\n\u8DDF\u96A8\u8457\u5149\u524D\u9032 "
+  m_text: "A\u3001D\u3000\u5DE6\u53F3\u79FB\u52D5\n\u8DDF\u8457\u5149\u524D\u9032"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
   m_sharedMaterial: {fileID: 4186307965072421603, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
@@ -11858,7 +11843,6 @@ GameObject:
   - component: {fileID: 1012533924}
   - component: {fileID: 1012533923}
   - component: {fileID: 1012533922}
-  - component: {fileID: 1012533921}
   - component: {fileID: 1012533920}
   m_Layer: 0
   m_Name: NewTutorialText
@@ -11882,26 +11866,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 12.101383, y: 6.8354497, z: 0}
   m_Center: {x: -3.9058514, y: -0.9600785, z: 0}
---- !u!114 &1012533921
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1012533919}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f042af64d2d193441bd29aa47d1fb860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialZone
-  tutorialText: {fileID: 1012533919}
-  fadeDuration: 0.5
 --- !u!114 &1012533922
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11922,7 +11892,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\"\u63A5\u8457\u6709\u8DA3\u7684\u5192\u96AA\u5373\u5C07\u5C55\u958B\""
+  m_text: "\u63A5\u8457\uFF0C\u6709\u8DA3\u7684\u5192\u96AA\u5373\u5C07\u5C55\u958B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
   m_sharedMaterial: {fileID: 4186307965072421603, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
@@ -19293,7 +19263,6 @@ GameObject:
   - component: {fileID: 1276438442}
   - component: {fileID: 1276438441}
   - component: {fileID: 1276438440}
-  - component: {fileID: 1276438439}
   - component: {fileID: 1276438438}
   m_Layer: 0
   m_Name: TutorialText_4
@@ -19317,26 +19286,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 9.956543, y: 2.4576464, z: 0}
   m_Center: {x: -4.9782715, y: 1.2288232, z: 0}
---- !u!114 &1276438439
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1276438437}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f042af64d2d193441bd29aa47d1fb860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialZone
-  tutorialText: {fileID: 1276438437}
-  fadeDuration: 0.5
 --- !u!114 &1276438440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24145,7 +24100,6 @@ GameObject:
   - component: {fileID: 1623812043}
   - component: {fileID: 1623812042}
   - component: {fileID: 1623812041}
-  - component: {fileID: 1623812040}
   - component: {fileID: 1623812039}
   m_Layer: 0
   m_Name: TutorialText_3
@@ -24169,26 +24123,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 9.956543, y: 2.4576464, z: 0}
   m_Center: {x: -4.9782715, y: 1.2288232, z: 0}
---- !u!114 &1623812040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1623812038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f042af64d2d193441bd29aa47d1fb860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialZone
-  tutorialText: {fileID: 1623812038}
-  fadeDuration: 0.5
 --- !u!114 &1623812041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24209,7 +24149,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u6309\u4E0BShift\u9375\u62C9\u53D6\u7269\u9AD4\n\u5FC5\u8981\u6642\u53EF\u907F\u514D\u5371\u96AA"
+  m_text: "\u6309\u4F4F Shift\u3000\u6293\u53D6\u7269\u9AD4\n\u5FC5\u8981\u6642\u53EF\u907F\u514D\u5371\u96AA"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
   m_sharedMaterial: {fileID: 4186307965072421603, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
@@ -26710,7 +26650,6 @@ GameObject:
   - component: {fileID: 1897288330}
   - component: {fileID: 1897288329}
   - component: {fileID: 1897288328}
-  - component: {fileID: 1897288327}
   m_Layer: 0
   m_Name: TutorialText_2
   m_TagString: Untagged
@@ -26718,20 +26657,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1897288327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1897288325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f042af64d2d193441bd29aa47d1fb860, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TutorialZone
-  tutorialText: {fileID: 1897288325}
-  fadeDuration: 0.5
 --- !u!114 &1897288328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26752,7 +26677,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u6309\u4E0B\u7A7A\u767D\u9375\u8DF3\u8E8D\n\u4E26\u8A66\u8457\u8DF3\u8E8D\u969C\u7919\u7269"
+  m_text: "\u7A7A\u767D\u9375\u3000\u8DF3\u8E8D\n\u8A66\u8457\u8D8A\u904E\u969C\u7919\u7269"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
   m_sharedMaterial: {fileID: 4186307965072421603, guid: 764ef281fa9446742855cf7ed81ff19b, type: 2}
