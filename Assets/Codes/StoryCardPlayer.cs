@@ -170,6 +170,7 @@ public class StoryCardPlayer : MonoBehaviour
     private bool _paperLoadTried;
     private Sprite _activePaperSprite;   // 這一次播放實際用的紙紋（每份日誌可以不同）
     private int _driftToken;             // 換頁時遞增，讓上一頁的緩升協程自己停下
+    private bool _pausedByMe;            // 這次的 Time.timeScale=0 是不是我設的
     private static readonly Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
 
     /// <summary>正在播卡片。轉場程式可以用這個判斷要不要放行。</summary>
@@ -237,6 +238,8 @@ public class StoryCardPlayer : MonoBehaviour
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        // ★安全網三：播放器被關掉或銷毀時，絕不把世界留在暫停狀態
+        ReleaseTimePause(1f);
     }
 
     /// <summary>
@@ -246,6 +249,9 @@ public class StoryCardPlayer : MonoBehaviour
     /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // ★安全網二：換場景時若還停著卻沒在播卡，立刻解除（避免整個遊戲凍住）
+        if (_pausedByMe && !_playing) ReleaseTimePause(1f);
+
         // 播放器是 DontDestroyOnLoad：新場景的日誌紙也要補掛鉤
         AutoHookCollectibleNotes();
 
@@ -330,10 +336,27 @@ public class StoryCardPlayer : MonoBehaviour
         //   全部等卡片播完才繼續，玩家一段都不會錯過。
         //   卡片本身全走 unscaledDeltaTime，暫停中照播。
         float prevTimeScale = Time.timeScale;
+        if (prevTimeScale <= 0f) prevTimeScale = 1f;   // 別把別人設的 0 記成常態
         Time.timeScale = 0f;
-        yield return Play(cardId, true, true);
-        Time.timeScale = prevTimeScale;
-        if (pm != null) pm.isCutsceneFrozen = false;
+        _pausedByMe = true;
+        try
+        {
+            yield return Play(cardId, true, true);
+        }
+        finally
+        {
+            // ★安全網一：不管正常結束、被中止還是拋例外，一定還原
+            ReleaseTimePause(prevTimeScale);
+            if (pm != null) pm.isCutsceneFrozen = false;
+        }
+    }
+
+    /// <summary>把暫停的世界還回去。重複呼叫安全。</summary>
+    private void ReleaseTimePause(float restoreTo)
+    {
+        if (!_pausedByMe) return;
+        _pausedByMe = false;
+        Time.timeScale = restoreTo > 0f ? restoreTo : 1f;
     }
 
     public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut)
