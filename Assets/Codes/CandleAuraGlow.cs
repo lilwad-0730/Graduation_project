@@ -44,6 +44,7 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
     private static Sprite cachedAuraSprite;
     private bool isFadingIn = false;
     private float fadeTimer = 0f;
+    private bool hasBeenTriggered = false;
 
     private void Awake()
     {
@@ -52,8 +53,11 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     private void OnEnable()
     {
+        StopAllCoroutines();
+        isFadingIn = false;
+        fadeTimer = 0f;
+        hasBeenTriggered = false;
         SetupAuraObject();
-        PlayFadeInAnimation();
     }
 
     public void SetupAuraObject()
@@ -82,12 +86,52 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
             cachedAuraSprite = GenerateSoftAuraSprite();
         }
         auraSr.sprite = cachedAuraSprite;
+        SetAuraHidden();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasBeenTriggered || !IsPlayer(other.gameObject))
+        {
+            return;
+        }
+
+        hasBeenTriggered = true;
+        PlayFadeInAnimation();
+    }
+
+    private bool IsPlayer(GameObject go)
+    {
+        if (go.CompareTag("Player")) return true;
+        if (go.GetComponent<PlayerMovement>() != null) return true;
+        if (go.name.ToLower().Contains("player")) return true;
+        return false;
     }
 
     public void PlayFadeInAnimation()
     {
         StopAllCoroutines();
-        StartCoroutine(FadeInRoutine());
+        if (auraTransform == null || auraSr == null)
+        {
+            SetupAuraObject();
+        }
+
+        hasBeenTriggered = true;
+        isFadingIn = true;
+        StartCoroutine(BeginFadeNextFrame());
+    }
+
+    private IEnumerator BeginFadeNextFrame()
+    {
+        yield return null;
+
+        if (!hasBeenTriggered)
+        {
+            isFadingIn = false;
+            yield break;
+        }
+
+        yield return FadeInRoutine();
     }
 
     private IEnumerator FadeInRoutine()
@@ -95,7 +139,25 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         isFadingIn = true;
         fadeTimer = 0f;
 
-        if (auraTransform == null || auraSr == null) SetupAuraObject();
+        if (auraTransform == null || auraSr == null)
+        {
+            SetupAuraObject();
+        }
+
+        if (fadeInDuration <= 0f)
+        {
+            auraTransform.localScale = targetAuraScale;
+            auraTransform.localPosition = new Vector3(auraCenterOffset.x, auraCenterOffset.y, zOffset);
+
+            Color immediateColor = auraColor;
+            immediateColor.a = auraColor.a;
+            auraSr.color = immediateColor;
+            auraSr.enabled = true;
+            UpdateSortingOrder();
+
+            isFadingIn = false;
+            yield break;
+        }
 
         while (fadeTimer < fadeInDuration)
         {
@@ -109,22 +171,38 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
             Color c = auraColor;
             c.a = auraColor.a * smoothProgress;
             auraSr.color = c;
+            // CandleCollectible may disable all cached SpriteRenderers in the same
+            // trigger callback; only restore this aura renderer, never the candle root.
+            auraSr.enabled = true;
 
             UpdateSortingOrder();
 
             yield return null;
         }
 
+        auraSr.enabled = true;
         isFadingIn = false;
     }
 
     private void Update()
     {
-        if (isFadingIn) return;
-
         if (auraTransform == null || auraSr == null)
         {
             SetupAuraObject();
+        }
+
+        if (!hasBeenTriggered)
+        {
+            SetAuraHidden();
+            return;
+        }
+
+        if (isFadingIn)
+        {
+            // Keep the glow renderer visible after CandleCollectible's hide pass;
+            // its scale/alpha still control whether any pixels are shown.
+            auraSr.enabled = true;
+            return;
         }
 
         float wave = enablePulse && Application.isPlaying ? Mathf.Sin(Time.time * pulseSpeed) * pulseAmount : 0f;
@@ -137,6 +215,23 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         Color c = auraColor;
         c.a = auraColor.a * (1f + alphaWave);
         auraSr.color = c;
+        auraSr.enabled = true;
+    }
+
+    private void SetAuraHidden()
+    {
+        if (auraTransform != null)
+        {
+            auraTransform.localScale = Vector3.zero;
+        }
+
+        if (auraSr != null)
+        {
+            Color hiddenColor = auraColor;
+            hiddenColor.a = 0f;
+            auraSr.color = hiddenColor;
+            auraSr.enabled = false;
+        }
     }
 
     private void UpdateSortingOrder()
@@ -201,6 +296,16 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
-        PlayFadeInAnimation();
+        StopAllCoroutines();
+        isFadingIn = false;
+        fadeTimer = 0f;
+        hasBeenTriggered = false;
+
+        if (auraTransform == null || auraSr == null)
+        {
+            SetupAuraObject();
+        }
+
+        SetAuraHidden();
     }
 }

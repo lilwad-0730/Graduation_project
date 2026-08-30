@@ -10,6 +10,7 @@ using UnityEngine.UI;
 /// untouched.  The original SpriteRenderers and world-space canvases remain the
 /// source of truth for hover, collider, slider, and back-button behaviour.
 /// </summary>
+[DefaultExecutionOrder(10001)]
 [DisallowMultipleComponent]
 public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
 {
@@ -21,6 +22,10 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
     [SerializeField, Min(MinimumOverlaySortingOrder)]
     private int minimumOverlaySortingOrder = MinimumOverlaySortingOrder;
 
+    [Header("Viewport Sizing")]
+    [SerializeField]
+    private Vector2 targetViewportSize = new Vector2(0.75f, 0.75f);
+
     private readonly List<SpriteVisual> spriteVisuals = new List<SpriteVisual>();
     private readonly List<TextVisual> textVisuals = new List<TextVisual>();
 
@@ -30,6 +35,8 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
     private SpriteRenderer[] sourceSprites;
     private TMP_Text[] sourceTexts;
     private Camera targetCamera;
+    private Vector3 originalLocalScale;
+    private bool originalLocalScaleCaptured;
 
     /// <summary>Whether the runtime overlay and all cached visual entries exist.</summary>
     public bool IsOverlayReady =>
@@ -65,8 +72,10 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
             return;
         }
 
+        CaptureOriginalScale();
         EnsureOverlay();
         CacheSources();
+        ApplyViewportRelativeScale();
         SyncVisuals();
     }
 
@@ -84,12 +93,14 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
             targetCamera = Camera.main;
         }
 
+        ApplyViewportRelativeScale();
         SyncVisuals();
     }
 
     private void OnDisable()
     {
         RestoreSourceRendering();
+        RestoreOriginalScale();
 
         if (overlayCanvasObject != null)
         {
@@ -100,6 +111,7 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
     private void OnDestroy()
     {
         RestoreSourceRendering();
+        RestoreOriginalScale();
         DestroyVisuals();
 
         if (overlayCanvasObject != null)
@@ -379,6 +391,159 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
         return path;
     }
 
+    private void CaptureOriginalScale()
+    {
+        originalLocalScale = transform.localScale;
+        originalLocalScaleCaptured = true;
+    }
+
+    private void RestoreOriginalScale()
+    {
+        if (!originalLocalScaleCaptured)
+        {
+            return;
+        }
+
+        if (transform.localScale != originalLocalScale)
+        {
+            transform.localScale = originalLocalScale;
+            if (Application.isPlaying)
+            {
+                Physics2D.SyncTransforms();
+            }
+        }
+
+        originalLocalScaleCaptured = false;
+    }
+
+    private void ApplyViewportRelativeScale()
+    {
+        if (!originalLocalScaleCaptured || targetCamera == null)
+        {
+            return;
+        }
+
+        if (sourceSprites == null)
+        {
+            CacheSources();
+        }
+
+        if (!TryGetProjectedSourceSizeAtOriginalScale(out Vector2 projectedSize))
+        {
+            return;
+        }
+
+        Rect pixelRect = targetCamera.pixelRect;
+        float viewportWidth = pixelRect.width;
+        float viewportHeight = pixelRect.height;
+        if (viewportWidth < Epsilon || viewportHeight < Epsilon)
+        {
+            viewportWidth = Screen.width;
+            viewportHeight = Screen.height;
+        }
+
+        float targetWidthFraction = Mathf.Clamp(targetViewportSize.x, 0.01f, 1f);
+        float targetHeightFraction = Mathf.Clamp(targetViewportSize.y, 0.01f, 1f);
+        float targetWidth = viewportWidth * targetWidthFraction;
+        float targetHeight = viewportHeight * targetHeightFraction;
+        if (targetWidth < Epsilon || targetHeight < Epsilon ||
+            projectedSize.x < Epsilon || projectedSize.y < Epsilon)
+        {
+            return;
+        }
+
+        float uniformScale = Mathf.Min(
+            targetWidth / projectedSize.x,
+            targetHeight / projectedSize.y);
+        if (float.IsNaN(uniformScale) || float.IsInfinity(uniformScale) || uniformScale <= 0f)
+        {
+            return;
+        }
+
+        uniformScale = Mathf.Clamp(uniformScale, 0.0001f, 1000f);
+        Vector3 desiredScale = originalLocalScale * uniformScale;
+        if (!ApproximatelyEqual(transform.localScale, desiredScale))
+        {
+            transform.localScale = desiredScale;
+            if (Application.isPlaying)
+            {
+                Physics2D.SyncTransforms();
+            }
+        }
+    }
+
+    private bool TryGetProjectedSourceSizeAtOriginalScale(out Vector2 projectedSize)
+    {
+        projectedSize = Vector2.zero;
+        if (targetCamera == null || sourceSprites == null || sourceSprites.Length == 0)
+        {
+            return false;
+        }
+
+        // Measure from the authored scale, then restore the last applied scale before
+        // returning. This makes perspective-camera sizing deterministic and avoids
+        // feedback oscillation from measuring an already-scaled popup.
+        Vector3 previousScale = transform.localScale;
+        bool normalizedScale = !ApproximatelyEqual(previousScale, originalLocalScale);
+        if (normalizedScale)
+        {
+            transform.localScale = originalLocalScale;
+        }
+
+        bool hasProjectedBounds = false;
+        float minX = 0f;
+        float maxX = 0f;
+        float minY = 0f;
+        float maxY = 0f;
+
+        for (int i = 0; i < sourceSprites.Length; i++)
+        {
+            SpriteRenderer source = sourceSprites[i];
+            if (source == null || !source.enabled || source.sprite == null ||
+                !source.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            Rect projected = ProjectedBoundsRect(source.bounds, targetCamera);
+            if (!hasProjectedBounds)
+            {
+                minX = projected.xMin;
+                maxX = projected.xMax;
+                minY = projected.yMin;
+                maxY = projected.yMax;
+                hasProjectedBounds = true;
+            }
+            else
+            {
+                minX = Mathf.Min(minX, projected.xMin);
+                maxX = Mathf.Max(maxX, projected.xMax);
+                minY = Mathf.Min(minY, projected.yMin);
+                maxY = Mathf.Max(maxY, projected.yMax);
+            }
+        }
+
+        if (normalizedScale)
+        {
+            transform.localScale = previousScale;
+        }
+
+        if (!hasProjectedBounds)
+        {
+            return false;
+        }
+
+        projectedSize = new Vector2(maxX - minX, maxY - minY);
+        return projectedSize.x >= Epsilon && projectedSize.y >= Epsilon;
+    }
+
+    private static bool ApproximatelyEqual(Vector3 left, Vector3 right)
+    {
+        return Mathf.Abs(left.x - right.x) < Epsilon &&
+               Mathf.Abs(left.y - right.y) < Epsilon &&
+               Mathf.Abs(left.z - right.z) < Epsilon;
+    }
+
     private void SyncVisuals()
     {
         if (overlayCanvas == null || overlayRect == null)
@@ -521,6 +686,38 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
         return localPoint;
     }
 
+    private static Rect ProjectedBoundsRect(Bounds bounds, Camera camera)
+    {
+        Vector3[] corners = new Vector3[8];
+        Vector3 min = bounds.min;
+        Vector3 max = bounds.max;
+        corners[0] = new Vector3(min.x, min.y, min.z);
+        corners[1] = new Vector3(min.x, min.y, max.z);
+        corners[2] = new Vector3(min.x, max.y, min.z);
+        corners[3] = new Vector3(min.x, max.y, max.z);
+        corners[4] = new Vector3(max.x, min.y, min.z);
+        corners[5] = new Vector3(max.x, min.y, max.z);
+        corners[6] = new Vector3(max.x, max.y, min.z);
+        corners[7] = new Vector3(max.x, max.y, max.z);
+
+        Vector3 first = camera.WorldToScreenPoint(corners[0]);
+        float minX = first.x;
+        float maxX = first.x;
+        float minY = first.y;
+        float maxY = first.y;
+
+        for (int i = 1; i < corners.Length; i++)
+        {
+            Vector3 point = camera.WorldToScreenPoint(corners[i]);
+            minX = Mathf.Min(minX, point.x);
+            maxX = Mathf.Max(maxX, point.x);
+            minY = Mathf.Min(minY, point.y);
+            maxY = Mathf.Max(maxY, point.y);
+        }
+
+        return Rect.MinMaxRect(minX, minY, maxX, maxY);
+    }
+
     private static Vector2 ProjectedBoundsSize(Bounds bounds, Camera camera)
     {
         Vector3[] corners = new Vector3[8];
@@ -647,6 +844,8 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
         minimumOverlaySortingOrder = Mathf.Max(
             MinimumOverlaySortingOrder,
             minimumOverlaySortingOrder);
+        targetViewportSize.x = Mathf.Clamp(targetViewportSize.x, 0.01f, 1f);
+        targetViewportSize.y = Mathf.Clamp(targetViewportSize.y, 0.01f, 1f);
     }
 
     private sealed class SpriteVisual
