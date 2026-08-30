@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 1000012}
   - component: {fileID: 1000013}
   - component: {fileID: 1000014}
+  - component: {fileID: 1000015}
   m_Layer: 0
   m_Name: Book
   m_TagString: Untagged
@@ -245,6 +246,43 @@ MonoBehaviour:
   showHint: 1
   hintText: 點畫面翻頁
   hintColor: {r: 0.91, g: 0.88, b: 0.82, a: 0.45}
+--- !u!114 &1000015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ef2a3e1eedb8e3198327a548fd88675, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  creditsResource: Credits
+  entries: []
+  book: {fileID: 1000012}
+  armOnLastPage: 1
+  autoRollAfterSeconds: 0
+  bgColor: {r: 0.043, g: 0.047, b: 0.086, a: 1}
+  textColor: {r: 0.9098, g: 0.8784, b: 0.8235, a: 1}
+  sectionColor: {r: 0.9098, g: 0.8784, b: 0.8235, a: 0.55}
+  fontAsset: {fileID: 0}
+  titleSize: 76
+  sectionSize: 30
+  nameSize: 44
+  roleSize: 34
+  paragraphSize: 28
+  contentWidth: 1200
+  columnGap: 60
+  rowSpacing: 16
+  scrollSpeed: 90
+  curtainIn: 1.5
+  leadIn: 1.2
+  tailHold: 5
+  fadeOut: 3
+  allowSkip: 1
+  minBeforeSkip: 2
+  returnToFirstPageOnSkip: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

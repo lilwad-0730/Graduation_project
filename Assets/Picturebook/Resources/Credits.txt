@@ -1,0 +1,82 @@
+// ═══════════════════════════════════════════════
+// 我你他　片尾感謝名單　模板
+// 改這個檔就好，不用碰程式。存檔後回 Unity 按 Play 就會吃到。
+//
+// 語法：
+//   #   大標題（片尾會停在最後一個 # 的位置）
+//   >   分類標（小字、灰色）
+//   ~   段落（會自動換行）
+//   |   兩欄：左邊職務 | 右邊名字
+//   //  註解，不會顯示
+//   空行 一行＝一段空白，連續空行會疊加
+//   其他 都當成一個名字，置中
+// ═══════════════════════════════════════════════
+
+
+# 我　你　他
+
+
+
+> 組　員
+
+江啟強
+陳修毅
+王翊安
+
+
+> 指導老師
+
+莊宗嚴
+
+
+
+> 音樂與音效
+
+原創音樂・音效 | 團隊自製
+
+Shadows and Dust | Scott Buckley
+Echoes | chosic.com
+The Last Tears | Ashot Danielyan
+Introspective Sad Ambient Piano | Ashot Danielyan
+
+
+> 字　型
+
+芫荽 ChenYuluoyan | justfont
+Mamelon | —
+UoqMunThenKhung | —
+
+
+> 使用素材
+
+BubbleR
+CloudSea
+Easy Transition
+FreeParallax
+MonsterMutant 7
+PolyOne　Rocks Stylized
+Rock Pack Free
+Stylized Environment VFX
+living birds
+EzTornado
+
+
+> 開發工具
+
+Unity 6
+TextMesh Pro　Cinemachine
+DOTween　Demigiant
+
+
+
+// ★ 下面這兩行是規格明訂不可刪的 AI 標註
+~ 本作插圖以生成式 AI 依團隊撰寫之提示詞產生，
+~ 並由團隊進行構圖審核、迭代修正與後製。
+
+// ★ 原句是「音樂與音效為團隊自製。」，因為上面列了四首授權曲，改成現在這句。
+//   要用回原句，把下面那行換掉就好。
+~ 音樂與音效除上列授權曲外，為團隊自製。
+
+
+
+# 我　你　他
