@@ -4,6 +4,44 @@ using System.Collections.Generic;
 
 public class PlayerPetrification : MonoBehaviour, IResettable
 {
+    [Header("🛡️ 測試與無敵模式 (Debug God Mode)")]
+    [Tooltip("【測試專用無敵模式】：開啟後免疫所有鳥怪攻擊致死、免疫風暴石化與倒數死亡，遊戲機制與動畫正常運行。")]
+    public bool godMode = false;
+
+    [Tooltip("是否允許在測試時按 F10 鍵或 Ctrl+G 快速切換無敵模式 (方便在 Editor 或遊玩中即時測試)")]
+    public bool allowKeyboardToggle = true;
+
+    [Tooltip("無敵模式開啟時，是否在螢幕角落顯示提示浮水印標籤")]
+    public bool showOnScreenIndicator = true;
+
+    private static bool _globalGodMode = false;
+    private static PlayerPetrification _instance;
+
+    /// <summary>
+    /// 【全域無敵模式屬性】任何腳本、UI 或後台設定皆可直接讀取與切換。
+    /// 開啟時自動洗清所有殘留石化與負面狀態。
+    /// </summary>
+    public static bool IsGodMode
+    {
+        get
+        {
+            if (_instance != null) return _instance.godMode;
+            return _globalGodMode;
+        }
+        set
+        {
+            _globalGodMode = value;
+            if (_instance != null)
+            {
+                _instance.godMode = value;
+                if (value)
+                {
+                    _instance.ClearAllNegativeEffects();
+                }
+            }
+        }
+    }
+
     [Header("石化設定")]
     [Tooltip("被石化幾次會觸發死亡重生？(預設 3)")]
     public int maxPetrifyCount = 3;
@@ -38,6 +76,23 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     // 快取原本的 Renderer 與顏色，用於解除石化時復原
     private Dictionary<Renderer, Color> originalColors = new Dictionary<Renderer, Color>();
+
+    private void Awake()
+    {
+        _instance = this;
+        if (_globalGodMode) godMode = true;
+    }
+
+    private void OnEnable()
+    {
+        _instance = this;
+        if (godMode) _globalGodMode = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance == this) _instance = null;
+    }
 
     private void Start()
     {
@@ -98,9 +153,38 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     private void Update()
     {
+        // 1. 快捷鍵切換無敵模式 (F10 或 Ctrl+G)
+        if (allowKeyboardToggle && (Input.GetKeyDown(KeyCode.F10) || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.G))))
+        {
+            IsGodMode = !IsGodMode;
+            Debug.LogWarning($"🛡️【無敵模式】已{(IsGodMode ? "<color=green>【開啟】</color>" : "<color=red>【關閉】</color>")}！(測試專用：免疫鳥怪撞擊與風暴石化，關卡機制正常運作)");
+        }
+
+        // 2. 同步 Inspector 開關與全域狀態
+        if (godMode != _globalGodMode)
+        {
+            _globalGodMode = godMode;
+            if (godMode) ClearAllNegativeEffects();
+        }
+
         if (graceTimer > 0f)
         {
             graceTimer -= Time.deltaTime;
+        }
+    }
+
+    private void OnGUI()
+    {
+        if (showOnScreenIndicator && IsGodMode)
+        {
+            GUIStyle style = new GUIStyle(GUI.skin.box);
+            style.fontSize = 13;
+            style.fontStyle = FontStyle.Bold;
+            style.normal.textColor = Color.yellow;
+            style.alignment = TextAnchor.MiddleCenter;
+            
+            // 螢幕右上角半透明浮水印標籤
+            GUI.Box(new Rect(Screen.width - 240, 10, 230, 32), "🛡️ GOD MODE: ON (F10 切換)", style);
         }
     }
 
@@ -134,6 +218,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     public void Petrify()
     {
         EnsureComponents();
+
+        // ★【無敵模式】：免疫石化與倒數死亡，機制正常運行
+        if (IsGodMode)
+        {
+            Debug.Log("🛡️【無敵模式】玩家受到石化判定，但因處於無敵模式，免疫石化與死亡！");
+            return;
+        }
 
         // 若處於免疫保護期內，不執行石化
         if (graceTimer > 0f) return;
@@ -278,9 +369,17 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     private IEnumerator DeathSequence()
     {
+        if (IsGodMode)
+        {
+            Debug.Log("🛡️【無敵模式】已阻擋石化死亡序列 (DeathSequence)。");
+            yield break;
+        }
+
         Debug.LogWarning("【石化系統】玩家達到最大石化次數 (3/3)，開始啟動 0.5 秒 DeathSequence...");
         yield return new WaitForSeconds(0.5f);
         EnsureComponents();
+
+        if (IsGodMode) yield break;
 
         if (respawnSystem != null)
         {

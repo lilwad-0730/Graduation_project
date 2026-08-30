@@ -486,13 +486,20 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 }
                 else
                 {
-                    // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米) 觸發重生！
+                    // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
                     if (distToPlayer <= 1.1f)
                     {
-                        Debug.LogWarning($"💀【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
-                        PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
-                        if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
-                        if (respawn != null) respawn.TriggerRespawn();
+                        if (PlayerPetrification.IsGodMode)
+                        {
+                            Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"💀【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
+                            PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
+                            if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
+                            if (respawn != null) respawn.TriggerRespawn();
+                        }
                         BounceOff(null);
                         yield break;
                     }
@@ -819,16 +826,23 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             return;
         }
 
-        // 2. 碰撞到玩家本體：觸發玩家重生，絕不觸發石化效果！
+        // 2. 碰撞到玩家本體：若無敵則不觸發重生，否則觸發玩家重生！
         if (hitObj.CompareTag("Player") || hitObj.name.ToLower().Contains("player") || hitObj.GetComponentInParent<PlayerMovement>() != null)
         {
             if (currentState == BirdState.Diving)
             {
-                PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
-                if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
-                if (respawn != null)
+                if (PlayerPetrification.IsGodMode)
                 {
-                    respawn.TriggerRespawn();
+                    Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 碰撞無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
+                }
+                else
+                {
+                    PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
+                    if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
+                    if (respawn != null)
+                    {
+                        respawn.TriggerRespawn();
+                    }
                 }
 
                 // 撞到玩家後彈開淡出

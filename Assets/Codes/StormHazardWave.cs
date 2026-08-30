@@ -128,6 +128,13 @@ public class StormHazardWave : MonoBehaviour
         // 5. 觸發石化懲罰 (一次陣風期間只會觸發一次，防止連續重複石化)
         if (!hasAppliedPetrifyThisGust)
         {
+            if (PlayerPetrification.IsGodMode)
+            {
+                hasAppliedPetrifyThisGust = true;
+                Debug.Log("🛡️【無敵模式】實體風暴沙塵吹過無敵主角，風力推力正常計算，免疫石化與死亡！");
+                return;
+            }
+
             PlayerPetrification petrify = hitObj.GetComponent<PlayerPetrification>();
             if (petrify == null) petrify = hitObj.GetComponentInParent<PlayerPetrification>();
             if (petrify == null) petrify = hitObj.GetComponentInChildren<PlayerPetrification>();
