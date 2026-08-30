@@ -83,6 +83,17 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             animator = GetComponentInChildren<Animator>();
             if (animator == null) animator = GetComponentInParent<Animator>();
         }
+
+#if UNITY_EDITOR
+        if (petrifySFX == null)
+        {
+            petrifySFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/石化.mp3");
+        }
+        if (unpetrifySFX == null)
+        {
+            unpetrifySFX = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/解除石化.mp3");
+        }
+#endif
     }
 
     private void Update()

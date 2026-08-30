@@ -19,14 +19,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public float detectionRange = 12f;
 
     [Header("鳥類敵人類型與移動")]
-    [Tooltip("此隻鳥的俯衝行為類型")]
+    [Tooltip("此隻鳥的俯衝行為類型：DirectPlayer(直撲玩家當下位置，可閃避)、PlayerOffset(偏移攻擊)、HomingPlayer(動態追蹤)")]
     public BirdBehavior behaviorType = BirdBehavior.DirectPlayer;
 
     [Tooltip("俯衝攻擊的速度 (預設 12)")]
     public float diveSpeed = 12f;
 
-    [Tooltip("【偏移模式限定】X 軸的偏移量 (預設 5)")]
-    public float targetOffset = 5f;
+    [Tooltip("【偏移模式限定】X 軸的偏移量 (預設 3)")]
+    public float targetOffset = 3f;
 
     [Header("時間設定")]
     [Tooltip("發出聲音警報到開始俯衝的時間 (秒，預設 1.5)")]
@@ -72,9 +72,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public string groundTag = "Floor";
 
     [Header("音效設定")]
-    [Tooltip("俯衝前發出的叫聲音效 (例如 鳥鳴.mp3)")]
+    [Tooltip("俯衝前發出的叫聲音效 (若為空自動載入 crow1.wav)")]
     public AudioClip warningClip;
-    [Tooltip("高速俯衝飛行的振翅音效 (例如 鳥振翅1.mp3, 鳥振翅4.mp3)")]
+    [Tooltip("高速俯衝飛行的振翅音效 (若為空自動載入 鳥振翅1.mp3)")]
     public AudioClip flapClip;
 
     private AudioSource audioSource;
@@ -130,6 +130,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
         }
+
+#if UNITY_EDITOR
+        if (warningClip == null)
+        {
+            warningClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/living birds/sounds/crow1.wav");
+        }
+        if (flapClip == null)
+        {
+            flapClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Music/荒漠/鳥振翅1.mp3");
+        }
+#endif
 
         // 多重搜尋策略：防止 Player 沒設 Tag 導致抓不到物件
         if (playerTrans == null)
@@ -249,10 +260,6 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             {
                 anim.CrossFade(stateToPlay, 0.1f);
             }
-            else if (anim.HasState(0, Animator.StringToHash("flying")))
-            {
-                anim.CrossFade("flying", 0.1f);
-            }
             else
             {
                 anim.Play(stateToPlay, 0, 0f);
@@ -285,7 +292,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 全域靜態方法，讓外部一鍵命令場景中所有鳥類同時發出警報並攻擊！
+    /// 外部全域調用：讓天空中所有鳥同步發起警報並攻擊！
     /// </summary>
     public static void TriggerAllBirdsAttack()
     {
@@ -311,35 +318,38 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         PlayAnim(warningAnimName);
 
         // 2. 播放警告叫聲
-        if (audioSource != null && warningClip != null)
+        if (warningClip != null)
         {
-            audioSource.PlayOneShot(warningClip);
+            if (audioSource != null) audioSource.PlayOneShot(warningClip);
+            else AudioSource.PlayClipAtPoint(warningClip, transform.position);
         }
 
-        // 3. 警報期等待
-        yield return new WaitForSeconds(warningDuration);
+        // 3. 警報期等待 (預設 1.2 秒)
+        float realWarnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
+        yield return new WaitForSeconds(realWarnTime);
 
         // 4. 程式切換為俯衝飛行動畫 (flying) 並播放振翅音效
         PlayAnim(diveAnimName);
-        if (audioSource != null && flapClip != null)
+        if (flapClip != null)
         {
-            audioSource.PlayOneShot(flapClip);
+            if (audioSource != null) audioSource.PlayOneShot(flapClip);
+            else AudioSource.PlayClipAtPoint(flapClip, transform.position);
         }
         currentState = BirdState.Diving;
         rb.isKinematic = false;
 
-        if (playerTrans != null)
-        {
-            UpdateTargetPosition();
-        }
-        else
-        {
-            targetPosition = transform.position + Vector3.down * 15f;
-        }
+        // 鎖定初始目標位置與飛行向量 (Direct / Offset 模式在發起瞬間鎖定目標位置，玩家可閃避)
+        UpdateTargetPosition();
+        Vector3 initialPos = transform.position;
+        initialPos.z = originalPosition.z;
+        targetPosition.z = originalPosition.z;
 
-        // 5. 持續朝目標飛行，直到碰撞發生或防呆超時
+        diveDirection = (targetPosition - initialPos).normalized;
+        diveDirection.z = 0f;
+
+        // 5. 朝目標位置發起高速俯衝攻擊，直到命中玩家、護盾或地面
         float diveTimer = 0f;
-        float maxDiveDuration = 3.5f; // 最大俯衝時間保底
+        float maxDiveDuration = 5.0f; // 充足俯衝時間
         Vector3 lastCheckPos = transform.position;
         float stagnationTimer = 0f;
 
@@ -348,21 +358,21 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             diveTimer += Time.deltaTime;
             stagnationTimer += Time.deltaTime;
 
-            // 超時防呆：若俯衝超過 3.5 秒未撞擊，自動視為撞地/撞擊物體並淡出
+            // 超時防呆：若俯衝超過 5.0 秒未撞擊，自動視為撞地插地
             if (diveTimer >= maxDiveDuration)
             {
-                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝超過最大時長 ({maxDiveDuration}s)，觸發超時防呆淡出！");
+                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝完成，觸發插地淡出！");
                 OnHitGround();
                 yield break;
             }
 
-            // 停滯卡死防呆：每 0.25 秒檢測一次位移，若卡在障礙物表面位移小於 0.05 米，自動判定撞擊
-            if (stagnationTimer >= 0.25f)
+            // 停滯卡死防呆：只有在接近地表高度時，若卡住位移小於 0.08m 超過 0.5s 才判定撞擊 (絕不在半空中誤判定)
+            if (stagnationTimer >= 0.5f)
             {
                 float movedDist = Vector3.Distance(transform.position, lastCheckPos);
-                if (movedDist < 0.05f)
+                if (movedDist < 0.08f && playerTrans != null && transform.position.y <= (playerTrans.position.y + 1.0f))
                 {
-                    Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝受阻停滯（0.25s 位移 {movedDist:F3}m < 0.05m），自動判定撞擊！");
+                    Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝觸地停滯，判定插地！");
                     OnHitGround();
                     yield break;
                 }
@@ -370,34 +380,58 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 stagnationTimer = 0f;
             }
 
-            // 最低高度防穿防呆：若掉落到玩家下方過深（地表以下），自動觸發撞地
-            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 3.0f))
+            // 最低高度防穿防呆：若掉落到地表以下過深，自動觸發插地
+            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 3.5f))
             {
-                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝低於地表高度，觸發防穿防呆！");
+                Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝低於地表高度，觸發防穿插地！");
                 OnHitGround();
                 yield break;
             }
 
+            // 若為 Homing 模式，每幀動態更新追蹤目標；若是 Direct / Offset 模式，保持鎖定發起時的目標直線衝刺！
             if (behaviorType == BirdBehavior.HomingPlayer && playerTrans != null)
             {
-                targetPosition = new Vector3(playerTrans.position.x, playerTrans.position.y - 1.8f, playerTrans.position.z);
+                targetPosition = new Vector3(playerTrans.position.x, playerTrans.position.y, originalPosition.z);
+                Vector3 cur = transform.position;
+                cur.z = originalPosition.z;
+                diveDirection = (targetPosition - cur).normalized;
+                diveDirection.z = 0f;
             }
 
-            // 強制切除 Z 軸，只在 2D (X/Y) 平面上衝刺，防止俯衝時漂移到背景牆裡面
-            targetPosition.z = originalPosition.z;
-            Vector3 currentPos = transform.position;
-            currentPos.z = originalPosition.z;
-
-            diveDirection = (targetPosition - currentPos).normalized;
-            diveDirection.z = 0f; // 確保方向完全沒有 Z 軸向量
-
             rb.linearVelocity = diveDirection * diveSpeed;
+            transform.position += diveDirection * (diveSpeed * Time.deltaTime);
 
             // 2D 飛行朝向：使 3D 鳥嘴/頭部 (+Z) 完全對準飛行向量 (diveDirection)，背部保持朝上 (+Y)
             if (diveDirection != Vector3.zero)
             {
                 Quaternion targetRot = Quaternion.LookRotation(diveDirection, Vector3.up) * Quaternion.Euler(modelRotationOffset);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 12f);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 15f);
+            }
+
+            // 雙重命中判定：當鳥撲擊至主角極近距離 (1.1 米) 時，立即結算命中！
+            if (playerTrans != null)
+            {
+                float distToPlayer = Vector2.Distance(new Vector2(transform.position.x, transform.position.y), new Vector2(playerTrans.position.x, playerTrans.position.y));
+                if (distToPlayer <= 1.1f)
+                {
+                    PlayerShield shield = playerTrans.GetComponentInChildren<PlayerShield>();
+                    if (shield == null) shield = playerTrans.GetComponentInParent<PlayerShield>();
+                    if (shield != null && shield.IsShieldActive)
+                    {
+                        Debug.LogWarning($"【鳥群系統】{gameObject.name} 撞擊玩家護盾！觸發彈飛！");
+                        BounceOff(shield);
+                        yield break;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
+                        PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
+                        if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
+                        if (respawn != null) respawn.TriggerRespawn();
+                        BounceOff(null);
+                        yield break;
+                    }
+                }
             }
 
             yield return null;
@@ -411,25 +445,36 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         if (obj == null) return false;
 
-        // 1. 排除玩家與護盾（由專用邏輯處理）
+        // 【最關鍵保護】：只要鳥在空中 (高於玩家腳底 0.4 米以上)，絕對不是撞擊地面，直接忽略！
+        if (playerTrans != null && transform.position.y > (playerTrans.position.y + 0.4f))
+        {
+            return false;
+        }
+
+        // 1. 排除玩家與護盾（由專用碰撞邏輯處理）
         if (obj.CompareTag("Player") || obj.name.ToLower().Contains("player") || obj.GetComponentInParent<PlayerMovement>() != null || obj.GetComponentInParent<PlayerShield>() != null)
         {
             return false;
         }
 
-        // 2. 排除純無形無碰撞的區域觸發器 (例如 遮陽傘區域、BGM區域、攻擊觸發區、鏡頭切換區等)
+        // 2. 排除其他鳥類敵人（絕對禁止鳥與鳥互相碰觸誤判為撞地！）
+        if (obj.GetComponent<IndividualBirdEnemy>() != null || obj.GetComponentInParent<IndividualBirdEnemy>() != null || 
+            obj.name.ToLower().Contains("crow") || obj.name.ToLower().Contains("bird") || obj.name.ToLower().Contains("enemy"))
+        {
+            return false;
+        }
+
+        // 3. 排除背景、光影、相機、無形觸發區域
+        string lowerName = obj.name.ToLower();
+        if (lowerName.Contains("bg") || lowerName.Contains("background") || lowerName.Contains("light") || 
+            lowerName.Contains("camera") || lowerName.Contains("confiner") || lowerName.Contains("bound") || 
+            lowerName.Contains("detector") || lowerName.Contains("cactus"))
+        {
+            return false;
+        }
+
         if (col != null && col.isTrigger)
         {
-            string lowerName = obj.name.ToLower();
-            if (lowerName.Contains("umbrellazone") || lowerName.Contains("birdattack") || 
-                lowerName.Contains("bgmzone") || lowerName.Contains("ambientsound") || 
-                lowerName.Contains("cameraswitch") || lowerName.Contains("confiner") || 
-                lowerName.Contains("bound") || lowerName.Contains("detector"))
-            {
-                return false;
-            }
-
-            // 若此 Trigger 是掛在純 TriggerZone 腳本上，則排除
             if (obj.GetComponent<UmbrellaZone>() != null || obj.GetComponent<BirdAttackTriggerZone>() != null ||
                 obj.GetComponent<BGMZone>() != null || obj.GetComponent<AmbientSoundTrigger>() != null ||
                 obj.GetComponent<CameraSwitchZone>() != null || obj.GetComponent<JumpTriggerZone>() != null ||
@@ -437,10 +482,21 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             {
                 return false;
             }
+
+            // 若不是掩體且為 Trigger，排除
+            if (obj.GetComponent<WindShelter>() == null && obj.GetComponentInParent<WindShelter>() == null)
+            {
+                return false;
+            }
         }
 
-        // 3. 所有其他實體碰撞體（包含 Floor, Ground, Rock, Pillar, Shelter, Wall, 掩體, 石頭, 地面等）皆視為有效撞擊表面！
-        return true;
+        // 4. 只有在接近地表時，碰到地面/掩體/岩石才算撞地
+        if (obj.CompareTag("Floor") || obj.CompareTag("Ground") || lowerName.Contains("floor") || lowerName.Contains("ground") || lowerName.Contains("rock") || lowerName.Contains("pillar") || lowerName.Contains("shelter") || lowerName.Contains("wall"))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private Quaternion stuckRotation; // 快取俯衝到地面的精確 2D 插地角度
@@ -461,23 +517,30 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void UpdateTargetPosition()
     {
-        if (playerTrans == null) return;
+        if (playerTrans == null)
+        {
+            targetPosition = transform.position + Vector3.down * 15f;
+            return;
+        }
 
         Vector3 playerPos = playerTrans.position;
-        Vector3 groundTargetPos = new Vector3(playerPos.x, playerPos.y - 1.8f, playerPos.z);
+        Vector3 groundTargetPos = new Vector3(playerPos.x, playerPos.y, originalPosition.z);
 
         switch (behaviorType)
         {
             case BirdBehavior.DirectPlayer:
+                // 直衝發起時玩家所在的位置 (玩家可看準前兆跑開/跳躍閃避)
                 targetPosition = groundTargetPos;
                 break;
 
             case BirdBehavior.PlayerOffset:
+                // 偏移預判攻擊：向玩家前方或後方偏移 targetOffset
                 float xOffset = Random.value > 0.5f ? targetOffset : -targetOffset;
-                targetPosition = new Vector3(playerPos.x + xOffset, groundTargetPos.y, playerPos.z);
+                targetPosition = new Vector3(playerPos.x + xOffset, groundTargetPos.y, originalPosition.z);
                 break;
 
             case BirdBehavior.HomingPlayer:
+                // 動態即時追蹤
                 targetPosition = groundTargetPos;
                 break;
         }

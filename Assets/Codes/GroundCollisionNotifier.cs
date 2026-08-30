@@ -17,10 +17,18 @@ public class GroundCollisionNotifier : MonoBehaviour
 
     private void NotifyBird(GameObject obj)
     {
+        // 防呆保護：若此腳本被誤掛在烏鴉自身身上，直接忽略，絕不誤殺自己或其它烏鴉！
+        if (GetComponent<IndividualBirdEnemy>() != null || GetComponentInParent<IndividualBirdEnemy>() != null)
+        {
+            return;
+        }
+
+        if (obj == null) return;
+
         IndividualBirdEnemy bird = obj.GetComponent<IndividualBirdEnemy>();
         if (bird == null) bird = obj.GetComponentInParent<IndividualBirdEnemy>();
         
-        if (bird != null)
+        if (bird != null && bird.gameObject != gameObject)
         {
             bird.OnHitGround();
         }
