@@ -6,26 +6,28 @@ using UnityEngine;
 ///
 /// 【要解決什麼】
 ///   荒原原本的 57 隻鳥（組員的 IndividualBirdEnemy）掛在 BirdEnemy 底下，
-///   高度大約在玩家眼睛的位置，而且要玩家走進 10 公尺內才會動作。
-///   在那之前牠們只是一排幾乎不動的黑點——玩家「看不到鳥群」，
-///   只會突然被俯衝。分鏡 Q5-S5「鳥影」→ Q5-S6「她抬頭」的那一拍不存在。
+///   世界 Y 只有 1.3–7.4，差不多在她眼睛的高度，而且 detectionRange=10，
+///   要玩家走進 10 公尺內才會動作。在那之前牠們只是一排幾乎不動的黑點——
+///   玩家「看不到鳥群」，只會突然被俯衝。分鏡 Q5-S5「鳥影」→ Q5-S6「她抬頭」
+///   那一拍在遊戲裡是不存在的。這支補上那一拍。
 ///
-///   這支補上那一拍：天上一直有一圈鳥在繞，看得到、追不到、也不會傷人。
-///   等到組員那批真的俯衝下來時，玩家才知道剛剛那圈是什麼。
-///
-/// 【做法】
-///   自己生鳥（不動組員那 57 隻一根寒毛），沿一個扁橢圓繞圈，
-///   整團用 SmoothDamp 慢慢跟著鏡頭——跟得慢一點才像遠方的東西，
-///   黏太緊會看起來像貼在螢幕上的貼紙。
+/// 【兩條規矩】
+///   1　軸心永遠在她身上。整團的圈心鎖在玩家身上（不是鏡頭），
+///      她走到哪、跳多高，這圈就跟到哪——甩不掉。
+///   2　動得不規則。不是一個乾淨的橢圓：每隻的角度、半徑、還有各自的
+///      漂移都疊了 Perlin 噪聲，所以沒有兩隻走同一條線，同一隻也不會
+///      走第二遍同樣的路。整團的圈心也會在她身上小幅晃，不會像釘死的儀器。
 ///
 /// 【安全】
 ///   生出來的鳥會被拔掉所有 Collider／Rigidbody，永遠碰不到玩家；
-///   用 MaterialPropertyBlock 調暗，不碰共用材質，所以不會把組員的鳥一起改色。
+///   用 MaterialPropertyBlock 調暗，不碰共用材質，所以不會把組員的鳥一起改色；
 ///   用 Time.deltaTime（不是 unscaled），開設定選單暫停時鳥也跟著停。
 /// </summary>
 [DisallowMultipleComponent]
 public class CirclingFlock : MonoBehaviour
 {
+    public enum AnchorMode { Player, Camera, Fixed }
+
     [Header("生成")]
     [Tooltip("鳥的模型（荒原用的是 living birds 的 crow）")]
     public GameObject birdPrefab;
@@ -42,40 +44,64 @@ public class CirclingFlock : MonoBehaviour
     [Tooltip("每隻的縮放。組員那批俯衝鳥的世界縮放約 21.5；盤旋的在高空，要明顯小一號")]
     public float birdScale = 9.5f;
 
-    [Header("盤旋的圈")]
-    [Tooltip("橢圓的橫半徑（公尺）")]
-    public float radiusX = 15f;
+    // ══════════════════════════════════════════
+    // 軸心：永遠跟著玩家
+    // ══════════════════════════════════════════
+    [Header("軸心（圈心）")]
+    [Tooltip("圈心跟著誰。Player＝鎖在玩家身上（預設）；Camera＝鎖在畫面上；Fixed＝不動")]
+    public AnchorMode anchor = AnchorMode.Player;
 
-    [Tooltip("橢圓的縱半徑。要扁，扁才像「從下面看一個平的圈」")]
-    public float radiusY = 3.4f;
+    [Tooltip("圈心相對玩家的位移。\n(0, 0) ＝完全貼在她身上（鳥會繞過她腳下，半個圈會埋進地面）。\n預設抬高 8 公尺，讓整圈在她頭上。")]
+    public Vector2 centerOffset = new Vector2(0f, 8f);
 
-    [Tooltip("繞一圈幾秒")]
-    public float periodSeconds = 13f;
+    [Tooltip("圈心追上玩家的遲滯秒數。0＝硬鎖；大一點會像被拖著走。她跑得快時這個值決定鳥群會不會被拉出一條尾巴")]
+    public float followLag = 0.55f;
 
-    [Tooltip("每隻半徑差多少（比例，0＝排成完美的一圈，太整齊會很假）")]
-    [Range(0f, 0.6f)] public float radiusJitter = 0.3f;
-
-    [Tooltip("每隻速度差多少（比例）")]
-    [Range(0f, 0.5f)] public float periodJitter = 0.22f;
-
-    [Tooltip("各自上下微浮的幅度（公尺）")]
-    public float bobAmplitude = 0.5f;
-
-    [Tooltip("順時針轉？（預設逆時針）")]
-    public bool clockwise = false;
-
-    [Header("跟著鏡頭（玩家走到哪都看得到）")]
-    public bool followCamera = true;
-
-    [Tooltip("圈心要落在畫面的哪裡。y 越大越靠上（抬頭才看得到）")]
-    public Vector2 viewportPosition = new Vector2(0.5f, 0.82f);
-
-    [Tooltip("跟隨的遲滯秒數。越大跟得越慢、越像遠方；0 ＝黏死在畫面上（很假）")]
-    public float followLag = 1.6f;
+    [Tooltip("找不到玩家時退而用鏡頭的哪個位置（0.5, 0.82 ＝畫面中上）")]
+    public Vector2 cameraFallbackViewport = new Vector2(0.5f, 0.82f);
 
     [Tooltip("放在哪一層深度。荒原：背景 z=0.5、玩法 z=0，所以 0.3 是「天上、在背景前面」")]
     public float depthZ = 0.3f;
 
+    // ══════════════════════════════════════════
+    // 不規則運動
+    // ══════════════════════════════════════════
+    [Header("圈的大小")]
+    [Tooltip("橫半徑（公尺）")]
+    public float radiusX = 15f;
+
+    [Tooltip("縱半徑。要扁，扁才像「從下面看一個平的圈」")]
+    public float radiusY = 3.4f;
+
+    [Tooltip("繞一圈幾秒（平均值，每隻還會再差一點）")]
+    public float periodSeconds = 13f;
+
+    [Tooltip("順時針轉？（預設逆時針）")]
+    public bool clockwise = false;
+
+    [Header("不規則：讓牠們不像機器")]
+    [Tooltip("每隻的基準半徑差多少（比例）")]
+    [Range(0f, 0.6f)] public float radiusJitter = 0.3f;
+
+    [Tooltip("每隻的基準速度差多少（比例）")]
+    [Range(0f, 0.5f)] public float periodJitter = 0.22f;
+
+    [Tooltip("角度上的搖擺（弧度）。牠們會忽快忽慢，不是等速繞圈")]
+    [Range(0f, 1.5f)] public float wanderAngle = 0.55f;
+
+    [Tooltip("半徑上的呼吸（比例）。圈會忽大忽小，不是固定的一圈")]
+    [Range(0f, 0.6f)] public float wanderRadius = 0.26f;
+
+    [Tooltip("每隻自己的亂飄幅度（公尺）。這條最影響「像不像活的」")]
+    public float driftAmplitude = 2.6f;
+
+    [Tooltip("整團圈心在她身上的小幅晃動（公尺）。0＝圈心死死釘在她身上")]
+    public float flockWander = 1.4f;
+
+    [Tooltip("噪聲跑多快。大＝慌張，小＝慵懶")]
+    [Range(0.02f, 1.5f)] public float noiseSpeed = 0.16f;
+
+    // ══════════════════════════════════════════
     [Header("看起來像遠的")]
     [Tooltip("把鳥調暗成剪影（用 MaterialPropertyBlock，不會動到共用材質）")]
     public bool tintDistant = true;
@@ -85,22 +111,36 @@ public class CirclingFlock : MonoBehaviour
     private class Member
     {
         public Transform tr;
-        public float phase;      // 起始角度
-        public float rScale;     // 半徑倍率
-        public float speed;      // 角速度倍率
-        public float bobPhase;
-        public float zNudge;     // 避免兩隻完全重疊時閃爍
+        public float phase;       // 起始角度
+        public float rScale;      // 基準半徑倍率
+        public float speed;       // 基準角速度倍率
+        public float zNudge;      // 避免兩隻完全重疊時閃爍
+        public Vector2 seedA;     // 角度噪聲的取樣點
+        public Vector2 seedR;     // 半徑噪聲
+        public Vector2 seedDX;    // 漂移 X
+        public Vector2 seedDY;    // 漂移 Y
+        public Vector3 lastPos;   // 算朝向用（實際位移，不是理論切線）
+        public bool hasLast;
     }
 
     private readonly List<Member> _birds = new List<Member>();
+    private Transform _player;
     private Camera _cam;
-    private Vector3 _vel;         // SmoothDamp 用
-    private bool _spawned;
-    private bool _snapped;      // 第一幀直接就位，不要讓玩家看到整團從別的地方飄過來
+    private Vector3 _vel;
+    private Vector2 _flockSeedX, _flockSeedY;
+    private bool _spawned, _snapped;
     private static readonly int _ColorId = Shader.PropertyToID("_Color");
+
+    /// <summary>-0.5 ~ +0.5 的平滑噪聲</summary>
+    private static float N(Vector2 seed, float t)
+    {
+        return Mathf.PerlinNoise(seed.x + t, seed.y) - 0.5f;
+    }
 
     private void Start()
     {
+        _flockSeedX = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
+        _flockSeedY = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
         Spawn();
     }
 
@@ -142,11 +182,14 @@ public class CirclingFlock : MonoBehaviour
 
             Member m = new Member();
             m.tr = t;
-            m.phase = (i / (float)count) * Mathf.PI * 2f + Random.Range(-0.18f, 0.18f);
+            m.phase = (i / (float)count) * Mathf.PI * 2f + Random.Range(-0.35f, 0.35f);
             m.rScale = 1f + Random.Range(-radiusJitter, radiusJitter);
             m.speed = 1f / Mathf.Max(0.05f, 1f + Random.Range(-periodJitter, periodJitter));
-            m.bobPhase = Random.Range(0f, Mathf.PI * 2f);
             m.zNudge = (i - count * 0.5f) * 0.01f;
+            m.seedA = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
+            m.seedR = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
+            m.seedDX = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
+            m.seedDY = new Vector2(Random.Range(0f, 500f), Random.Range(0f, 500f));
             _birds.Add(m);
         }
     }
@@ -176,20 +219,24 @@ public class CirclingFlock : MonoBehaviour
 
     private void LateUpdate()
     {
-        FollowCamera();
-        Orbit();
+        MoveAxis();
+        Fly();
     }
 
-    private void FollowCamera()
+    // ══════════════════════════════════════════
+    // 軸心：鎖在玩家身上
+    // ══════════════════════════════════════════
+    private void MoveAxis()
     {
-        if (!followCamera) return;
-        if (_cam == null || !_cam.isActiveAndEnabled) _cam = Camera.main;
-        if (_cam == null) return;
+        if (anchor == AnchorMode.Fixed) return;
 
-        // 正交相機：ViewportToWorldPoint 的 z 是「離相機多遠」，換算成想要的世界 z
-        float dist = depthZ - _cam.transform.position.z;
-        Vector3 want = _cam.ViewportToWorldPoint(
-            new Vector3(viewportPosition.x, viewportPosition.y, dist));
+        Vector3 want;
+        if (!TryGetAnchorPoint(out want)) return;
+
+        // 整團的圈心在她身上小幅晃，不會像釘死的儀器
+        float t = Time.time * noiseSpeed * 0.6f;
+        want.x += N(_flockSeedX, t) * 2f * flockWander;
+        want.y += N(_flockSeedY, t) * 2f * flockWander * 0.55f;
         want.z = depthZ;
 
         if (followLag <= 0.001f || !_snapped)
@@ -204,38 +251,89 @@ public class CirclingFlock : MonoBehaviour
         }
     }
 
-    private void Orbit()
+    private bool TryGetAnchorPoint(out Vector3 p)
+    {
+        p = transform.position;
+
+        if (anchor == AnchorMode.Player)
+        {
+            if (_player == null) _player = FindPlayer();
+            if (_player != null)
+            {
+                p = _player.position + new Vector3(centerOffset.x, centerOffset.y, 0f);
+                return true;
+            }
+            // 找不到人就先用鏡頭頂著，等她出現（重生、換關的空窗）
+        }
+
+        if (_cam == null || !_cam.isActiveAndEnabled) _cam = Camera.main;
+        if (_cam == null) return false;
+        float dist = depthZ - _cam.transform.position.z;
+        p = _cam.ViewportToWorldPoint(
+            new Vector3(cameraFallbackViewport.x, cameraFallbackViewport.y, dist));
+        return true;
+    }
+
+    private static Transform FindPlayer()
+    {
+        PlayerMovement pm = Object.FindFirstObjectByType<PlayerMovement>();
+        if (pm != null) return pm.transform;
+        GameObject go = GameObject.FindWithTag("Player");
+        return go != null ? go.transform : null;
+    }
+
+    // ══════════════════════════════════════════
+    // 飛：橢圓只是骨架，真正的路徑由噪聲決定
+    // ══════════════════════════════════════════
+    private void Fly()
     {
         if (_birds.Count == 0) return;
         float baseW = (Mathf.PI * 2f) / Mathf.Max(0.1f, periodSeconds);
         float dir = clockwise ? -1f : 1f;
         float t = Time.time;
+        float nt = t * noiseSpeed;
 
         for (int i = 0; i < _birds.Count; i++)
         {
             Member m = _birds[i];
             if (m.tr == null) continue;
 
-            float a = m.phase + dir * baseW * m.speed * t;
-            float rx = radiusX * m.rScale;
-            float ry = radiusY * m.rScale;
+            // 角度：等速繞圈 ＋ 忽快忽慢
+            float a = m.phase + dir * baseW * m.speed * t + N(m.seedA, nt) * 2f * wanderAngle;
 
-            float x = Mathf.Cos(a) * rx;
-            float y = Mathf.Sin(a) * ry + Mathf.Sin(t * 1.3f + m.bobPhase) * bobAmplitude;
-            m.tr.localPosition = new Vector3(x, y, m.zNudge);
+            // 半徑：基準 ＋ 呼吸
+            float rk = m.rScale * (1f + N(m.seedR, nt) * 2f * wanderRadius);
+            float rx = radiusX * rk;
+            float ry = radiusY * rk;
 
-            // 面向前進方向（跟組員的鳥同一套：模型 +Z 當鼻子，不加偏移）
-            Vector3 v = new Vector3(-Mathf.Sin(a) * rx * dir, Mathf.Cos(a) * ry * dir, 0f);
-            if (v.sqrMagnitude > 0.0001f)
-                m.tr.localRotation = Quaternion.LookRotation(v.normalized, Vector3.up);
+            // 各自亂飄
+            float dx = N(m.seedDX, nt * 1.37f) * 2f * driftAmplitude;
+            float dy = N(m.seedDY, nt * 1.11f) * 2f * driftAmplitude * 0.5f;
+
+            Vector3 pos = new Vector3(Mathf.Cos(a) * rx + dx, Mathf.Sin(a) * ry + dy, m.zNudge);
+            m.tr.localPosition = pos;
+
+            // 朝向用「實際位移」算，不是理論切線——不規則之後兩者已經不一樣了
+            if (m.hasLast)
+            {
+                Vector3 v = pos - m.lastPos;
+                v.z = 0f;
+                if (v.sqrMagnitude > 0.000001f)
+                {
+                    Quaternion want = Quaternion.LookRotation(v.normalized, Vector3.up);
+                    m.tr.localRotation = Quaternion.Slerp(m.tr.localRotation, want, 1f - Mathf.Exp(-8f * Time.deltaTime));
+                }
+            }
+            m.lastPos = pos;
+            m.hasLast = true;
         }
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(1f, 0.85f, 0.3f, 0.7f);
         Vector3 c = transform.position;
+        Gizmos.color = new Color(1f, 0.85f, 0.3f, 0.7f);
         const int seg = 48;
         Vector3 prev = c + new Vector3(radiusX, 0f, 0f);
         for (int i = 1; i <= seg; i++)
@@ -245,6 +343,10 @@ public class CirclingFlock : MonoBehaviour
             Gizmos.DrawLine(prev, p);
             prev = p;
         }
+        // 軸心
+        Gizmos.color = new Color(1f, 0.45f, 0.35f, 0.9f);
+        Gizmos.DrawLine(c + new Vector3(-1.2f, 0f, 0f), c + new Vector3(1.2f, 0f, 0f));
+        Gizmos.DrawLine(c + new Vector3(0f, -1.2f, 0f), c + new Vector3(0f, 1.2f, 0f));
     }
 #endif
 }

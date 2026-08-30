@@ -59340,16 +59340,21 @@ MonoBehaviour:
   flyStateName: flying
   count: 9
   birdScale: 9.5
+  anchor: 0
+  centerOffset: {x: 0, y: 8}
+  followLag: 0.55
+  cameraFallbackViewport: {x: 0.5, y: 0.82}
+  depthZ: 0.3
   radiusX: 15
   radiusY: 3.4
   periodSeconds: 13
+  clockwise: 0
   radiusJitter: 0.3
   periodJitter: 0.22
-  bobAmplitude: 0.5
-  clockwise: 0
-  followCamera: 1
-  viewportPosition: {x: 0.5, y: 0.82}
-  followLag: 1.6
-  depthZ: 0.3
+  wanderAngle: 0.55
+  wanderRadius: 0.26
+  driftAmplitude: 2.6
+  flockWander: 1.4
+  noiseSpeed: 0.16
   tintDistant: 1
   distantTint: {r: 0.42, g: 0.4, b: 0.46, a: 1}
