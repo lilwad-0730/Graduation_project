@@ -107,6 +107,14 @@ public class StoryCardPlayer : MonoBehaviour
     public float diaryPhotoHold = 4.2f;
     public List<DiaryPhotoPage> diaryPhotoPages = new List<DiaryPhotoPage>();
 
+    [Header("演出（都可以歸零關掉）")]
+    [Tooltip("照片頁進場的「放下照片」感：淡入時從下方這麼多像素落定，傾角同步回正")]
+    public float photoSettlePixels = 26f;
+    [Tooltip("筆刷符號比照片慢多少秒出現（先看照片，才看見她畫的記號）")]
+    public float glyphDelay = 0.2f;
+    [Tooltip("每一頁文字在顯示期間緩慢上浮的像素數。很小，像呼吸。0＝關")]
+    public float pageDriftPixels = 4f;
+
     // ══════════════════════════════════════════
     // 時序（施工單第四節）
     // ══════════════════════════════════════════
@@ -161,6 +169,7 @@ public class StoryCardPlayer : MonoBehaviour
     private bool _photoBuilt;
     private bool _paperLoadTried;
     private Sprite _activePaperSprite;   // 這一次播放實際用的紙紋（每份日誌可以不同）
+    private int _driftToken;             // 換頁時遞增，讓上一頁的緩升協程自己停下
     private static readonly Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
 
     /// <summary>正在播卡片。轉場程式可以用這個判斷要不要放行。</summary>
@@ -342,7 +351,20 @@ public class StoryCardPlayer : MonoBehaviour
                 _dateLabel.text = photoCfg.dateText != null ? photoCfg.dateText : "";
                 if (_label != null && _label.font != null) _dateLabel.font = _label.font;
 
-                yield return FadeGroup(_photoGroup, 0f, 1f, fadeIn);
+                // 符號慢半拍：先看照片，才看見她畫的記號
+                if (glyph != null && glyphDelay > 0.001f)
+                {
+                    Color gc = _glyphImg.color;
+                    _glyphImg.color = new Color(gc.r, gc.g, gc.b, 0f);
+                    StartCoroutine(FadeImageAlpha(_glyphImg, 1f, 0.5f, glyphDelay));
+                }
+                else if (glyph != null)
+                {
+                    Color gc = _glyphImg.color;
+                    _glyphImg.color = new Color(gc.r, gc.g, gc.b, 1f);
+                }
+
+                yield return PhotoSettleIn(photoCfg.tiltDegrees);
                 yield return Hold(diaryPhotoHold);
                 yield return FadeGroup(_photoGroup, 1f, 0f, fadeOut);
                 SetGroupAlpha(_photoGroup, 0f);
@@ -358,6 +380,13 @@ public class StoryCardPlayer : MonoBehaviour
             _label.text = page;
             _label.ForceMeshUpdate();
 
+            // 這一頁的緩升（換頁或跳過時 token 一變就自己停）
+            _driftToken++;
+            if (pageDriftPixels > 0.01f && _labelRect != null)
+            {
+                StartCoroutine(DriftLabel(_driftToken, fadeIn + HoldSecondsFor(page) + fadeOut));
+            }
+
             yield return FadeLabel(0f, 1f, fadeIn);
             yield return Hold(HoldSecondsFor(page));
             yield return FadeLabel(1f, 0f, fadeOut);
@@ -370,6 +399,11 @@ public class StoryCardPlayer : MonoBehaviour
 
         SetLabelAlpha(0f);
         _label.text = "";
+        _driftToken++;   // 停掉最後一頁的緩升
+        if (_labelRect != null)
+        {
+            _labelRect.anchoredPosition = new Vector2(0f, (0.5f - verticalPercent) * 1080f);
+        }
 
         // 交還畫面
         if (curtainFadeOut)
@@ -550,6 +584,71 @@ public class StoryCardPlayer : MonoBehaviour
             yield return null;
         }
         SetCurtainAlpha(to);
+    }
+
+    /// <summary>
+    /// 照片頁進場：「把照片放下來」。
+    /// 淡入的同時，照片從下方 photoSettlePixels 落定、傾角從放大值回正（ease-out）。
+    /// </summary>
+    private IEnumerator PhotoSettleIn(float tiltDeg)
+    {
+        RectTransform pr = _photoImg != null ? _photoImg.rectTransform : null;
+        float dur = fadeIn > 0f ? fadeIn : 0.001f;
+        float drop = photoSettlePixels;
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / dur);
+            float e = 1f - (1f - k) * (1f - k);   // ease-out
+            if (_photoGroup != null) _photoGroup.alpha = k;
+            if (pr != null && drop > 0.01f)
+            {
+                pr.anchoredPosition = new Vector2(0f, 150f - drop * (1f - e));
+                pr.localRotation = Quaternion.Euler(0f, 0f, tiltDeg * (1f + 0.7f * (1f - e)));
+            }
+            yield return null;
+        }
+        if (_photoGroup != null) _photoGroup.alpha = 1f;
+        if (pr != null)
+        {
+            pr.anchoredPosition = new Vector2(0f, 150f);
+            pr.localRotation = Quaternion.Euler(0f, 0f, tiltDeg);
+        }
+    }
+
+    /// <summary>把一張 Image 的 alpha 從 0 淡到 to（等 delay 秒才開始）。給符號慢半拍用。</summary>
+    private IEnumerator FadeImageAlpha(Image img, float to, float duration, float delay)
+    {
+        if (img == null) yield break;
+        Color c = img.color;
+        float t = 0f;
+        while (t < delay) { t += Time.unscaledDeltaTime; yield return null; }
+        t = 0f;
+        float dur = duration > 0f ? duration : 0.001f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            if (img == null) yield break;
+            img.color = new Color(c.r, c.g, c.b, Mathf.Lerp(0f, to, Mathf.Clamp01(t / dur)));
+            yield return null;
+        }
+        img.color = new Color(c.r, c.g, c.b, to);
+    }
+
+    /// <summary>一頁文字顯示期間的緩升：整段時間內勻速上浮 pageDriftPixels 像素，像呼吸。</summary>
+    private IEnumerator DriftLabel(int token, float duration)
+    {
+        if (_labelRect == null || duration <= 0f) yield break;
+        float baseY = (0.5f - verticalPercent) * 1080f;
+        float t = 0f;
+        while (t < duration && token == _driftToken)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / duration);
+            _labelRect.anchoredPosition = new Vector2(0f, baseY - pageDriftPixels * 0.5f + pageDriftPixels * k);
+            yield return null;
+        }
     }
 
     private IEnumerator FadeGroup(CanvasGroup g, float from, float to, float duration)
