@@ -20,6 +20,13 @@ using TMPro;
 /// 【不用做任何場景設定】
 ///   Canvas、黑幕、文字都在執行時自己建。26 頁內容已內建，
 ///   要改字就在 Inspector 改，或改 BuildDefaultCards()。
+///
+/// 【日誌照片頁】
+///   水下 D1–D3 撿日誌時，會先出一頁「夾在日誌裡的舊照片」
+///   （照片＋日期＋筆刷符號），再出原句文字頁。
+///   素材放 Assets/Resources/Diary/（diary_photo_1..3、diary_glyph_1..3、
+///   diary_paper）。缺哪個檔就自動略過哪個，永遠不會卡住流程。
+///   要換成 AI 生成的正式照片：同檔名覆蓋 PNG 即可，程式不用動。
 /// </summary>
 [DisallowMultipleComponent]
 public class StoryCardPlayer : MonoBehaviour
@@ -72,6 +79,31 @@ public class StoryCardPlayer : MonoBehaviour
     public Color paperColor = new Color(0.937f, 0.898f, 0.808f, 1f);
     [Tooltip("紙上的墨色")]
     public Color paperInkColor = new Color(0.169f, 0.157f, 0.133f, 1f);
+    [Tooltip("紙卡沒指定紙紋圖時，自動從 Resources 這個路徑載（留空＝不載，用純色）")]
+    public string paperResourcePath = "Diary/diary_paper";
+
+    // ══════════════════════════════════════════
+    // 日誌照片頁（水下 D1–D3：先照片，再原句）
+    // ══════════════════════════════════════════
+    [System.Serializable]
+    public class DiaryPhotoPage
+    {
+        public string cardId = "";
+        [Tooltip("Resources 路徑，不含副檔名。例：Diary/diary_photo_1")]
+        public string photoResource = "";
+        [Tooltip("Resources 路徑，頁面下方的筆刷符號（透明 PNG）。留空＝不顯示")]
+        public string glyphResource = "";
+        [Tooltip("寫在相紙白邊上的日期。由遊戲字型顯示，不烙進圖片，改這裡就好")]
+        public string dateText = "";
+        [Tooltip("整張相片的微傾角（度），像隨手夾進日誌的樣子")]
+        public float tiltDegrees = 0f;
+    }
+
+    [Header("日誌照片頁（清單留空＝用內建的 D1–D3 三張）")]
+    public bool diaryPhotoEnabled = true;
+    [Tooltip("照片頁停留秒數（固定值，不吃字數公式；一樣可按鍵跳過）")]
+    public float diaryPhotoHold = 4.2f;
+    public List<DiaryPhotoPage> diaryPhotoPages = new List<DiaryPhotoPage>();
 
     // ══════════════════════════════════════════
     // 時序（施工單第四節）
@@ -118,6 +150,16 @@ public class StoryCardPlayer : MonoBehaviour
     private bool _skipRest;
     private bool _paper;   // 這一次播放是不是紙卡
 
+    // 照片頁
+    private DiaryPhotoPage _pendingPhoto;   // 這一次播放要先出的照片頁（沒有＝null）
+    private CanvasGroup _photoGroup;
+    private Image _photoImg;
+    private Image _glyphImg;
+    private TextMeshProUGUI _dateLabel;
+    private bool _photoBuilt;
+    private bool _paperLoadTried;
+    private static readonly Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
+
     /// <summary>正在播卡片。轉場程式可以用這個判斷要不要放行。</summary>
     public bool IsPlaying { get { return _playing; } }
 
@@ -151,6 +193,10 @@ public class StoryCardPlayer : MonoBehaviour
         if (cards == null || cards.Count == 0)
         {
             cards = BuildDefaultCards();
+        }
+        if (diaryPhotoPages == null || diaryPhotoPages.Count == 0)
+        {
+            diaryPhotoPages = BuildDefaultDiaryPhotoPages();
         }
     }
 
@@ -217,6 +263,7 @@ public class StoryCardPlayer : MonoBehaviour
             yield break;
         }
         _paper = card.style == CardStyle.Paper;
+        _pendingPhoto = (_paper && diaryPhotoEnabled) ? FindDiaryPhoto(cardId) : null;
         yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut);
     }
 
@@ -243,6 +290,13 @@ public class StoryCardPlayer : MonoBehaviour
         _skipRest = false;
         EnsureBuilt();
 
+        // 紙卡第一次播放時，若沒手動指定紙紋圖，試著從 Resources 載一張
+        if (_paper && paperSprite == null && !_paperLoadTried && !string.IsNullOrEmpty(paperResourcePath))
+        {
+            _paperLoadTried = true;
+            paperSprite = LoadSpriteFromResources(paperResourcePath);
+        }
+
         _canvas.enabled = true;
         if (_curtain != null) _curtain.sprite = _paper ? paperSprite : null;
         if (_label != null) _label.color = _paper ? paperInkColor : textColor;
@@ -256,6 +310,35 @@ public class StoryCardPlayer : MonoBehaviour
             yield return FadeCurtain(0f, 1f, curtainIn);
         }
         SetCurtainAlpha(1f);
+
+        // ── 照片頁（只有日誌卡有；照片缺檔就跳過，只播文字，不卡流程）──
+        DiaryPhotoPage photoCfg = _pendingPhoto;
+        _pendingPhoto = null;
+        if (photoCfg != null && !_skipRest)
+        {
+            Sprite photo = LoadSpriteFromResources(photoCfg.photoResource);
+            if (photo == null)
+            {
+                Debug.LogWarning("[StoryCardPlayer] 找不到日誌照片資源 Resources/" + photoCfg.photoResource + "，這次只播文字。");
+            }
+            else
+            {
+                EnsurePhotoBuilt();
+                _photoImg.sprite = photo;
+                _photoImg.rectTransform.localRotation = Quaternion.Euler(0f, 0f, photoCfg.tiltDegrees);
+                Sprite glyph = LoadSpriteFromResources(photoCfg.glyphResource);
+                _glyphImg.sprite = glyph;
+                _glyphImg.enabled = glyph != null;
+                _dateLabel.text = photoCfg.dateText != null ? photoCfg.dateText : "";
+                if (_label != null && _label.font != null) _dateLabel.font = _label.font;
+
+                yield return FadeGroup(_photoGroup, 0f, 1f, fadeIn);
+                yield return Hold(diaryPhotoHold);
+                yield return FadeGroup(_photoGroup, 1f, 0f, fadeOut);
+                SetGroupAlpha(_photoGroup, 0f);
+                if (!_skipRest) yield return WaitUnscaled(gap);
+            }
+        }
 
         for (int i = 0; i < pages.Length; i++)
         {
@@ -306,6 +389,7 @@ public class StoryCardPlayer : MonoBehaviour
         {
             SetCurtainAlpha(0f);
             SetLabelAlpha(0f);
+            SetGroupAlpha(_photoGroup, 0f);
             _canvas.enabled = false;
         }
     }
@@ -323,6 +407,40 @@ public class StoryCardPlayer : MonoBehaviour
             if (cards[i] != null && cards[i].cardId == cardId) return cards[i];
         }
         return null;
+    }
+
+    private DiaryPhotoPage FindDiaryPhoto(string cardId)
+    {
+        if (string.IsNullOrEmpty(cardId) || diaryPhotoPages == null) return null;
+        for (int i = 0; i < diaryPhotoPages.Count; i++)
+        {
+            DiaryPhotoPage p = diaryPhotoPages[i];
+            if (p != null && p.cardId == cardId && !string.IsNullOrEmpty(p.photoResource)) return p;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 從 Resources 載圖。先試 Sprite（Sprite 型匯入），
+    /// 不行再載 Texture2D 執行時包成 Sprite——所以 PNG 用預設匯入設定就能用。
+    /// 找不到會把 null 記進快取，之後不再重找。
+    /// </summary>
+    private static Sprite LoadSpriteFromResources(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+        Sprite s;
+        if (_spriteCache.TryGetValue(path, out s)) return s;
+        s = Resources.Load<Sprite>(path);
+        if (s == null)
+        {
+            Texture2D t = Resources.Load<Texture2D>(path);
+            if (t != null)
+            {
+                s = Sprite.Create(t, new Rect(0f, 0f, t.width, t.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+        }
+        _spriteCache[path] = s;
+        return s;
     }
 
     // ══════════════════════════════════════════
@@ -424,6 +542,25 @@ public class StoryCardPlayer : MonoBehaviour
         SetCurtainAlpha(to);
     }
 
+    private IEnumerator FadeGroup(CanvasGroup g, float from, float to, float duration)
+    {
+        if (g == null) yield break;
+        if (duration <= 0f) { g.alpha = to; yield break; }
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            g.alpha = Mathf.Lerp(from, to, Mathf.Clamp01(t / duration));
+            yield return null;
+        }
+        g.alpha = to;
+    }
+
+    private static void SetGroupAlpha(CanvasGroup g, float a)
+    {
+        if (g != null) g.alpha = a;
+    }
+
     private void SetLabelAlpha(float a)
     {
         if (_labelGroup != null) _labelGroup.alpha = a;
@@ -499,6 +636,83 @@ public class StoryCardPlayer : MonoBehaviour
         _built = true;
     }
 
+    /// <summary>
+    /// 照片頁的三件東西：相片（含烙好的白邊）、白邊上的日期、頁面下方的筆刷符號。
+    /// 位置全部照 1920×1080 參考解析度排，CanvasScaler 會自己縮。
+    /// </summary>
+    private void EnsurePhotoBuilt()
+    {
+        if (_photoBuilt) return;
+        EnsureBuilt();
+
+        GameObject rootGo = new GameObject("DiaryPhotoPage");
+        rootGo.transform.SetParent(_canvas.transform, false);
+        RectTransform rootRect = rootGo.AddComponent<RectTransform>();
+        if (rootRect != null)
+        {
+            rootRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.sizeDelta = new Vector2(0f, 0f);
+            rootRect.anchoredPosition = new Vector2(0f, 0f);
+        }
+        _photoGroup = rootGo.AddComponent<CanvasGroup>();
+        if (_photoGroup != null) _photoGroup.alpha = 0f;
+
+        // 相片（1024×1024 的圖裡已含相紙白邊與陰影），整張微傾
+        GameObject photoGo = new GameObject("DiaryPhoto");
+        photoGo.transform.SetParent(rootGo.transform, false);
+        _photoImg = photoGo.AddComponent<Image>();
+        _photoImg.raycastTarget = false;
+        _photoImg.preserveAspect = true;
+        RectTransform pr = _photoImg.rectTransform;
+        if (pr != null)
+        {
+            pr.anchorMin = new Vector2(0.5f, 0.5f);
+            pr.anchorMax = new Vector2(0.5f, 0.5f);
+            pr.pivot = new Vector2(0.5f, 0.5f);
+            pr.sizeDelta = new Vector2(720f, 720f);
+            pr.anchoredPosition = new Vector2(0f, 150f);
+        }
+
+        // 日期：寫在相紙下緣白邊上，跟著相片一起微傾
+        GameObject dateGo = new GameObject("DiaryDate");
+        dateGo.transform.SetParent(photoGo.transform, false);
+        _dateLabel = dateGo.AddComponent<TextMeshProUGUI>();
+        _dateLabel.raycastTarget = false;
+        _dateLabel.alignment = TextAlignmentOptions.Center;
+        _dateLabel.fontSize = 34f;
+        _dateLabel.characterSpacing = 6f;
+        _dateLabel.color = new Color(paperInkColor.r, paperInkColor.g, paperInkColor.b, 0.88f);
+        RectTransform dr = _dateLabel.rectTransform;
+        if (dr != null)
+        {
+            dr.anchorMin = new Vector2(0.5f, 0.5f);
+            dr.anchorMax = new Vector2(0.5f, 0.5f);
+            dr.pivot = new Vector2(0.5f, 0.5f);
+            dr.sizeDelta = new Vector2(620f, 70f);
+            dr.anchoredPosition = new Vector2(0f, -241f);
+        }
+
+        // 筆刷符號：頁面下方置中，不跟相片傾斜
+        GameObject glyphGo = new GameObject("DiaryGlyph");
+        glyphGo.transform.SetParent(rootGo.transform, false);
+        _glyphImg = glyphGo.AddComponent<Image>();
+        _glyphImg.raycastTarget = false;
+        _glyphImg.preserveAspect = true;
+        RectTransform gr = _glyphImg.rectTransform;
+        if (gr != null)
+        {
+            gr.anchorMin = new Vector2(0.5f, 0.5f);
+            gr.anchorMax = new Vector2(0.5f, 0.5f);
+            gr.pivot = new Vector2(0.5f, 0.5f);
+            gr.sizeDelta = new Vector2(264f, 264f);
+            gr.anchoredPosition = new Vector2(0f, -330f);
+        }
+
+        _photoBuilt = true;
+    }
+
     private void ApplyTextStyle()
     {
         if (_label == null) return;
@@ -525,8 +739,6 @@ public class StoryCardPlayer : MonoBehaviour
     // 內建的 26 頁
     //   出處：0826 週報附件《故事與全部文字》——原句照登，一字未改（撰稿者指示）
     //   分頁：施工單第五節，手排，不要改成自動斷行
-    //   ★標「校對」的行是附件原文的疑似錯字，已按施工單第七節的建議修，
-    //     若撰稿者不採用，改這裡即可
     // ══════════════════════════════════════════
     [ContextMenu("重新載入內建 26 頁")]
     private void ReloadDefaultCards()
@@ -596,6 +808,42 @@ public class StoryCardPlayer : MonoBehaviour
         list.Add(NewPaperCard("D3", new string[] {
             "我的內心好像有什麼破開了。"
         }));
+
+        return list;
+    }
+
+    /// <summary>
+    /// 內建的三頁日誌照片設定。
+    /// 日期是照劇情時間軸排的占位值（熱戀→產後→年節全家福），
+    /// 要改日期直接改這裡，或在 Inspector 的 Diary Photo Pages 清單裡改。
+    /// </summary>
+    public static List<DiaryPhotoPage> BuildDefaultDiaryPhotoPages()
+    {
+        List<DiaryPhotoPage> list = new List<DiaryPhotoPage>();
+
+        DiaryPhotoPage d1 = new DiaryPhotoPage();
+        d1.cardId = "D1";
+        d1.photoResource = "Diary/diary_photo_1";   // 夕陽草原，兩個人在跳舞
+        d1.glyphResource = "Diary/diary_glyph_1";   // 兩形依偎
+        d1.dateText = "1998.6.21";
+        d1.tiltDegrees = -2.4f;
+        list.Add(d1);
+
+        DiaryPhotoPage d2 = new DiaryPhotoPage();
+        d2.cardId = "D2";
+        d2.photoResource = "Diary/diary_photo_2";   // 窗光裡的三個人
+        d2.glyphResource = "Diary/diary_glyph_2";   // 三形，小的被抱著
+        d2.dateText = "2003.11.3";
+        d2.tiltDegrees = 1.8f;
+        list.Add(d2);
+
+        DiaryPhotoPage d3 = new DiaryPhotoPage();
+        d3.cardId = "D3";
+        d3.photoResource = "Diary/diary_photo_3";   // 全家福，光帶橫過整排臉
+        d3.glyphResource = "Diary/diary_glyph_3";   // 一排形，唯獨她那形有鬆脫的線頭
+        d3.dateText = "2004.1.22";
+        d3.tiltDegrees = -1.2f;
+        list.Add(d3);
 
         return list;
     }
