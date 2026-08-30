@@ -95,8 +95,8 @@ public class WindShelter : MonoBehaviour, IResettable
             }
         }
 
-        // 假掩體崩解邏輯
-        if (isTrueShelter || hasCollapsed || !isPlayerInside || windSystem == null) return;
+        // 假掩體崩解邏輯 (若正在重生轉場或破曉緩衝中，絕對不執行崩解倒數)
+        if (isTrueShelter || hasCollapsed || !isPlayerInside || windSystem == null || PlayerRespawnSystem.IsAnyRespawning) return;
 
         // 如果正值吹風狀態，且未啟動崩解協程，立即開始倒數
         if (windSystem.CurrentState == WindState.Blowing && collapseCoroutine == null)
@@ -229,5 +229,20 @@ public class WindShelter : MonoBehaviour, IResettable
         }
         isPlayerInside = false;
         hasCollapsed = false;
+
+        // 重新喚醒與刷新可能崩解的假掩體
+        gameObject.SetActive(true);
+        if (destructible != null)
+        {
+            destructible.ResetToInitialState();
+        }
+        else
+        {
+            SpriteRenderer[] allSrs = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var sr in allSrs) if (sr != null) sr.enabled = true;
+
+            Collider[] allCols = GetComponentsInChildren<Collider>(true);
+            foreach (var col in allCols) if (col != null) col.enabled = true;
+        }
     }
 }

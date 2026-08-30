@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections; 
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 
 public class TutorialZone : MonoBehaviour
 {
@@ -17,7 +19,7 @@ public class TutorialZone : MonoBehaviour
     private Graphic[] _uiElements;
     private SpriteRenderer[] _sprites;
     private TextMesh[] _textMeshes;
-    // (如果對方用的是 TMPro 的文字，因為安全防呆，會透過 GetComponent 抓到底層的 Renderer)
+    private TMP_Text[] _tmpTexts;
     private Renderer[] _allRenderers;
     private CanvasGroup[] _canvasGroups;
 
@@ -25,24 +27,33 @@ public class TutorialZone : MonoBehaviour
     {
         if (tutorialText != null)
         {
-            // 防呆絕招：抓取底下所有的視覺組件
+            // 抓取底下所有的視覺組件
             _uiElements = tutorialText.GetComponentsInChildren<Graphic>(true);
             _sprites = tutorialText.GetComponentsInChildren<SpriteRenderer>(true);
             _textMeshes = tutorialText.GetComponentsInChildren<TextMesh>(true);
-            _allRenderers = tutorialText.GetComponentsInChildren<Renderer>(true);
+            _tmpTexts = tutorialText.GetComponentsInChildren<TMP_Text>(true);
             _canvasGroups = tutorialText.GetComponentsInChildren<CanvasGroup>(true);
 
-            // 防呆絕招 2：如果玩家在 Inspector 把文字物件關掉了，這邊強制打開，否則改透明度也看不到！
+            // ★ 排除 TextMeshPro 3D 的 MeshRenderer，防止存取 r.material 破壞 SDF 動態貼圖導致黑塊！
+            List<Renderer> validRenderers = new List<Renderer>();
+            Renderer[] allRends = tutorialText.GetComponentsInChildren<Renderer>(true);
+            foreach (var r in allRends)
+            {
+                if (r != null && r.GetComponent<TMP_Text>() == null && r.GetComponentInParent<TMP_Text>() == null)
+                {
+                    validRenderers.Add(r);
+                }
+            }
+            _allRenderers = validRenderers.ToArray();
+
+            // 防呆絕招 2：如果玩家在 Inspector 把文字物件關掉了，這邊強制打開
             tutorialText.SetActive(true);
 
-            // 防呆絕招 3：確保身上的碰撞器有打勾 IsTrigger，否則 OnTriggerEnter 永遠不會觸發！
+            // 防呆絕招 3：確保身上的碰撞器有打勾 IsTrigger
             Collider col = GetComponent<Collider>();
             if (col != null) col.isTrigger = true;
 
-            // 神級修改：不要使用 SetActive(false) 來關閉物件！
-            // 為什麼？因為很多新手會把「教學文字」跟「碰撞隱形方塊」當成同一個物件，
-            // 如果你把自己關掉了，你的碰撞器跟腳本就通通死掉了，以後再走進去也沒反應了！
-            // 所以我們改用「隱形法」：把身上的顏色透明度強制變成 0。
+            // 初始透明度設為 0 (隱形)
             SetVisualAlpha(0f);
         }
     }
@@ -67,58 +78,112 @@ public class TutorialZone : MonoBehaviour
 
     private IEnumerator FadeRoutine(float targetAlpha)
     {
-        // 算出現在的透明度
         float startAlpha = GetCurrentAlpha();
         float timer = 0f;
 
         while (timer < fadeDuration)
         {
             timer += Time.deltaTime;
-            // 計算此刻剛好的透明度
             float currentAlpha = Mathf.Lerp(startAlpha, targetAlpha, timer / fadeDuration);
-            
-            // 一口氣把所有元件的透明度更新
             SetVisualAlpha(currentAlpha);
-            
             yield return null; 
         }
 
-        // 確保終點數值無誤
         SetVisualAlpha(targetAlpha);
     }
 
     // 將所有元件都塗上我們指定的透明度
     private void SetVisualAlpha(float alpha)
     {
-        // 一般 UI
-        foreach (var ui in _uiElements) {
-            if (ui != null) { Color c = ui.color; c.a = alpha; ui.color = c; }
-        }
-        // 純圖片
-        foreach (var sp in _sprites) {
-            if (sp != null) { Color c = sp.color; c.a = alpha; sp.color = c; }
-        }
-        // 舊版 3D 文字
-        foreach (var tm in _textMeshes) {
-            if (tm != null) { Color c = tm.color; c.a = alpha; tm.color = c; }
-        }
-        // 任何被抓到的世界模型 (含 TextMeshPro 3D 版)
-        foreach (var r in _allRenderers) {
-            if (r != null && r.material != null && r.material.HasProperty("_Color")) {
-                Color c = r.material.color; c.a = alpha; r.material.color = c;
-            } else if (r != null && r.material != null && r.material.HasProperty("_BaseColor")) { // URP/HDRP
-                Color c = r.material.GetColor("_BaseColor"); c.a = alpha; r.material.SetColor("_BaseColor", c);
+        // 1. TextMeshPro 文字 (安全透過 .color 與 .alpha 調整透明度，絕不觸摸 material 造成黑塊)
+        if (_tmpTexts != null)
+        {
+            foreach (var tmp in _tmpTexts)
+            {
+                if (tmp != null)
+                {
+                    Color c = tmp.color;
+                    c.a = alpha;
+                    tmp.color = c;
+                }
             }
         }
-        // CanvasGroup 支援
-        foreach (var cg in _canvasGroups) {
-            if (cg != null) cg.alpha = alpha;
+
+        // 2. 一般 UI
+        if (_uiElements != null)
+        {
+            foreach (var ui in _uiElements)
+            {
+                if (ui != null)
+                {
+                    Color c = ui.color;
+                    c.a = alpha;
+                    ui.color = c;
+                }
+            }
+        }
+
+        // 3. 純圖片
+        if (_sprites != null)
+        {
+            foreach (var sp in _sprites)
+            {
+                if (sp != null)
+                {
+                    Color c = sp.color;
+                    c.a = alpha;
+                    sp.color = c;
+                }
+            }
+        }
+
+        // 4. 舊版 3D 文字
+        if (_textMeshes != null)
+        {
+            foreach (var tm in _textMeshes)
+            {
+                if (tm != null)
+                {
+                    Color c = tm.color;
+                    c.a = alpha;
+                    tm.color = c;
+                }
+            }
+        }
+
+        // 5. 非 TMP 的世界模型
+        if (_allRenderers != null)
+        {
+            foreach (var r in _allRenderers)
+            {
+                if (r != null && r.material != null && r.material.HasProperty("_Color"))
+                {
+                    Color c = r.material.color;
+                    c.a = alpha;
+                    r.material.color = c;
+                }
+                else if (r != null && r.material != null && r.material.HasProperty("_BaseColor"))
+                {
+                    Color c = r.material.GetColor("_BaseColor");
+                    c.a = alpha;
+                    r.material.SetColor("_BaseColor", c);
+                }
+            }
+        }
+
+        // 6. CanvasGroup
+        if (_canvasGroups != null)
+        {
+            foreach (var cg in _canvasGroups)
+            {
+                if (cg != null) cg.alpha = alpha;
+            }
         }
     }
 
     private float GetCurrentAlpha()
     {
-        // 隨便抓一個人身上的透明度來當作起始值，大家通常都會一起同步
+        if (_tmpTexts != null && _tmpTexts.Length > 0 && _tmpTexts[0] != null) return _tmpTexts[0].color.a;
         if (_canvasGroups != null && _canvasGroups.Length > 0 && _canvasGroups[0] != null) return _canvasGroups[0].alpha;
         if (_uiElements != null && _uiElements.Length > 0 && _uiElements[0] != null) return _uiElements[0].color.a;
         if (_sprites != null && _sprites.Length > 0 && _sprites[0] != null) return _sprites[0].color.a;

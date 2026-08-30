@@ -67,6 +67,19 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("反彈旋轉角度 (度，預設 180 度)")]
     public float bounceSpinAngle = 180f;
 
+    [Header("空中自然微巡航與懸停 (Idle Hover & Patrol)")]
+    [Tooltip("是否啟用空中待機時的微幅自然浮動與巡航？(預設開啟)")]
+    public bool enableIdleHover = true;
+
+    [Tooltip("垂直浮動上下幅度 (米，預設 0.35)")]
+    public float hoverAmplitudeY = 0.35f;
+
+    [Tooltip("浮動擺動頻率 (預設 1.6)")]
+    public float hoverFrequency = 1.6f;
+
+    [Tooltip("水平微巡航左右半徑 (米，預設 0.6)")]
+    public float patrolRadiusX = 0.6f;
+
     [Header("地面與環境偵測")]
     [Tooltip("地面的 Tag (預設 Floor，自動支援 Floor, Ground, Terrain)")]
     public string groundTag = "Floor";
@@ -91,8 +104,32 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private Vector3 diveDirection;
     private Vector3 originalPosition;
     private Quaternion originalRotation;
+    private float hoverRandomOffset = 0f;
+    private float postRespawnDelayTimer = 0f;
+    private bool hasAttackedOrDied = false;
 
     private Vector3 originalScale = Vector3.one;
+
+    private void Awake()
+    {
+        // 核心防呆：檢查父物件層級是否已有 IndividualBirdEnemy
+        // 若父層已有，子層的重複組件必須銷毀，徹底杜絕雙重圓圈與隱形分身！
+        IndividualBirdEnemy parentBird = transform.parent != null ? transform.parent.GetComponentInParent<IndividualBirdEnemy>() : null;
+        if (parentBird != null && parentBird != this)
+        {
+            Debug.LogWarning($"[鳥群防呆] 偵測到子物件 '{gameObject.name}' 與父物件 '{parentBird.name}' 重複掛載 IndividualBirdEnemy！已自動銷毀子層重複組件！");
+            Destroy(this);
+            return;
+        }
+
+        // 同一 GameObject 上若有多個組件也清除重複項
+        IndividualBirdEnemy[] sameObjBirds = GetComponents<IndividualBirdEnemy>();
+        if (sameObjBirds.Length > 1 && sameObjBirds[0] != this)
+        {
+            Destroy(this);
+            return;
+        }
+    }
 
     private void Start()
     {
@@ -108,6 +145,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         originalPosition = transform.position;
         originalRotation = transform.rotation;
         originalScale = transform.localScale != Vector3.zero ? transform.localScale : Vector3.one;
+        hoverRandomOffset = Random.Range(0f, 100f); // 每隻鳥擁有獨立的浮動相位，群體錯落自然
 
         // 預設播放待機飛行動畫 (flying)
         PlayAnim(idleAnimName);
@@ -169,12 +207,29 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void Update()
     {
-        // 核心修復 1：自動偵測玩家距離並觸發俯衝 (若玩家在遮陽傘下則規避不攻擊)
+        // 核心功能 1：空中待機時的微巡航與自然氣流浮動 (有機上下起伏與左右輕盈滑行)
+        if (currentState == BirdState.Idle && enableIdleHover)
+        {
+            float timeVal = Time.time * hoverFrequency + hoverRandomOffset;
+            float offsetY = Mathf.Sin(timeVal) * hoverAmplitudeY;
+            float offsetX = Mathf.Cos(timeVal * 0.65f) * patrolRadiusX;
+
+            Vector3 targetHoverPos = new Vector3(originalPosition.x + offsetX, originalPosition.y + offsetY, originalPosition.z);
+            transform.position = targetHoverPos;
+        }
+
+        // 核心功能 2：自動偵測玩家距離並觸發俯衝 (若正在重生過場中、冷卻中或玩家在遮陽傘下則不攻擊)
+        if (postRespawnDelayTimer > 0f)
+        {
+            postRespawnDelayTimer -= Time.deltaTime;
+            return;
+        }
+
         if (autoDetectPlayer && currentState == BirdState.Idle)
         {
-            if (UmbrellaZone.IsPlayerUnderUmbrella)
+            if (PlayerRespawnSystem.IsAnyRespawning || !PlayerRespawnSystem.IsPlayerMovingAfterRespawn || UmbrellaZone.IsPlayerUnderUmbrella)
             {
-                return; // 玩家在遮陽傘下安全避難，不觸發俯衝
+                return; // 重生過場中、玩家尚未主動開始移動、或在遮陽傘下安全避難，均不觸發攻擊
             }
 
             if (playerTrans == null) EnsureComponents();
@@ -193,14 +248,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
         }
 
-        // 核心修復 2：待機與警報狀態下，自動平滑面向玩家 (左或右)
+        // 核心功能 3：待機與警報狀態下，自動平滑面向玩家 (左或右) 並配合氣流微幅傾角 (Banking Tilt)
         if (currentState == BirdState.Idle || currentState == BirdState.Warning)
         {
             if (playerTrans != null)
             {
                 float dx = playerTrans.position.x - transform.position.x;
                 Vector3 lookDir = dx < 0 ? Vector3.left : Vector3.right;
-                Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up) * Quaternion.Euler(modelRotationOffset);
+                
+                // 模擬真實鳥類在氣流中維持平衡的自然微傾角 (±3.5 度)
+                float tiltZ = (currentState == BirdState.Idle && enableIdleHover) ? Mathf.Sin(Time.time * hoverFrequency + hoverRandomOffset) * 3.5f : 0f;
+                Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up) * Quaternion.Euler(modelRotationOffset + new Vector3(0f, 0f, tiltZ));
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
             }
         }
@@ -408,26 +466,40 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 15f);
             }
 
-            // 雙重命中判定：當鳥撲擊至主角極近距離 (1.1 米) 時，立即結算命中！
+            // 命中判定：當鳥撲擊接近目標時結算
             if (playerTrans != null)
             {
                 float distToPlayer = Vector2.Distance(new Vector2(transform.position.x, transform.position.y), new Vector2(playerTrans.position.x, playerTrans.position.y));
-                if (distToPlayer <= 1.1f)
+                
+                // 1. 優先檢查護盾：當護盾啟動時，只要鳥觸及護盾外圍 (2.4 米)，立刻在護盾表面彈飛！
+                PlayerShield shield = playerTrans.GetComponentInChildren<PlayerShield>();
+                if (shield == null) shield = playerTrans.GetComponentInParent<PlayerShield>();
+
+                if (shield != null && shield.IsShieldActive)
                 {
-                    PlayerShield shield = playerTrans.GetComponentInChildren<PlayerShield>();
-                    if (shield == null) shield = playerTrans.GetComponentInParent<PlayerShield>();
-                    if (shield != null && shield.IsShieldActive)
+                    if (distToPlayer <= 2.4f)
                     {
-                        Debug.LogWarning($"【鳥群系統】{gameObject.name} 撞擊玩家護盾！觸發彈飛！");
+                        Debug.LogWarning($"🛡️【鳥群系統】{gameObject.name} 撞擊玩家護盾外圍！立即觸發彈飛！");
                         BounceOff(shield);
                         yield break;
                     }
-                    else
+                }
+                else
+                {
+                    // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
+                    if (distToPlayer <= 1.1f)
                     {
-                        Debug.LogWarning($"【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
-                        PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
-                        if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
-                        if (respawn != null) respawn.TriggerRespawn();
+                        if (PlayerPetrification.IsGodMode)
+                        {
+                            Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"💀【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
+                            PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
+                            if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
+                            if (respawn != null) respawn.TriggerRespawn();
+                        }
                         BounceOff(null);
                         yield break;
                     }
@@ -602,6 +674,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         SetAlpha(0f);
+        hasAttackedOrDied = true;
         gameObject.SetActive(false);
         transform.localScale = originalScale;
     }
@@ -753,16 +826,23 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             return;
         }
 
-        // 2. 碰撞到玩家本體：觸發玩家重生，絕不觸發石化效果！
+        // 2. 碰撞到玩家本體：若無敵則不觸發重生，否則觸發玩家重生！
         if (hitObj.CompareTag("Player") || hitObj.name.ToLower().Contains("player") || hitObj.GetComponentInParent<PlayerMovement>() != null)
         {
             if (currentState == BirdState.Diving)
             {
-                PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
-                if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
-                if (respawn != null)
+                if (PlayerPetrification.IsGodMode)
                 {
-                    respawn.TriggerRespawn();
+                    Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 碰撞無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
+                }
+                else
+                {
+                    PlayerRespawnSystem respawn = hitObj.GetComponent<PlayerRespawnSystem>();
+                    if (respawn == null) respawn = hitObj.GetComponentInParent<PlayerRespawnSystem>();
+                    if (respawn != null)
+                    {
+                        respawn.TriggerRespawn();
+                    }
                 }
 
                 // 撞到玩家後彈開淡出
@@ -891,6 +971,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         SetAlpha(0f);
+        hasAttackedOrDied = true;
         gameObject.SetActive(false);
         transform.localScale = originalScale;
     }
@@ -899,6 +980,18 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public void ResetToInitialState()
     {
         StopAllCoroutines();
+
+        // 檢查存檔點進度：
+        // 若當前存檔點已經推進到這隻鳥的原點之後 (代表玩家已通過該存檔點且該鳥已死亡/攻擊過)，則該鳥永久保持死亡消失！
+        Vector3 currentCheckpoint = PlayerRespawnSystem.ActiveRespawnPosition;
+        if (hasAttackedOrDied && currentCheckpoint != Vector3.zero && (originalPosition.x <= currentCheckpoint.x + 1.0f))
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        // 尚未通過的存檔點前方鳥敵人：完全刷新重生！
+        hasAttackedOrDied = false;
         gameObject.SetActive(true);
         currentState = BirdState.Idle;
         transform.position = originalPosition;
@@ -912,10 +1005,19 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
         RestoreMaterialsOpaque();
         SetAlpha(1.0f);
-        if (animator != null)
+
+        // 徹底重置 Animator Controller，清除殘留的 die / worried 觸發器與死亡姿態
+        Animator[] animators = GetComponentsInChildren<Animator>(true);
+        foreach (var anim in animators)
         {
-            animator.speed = 1f;
+            if (anim != null)
+            {
+                anim.speed = 1f;
+                anim.Rebind();
+                anim.Update(0f);
+            }
         }
         PlayAnim(idleAnimName);
+        postRespawnDelayTimer = 1.5f; // 重生後給予 1.5 秒初始冷卻緩衝
     }
 }

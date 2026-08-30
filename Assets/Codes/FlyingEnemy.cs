@@ -202,6 +202,13 @@ public class FlyingEnemy : MonoBehaviour
         currentState = BirdState.PostAttack;
         rb.linearVelocity = Vector3.zero; // 鳥撞到後停在原地
 
+        if (PlayerPetrification.IsGodMode)
+        {
+            Debug.LogWarning("🛡️【無敵模式】被鳥攻擊，但因無敵模式已開啟，不觸發死亡重生！");
+            StartCoroutine(WaitThenHide(1f));
+            return;
+        }
+
         Debug.Log("被鳥攻擊，觸發轉場並重新刷新場景！");
         
         PlayerRespawnSystem respawnSys = playerObj.GetComponent<PlayerRespawnSystem>();

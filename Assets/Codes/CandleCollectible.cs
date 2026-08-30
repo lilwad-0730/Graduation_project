@@ -43,7 +43,17 @@ public class CandleCollectible : MonoBehaviour, IResettable
     private void Awake()
     {
         _col = GetComponent<Collider>();
+        if (_col == null) _col = gameObject.AddComponent<BoxCollider>();
         _col.isTrigger = true;
+
+        // ★ 自動擴增 Z 軸厚度至 30 米，保證 100% 覆蓋 3D 怪物模型，徹底無視 Z 軸圖層落差！
+        if (_col is BoxCollider box)
+        {
+            float scaleZ = Mathf.Abs(transform.lossyScale.z) > 0.001f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+            Vector3 sz = box.size;
+            sz.z = 30f / scaleZ;
+            box.size = sz;
+        }
 
         // 快取子物件中所有視覺組件（包括含在子物件中的）
         CacheVisualComponents();
@@ -61,22 +71,39 @@ public class CandleCollectible : MonoBehaviour, IResettable
         CacheVisualComponents();
     }
 
+    private void Update()
+    {
+        if (isCollected) return;
+
+        // ★ 主動 2.5D 平面距離判定 (前後 3.5 米，上下 6.5 米)
+        if (ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.currentState != ShadowMonsterController.MonsterState.Dormant)
+        {
+            Transform monsterTrans = ShadowMonsterController.Instance.transform;
+            float dx = Mathf.Abs(transform.position.x - monsterTrans.position.x);
+            float dy = Mathf.Abs(transform.position.y - monsterTrans.position.y);
+            if (dx <= 3.5f && dy <= 6.5f)
+            {
+                Collect();
+            }
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (isCollected) return;
-        if (!IsPlayer(other.gameObject)) return;
+        if (!IsMonster(other.gameObject)) return;
 
         Collect();
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：收集邏輯
+    // 公開：收集/削弱邏輯
     // ──────────────────────────────────────────────────────────────────────────
 
-    private void Collect()
+    public void Collect()
     {
         isCollected = true;
-        Debug.Log($"【燭火】{gameObject.name} 被玩家收集！(X = {transform.position.x:F1})");
+        Debug.Log($"🔥【燭火削弱】影子怪物碰觸到 {gameObject.name}！觸發怪物削弱與縮小！(X = {transform.position.x:F1})");
 
         // 通知影子怪物系統
         if (ShadowMonsterController.Instance != null)
@@ -113,14 +140,37 @@ public class CandleCollectible : MonoBehaviour, IResettable
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 私有：玩家判定（三重驗證）
+    // 私有：怪物判定（多重驗證）
     // ──────────────────────────────────────────────────────────────────────────
 
-    private bool IsPlayer(GameObject go)
+    private bool IsMonster(GameObject go)
     {
-        if (go.CompareTag("Player")) return true;
-        if (go.GetComponent<PlayerMovement>() != null) return true;
-        if (go.name.ToLower().Contains("player")) return true;
+        if (go == null) return false;
+
+        // 1. 直接比對影子怪物實例與層級
+        if (ShadowMonsterController.Instance != null)
+        {
+            if (go == ShadowMonsterController.Instance.gameObject || go.transform.IsChildOf(ShadowMonsterController.Instance.transform))
+            {
+                return true;
+            }
+        }
+
+        // 2. 比對腳本組件
+        if (go.GetComponent<ShadowMonsterController>() != null || 
+            go.GetComponentInParent<ShadowMonsterController>() != null || 
+            go.GetComponentInChildren<ShadowMonsterController>() != null)
+        {
+            return true;
+        }
+
+        // 3. 安全名稱比對
+        string name = go.name.ToLower();
+        if (name.Contains("monster") || name.Contains("mutant") || name.Contains("shadow"))
+        {
+            return true;
+        }
+
         return false;
     }
 

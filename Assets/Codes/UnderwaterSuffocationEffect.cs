@@ -119,13 +119,32 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
         currentRadius = startRadius;
         delayDone     = (startDelay <= 0f);
 
+        AdjustSceneWaterSortingOrder();
         SetupOverlayCanvas();
         LoadShader();
         CreateAllLayers();
     }
 
+    private void AdjustSceneWaterSortingOrder()
+    {
+        GameObject waterObj = GameObject.Find("water");
+        if (waterObj != null)
+        {
+            SpriteRenderer sr = waterObj.GetComponent<SpriteRenderer>();
+            if (sr != null && sr.sortingOrder >= 30)
+            {
+                sr.sortingOrder = 15; // 確保水色濾鏡在場景(0)之上，但在黑框(30)之下
+            }
+        }
+    }
+
     private void Update()
     {
+        if (overlayCanvas != null && overlayCanvas.renderMode == RenderMode.ScreenSpaceCamera && overlayCanvas.worldCamera == null)
+        {
+            overlayCanvas.worldCamera = Camera.main;
+        }
+
         if (vignetteShader == null || imgMain == null) return;
 
         // 等候 startDelay
@@ -288,20 +307,27 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
 
     private void SetupOverlayCanvas()
     {
-        foreach (var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-        {
-            if (c.renderMode == RenderMode.ScreenSpaceOverlay && c.sortingOrder >= 90)
-            {
-                overlayCanvas = c;
-                return;
-            }
-        }
+        Camera mainCam = Camera.main;
 
         GameObject canvasObj = new GameObject("SuffocationCanvas");
         canvasObj.transform.SetParent(transform, false);
         overlayCanvas = canvasObj.AddComponent<Canvas>();
-        overlayCanvas.renderMode   = RenderMode.ScreenSpaceOverlay;
-        overlayCanvas.sortingOrder = 95;
+
+        if (mainCam != null)
+        {
+            // 改為相機渲染模式，使黑框能依照 Sorting Order 排序
+            overlayCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            overlayCanvas.worldCamera = mainCam;
+            overlayCanvas.planeDistance = 5f;
+            overlayCanvas.sortingLayerName = "Default";
+            overlayCanvas.sortingOrder = 30; // 高於背景與水下世界 (0)，但低於設定 UI (48~60)
+        }
+        else
+        {
+            overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            overlayCanvas.sortingOrder = 30;
+        }
+
         canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
         canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
     }
