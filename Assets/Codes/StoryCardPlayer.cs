@@ -814,8 +814,11 @@ public class StoryCardPlayer : MonoBehaviour
 
     /// <summary>
     /// 內建的三頁日誌照片設定。
-    /// 日期是照劇情時間軸排的占位值（熱戀→產後→年節全家福），
-    /// 要改日期直接改這裡，或在 Inspector 的 Diary Photo Pages 清單裡改。
+    /// 出場順序照撰稿者指定：1 → 3 → 2
+    /// （夕陽共舞 → 年節全家福 → 窗光裡抱著孩子——
+    /// 　最後一份日誌「我的內心好像有什麼破開了。」配的是抱著孩子那張）。
+    /// 日期是占位值；改日期或換圖直接改這裡，
+    /// 或在 Inspector 的 Diary Photo Pages 清單裡改。
     /// </summary>
     public static List<DiaryPhotoPage> BuildDefaultDiaryPhotoPages()
     {
@@ -831,17 +834,17 @@ public class StoryCardPlayer : MonoBehaviour
 
         DiaryPhotoPage d2 = new DiaryPhotoPage();
         d2.cardId = "D2";
-        d2.photoResource = "Diary/diary_photo_2";   // 窗光裡的三個人
-        d2.glyphResource = "Diary/diary_glyph_2";   // 三形，小的被抱著
-        d2.dateText = "2003.11.3";
+        d2.photoResource = "Diary/diary_photo_3";   // 全家福，光帶橫過整排臉
+        d2.glyphResource = "Diary/diary_glyph_3";   // 一排形，唯獨她那形有鬆脫的線頭
+        d2.dateText = "2004.1.22";
         d2.tiltDegrees = 1.8f;
         list.Add(d2);
 
         DiaryPhotoPage d3 = new DiaryPhotoPage();
         d3.cardId = "D3";
-        d3.photoResource = "Diary/diary_photo_3";   // 全家福，光帶橫過整排臉
-        d3.glyphResource = "Diary/diary_glyph_3";   // 一排形，唯獨她那形有鬆脫的線頭
-        d3.dateText = "2004.1.22";
+        d3.photoResource = "Diary/diary_photo_2";   // 窗光裡的三個人（她抱著孩子）
+        d3.glyphResource = "Diary/diary_glyph_2";   // 三形，小的被抱著
+        d3.dateText = "2003.11.3";
         d3.tiltDegrees = -1.2f;
         list.Add(d3);
 
