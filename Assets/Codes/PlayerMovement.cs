@@ -1104,6 +1104,8 @@ public class PlayerMovement : MonoBehaviour
 
     public Transform GetCameraTarget()
     {
+        GameObject customTarget = GameObject.Find("CameraFollowTarget");
+        if (customTarget != null) return customTarget.transform;
         return this.transform;
     }
 
@@ -1207,9 +1209,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void SetCameraFollow(Transform target)
     {
-        if (target == null) target = this.transform;
+        GameObject customTarget = GameObject.Find("CameraFollowTarget");
+        if (customTarget != null)
+        {
+            target = customTarget.transform;
+        }
+        else if (target == null)
+        {
+            target = this.transform;
+        }
 
-        // 尋找「所有」新版 CinemachineCamera 並強制修改追蹤目標
+        // 尋找「所有」新版 CinemachineCamera 並修改追蹤目標
         var vcams3 = Object.FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
         foreach(var vcam in vcams3)
         {
@@ -1217,21 +1227,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 var t = vcam.Target;
                 t.TrackingTarget = target;
+                t.LookAtTarget = target;
+                t.CustomLookAtTarget = true;
                 vcam.Target = t;
                 vcam.Follow = target;
-                if (vcam.name.Contains("CinemachineCamera"))
-                {
-                    vcam.Priority.Value = 100; // 給予最高優先級
-                }
-
-                // 攝影機視角與高度完全尊重美術原版設定，僅將 Z 軸深度拉遠 (-50f)，提供充足的 3D 深度空間，防止怪物手臂等 3D 結構穿透近平面被裁切
-                var cmFollow = vcam.GetComponent<CinemachineFollow>();
-                if (cmFollow != null)
-                {
-                    cmFollow.FollowOffset = new Vector3(cmFollow.FollowOffset.x, cmFollow.FollowOffset.y, -50f);
-                }
-
-                Debug.Log($"[PlayerMovement] 已將 CinemachineCamera {vcam.name} 的 TrackingTarget 設為 {target.name} (Z深度=-50)");
             }
         }
 
