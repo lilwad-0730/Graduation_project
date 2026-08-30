@@ -717,20 +717,27 @@ public class PlayerMovement : MonoBehaviour
         {
             bool isOnSlope = isGrounded && !isJumping && (currentSlopeAngle > 0.5f && currentSlopeAngle < 60f);
 
+            // 計算逆風推力偏移量
+            float windOffset = 0f;
+            if (_windPushTimer > 0f)
+            {
+                _windPushTimer -= Time.deltaTime;
+                windOffset = _windPushVelocityX;
+            }
+
             if (isOnSlope)
             {
                 // ★★★ 核心修復：在斜坡上關閉 Unity PhysX 重力！
-                // 否則 PhysX 每一物理幀都會施加向下重力把剛體擠進斜坡，引發法線反彈推開 (Depenetration) 的瘋狂抖動！
                 rb.useGravity = false;
 
                 if (Mathf.Abs(moveInput) > 0.05f)
                 {
-                    // ★ 玩家主動按鍵移動/推石：最高優先級！玩家可以施力推動巨石上坡！
+                    // 玩家主動按鍵移動：貼合斜坡移動並疊加逆風阻力
                     Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
                     Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
 
                     Vector3 targetVelocity = new Vector3(
-                        slopeDir.x * finalSpeed * Mathf.Abs(moveInput),
+                        slopeDir.x * finalSpeed * Mathf.Abs(moveInput) + windOffset,
                         slopeDir.y * finalSpeed * Mathf.Abs(moveInput),
                         0f
                     );
@@ -745,9 +752,15 @@ public class PlayerMovement : MonoBehaviour
                 else if (_externalPushTimer > 0f)
                 {
                     _externalPushTimer -= Time.deltaTime;
-                    // 當玩家放開按鍵 (Idle) 時，才順應巨石重力順勢向下滑動，化解硬頂抖動
                     Vector3 pushSlopeDir = Vector3.ProjectOnPlane(_externalPushVelocity, groundHit.normal);
-                    rb.linearVelocity = new Vector3(pushSlopeDir.x, pushSlopeDir.y, 0f);
+                    rb.linearVelocity = new Vector3(pushSlopeDir.x + windOffset, pushSlopeDir.y, 0f);
+                }
+                else if (Mathf.Abs(windOffset) > 0.01f)
+                {
+                    // 在斜坡上受到風吹：順著斜坡向後平滑滑動
+                    Vector3 windDir = new Vector3(Mathf.Sign(windOffset), 0, 0);
+                    Vector3 windSlopeDir = Vector3.ProjectOnPlane(windDir, groundHit.normal).normalized;
+                    rb.linearVelocity = windSlopeDir * Mathf.Abs(windOffset);
                 }
                 else
                 {
@@ -762,21 +775,50 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                // 平地、空中或水下：開啟正常重力 (水下靠 FixedUpdate 的反向浮力來精確調控重力比例)
+                // 平地、空中或水下：開啟正常重力
                 rb.useGravity = true;
 
-                float targetX = moveInput * finalSpeed;
+                float targetX = (moveInput * finalSpeed) + windOffset;
 
-                // ★ 夾角推移緩衝：如果玩家在平地受到巨石撞擊且未按移動鍵，順應巨石推力平滑滑動，徹底消除平地/斜坡交界夾角的抖動
+                // 夾角推移緩衝：如果玩家在平地受到巨石撞擊且未按移動鍵，順應巨石推力平滑滑動
                 if (Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer > 0f)
                 {
                     _externalPushTimer -= Time.deltaTime;
-                    targetX = _externalPushVelocity.x * 0.85f;
+                    targetX = (_externalPushVelocity.x * 0.85f) + windOffset;
+                }
+
+                // ★★★ 實體障礙物/石柱防穿透夾角緩衝判定 (防止強風或推力把玩家頂進石柱牆面造成的 PhysX 每幀穿透反彈劇烈抖動)
+                float playerRadius = GetPlayerRadius();
+                int obstacleMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+                Vector3 rayLow = transform.position + Vector3.up * 0.35f;
+                Vector3 rayMid = transform.position + Vector3.up * 1.0f;
+
+                if (targetX < -0.01f)
+                {
+                    if (Physics.Raycast(rayLow, Vector3.left, out RaycastHit hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
+                        Physics.Raycast(rayMid, Vector3.left, out hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
+                    {
+                        if (hitL.normal.x > 0.15f && hitL.collider != null && !hitL.collider.isTrigger)
+                        {
+                            targetX = 0f; // 緊貼石柱/障礙物時停止向左施加擠壓速度，完全消除抖動！
+                        }
+                    }
+                }
+                else if (targetX > 0.01f)
+                {
+                    if (Physics.Raycast(rayLow, Vector3.right, out RaycastHit hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
+                        Physics.Raycast(rayMid, Vector3.right, out hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
+                    {
+                        if (hitR.normal.x < -0.15f && hitR.collider != null && !hitR.collider.isTrigger)
+                        {
+                            targetX = 0f; // 緊貼右側障礙物時停止向右施加擠壓速度
+                        }
+                    }
                 }
 
                 Vector3 targetVelocity = new Vector3(targetX, rb.linearVelocity.y, rb.linearVelocity.z);
 
-                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     targetVelocity.y = 0f;
                 }
@@ -1031,6 +1073,25 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 _externalPushVelocity = Vector3.zero;
     private float _externalPushTimer = 0f;
+    private float _windPushVelocityX = 0f;
+    private float _windPushTimer = 0f;
+
+    /// <summary>
+    /// 接收來自荒漠強風的逆風推力，平滑融入玩家運動學速度，徹底消除物理 AddForce 產生的抽搐與抖動！
+    /// </summary>
+    public void ApplyWindPush(float pushSpeedX)
+    {
+        _windPushVelocityX = pushSpeedX;
+        _windPushTimer = 0.15f; // 短暫維持緩衝
+    }
+
+    private float GetPlayerRadius()
+    {
+        if (playerCollider == null) playerCollider = GetComponent<Collider>();
+        if (playerCollider is CapsuleCollider cc) return cc.radius * transform.localScale.x;
+        if (playerCollider is BoxCollider bc) return bc.size.x * 0.5f * transform.localScale.x;
+        return 0.4f;
+    }
 
     /// <summary>
     /// 接收來自落石/巨石的外部推力，順勢沿斜坡下滑化解碰撞抖動
@@ -1052,20 +1113,30 @@ public class PlayerMovement : MonoBehaviour
     public void WarpTo(Vector3 position)
     {
         transform.position = position;
+        if (rb != null)
+        {
+            rb.position = position;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
         if (cameraTarget != null)
         {
             cameraTarget.position = position;
         }
 
-        // 【新增】：重置身上所有被狼咬住的計數，並恢復速度
+        // 重置身上所有被狼咬住的計數，並恢復速度
         attachedWolvesCount = 0;
         CalculateSpeed();
         _smoothYVelocity = 0f; // 重置 Y 軸平滑速度快取
         
-        // 瞬間解鎖玩家所有的移動/墜落鎖定與劇情鎖定，防止傳送後卡死
         isStrictLockingX = false;
         freezeHorizontal = false;
-        isCutsceneFrozen = false;
+        
+        // 只有在非重生期間才解鎖劇情凍結 (防止黑屏期間可按 WASD 亂跑)
+        if (!PlayerRespawnSystem.IsAnyRespawning)
+        {
+            isCutsceneFrozen = false;
+        }
         
         // 瞬間將主相機對齊，防止 Cinemachine 出現大跨度拉扯
         Camera mainCam = Camera.main;

@@ -102,11 +102,20 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 跨場景指定生成點 (由轉場腳本在 LoadScene 前指派)
     public static string NextSceneSpawnTargetName = "";
     public static Vector3? NextSceneCustomSpawnPos = null;
+    public static PlayerRespawnSystem Instance { get; private set; }
+    public static Vector3 ActiveRespawnPosition => Instance != null ? Instance._activeRespawnPos : Vector3.zero;
+    public static bool IsPlayerMovingAfterRespawn => Instance == null || !Instance._isWaitingForPlayerMove;
 
     private Vector3 _activeRespawnPos; // 當前啟用的明確存檔點座標
 
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     void OnEnable()
     {
+        Instance = this;
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -444,16 +453,50 @@ public class PlayerRespawnSystem : MonoBehaviour
             }
         }
 
-        // --- 傳送至明確存檔點 (稍微抬高 0.2f 確保不陷地) ---
+        // --- 傳送至明確存檔點並精準貼合地表 ---
         PlayerMovement pmComponent = GetMovement();
-        Vector3 targetPos = new Vector3(spawnPos.x, spawnPos.y + 0.2f, spawnPos.z);
+        Vector3 targetPos = spawnPos;
+
+        // 向下發射射線偵測地表，精確將玩家雙腳置於地面上，防止懸空掉落
+        RaycastHit hit;
+        int layerMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+        if (Physics.Raycast(spawnPos + Vector3.up * 3.0f, Vector3.down, out hit, 30.0f, layerMask, QueryTriggerInteraction.Ignore))
+        {
+            float halfHeight = 1.0f;
+            CapsuleCollider cc = GetComponent<CapsuleCollider>();
+            if (cc != null) halfHeight = cc.height * 0.5f;
+            else
+            {
+                BoxCollider bc = GetComponent<BoxCollider>();
+                if (bc != null) halfHeight = bc.size.y * 0.5f;
+            }
+            targetPos = new Vector3(spawnPos.x, hit.point.y + halfHeight + 0.05f, spawnPos.z);
+        }
+
+        transform.position = targetPos;
+        if (_playerRb != null)
+        {
+            _playerRb.position = targetPos;
+            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.angularVelocity = Vector3.zero;
+            _playerRb.isKinematic = false;
+            _playerRb.useGravity = true;
+        }
         if (pmComponent != null)
         {
             pmComponent.WarpTo(targetPos);
+            pmComponent.isCutsceneFrozen = true;
         }
-        else
+
+        // 在黑屏期間讓物理自然沉降數幀，確保玩家完全穩固著地
+        for (int i = 0; i < 8; i++)
         {
-            transform.position = targetPos;
+            yield return new WaitForFixedUpdate();
+        }
+        if (_playerRb != null)
+        {
+            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.angularVelocity = Vector3.zero;
         }
 
         if (_mainCam != null)
@@ -535,11 +578,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.gameObject.SetActive(false); 
         }
 
+        // 4. 破曉完全變亮後，維持 0.5 秒安全緩衝停頓期 (期間機制與玩家操作維持暫停待命)
+        yield return new WaitForSecondsRealtime(0.5f);
+
         // ===================================================================
-        // 【重生規則最終執行點】
-        // 必須在 IsAnyRespawning=false 之前清除，確保旗標解除的瞬間
-        // graceTimer 是剛刷新的 5 秒，風無法在該瞬間立即石化玩家。
-        // 這是解決「重生後立刻被石化」的根本修復。
+        // 【重生完成最終執行點】：0.5 秒緩衝期過後，正式解鎖玩家與啟用全場景機制
         // ===================================================================
         PlayerPetrification petrifyFinal = GetPetrification();
         if (petrifyFinal != null)
@@ -562,7 +605,7 @@ public class PlayerRespawnSystem : MonoBehaviour
             pm.isCutsceneFrozen = false;
         }
 
-        // 現在才解除重生旗標（此時 graceTimer=5s，風無法立即石化）
+        // 正式解除全域重生旗標（此時鳥敵人與假掩體正式開始執行機制）
         _isRespawning = false;
         IsAnyRespawning = false;
         _isWaitingForPlayerMove = true;

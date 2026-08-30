@@ -317,8 +317,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         isPetrified = false;
         currentPetrifyCount = 0;
 
-        // 給予 5 秒免疫防護，涵蓋重生過場全過程
-        graceTimer = 5.0f;
+        // 給予短暫 0.5 秒保護，避免重生瞬間與畫面切換穿幫
+        graceTimer = 0.5f;
 
         // 1. 物理強制解鎖
         if (rb != null)
@@ -329,12 +329,15 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             rb.angularVelocity = Vector3.zero;
         }
 
-        // 2. 移動腳本與標記強制解鎖
+        // 2. 移動腳本與標記強制解鎖 (重生過場期間保持 isCutsceneFrozen)
         if (playerMovement != null)
         {
-            playerMovement.enabled = true;
             playerMovement.freezeHorizontal = false;
-            playerMovement.isCutsceneFrozen = false;
+            if (!PlayerRespawnSystem.IsAnyRespawning)
+            {
+                playerMovement.enabled = true;
+                playerMovement.isCutsceneFrozen = false;
+            }
             playerMovement.isStrictLockingX = false;
             playerMovement.attachedWolvesCount = 0;
         }

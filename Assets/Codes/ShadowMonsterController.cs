@@ -332,6 +332,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 {
                     MoveTowardPlayer(chaseSpeed);
                     CheckCatch();
+                    CheckCandleCollisions();
                 }
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
@@ -339,15 +340,39 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             case MonsterState.Chasing:
                 MoveTowardPlayer(chaseSpeed);
                 CheckCatch();
+                CheckCandleCollisions();
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
 
             case MonsterState.Punishing:
                 MoveTowardPlayer(punishChaseSpeed);
                 CheckCatch();
+                CheckCandleCollisions();
                 if (_camLocked) ClampPlayerToCameraView();
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
+        }
+    }
+
+    /// <summary>
+    /// 主動 2.5D 檢測怪物身軀是否走過燭火 (前後 3.5 米、上下 6.5 米覆蓋，徹底無視 Z 軸落差)
+    /// </summary>
+    private void CheckCandleCollisions()
+    {
+        if (candles == null || candles.Length == 0) return;
+
+        foreach (var c in candles)
+        {
+            if (c != null && !c.isCollected)
+            {
+                float dx = Mathf.Abs(transform.position.x - c.transform.position.x);
+                float dy = Mathf.Abs(transform.position.y - c.transform.position.y);
+
+                if (dx <= 3.5f && dy <= 6.5f)
+                {
+                    c.Collect();
+                }
+            }
         }
     }
 

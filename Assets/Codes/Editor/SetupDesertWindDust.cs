@@ -62,6 +62,11 @@ public static class SetupDesertWindDust
         fx.InitializeComponents();
         fx.ApplyVFXSettings();
 
+        // 配置 StormHazardWave 實體 Trigger
+        StormHazardWave wave = windObj.GetComponent<StormHazardWave>();
+        if (wave == null) wave = windObj.AddComponent<StormHazardWave>();
+        wave.EnsureTriggerCollider();
+
         // 連接或建立 WindGustSystem
         WindGustSystem windSystem = Object.FindFirstObjectByType<WindGustSystem>();
         if (windSystem == null)

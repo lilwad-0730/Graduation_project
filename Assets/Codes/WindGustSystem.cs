@@ -108,6 +108,15 @@ public class WindGustSystem : MonoBehaviour, IResettable
             }
         }
 
+        // 自動為風暴粒子物件掛載 StormHazardWave 實體 Trigger 組件
+        if (windParticles != null)
+        {
+            StormHazardWave wave = windParticles.GetComponent<StormHazardWave>();
+            if (wave == null) wave = windParticles.gameObject.AddComponent<StormHazardWave>();
+            wave.windForce = windForce;
+            wave.EnsureTriggerCollider();
+        }
+
         if (windAudioSource == null)
         {
             windAudioSource = GetComponent<AudioSource>();
@@ -185,30 +194,6 @@ public class WindGustSystem : MonoBehaviour, IResettable
         }
     }
 
-    private void FixedUpdate()
-    {
-        // 僅在吹風狀態且玩家未被掩體保護時，觸發石化或施加向左推力
-        if (currentState == WindState.Blowing && !IsPlayerSheltered)
-        {
-            EnsurePlayerReference();
-
-            if (playerPetrify != null)
-            {
-                // 一次陣風期間只會觸發一次石化懲罰，防止下一幀無縫連鎖石化
-                if (!playerPetrify.isPetrified && !hasAppliedWindThisGust)
-                {
-                    hasAppliedWindThisGust = true;
-                    Debug.LogWarning("【陣風石化】玩家在無掩體保護下被逆風沙塵吹襲，觸發石化！");
-                    playerPetrify.Petrify();
-                }
-            }
-            else if (playerRb != null)
-            {
-                playerRb.AddForce(Vector3.left * windForce, ForceMode.Acceleration);
-            }
-        }
-    }
-
     private void SwitchToState(WindState newState)
     {
         currentState = newState;
@@ -218,6 +203,14 @@ public class WindGustSystem : MonoBehaviour, IResettable
         {
             hasAppliedWindThisGust = false; // 重置此趟陣風的石化標記
             Debug.Log("【陣風系統】起風了！逆風來襲！只能在掩體內躲避！");
+
+            // 通知所有實體風暴危害區域重置陣風判定
+            StormHazardWave[] waves = FindObjectsByType<StormHazardWave>(FindObjectsSortMode.None);
+            foreach (var wave in waves)
+            {
+                if (wave != null) wave.ResetGustFlag();
+            }
+
             if (windParticles != null)
             {
                 DesertWindDustFX fx = windParticles.GetComponent<DesertWindDustFX>();

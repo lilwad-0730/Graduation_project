@@ -26,7 +26,7 @@ public static class BirdEnemySetupTool
             if (t == null) continue;
             string name = t.name.ToLower();
 
-            // 包含 crow / bird / living bird 或已掛載 IndividualBirdEnemy 的物件
+            // 包含 crow / bird 或已掛載 IndividualBirdEnemy 的物件
             if (name.Contains("crow") || name.Contains("bird") || t.GetComponent<IndividualBirdEnemy>() != null)
             {
                 // 排除父層群組容器 (只抓取有 Animator 或 MeshRenderer 的實體鳥)
@@ -39,6 +39,32 @@ public static class BirdEnemySetupTool
                 }
             }
         }
+
+        // ★ 核心去重：若列表中某物件是另一個鳥物件的子物件，則將子物件剔除，並清除子物件上誤掛的組件！
+        List<GameObject> rootBirds = new List<GameObject>();
+        foreach (var go in birdObjects)
+        {
+            bool hasBirdParent = false;
+            Transform p = go.transform.parent;
+            while (p != null)
+            {
+                if (birdObjects.Contains(p.gameObject))
+                {
+                    hasBirdParent = true;
+                    // 清除子物件上誤掛的重複組件
+                    IndividualBirdEnemy childComp = go.GetComponent<IndividualBirdEnemy>();
+                    if (childComp != null) Undo.DestroyObjectImmediate(childComp);
+                    break;
+                }
+                p = p.parent;
+            }
+
+            if (!hasBirdParent && !rootBirds.Contains(go))
+            {
+                rootBirds.Add(go);
+            }
+        }
+        birdObjects = rootBirds;
 
         if (birdObjects.Count == 0)
         {
