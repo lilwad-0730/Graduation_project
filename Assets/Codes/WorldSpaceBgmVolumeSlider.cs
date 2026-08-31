@@ -13,10 +13,9 @@ public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandl
     [SerializeField] private Camera inputCamera;
     [SerializeField] private TMP_Text volumePercentText;
 
-    [Header("BGM 音量（音源可稍後指定）")]
-    [SerializeField] private AudioSource bgmSource;
+    [Header("BGM 音量")]
     [SerializeField] private string playerPrefsKey = "BGMVolume";
-    [SerializeField, Range(0f, 1f)] private float defaultVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float defaultVolume = 0.75f;
 
     public float Value { get; private set; }
 
@@ -97,7 +96,6 @@ public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandl
         if (volumePercentText != null)
             volumePercentText.text = Mathf.RoundToInt(Value * 100f).ToString();
 
-        if (bgmSource != null)
-            bgmSource.volume = Value;
+        AudioManager.SetBgmVolume(Value);
     }
 }

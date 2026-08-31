@@ -324,7 +324,7 @@ public class BackgroundShadowCreature : MonoBehaviour
         if (dist <= hearDistance && Time.time - _lastSFXPlayTime > sfxCooldown)
         {
             _lastSFXPlayTime = Time.time;
-            _audioSource.PlayOneShot(proximitySFX, sfxVolume);
+            _audioSource.PlayOneShot(proximitySFX, AudioManager.ScaleSfx(sfxVolume));
             Debug.Log($"🐋【深海巨影】巨獸游經主角附近 (距離 {dist:F1}m)，播放巨影氛圍音效！");
         }
     }

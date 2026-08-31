@@ -31,22 +31,100 @@ public class WaterOasisTransition : MonoBehaviour, IResettable
     private PlayerMovement playerMovement;
     private UnityEngine.UI.Image fadeImage;
 
+    private void Awake()
+    {
+        EnsureColliderSetup();
+    }
+
     private void Start()
     {
+        EnsureColliderSetup();
+    }
+
+    private void EnsureColliderSetup()
+    {
         Collider col = GetComponent<Collider>();
-        if (col != null) col.isTrigger = true;
+        if (col != null)
+        {
+            col.isTrigger = true;
+            if (col is BoxCollider box)
+            {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
+            }
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !isTransitioning)
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryStartTransition(collision != null ? collision.gameObject : null);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryStartTransition(collision != null ? collision.gameObject : null);
+    }
+
+    private void TryStartTransition(GameObject hitObj)
+    {
+        if (isTransitioning || hitObj == null) return;
+
+        PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
+        if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();
+        if (pm == null) pm = hitObj.GetComponentInChildren<PlayerMovement>();
+
+        if (pm != null)
         {
-            StartTransition(other.gameObject);
+            StartTransition(pm.gameObject);
+            return;
+        }
+
+        if (hitObj.CompareTag("Player") || hitObj.name.Contains("Player") || (hitObj.transform.root != null && hitObj.transform.root.name.Contains("Player")))
+        {
+            StartTransition(hitObj);
         }
     }
 
     private void StartTransition(GameObject playerObj)
     {
+        if (string.IsNullOrWhiteSpace(nextSceneName))
+        {
+            Debug.LogError("[WaterOasisTransition] nextSceneName 是空的，無法轉場。", this);
+            return;
+        }
+
         isTransitioning = true;
         playerTransform = playerObj.transform;
         playerRb = playerObj.GetComponent<Rigidbody>();
@@ -110,11 +188,12 @@ public class WaterOasisTransition : MonoBehaviour, IResettable
         // 5. 設定跨場景指定出生點並載入下一關卡場景
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
-            PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+            PlayerRespawnSystem.QueueNextSceneSpawn(targetSpawnPointName);
         }
 
-        Debug.Log($"【綠洲轉場】下沉完畢，開始載入場景: '{nextSceneName}'，目標出生點物件為：'{targetSpawnPointName}'");
-        SceneManager.LoadScene(nextSceneName);
+        string targetScene = nextSceneName.Trim();
+        Debug.Log($"【綠洲轉場】下沉完畢，開始載入場景: '{targetScene}'，目標出生點物件為：'{targetSpawnPointName}'");
+        SceneManager.LoadScene(targetScene);
     }
 
     private void CreateFadeImage()

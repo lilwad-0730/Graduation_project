@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
@@ -59,6 +60,26 @@ public class EndCredits : MonoBehaviour
     public bool armOnLastPage = true;
     [Tooltip("大於 0＝到最後一頁後等這麼多秒自動開始（展場用）。0＝只等按鍵")]
     public float autoRollAfterSeconds = 0f;
+
+    // ══════════════════════════════════════════
+    // 結局流程（玻璃館結束 → 這裡）
+    // ══════════════════════════════════════════
+    [Header("結局流程")]
+    [Tooltip("結尾漫畫的起始頁（0 起算）。第 63 頁＝62")]
+    public int endingStartPage = 62;
+    [Tooltip("結局模式下，翻到最後一頁後等這麼多秒自動捲名單（不必等玩家按鍵）")]
+    public float endingAutoRollSeconds = 2.5f;
+    [Tooltip("名單捲完後載入的場景。留空＝停在標題卡（展場模式）")]
+    public string sceneAfterCredits = "MainMenuScene";
+    [Tooltip("名單結束後、切回主選單前，全黑停留幾秒")]
+    public float endingTailHold = 1.2f;
+
+    /// <summary>
+    /// ★由玻璃館結局設 true：進 Book 場景後直接跳到結尾漫畫，
+    ///   翻完自動捲名單，名單結束回主選單。
+    ///   自由翻閱（從主選單「製作名單和來源」進來）不受影響。
+    /// </summary>
+    public static bool EndingMode;
 
     // ══════════════════════════════════════════
     // 版面
@@ -141,6 +162,32 @@ public class EndCredits : MonoBehaviour
         LoadCredits();
         if (book == null) book = GetComponent<PageBook>();
         if (book == null) book = Object.FindObjectOfType<PageBook>();
+    }
+
+    private void Start()
+    {
+        // ★結局模式：從玻璃館進來，直接翻到結尾漫畫，並讓名單自動接上
+        if (!EndingMode || book == null) return;
+
+        // 1　關掉畢展自動翻頁：不然玩家看得慢一點就被丟回第一頁，結局毀了
+        ExhibitMode exhibit = book.GetComponent<ExhibitMode>();
+        if (exhibit == null) exhibit = Object.FindObjectOfType<ExhibitMode>();
+        if (exhibit != null) exhibit.enabled = false;
+
+        // 2　清掉章節轉場殘留狀態：避免翻到最後一頁被判成「章節結束」而跳關
+        BookTransitionManager.isChapterMode = false;
+        BookTransitionManager.chapterEndPage = -1;
+        BookTransitionManager.nextSceneAfterBook = "";
+
+        // 3　跳到結尾漫畫，並讓名單在最後一頁後自動接上
+        if (endingStartPage >= 0 && endingStartPage < book.PageCount)
+        {
+            book.GoTo(endingStartPage, false);
+        }
+        if (endingAutoRollSeconds > 0f) autoRollAfterSeconds = endingAutoRollSeconds;
+        armOnLastPage = true;
+
+        Debug.Log("🎬【結局】已跳至結尾漫畫第 " + (endingStartPage + 1) + " 頁，翻完自動捲名單 → " + sceneAfterCredits);
     }
 
     /// <summary>
@@ -332,6 +379,20 @@ public class EndCredits : MonoBehaviour
 
     private IEnumerator Finish(bool skipped)
     {
+        // ★結局模式：名單結束（含被跳過）→ 維持全黑直接切主選單，
+        //   不淡出、不露出繪本最後一頁，收得乾淨。
+        if (EndingMode)
+        {
+            _rolling = false;
+            EndingMode = false;
+            if (!string.IsNullOrEmpty(sceneAfterCredits))
+            {
+                yield return Wait(endingTailHold);
+                SceneManager.LoadScene(sceneAfterCredits);
+                yield break;
+            }
+        }
+
         if (fadeOut > 0f || skipped)
         {
             yield return Fade(1f, 0f, skipped ? 0.6f : fadeOut);
@@ -446,7 +507,9 @@ public class EndCredits : MonoBehaviour
         _curtain = curtainGo.AddComponent<Image>();
         _curtain.raycastTarget = true;
         _curtain.color = new Color(bgColor.r, bgColor.g, bgColor.b, 0f);
-        RectTransform cr = curtainGo.AddComponent<RectTransform>();
+        // ★AddComponent<Image>() 已自動加上 RectTransform，再 Add 一次會回傳 null，
+        //   黑幕就會停在預設 100×100。改用既有的 rectTransform。
+        RectTransform cr = _curtain.rectTransform;
         if (cr != null)
         {
             cr.anchorMin = new Vector2(0f, 0f);
@@ -543,7 +606,9 @@ public class EndCredits : MonoBehaviour
         t.lineSpacing = 20f;
         t.characterSpacing = charSpacing;
 
-        RectTransform r = go.AddComponent<RectTransform>();
+        // ★同上：TextMeshProUGUI 已帶 RectTransform。之前這裡回傳 null，
+        //   每一列名單的位置與寬度都沒被設定，全部疊在同一個點上。
+        RectTransform r = t.rectTransform;
         if (r != null)
         {
             r.anchorMin = new Vector2(0.5f, 1f);

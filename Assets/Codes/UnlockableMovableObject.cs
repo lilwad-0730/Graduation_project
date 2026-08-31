@@ -95,7 +95,7 @@ public class UnlockableMovableObject : MonoBehaviour
                     _pushAudioSource.maxDistance = 25f;
                 }
 
-                _pushAudioSource.volume = Mathf.Clamp01(speed / 2.5f) * pushVolume;
+                _pushAudioSource.volume = AudioManager.ScaleSfx(Mathf.Clamp01(speed / 2.5f) * pushVolume);
                 if (!_pushAudioSource.isPlaying)
                 {
                     _pushAudioSource.Play();
@@ -152,7 +152,7 @@ public class UnlockableMovableObject : MonoBehaviour
         // 播放解鎖音效
         if (unlockSFX != null)
         {
-            AudioSource.PlayClipAtPoint(unlockSFX, transform.position);
+            AudioSource.PlayClipAtPoint(unlockSFX, transform.position, AudioManager.SfxVolume);
         }
 
         Debug.Log($"【解鎖物件】物件 {gameObject.name} 已成功解鎖！Tag 改為：{unlockedTag}，Rigidbody.isKinematic 設為：{(rb != null ? rb.isKinematic.ToString() : "無 Rigidbody")}");

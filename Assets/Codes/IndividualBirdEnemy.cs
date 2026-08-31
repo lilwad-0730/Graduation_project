@@ -558,8 +558,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 2. 播放警告叫聲
         if (warningClip != null)
         {
-            if (audioSource != null) audioSource.PlayOneShot(warningClip);
-            else AudioSource.PlayClipAtPoint(warningClip, transform.position);
+            if (audioSource != null) audioSource.PlayOneShot(warningClip, AudioManager.SfxVolume);
+            else AudioSource.PlayClipAtPoint(warningClip, transform.position, AudioManager.SfxVolume);
         }
 
         // 3. 警報期等待 (預設 1.2 秒)
@@ -570,8 +570,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         PlayAnim(diveAnimName);
         if (flapClip != null)
         {
-            if (audioSource != null) audioSource.PlayOneShot(flapClip);
-            else AudioSource.PlayClipAtPoint(flapClip, transform.position);
+            if (audioSource != null) audioSource.PlayOneShot(flapClip, AudioManager.SfxVolume);
+            else AudioSource.PlayClipAtPoint(flapClip, transform.position, AudioManager.SfxVolume);
         }
         currentState = BirdState.Diving;
         rb.isKinematic = false;

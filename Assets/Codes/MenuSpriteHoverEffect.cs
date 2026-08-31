@@ -116,7 +116,7 @@ private void SetSprite(Sprite sprite, bool playSound, bool hoverState)
 
         if (spriteChanged && playSound && rolloverSound != null && audioSource != null)
         {
-            audioSource.PlayOneShot(rolloverSound, rolloverVolume);
+            audioSource.PlayOneShot(rolloverSound, AudioManager.ScaleSfx(rolloverVolume));
         }
     }
 

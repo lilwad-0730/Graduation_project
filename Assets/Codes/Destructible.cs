@@ -76,7 +76,7 @@ public class Destructible : MonoBehaviour, IResettable
         if (shatterSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(shatterSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(shatterSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(shatterSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 接續播放流沙碎屑隨風吹散音效
@@ -128,7 +128,7 @@ public class Destructible : MonoBehaviour, IResettable
         if (followUpSandSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(followUpSandSFX, transform.position, sandSFXVolume);
-            else AudioSource.PlayClipAtPoint(followUpSandSFX, transform.position, sandSFXVolume);
+            else AudioSource.PlayClipAtPoint(followUpSandSFX, transform.position, AudioManager.ScaleSfx(sandSFXVolume));
         }
 
         yield return new WaitForSeconds(1.5f);

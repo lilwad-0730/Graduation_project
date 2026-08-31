@@ -26,6 +26,7 @@ public class SceneTransitionController : MonoBehaviour
     private List<Vector2> _originalPositions = new List<Vector2>();
     private List<Vector2> _shatteredOffsets = new List<Vector2>();
     private List<float> _shatteredRotations = new List<float>();
+    private bool _isTransitioning;
 
     private void Awake()
     {
@@ -105,19 +106,23 @@ public class SceneTransitionController : MonoBehaviour
 
     public void TransitionToScene(string targetSceneName)
     {
-        StartCoroutine(TransitionRoutine(targetSceneName));
+        if (_isTransitioning) return;
+
+        if (string.IsNullOrWhiteSpace(targetSceneName))
+        {
+            Debug.LogError("[SceneTransitionController] Target scene name is empty.");
+            return;
+        }
+
+        StartCoroutine(TransitionRoutine(targetSceneName.Trim()));
     }
 
     private IEnumerator TransitionRoutine(string targetSceneName)
     {
+        _isTransitioning = true;
+
         // 1. 開啟所有碎裂 Shards
-        for (int i = 0; i < _shards.Count; i++)
-        {
-            _shards[i].gameObject.SetActive(true);
-            _shards[i].anchoredPosition = _originalPositions[i];
-            _shards[i].localRotation = Quaternion.identity;
-            _shards[i].localScale = Vector3.one;
-        }
+        ResetAndShowShards();
 
         // 2. 播放「畫面碎裂與散開」動畫
         float elapsed = 0f;
@@ -137,7 +142,23 @@ public class SceneTransitionController : MonoBehaviour
         }
 
         // 3. 非同步載入目標 Scene
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetSceneName);
+        AsyncOperation asyncLoad = null;
+        try
+        {
+            asyncLoad = SceneManager.LoadSceneAsync(targetSceneName);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[SceneTransitionController] Failed to load scene '{targetSceneName}': {ex.Message}");
+        }
+
+        if (asyncLoad == null)
+        {
+            HideShards();
+            _isTransitioning = false;
+            yield break;
+        }
+
         asyncLoad.allowSceneActivation = false;
 
         while (asyncLoad.progress < 0.9f)
@@ -172,12 +193,32 @@ public class SceneTransitionController : MonoBehaviour
         }
 
         // 隱藏 Shards
-        for (int i = 0; i < _shards.Count; i++)
-        {
-            _shards[i].gameObject.SetActive(false);
-        }
+        HideShards();
 
         // 銷毀轉場控制器
+        _isTransitioning = false;
         Destroy(gameObject);
+    }
+
+    private void ResetAndShowShards()
+    {
+        for (int i = 0; i < _shards.Count; i++)
+        {
+            _shards[i].gameObject.SetActive(true);
+            _shards[i].anchoredPosition = _originalPositions[i];
+            _shards[i].localRotation = Quaternion.identity;
+            _shards[i].localScale = Vector3.one;
+        }
+    }
+
+    private void HideShards()
+    {
+        for (int i = 0; i < _shards.Count; i++)
+        {
+            if (_shards[i] != null)
+            {
+                _shards[i].gameObject.SetActive(false);
+            }
+        }
     }
 }

@@ -82,7 +82,7 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
         if (crackSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(crackSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(crackSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(crackSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         StartCoroutine(CrackRoutine());

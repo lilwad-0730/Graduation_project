@@ -18,7 +18,7 @@ public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHa
 
     [Header("總音量")]
     [SerializeField] private string playerPrefsKey = "MasterVolume";
-    [SerializeField, Range(0f, 1f)] private float defaultVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float defaultVolume = 0.75f;
 
     public float Value { get; private set; }
 

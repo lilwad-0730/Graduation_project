@@ -75,7 +75,7 @@ public class DesertSandRustle : MonoBehaviour
             tempAudio.transform.position = transform.position;
             AudioSource src = tempAudio.AddComponent<AudioSource>();
             src.clip = sandClip;
-            src.volume = volume;
+            src.volume = AudioManager.ScaleSfx(volume);
             src.pitch = targetPitch;
             src.spatialBlend = 1.0f;
             src.minDistance = 2.0f;
@@ -91,7 +91,7 @@ public class DesertSandRustle : MonoBehaviour
             }
             else
             {
-                AudioSource.PlayClipAtPoint(sandClip, transform.position, volume);
+                AudioSource.PlayClipAtPoint(sandClip, transform.position, AudioManager.ScaleSfx(volume));
             }
         }
 

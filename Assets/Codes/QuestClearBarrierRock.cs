@@ -126,7 +126,7 @@ public class QuestClearBarrierRock : MonoBehaviour
         // 5. 巨石震動與消散演出
         if (disappearSFX != null)
         {
-            AudioSource.PlayClipAtPoint(disappearSFX, transform.position, sfxVolume);
+            AudioSource.PlayClipAtPoint(disappearSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         if (disappearParticles != null)

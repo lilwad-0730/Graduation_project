@@ -60,7 +60,7 @@ public class NoteRelief : MonoBehaviour
             directAudioSource.playOnAwake = false;
             directAudioSource.spatialBlend = 0f; // 2D 零衰減直出，保證 100% 清晰響亮
         }
-        directAudioSource.PlayOneShot(clip, volume);
+        directAudioSource.PlayOneShot(clip, AudioManager.ScaleSfx(volume));
     }
 
     private void Start()

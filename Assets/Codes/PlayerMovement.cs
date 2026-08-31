@@ -197,6 +197,21 @@ public class PlayerMovement : MonoBehaviour
         MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
     }
 
+    private void OnDisable()
+    {
+        if (_footstepSource != null)
+        {
+            _footstepSource.Stop();
+            _footstepSource.volume = 0f;
+        }
+
+        if (_swimSource != null)
+        {
+            _swimSource.Stop();
+            _swimSource.volume = 0f;
+        }
+    }
+
     void Start()
     {
         // ★ 自動停用場景中殘留的 Timeline PlayableDirector，防止開局自動播放光離開音效
@@ -490,7 +505,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
             bool shouldPlayFootstep = isGrounded && !isJumping && !isCutsceneFrozen && Mathf.Abs(moveInput) > 0.1f;
-            float maxFootstepVol = sfxVolume * 0.75f;
+            float maxFootstepVol = AudioManager.ScaleSfx(sfxVolume * 0.75f);
             float targetFootstepVol = shouldPlayFootstep ? maxFootstepVol : 0f;
 
             // 50ms 快速微淡入淡出，保證無延遲且絕無波形截斷雜音
@@ -528,6 +543,8 @@ public class PlayerMovement : MonoBehaviour
             {
                 _swimSource.clip = swimSFX;
             }
+
+            _swimSource.volume = AudioManager.ScaleSfx(sfxVolume * 0.85f);
 
             // 只有當玩家主動按下 WASD、方向鍵或空白鍵時才判定為正在划水移動
             bool hasActiveSwimInput = (Mathf.Abs(moveInput) > 0.1f)

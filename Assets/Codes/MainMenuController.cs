@@ -132,7 +132,7 @@ public class MainMenuController : MonoBehaviour
         // 播放選擇音效
         if (!isInitial && selectSfx != null && sfxAudioSource != null)
         {
-            sfxAudioSource.PlayOneShot(selectSfx, 0.5f);
+            sfxAudioSource.PlayOneShot(selectSfx, AudioManager.ScaleSfx(0.5f));
         }
 
         // 連動角色減速與轉向注視
@@ -149,6 +149,7 @@ public class MainMenuController : MonoBehaviour
         if (_isInputDisabled) return;
         _isInputDisabled = true;
 
+        PrepareNewGameRun();
         PlayConfirmSfx();
 
         // 停用選單按鈕 Raycast，防止重複觸發
@@ -162,6 +163,21 @@ public class MainMenuController : MonoBehaviour
         }
 
         SceneTransitionController.Instance.TransitionToScene(targetSceneName);
+    }
+
+    private void PrepareNewGameRun()
+    {
+        Time.timeScale = 1f;
+        BookTransitionManager.ResetTransientState();
+        EndCredits.EndingMode = false;
+        PlayerRespawnSystem.IsAnyRespawning = false;
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
+
+        StoryCardPlayer storyCardPlayer = FindAnyObjectByType<StoryCardPlayer>();
+        if (storyCardPlayer != null)
+        {
+            storyCardPlayer.ReleaseCurtain();
+        }
     }
 
     private void OnSettingsClicked()
@@ -210,7 +226,7 @@ public class MainMenuController : MonoBehaviour
     {
         if (confirmSfx != null && sfxAudioSource != null)
         {
-            sfxAudioSource.PlayOneShot(confirmSfx, 0.8f);
+            sfxAudioSource.PlayOneShot(confirmSfx, AudioManager.ScaleSfx(0.8f));
         }
     }
 

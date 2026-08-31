@@ -41,11 +41,16 @@ public class TornadoFollowCamera : MonoBehaviour
     private bool _isFollowing = false;
     private float _startWorldX;
     private Camera _mainCam;
+    private AudioSource _ambientAudioSource;
+    private float _ambientBaseVolume = 1f;
 
     private void Start()
     {
         _startWorldX = transform.position.x;
         _isFollowing = autoFollowOnStart;
+        _ambientAudioSource = GetComponent<AudioSource>();
+        if (_ambientAudioSource != null)
+            _ambientBaseVolume = _ambientAudioSource.volume;
     }
 
     public void ActivateFollow()
@@ -60,6 +65,9 @@ public class TornadoFollowCamera : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_ambientAudioSource != null)
+            _ambientAudioSource.volume = AudioManager.ScaleSfx(_ambientBaseVolume);
+
         float sweepOffset = enableSweep ? Mathf.Sin(Time.time * sweepSpeed) * sweepDistance : 0f;
 
         if (_mainCam == null) _mainCam = Camera.main ?? Object.FindFirstObjectByType<Camera>();

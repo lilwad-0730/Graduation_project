@@ -37,11 +37,27 @@ public sealed class StartMenuSceneTransition : MonoBehaviour
         }
 
         transitionRequested = true;
+        PrepareNewGameRun();
 
         Collider2D buttonCollider = GetComponent<Collider2D>();
         if (buttonCollider != null)
             buttonCollider.enabled = false;
 
         transitioner.LoadScene(targetSceneName, transitionEffect);
+    }
+
+    private static void PrepareNewGameRun()
+    {
+        Time.timeScale = 1f;
+        BookTransitionManager.ResetTransientState();
+        EndCredits.EndingMode = false;
+        PlayerRespawnSystem.IsAnyRespawning = false;
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
+
+        StoryCardPlayer storyCardPlayer = FindAnyObjectByType<StoryCardPlayer>();
+        if (storyCardPlayer != null)
+        {
+            storyCardPlayer.ReleaseCurtain();
+        }
     }
 }

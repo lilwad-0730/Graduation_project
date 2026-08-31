@@ -255,7 +255,7 @@ public class GuidanceLight : MonoBehaviour
         if (absorbSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(absorbSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(absorbSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(absorbSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 1. 停止粒子發射
@@ -343,7 +343,7 @@ public class GuidanceLight : MonoBehaviour
     {
         if (hoverAudioSource != null)
         {
-            hoverAudioSource.volume = sfxVolume * alpha;
+            hoverAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * alpha);
         }
 
         for (int i = 0; i < spriteRenderers.Length; i++)
@@ -368,7 +368,7 @@ public class GuidanceLight : MonoBehaviour
     {
         if (hoverAudioSource != null)
         {
-            hoverAudioSource.volume = sfxVolume;
+            hoverAudioSource.volume = AudioManager.ScaleSfx(sfxVolume);
             if (!hoverAudioSource.isPlaying) hoverAudioSource.Play();
         }
 

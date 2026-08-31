@@ -14,8 +14,21 @@ using Unity.Cinemachine;
 /// - 抵達鏡牆時先執行【消融縮小被吸收】，完全吸收後再觸發【全螢幕白光閃爍】。
 /// - 全部吸入後觸發鏡牆玻璃碎裂特效 (Destructible / GlassShatterFX)，相機平滑還原追蹤主角，恢復玩家控制。
 /// </summary>
+[RequireComponent(typeof(Collider))]
 public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 {
+
+    // ══════════════════════════════════════════
+    // 鏡牆演完 → 過場文字 → 回到遊戲
+    // ★結局不在這裡：結局在 ShadowMonsterController 的「最後一根燭火」
+    // ══════════════════════════════════════════
+    [Header("🎬 演出結束後的過場文字")]
+    [Tooltip("鏡牆吸入演完後，是否播一段過場文字（播完回到遊戲，不載場景）")]
+    public bool playCardAfterCutscene = true;
+
+    [Tooltip("鏡牆演完要播哪張卡（預設 M5）")]
+    public string afterCutsceneCardId = "M5";
+
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
     public GameObject mirrorWall;
@@ -145,6 +158,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             }
         }
 
+        EnsureColliderSetup();
         InitializeTargets();
         CreateFlashUI();
         CacheInitialLightTransforms();
@@ -158,7 +172,34 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void Start()
     {
+        EnsureColliderSetup();
         FindCinemachineCameras();
+    }
+
+    private void EnsureColliderSetup()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+            if (col is BoxCollider box)
+            {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
+            }
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
+        }
     }
 
     private AudioSource hoverAudioSource;
@@ -225,7 +266,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 hoverAudioSource.maxDistance = hoverHearDistance * 1.5f;
             }
 
-            hoverAudioSource.volume = sfxVolume;
+            hoverAudioSource.volume = AudioManager.ScaleSfx(sfxVolume);
 
             if (!hoverAudioSource.isPlaying)
             {
@@ -360,14 +401,50 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void OnTriggerEnter(Collider other)
     {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryStartCutsceneFrom(collision != null ? collision.gameObject : null);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryStartCutsceneFrom(collision != null ? collision.gameObject : null);
+    }
+
+    private void TryStartCutsceneFrom(GameObject hitObj)
+    {
         if (hasTriggered && triggerOnce) return;
         if (isCutsceneRunning) return;
+        if (hitObj == null) return;
 
         // 判斷是否為玩家踩入
-        if (other.CompareTag("Player") || other.name.ToLower().Contains("player") || other.GetComponentInParent<PlayerMovement>() != null)
+        if (hitObj.CompareTag("Player") ||
+            hitObj.name.ToLower().Contains("player") ||
+            (hitObj.transform.root != null && hitObj.transform.root.name.ToLower().Contains("player")) ||
+            hitObj.GetComponentInParent<PlayerMovement>() != null ||
+            hitObj.GetComponentInChildren<PlayerMovement>() != null)
         {
-            cachedPlayer = other.GetComponent<PlayerMovement>();
-            if (cachedPlayer == null) cachedPlayer = other.GetComponentInParent<PlayerMovement>();
+            cachedPlayer = hitObj.GetComponent<PlayerMovement>();
+            if (cachedPlayer == null) cachedPlayer = hitObj.GetComponentInParent<PlayerMovement>();
+            if (cachedPlayer == null) cachedPlayer = hitObj.GetComponentInChildren<PlayerMovement>();
 
             StartCutscene();
         }
@@ -515,7 +592,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             sfxAudioSource.playOnAwake = false;
             sfxAudioSource.spatialBlend = 0f; // 2D 全螢幕立體聲，零衰減保證 100% 清晰播放
         }
-        sfxAudioSource.PlayOneShot(clip, volume);
+        sfxAudioSource.PlayOneShot(clip, AudioManager.ScaleSfx(volume));
     }
 
     /// <summary>
@@ -660,7 +737,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
             if (flashAudioSource != null && flashAudioSource.isPlaying)
             {
-                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+                flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha)));
             }
 
             yield return null;
@@ -669,7 +746,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         flashImage.color = new Color(1f, 1f, 1f, maxFlashAlpha);
         if (flashAudioSource != null && flashAudioSource.isPlaying)
         {
-            flashAudioSource.volume = sfxVolume;
+            flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume);
         }
 
         float outDuration = Mathf.Max(0.5f, totalDuration - flashFadeInDuration);
@@ -683,7 +760,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
             if (flashAudioSource != null && flashAudioSource.isPlaying)
             {
-                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+                flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha)));
             }
 
             yield return null;
@@ -825,6 +902,24 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         isCutsceneRunning = false;
         IsAnyCutsceneRunning = false;
         Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
+
+        // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）
+        //   接下來玩家往前走會踩到 ShadowMonsterTrigger，黑影才開始追。
+        //   結局不在這裡，在「收完最後一根燭火」——見 ShadowMonsterController。
+        if (playCardAfterCutscene && !string.IsNullOrEmpty(afterCutsceneCardId))
+        {
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
+
+            if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(afterCutsceneCardId))
+            {
+                // (true, true) ＝自己淡入黑幕、播完自己淡出，播完畫面回到遊戲
+                yield return StoryCardPlayer.Instance.Play(afterCutsceneCardId, true, true);
+            }
+
+            // ★一定要解凍，不然玩家會卡在原地動不了
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = false;
+            Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
+        }
     }
 
     /// <summary>

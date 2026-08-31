@@ -46,7 +46,7 @@ public class OasisWaterAmbient : MonoBehaviour
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
         audioSource.clip = waterClip;
-        audioSource.volume = volume;
+        audioSource.volume = AudioManager.ScaleSfx(volume);
         audioSource.loop = true;
         audioSource.playOnAwake = true;
 
@@ -56,6 +56,12 @@ public class OasisWaterAmbient : MonoBehaviour
         audioSource.minDistance = minDistance;
         audioSource.maxDistance = maxDistance;
         audioSource.dopplerLevel = 0f; // 避免 2D 橫向捲軸產生都卜勒音調偏差
+    }
+
+    private void Update()
+    {
+        if (audioSource != null)
+            audioSource.volume = AudioManager.ScaleSfx(volume);
     }
 
     private void OnValidate()
