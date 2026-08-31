@@ -149,6 +149,7 @@ public class MainMenuController : MonoBehaviour
         if (_isInputDisabled) return;
         _isInputDisabled = true;
 
+        PrepareNewGameRun();
         PlayConfirmSfx();
 
         // 停用選單按鈕 Raycast，防止重複觸發
@@ -162,6 +163,21 @@ public class MainMenuController : MonoBehaviour
         }
 
         SceneTransitionController.Instance.TransitionToScene(targetSceneName);
+    }
+
+    private void PrepareNewGameRun()
+    {
+        Time.timeScale = 1f;
+        BookTransitionManager.ResetTransientState();
+        EndCredits.EndingMode = false;
+        PlayerRespawnSystem.IsAnyRespawning = false;
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
+
+        StoryCardPlayer storyCardPlayer = FindAnyObjectByType<StoryCardPlayer>();
+        if (storyCardPlayer != null)
+        {
+            storyCardPlayer.ReleaseCurtain();
+        }
     }
 
     private void OnSettingsClicked()

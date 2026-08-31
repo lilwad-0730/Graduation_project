@@ -29,6 +29,18 @@ public static class BookTransitionManager
     // 標記是否剛剛看完進場開場漫畫（防止重複循環觸發）
     public static bool hasJustFinishedIntro = false;
 
+    public static void ResetTransientState()
+    {
+        isChapterMode = false;
+        chapterStartPage = 0;
+        chapterEndPage = -1;
+        nextSceneAfterBook = "";
+        targetSpawnPointName = "";
+        hasJustFinishedIntro = false;
+        PlayerRespawnSystem.ClearPendingSceneSpawn();
+        PlayerPrefs.DeleteKey("TargetSpawnPoint");
+    }
+
     /// <summary>
     /// 從任何關卡呼叫此方法，開啟特定章節的漫畫轉場
     /// </summary>
@@ -77,10 +89,10 @@ public static class BookTransitionManager
 
         Debug.Log($"✨【漫畫轉場】章節閱讀完畢，轉場載入目標關卡: '{targetScene}'");
 
-        // 若有指定出生點，寫入 PlayerPrefs
+        // 若有指定出生點，交給重生系統在下一個場景套用
         if (!string.IsNullOrEmpty(spawnPoint))
         {
-            PlayerPrefs.SetString("TargetSpawnPoint", spawnPoint);
+            PlayerRespawnSystem.QueueNextSceneSpawn(spawnPoint);
         }
 
         if (SceneTransitionController.Instance != null)

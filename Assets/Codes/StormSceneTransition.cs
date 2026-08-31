@@ -42,6 +42,11 @@ public class StormSceneTransition : MonoBehaviour
     private bool isTransitioning = false;
     private UnityEngine.UI.Image fadeImage;
 
+    private void Awake()
+    {
+        EnsureColliderSetup();
+    }
+
     private void Start()
     {
         if (string.IsNullOrEmpty(nextSceneName) || nextSceneName.Equals("underwater", System.StringComparison.OrdinalIgnoreCase))
@@ -49,15 +54,20 @@ public class StormSceneTransition : MonoBehaviour
             nextSceneName = "desert";
         }
 
-        // 確保碰撞體設為 Trigger 模式，並給予足夠 Z 軸厚度防漏碰
+        EnsureColliderSetup();
+    }
+
+    private void EnsureColliderSetup()
+    {
         Collider col = GetComponent<Collider>();
         if (col != null)
         {
             col.isTrigger = true;
             if (col is BoxCollider box)
             {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
                 Vector3 size = box.size;
-                size.z = Mathf.Max(size.z, 30f);
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
                 box.size = size;
 
                 Vector3 center = box.center;
@@ -65,16 +75,42 @@ public class StormSceneTransition : MonoBehaviour
                 box.center = center;
             }
         }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        TryStartStormTransition(other.gameObject);
+        TryStartStormTransition(other != null ? other.gameObject : null);
     }
 
     private void OnTriggerStay(Collider other)
     {
-        TryStartStormTransition(other.gameObject);
+        TryStartStormTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryStartStormTransition(collision != null ? collision.gameObject : null);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        TryStartStormTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryStartStormTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryStartStormTransition(collision != null ? collision.gameObject : null);
     }
 
     private void TryStartStormTransition(GameObject hitObj)
@@ -92,6 +128,12 @@ public class StormSceneTransition : MonoBehaviour
 
         if (pm != null)
         {
+            if (string.IsNullOrWhiteSpace(nextSceneName))
+            {
+                Debug.LogError("[StormSceneTransition] nextSceneName 是空的，無法轉場。", this);
+                return;
+            }
+
             isTransitioning = true;
             StartCoroutine(VortexSuctionAndTransition(pm));
         }
@@ -156,7 +198,7 @@ public class StormSceneTransition : MonoBehaviour
         // 6. 設定跨場景指定出生點並切換載入 desert 場景
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
-            PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+            PlayerRespawnSystem.QueueNextSceneSpawn(targetSpawnPointName);
         }
 
         // ★【文字卡】畫面此時已全黑 → 播 M2 →（維持全黑）→ 才載入荒原
@@ -166,8 +208,9 @@ public class StormSceneTransition : MonoBehaviour
             yield return StoryCardPlayer.Instance.Play(storyCardId, false, false);
         }
 
-        Debug.Log($"✨【風暴轉場完成】主角抵達風暴核心！載入場景：'{nextSceneName}'，指定出生點：'{targetSpawnPointName}'");
-        SceneManager.LoadScene(nextSceneName);
+        string targetScene = nextSceneName.Trim();
+        Debug.Log($"✨【風暴轉場完成】主角抵達風暴核心！載入場景：'{targetScene}'，指定出生點：'{targetSpawnPointName}'");
+        SceneManager.LoadScene(targetScene);
     }
 
     private void CreateFadeImage()

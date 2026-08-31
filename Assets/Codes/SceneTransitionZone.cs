@@ -71,46 +71,100 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
     private PlayerMovement playerMovement;
     private UnityEngine.UI.Image fadeImage;
 
+    private void Awake()
+    {
+        EnsureColliderSetup();
+    }
+
     private void Start()
     {
-        // 確保碰撞器為 Trigger
+        EnsureColliderSetup();
+    }
+
+    private void EnsureColliderSetup()
+    {
         Collider col = GetComponent<Collider>();
         if (col != null)
         {
             col.isTrigger = true;
+            if (col is BoxCollider box)
+            {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
+            }
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isTransitioning) return;
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
 
-        if (other.CompareTag("Player") || other.name == "Player" || other.GetComponentInParent<PlayerMovement>() != null)
-        {
-            GameObject playerObj = other.GetComponentInParent<PlayerMovement>() != null 
-                ? other.GetComponentInParent<PlayerMovement>().gameObject 
-                : other.gameObject;
+    private void OnTriggerStay(Collider other)
+    {
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
 
-            StartTransition(playerObj);
-        }
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryStartTransition(collision != null ? collision.gameObject : null);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isTransitioning) return;
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
 
-        if (other.CompareTag("Player") || other.name == "Player" || other.GetComponentInParent<PlayerMovement>() != null)
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryStartTransition(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryStartTransition(collision != null ? collision.gameObject : null);
+    }
+
+    private void TryStartTransition(GameObject hitObj)
+    {
+        if (isTransitioning || hitObj == null) return;
+
+        PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
+        if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();
+        if (pm == null) pm = hitObj.GetComponentInChildren<PlayerMovement>();
+
+        if (pm != null)
         {
-            GameObject playerObj = other.GetComponentInParent<PlayerMovement>() != null 
-                ? other.GetComponentInParent<PlayerMovement>().gameObject 
-                : other.gameObject;
+            StartTransition(pm.gameObject);
+            return;
+        }
 
-            StartTransition(playerObj);
+        if (hitObj.CompareTag("Player") || hitObj.name == "Player" || (hitObj.transform.root != null && hitObj.transform.root.name.Contains("Player")))
+        {
+            StartTransition(hitObj);
         }
     }
 
     private void StartTransition(GameObject playerObj)
     {
+        if (string.IsNullOrWhiteSpace(nextSceneName))
+        {
+            Debug.LogError("[SceneTransitionZone] nextSceneName 是空的，無法轉場。", this);
+            return;
+        }
+
         isTransitioning = true;
         playerTransform = playerObj.transform;
         playerRb = playerObj.GetComponent<Rigidbody>();
@@ -217,7 +271,7 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         // 設定跨場景出生點
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
-            PlayerRespawnSystem.NextSceneSpawnTargetName = targetSpawnPointName;
+            PlayerRespawnSystem.QueueNextSceneSpawn(targetSpawnPointName);
         }
 
         string targetScene = nextSceneName.Trim();

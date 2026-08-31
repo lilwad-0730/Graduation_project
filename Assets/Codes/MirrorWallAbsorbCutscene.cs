@@ -14,6 +14,7 @@ using Unity.Cinemachine;
 /// - 抵達鏡牆時先執行【消融縮小被吸收】，完全吸收後再觸發【全螢幕白光閃爍】。
 /// - 全部吸入後觸發鏡牆玻璃碎裂特效 (Destructible / GlassShatterFX)，相機平滑還原追蹤主角，恢復玩家控制。
 /// </summary>
+[RequireComponent(typeof(Collider))]
 public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 {
 
@@ -156,6 +157,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             }
         }
 
+        EnsureColliderSetup();
         InitializeTargets();
         CreateFlashUI();
         CacheInitialLightTransforms();
@@ -169,7 +171,34 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void Start()
     {
+        EnsureColliderSetup();
         FindCinemachineCameras();
+    }
+
+    private void EnsureColliderSetup()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+            if (col is BoxCollider box)
+            {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
+            }
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
+        }
     }
 
     private AudioSource hoverAudioSource;
@@ -371,14 +400,50 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
     private void OnTriggerEnter(Collider other)
     {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryStartCutsceneFrom(collision != null ? collision.gameObject : null);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryStartCutsceneFrom(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryStartCutsceneFrom(collision != null ? collision.gameObject : null);
+    }
+
+    private void TryStartCutsceneFrom(GameObject hitObj)
+    {
         if (hasTriggered && triggerOnce) return;
         if (isCutsceneRunning) return;
+        if (hitObj == null) return;
 
         // 判斷是否為玩家踩入
-        if (other.CompareTag("Player") || other.name.ToLower().Contains("player") || other.GetComponentInParent<PlayerMovement>() != null)
+        if (hitObj.CompareTag("Player") ||
+            hitObj.name.ToLower().Contains("player") ||
+            (hitObj.transform.root != null && hitObj.transform.root.name.ToLower().Contains("player")) ||
+            hitObj.GetComponentInParent<PlayerMovement>() != null ||
+            hitObj.GetComponentInChildren<PlayerMovement>() != null)
         {
-            cachedPlayer = other.GetComponent<PlayerMovement>();
-            if (cachedPlayer == null) cachedPlayer = other.GetComponentInParent<PlayerMovement>();
+            cachedPlayer = hitObj.GetComponent<PlayerMovement>();
+            if (cachedPlayer == null) cachedPlayer = hitObj.GetComponentInParent<PlayerMovement>();
+            if (cachedPlayer == null) cachedPlayer = hitObj.GetComponentInChildren<PlayerMovement>();
 
             StartCutscene();
         }

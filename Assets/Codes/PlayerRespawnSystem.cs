@@ -106,6 +106,24 @@ public class PlayerRespawnSystem : MonoBehaviour
     public static Vector3 ActiveRespawnPosition => Instance != null ? Instance._activeRespawnPos : Vector3.zero;
     public static bool IsPlayerMovingAfterRespawn => Instance == null || !Instance._isWaitingForPlayerMove;
 
+    public static void QueueNextSceneSpawn(string spawnTargetName)
+    {
+        NextSceneSpawnTargetName = string.IsNullOrWhiteSpace(spawnTargetName) ? "" : spawnTargetName.Trim();
+        NextSceneCustomSpawnPos = null;
+    }
+
+    public static void QueueNextSceneSpawn(Vector3 spawnPosition)
+    {
+        NextSceneSpawnTargetName = "";
+        NextSceneCustomSpawnPos = spawnPosition;
+    }
+
+    public static void ClearPendingSceneSpawn()
+    {
+        NextSceneSpawnTargetName = "";
+        NextSceneCustomSpawnPos = null;
+    }
+
     private Vector3 _activeRespawnPos; // 當前啟用的明確存檔點座標
 
     private void Awake()
@@ -137,7 +155,8 @@ public class PlayerRespawnSystem : MonoBehaviour
         // 1. 若轉場前有指定特定隱形物件名稱 (如 "SpawnPoint_FromSampleScene")
         if (!string.IsNullOrEmpty(NextSceneSpawnTargetName))
         {
-            GameObject targetObj = GameObject.Find(NextSceneSpawnTargetName);
+            string requestedSpawnTarget = NextSceneSpawnTargetName;
+            GameObject targetObj = GameObject.Find(requestedSpawnTarget);
             if (targetObj != null)
             {
                 Vector3 targetPos = new Vector3(targetObj.transform.position.x, targetObj.transform.position.y + 0.2f, targetObj.transform.position.z);
@@ -148,18 +167,18 @@ public class PlayerRespawnSystem : MonoBehaviour
                 _activeRespawnPos = targetObj.transform.position;
                 _initialPlayPos = targetObj.transform.position;
 
-                Debug.Log($"🚩【跨場景出生點】進入新場景 [{scene.name}]，已成功將主角傳送至指定隱形物件 [{NextSceneSpawnTargetName}]：{targetPos}");
-                NextSceneSpawnTargetName = "";
+                Debug.Log($"🚩【跨場景出生點】進入新場景 [{scene.name}]，已成功將主角傳送至指定隱形物件 [{requestedSpawnTarget}]：{targetPos}");
+                ClearPendingSceneSpawn();
                 yield break;
             }
             else
             {
-                Debug.LogWarning($"⚠️【跨場景出生點】在新場景 [{scene.name}] 中找不到指定的隱形物件 '{NextSceneSpawnTargetName}'，將採用預設位置！");
+                Debug.LogWarning($"⚠️【跨場景出生點】在新場景 [{scene.name}] 中找不到指定的隱形物件 '{requestedSpawnTarget}'，將採用預設位置！");
                 NextSceneSpawnTargetName = "";
             }
         }
         // 2. 若轉場前有指定自訂座標
-        else if (NextSceneCustomSpawnPos.HasValue)
+        if (NextSceneCustomSpawnPos.HasValue)
         {
             Vector3 targetPos = NextSceneCustomSpawnPos.Value;
             PlayerMovement pm = GetMovement();
@@ -170,7 +189,7 @@ public class PlayerRespawnSystem : MonoBehaviour
             _initialPlayPos = targetPos;
 
             Debug.Log($"🚩【跨場景出生點】進入新場景 [{scene.name}]，已成功將主角傳送至自訂座標：{targetPos}");
-            NextSceneCustomSpawnPos = null;
+            ClearPendingSceneSpawn();
             yield break;
         }
 

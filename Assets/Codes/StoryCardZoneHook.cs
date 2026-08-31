@@ -47,6 +47,9 @@ public class StoryCardZoneHook : MonoBehaviour
             enabled = false;
             return;
         }
+
+        EnsureColliderSetup();
+
         if (takeOver)
         {
             // 停用原本的轉場，由這支接管。
@@ -55,29 +58,92 @@ public class StoryCardZoneHook : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        EnsureColliderSetup();
+    }
+
+    private void EnsureColliderSetup()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+            if (col is BoxCollider box)
+            {
+                float lossyZ = transform.lossyScale.z != 0f ? Mathf.Abs(transform.lossyScale.z) : 1f;
+                Vector3 size = box.size;
+                size.z = Mathf.Max(size.z, 30f / lossyZ);
+                box.size = size;
+
+                Vector3 center = box.center;
+                center.z = 0f;
+                box.center = center;
+            }
+        }
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null)
+        {
+            col2d.isTrigger = true;
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
+        TryRun(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryRun(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        TryRun(collision != null ? collision.gameObject : null);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        TryRun(other != null ? other.gameObject : null);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        TryRun(other != null ? other.gameObject : null);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryRun(collision != null ? collision.gameObject : null);
+    }
+
+    private void TryRun(GameObject hitObj)
+    {
         if (!takeOver || _fired || _zone == null) return;
-        // ★死亡防護：重生流程進行中不觸發轉場卡
         if (PlayerRespawnSystem.IsAnyRespawning) return;
-        if (!IsPlayer(other)) return;
+        if (!IsPlayer(hitObj)) return;
 
         _fired = true;
-        StartCoroutine(Run(other));
+        StartCoroutine(Run(hitObj));
     }
 
-    private static bool IsPlayer(Collider other)
+    private static bool IsPlayer(GameObject hitObj)
     {
-        if (other == null) return false;
-        if (other.gameObject != null && other.gameObject.tag == "Player") return true;
-        if (other.name == "Player") return true;
-        return other.GetComponentInParent<PlayerMovement>() != null;
+        if (hitObj == null) return false;
+        if (hitObj.CompareTag("Player")) return true;
+        if (hitObj.name == "Player") return true;
+        if (hitObj.transform.root != null && hitObj.transform.root.name.Contains("Player")) return true;
+        return hitObj.GetComponentInParent<PlayerMovement>() != null ||
+               hitObj.GetComponentInChildren<PlayerMovement>() != null;
     }
 
-    private IEnumerator Run(Collider other)
+    private IEnumerator Run(GameObject hitObj)
     {
-        GameObject playerObj = other.gameObject;
-        PlayerMovement pm = other.GetComponentInParent<PlayerMovement>();
+        GameObject playerObj = hitObj;
+        PlayerMovement pm = hitObj != null ? hitObj.GetComponentInParent<PlayerMovement>() : null;
+        if (pm == null && hitObj != null) pm = hitObj.GetComponentInChildren<PlayerMovement>();
         if (pm != null) playerObj = pm.gameObject;
 
         Rigidbody rb = playerObj != null ? playerObj.GetComponent<Rigidbody>() : null;
@@ -109,7 +175,7 @@ public class StoryCardZoneHook : MonoBehaviour
         // 5　跨場景出生點（沿用原本填的值）
         if (!string.IsNullOrEmpty(_zone.targetSpawnPointName))
         {
-            PlayerRespawnSystem.NextSceneSpawnTargetName = _zone.targetSpawnPointName;
+            PlayerRespawnSystem.QueueNextSceneSpawn(_zone.targetSpawnPointName);
         }
 
         // 6　載入場景

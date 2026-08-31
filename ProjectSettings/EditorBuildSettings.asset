@@ -10,7 +10,7 @@ EditorBuildSettings:
     guid: d95023d2b274bf0449608aebc0a08012
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    guid: c78b8e82f11b46158ba531f4d82f7d6a
   - enabled: 1
     path: Assets/Scenes/underwater.unity
     guid: 0cfde6769e3a1ec45af6b85c62401677
