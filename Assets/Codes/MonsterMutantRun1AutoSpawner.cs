@@ -162,7 +162,6 @@ public class MonsterMutantRun1AutoSpawner : MonoBehaviour
         Debug.Log("[Fix] ✅✅✅ 全部修復完成！請直接按 Play 測試動畫。");
     }
 
-    [UnityEditor.InitializeOnLoadMethod]
     [UnityEditor.MenuItem("Tools/Rebuild MonsterMutant7 Animator Controller")]
     public static void RebuildCleanAnimatorController()
     {
