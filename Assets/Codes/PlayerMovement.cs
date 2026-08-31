@@ -197,6 +197,21 @@ public class PlayerMovement : MonoBehaviour
         MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
     }
 
+    private void OnDisable()
+    {
+        if (_footstepSource != null)
+        {
+            _footstepSource.Stop();
+            _footstepSource.volume = 0f;
+        }
+
+        if (_swimSource != null)
+        {
+            _swimSource.Stop();
+            _swimSource.volume = 0f;
+        }
+    }
+
     void Start()
     {
         // ★ 自動停用場景中殘留的 Timeline PlayableDirector，防止開局自動播放光離開音效
