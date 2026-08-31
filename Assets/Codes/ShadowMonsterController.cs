@@ -64,6 +64,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("演出期間暫時把 Cinemachine 的位置阻尼調小，鏡頭才追得上。場景預設是 1，太黏會飛不到怪物身上就被叫回來。設負數＝不動它")]
     public float revealCameraDamping = 0.4f;
 
+    [Tooltip("演出時把鏡頭拉遠讓整隻怪物進畫面，留多少邊。1.2＝上下各留 20%。這隻怪物約 45 單位高、鏡頭只看得到 27 單位，不拉遠只會看到牠的肚子。設 0＝不拉遠")]
+    public float revealZoomPadding = 1.2f;
+
+    [Header("★ 開場距離：怪物要離主角多遠")]
+    [Tooltip("觸發追逐時，把怪物擺到主角後方固定距離，玩家才有跑的空間。關掉＝用怪物在場景裡擺的位置")]
+    public bool repositionOnActivate = true;
+
+    [Tooltip("怪物出現在主角後方幾個世界單位。鏡頭一次看得到 48 單位寬，所以 45 大約是一個畫面外。超過 runDistanceThreshold（30）怪物會切成跑步追上來")]
+    public float spawnDistanceBehindPlayer = 45f;
+
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
     public bool chaseWhileAppearing = true;
@@ -241,7 +251,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private List<Transform> _revealOrigFollow = new List<Transform>();
     private List<CinemachineFollow> _revealFollows = new List<CinemachineFollow>();
     private List<Vector3> _revealOrigDamping = new List<Vector3>();
-    private Renderer[] _revealRenderers;
+    private List<float> _revealOrigLens = new List<float>();
+    private Bounds _revealLocalBounds = new Bounds(Vector3.zero, Vector3.one);
+    private float _revealTargetLens = 0f;
+    private bool _revealZoomEnabled = false;
 
     // Coroutine 追蹤
     private Coroutine _stateCoroutine;
@@ -450,6 +463,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public void ActivateChase()
     {
         if (currentState != MonsterState.Dormant) return;
+
+        // ★開場先把怪物擺到主角後方一段距離。
+        //   場景裡牠只離觸發點 23 單位，而鏡頭一次就看得到 48 單位寬——
+        //   等於一開始怪物就貼在臉上，沒有跑的空間。
+        //   只改 X，Y／Z 保持美術擺好的樣子（牠是半身埋在玻璃地板下的巨影）。
+        EnsurePlayerReference();
+        if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
+        {
+            Vector3 sp = transform.position;
+            sp.x = player.position.x - spawnDistanceBehindPlayer;   // 主角往 +X 前進，怪物在 -X 那側
+            transform.position = sp;
+            Debug.Log($"【影子怪物】開場定位：主角 x={player.position.x:F1}，怪物擺到 x={sp.x:F1}（後方 {spawnDistanceBehindPlayer} 單位）");
+        }
+
         if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
         _stateCoroutine = StartCoroutine(AppearSequence());
     }
@@ -604,48 +631,67 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             if (prb != null) prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
         }
 
-        // 2) 鏡頭飛去怪物
-        //    對準點不是 transform（Pivot 在腳底，會對到地板下面），
-        //    而是全身 Renderer 的中心，並且沿用主角的 Z，讓相機留在原本的景深平面上。
+        // 2) 先量出怪物的視覺範圍。
+        //    ★不能用 Renderer.bounds：這時候 SetVisualAlpha(0) 已經把所有 Renderer 關掉，
+        //      關掉的 Renderer（尤其 SkinnedMeshRenderer）回報的 bounds 是舊的／空的，
+        //      鏡頭就會飛去一個沒有東西的地方——這就是「鏡頭鎖定怪物但怪物沒顯示」。
+        //      改成從 Mesh 資產本身的 bounds 算，關著也算得出來。
+        MeasureRevealBounds();
         EnsureRevealFocus();
         UpdateRevealFocus();
+
+        // 3) 接管相機，飛向怪物
         RevealCameraTakeOver();
         RevealCameraLookAt(_revealFocus);
 
-        float travel = Mathf.Max(0f, revealCameraTravel);
-        float e = 0f;
-        while (e < travel) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
-
-        // 3) 怪物浮現
+        // 4) ★怪物立刻開始現身，不能等鏡頭飛到才開始。
+        //    鏡頭飛過去要一秒多，那段時間怪物還是隱形的話，玩家看到的就是一片空地。
+        //    同時把鏡頭拉遠，這隻怪物比整個畫面還高，不拉遠只會看到牠的肚子。
         float dur = Mathf.Max(0.01f, appearDuration);
-        float t2 = 0f;
-        while (t2 < dur)
+        float travel = Mathf.Max(0.01f, revealCameraTravel);
+        float span = Mathf.Max(dur, travel);
+        float e = 0f;
+        while (e < span)
         {
-            t2 += Time.deltaTime;
-            SetVisualAlpha(Mathf.SmoothStep(0f, 1f, t2 / dur));
+            e += Time.deltaTime;
+            SetVisualAlpha(Mathf.Clamp01(Mathf.SmoothStep(0f, 1f, e / dur)));
             transform.localScale = _baseScale * _currentScaleMultiplier;
             UpdateRevealFocus();
+            UpdateRevealZoom(Mathf.Clamp01(e / travel));
             yield return null;
         }
         SetVisualAlpha(1f);
         transform.localScale = _baseScale * _currentScaleMultiplier;
+        UpdateRevealZoom(1f);
 
         PlayRoar();
 
         e = 0f;
-        while (e < Mathf.Max(0f, revealHoldBeforeMove)) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
+        while (e < Mathf.Max(0f, revealHoldBeforeMove))
+        {
+            e += Time.deltaTime; UpdateRevealFocus(); yield return null;
+        }
 
-        // 4) ★怪物在鏡頭前開始移動
+        // 5) ★怪物在鏡頭前開始移動
         currentState = MonsterState.Chasing;
         e = 0f;
-        while (e < Mathf.Max(0f, revealWatchMoveSeconds)) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
+        while (e < Mathf.Max(0f, revealWatchMoveSeconds))
+        {
+            e += Time.deltaTime; UpdateRevealFocus(); yield return null;
+        }
 
-        // 5) 鏡頭飛回主角
+        // 6) 鏡頭飛回主角，鏡頭大小同時收回原本的
         RevealCameraLookAt(player != null ? player : transform);
         e = 0f;
-        while (e < travel) { e += Time.deltaTime; yield return null; }
+        while (e < travel)
+        {
+            e += Time.deltaTime;
+            UpdateRevealZoom(1f - Mathf.Clamp01(e / travel));
+            yield return null;
+        }
+        UpdateRevealZoom(0f);
 
-        // 6) 還原相機、解凍、開始遊戲
+        // 7) 還原相機、解凍、開始遊戲
         RevealFinish();
         Debug.Log("【影子怪物】登場運鏡結束，控制權交還玩家。");
     }
@@ -662,6 +708,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void RevealCancel()
     {
         if (!_revealActive && !_revealCamTaken) return;
+        UpdateRevealZoom(0f);
         RevealFinish();
         if (_revealFocus != null) Destroy(_revealFocus.gameObject);
         _revealFocus = null;
@@ -671,36 +718,73 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (_revealFocus == null)
             _revealFocus = new GameObject("ShadowMonster_RevealFocus").transform;
-        // 每幀 GetComponentsInChildren 會一直配置陣列，開演前抓一次就好
-        if (_revealRenderers == null || _revealRenderers.Length == 0)
-            _revealRenderers = GetComponentsInChildren<Renderer>(true);
     }
 
-    /// <summary> 對準點＝全身 Renderer 的中心 ＋ 微調，Z 沿用主角，讓相機不要往後退。 </summary>
+    /// <summary> 對準點＝視覺中心（不是 transform，牠的 Pivot 在腳底），Z 沿用主角。 </summary>
     private void UpdateRevealFocus()
     {
         if (_revealFocus == null) return;
-        Vector3 c = MonsterVisualCenter();
+        Vector3 c = transform.TransformPoint(_revealLocalBounds.center);
         float z = player != null ? player.position.z : c.z;
         _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, z);
     }
 
-    private Vector3 MonsterVisualCenter()
+    // ── 從 Mesh 資產量身高（Renderer 關著也算得出來）────────────────────────
+    private void MeasureRevealBounds()
     {
-        Renderer[] rs = _revealRenderers != null && _revealRenderers.Length > 0
-            ? _revealRenderers
-            : GetComponentsInChildren<Renderer>(true);
+        Matrix4x4 toLocal = transform.worldToLocalMatrix;
         bool any = false;
-        Bounds b = new Bounds(transform.position, Vector3.zero);
-        foreach (var r in rs)
+        Bounds acc = new Bounds(Vector3.zero, Vector3.zero);
+
+        foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
         {
-            if (r == null) continue;
-            if (!any) { b = r.bounds; any = true; }
-            else b.Encapsulate(r.bounds);
+            if (r == null || r.sharedMesh == null) continue;
+            // SkinnedMeshRenderer 的 sharedMesh.bounds 是在 rootBone 的空間裡
+            Transform space = r.rootBone != null ? r.rootBone : r.transform;
+            AccumulateBounds(ref acc, ref any, r.sharedMesh.bounds, toLocal * space.localToWorldMatrix);
         }
-        return any ? b.center : transform.position;
+        foreach (var f in GetComponentsInChildren<MeshFilter>(true))
+        {
+            if (f == null || f.sharedMesh == null) continue;
+            if (f.GetComponent<MeshRenderer>() == null) continue;
+            AccumulateBounds(ref acc, ref any, f.sharedMesh.bounds, toLocal * f.transform.localToWorldMatrix);
+        }
+
+        if (!any)
+        {
+            // 真的量不到就退回 Renderer.bounds（至少有個值），再不行就用自己的原點
+            Renderer[] rs = GetComponentsInChildren<Renderer>(true);
+            foreach (var r in rs)
+            {
+                if (r == null) continue;
+                Vector3 lc = transform.InverseTransformPoint(r.bounds.center);
+                if (!any) { acc = new Bounds(lc, Vector3.zero); any = true; }
+                else acc.Encapsulate(lc);
+            }
+            if (!any) acc = new Bounds(Vector3.zero, Vector3.one);
+        }
+
+        _revealLocalBounds = acc;
+        Debug.Log($"【影子怪物】量到的視覺範圍（本地）中心 {acc.center}，大小 {acc.size}；" +
+                  $"世界高度約 {acc.size.y * Mathf.Abs(transform.lossyScale.y):F1} 單位。");
     }
 
+    private static void AccumulateBounds(ref Bounds acc, ref bool any, Bounds local, Matrix4x4 m)
+    {
+        Vector3 c = local.center, ex = local.extents;
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 pt = new Vector3(
+                c.x + (((i & 1) == 0) ? -ex.x : ex.x),
+                c.y + (((i & 2) == 0) ? -ex.y : ex.y),
+                c.z + (((i & 4) == 0) ? -ex.z : ex.z));
+            Vector3 w = m.MultiplyPoint3x4(pt);
+            if (!any) { acc = new Bounds(w, Vector3.zero); any = true; }
+            else acc.Encapsulate(w);
+        }
+    }
+
+    // ── 相機接管 ──────────────────────────────────────────────────────────
     private void RevealCameraTakeOver()
     {
         if (_revealCamTaken) return;
@@ -711,11 +795,21 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _revealOrigFollow.Clear();
         _revealFollows.Clear();
         _revealOrigDamping.Clear();
+        _revealOrigLens.Clear();
+
+        if (_mainCam == null) _mainCam = Camera.main;
+        bool ortho = _mainCam == null || _mainCam.orthographic;
+
+        // 這隻怪物比整個畫面還高，算出要把鏡頭拉多遠才裝得下
+        float halfH = _revealLocalBounds.extents.y * Mathf.Abs(transform.lossyScale.y);
+        _revealZoomEnabled = ortho && revealZoomPadding > 0f && halfH > 0.01f;
+        _revealTargetLens = halfH * revealZoomPadding;
 
         foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
         {
             _revealVcams3.Add(v);
             _revealOrigFollow.Add(v.Follow);
+            _revealOrigLens.Add(v != null ? v.Lens.OrthographicSize : 0f);
 
             // 場景的 PositionDamping 是 1，鏡頭會很黏；演出期間先調小，結束再還原
             CinemachineFollow cf = v != null ? v.GetComponent<CinemachineFollow>() : null;
@@ -732,6 +826,22 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             _revealVcamsLegacy.Add(v);
             _revealOrigFollow.Add(v.Follow);
+        }
+    }
+
+    /// <summary> t: 0 ＝ 原本的鏡頭大小，1 ＝ 拉遠到整隻怪物裝得下。 </summary>
+    private void UpdateRevealZoom(float t)
+    {
+        if (!_revealZoomEnabled || !_revealCamTaken) return;
+        for (int i = 0; i < _revealVcams3.Count && i < _revealOrigLens.Count; i++)
+        {
+            var v = _revealVcams3[i];
+            if (v == null) continue;
+            float orig = _revealOrigLens[i];
+            float target = Mathf.Max(orig, _revealTargetLens);   // 只拉遠，不拉近
+            var lens = v.Lens;
+            lens.OrthographicSize = Mathf.Lerp(orig, target, Mathf.Clamp01(t));
+            v.Lens = lens;
         }
     }
 
@@ -758,7 +868,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (!_revealCamTaken) return;
         _revealCamTaken = false;
 
-        // 阻尼先還原
+        // 鏡頭大小還原
+        for (int i = 0; i < _revealVcams3.Count && i < _revealOrigLens.Count; i++)
+        {
+            var v = _revealVcams3[i];
+            if (v == null) continue;
+            var lens = v.Lens;
+            lens.OrthographicSize = _revealOrigLens[i];
+            v.Lens = lens;
+        }
+
+        // 阻尼還原
         for (int i = 0; i < _revealFollows.Count; i++)
         {
             CinemachineFollow cf = _revealFollows[i];
