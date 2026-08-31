@@ -315,6 +315,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     void Awake()
     {
+        // ★每次載入本場景都把結局旗標歸零：
+        //   不然玩家「通關 → 回主選單 → 再玩一次」時（同一個 Play 期間不會重置 static），
+        //   _endingFired 還留著 true，第二輪收完最後一根燭火就不會進結局了。
+        _endingFired = false;
+
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
