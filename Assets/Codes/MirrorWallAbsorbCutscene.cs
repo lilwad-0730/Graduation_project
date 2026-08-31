@@ -23,7 +23,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     // ══════════════════════════════════════════
     [Header("🎬 結局出口")]
     [Tooltip("演出結束後接結尾漫畫與片尾名單（整局的最後一段）")]
-    public bool playEndingAfterCutscene = true;
+    public bool playEndingAfterCutscene = false;   // ★結局已改由「最後一根燭火」觸發，見 ShadowMonsterController
     [Tooltip("接結尾前要播的過場文字卡")]
     public string endingCardId = "M5";
     [Tooltip("結尾漫畫所在的場景名稱")]

@@ -35,6 +35,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Header("燭火清單 (⚠ 請手動拖曳所有燭火物件到此陣列)")]
     public CandleCollectible[] candles;
 
+    [Header("★ 結局：收完最後一根燭火就進結局")]
+    [Tooltip("收完所有燭火後是否直接進結局（原本掛在鏡牆演出上，已改到這裡）")]
+    public bool playEndingAfterAllCandles = true;
+
+    [Tooltip("進結局前播的文字卡 ID")]
+    public string endingCardId = "M5";
+
+    [Tooltip("結局要載入的場景（繪本）")]
+    public string endingBookScene = "Book";
+
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
     public bool chaseWhileAppearing = true;
@@ -435,7 +445,37 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             Debug.Log("【影子怪物】全部燭火收集完畢！怪物開始消失...");
             if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
             _stateCoroutine = StartCoroutine(VanishSequence());
+
+            // ★最後一根燭火＝結局。不等消散動畫演完，立刻接。
+            if (playEndingAfterAllCandles) StartCoroutine(PlayEndingRoutine());
         }
+    }
+
+    private static bool _endingFired;   // ★防重入：整場遊戲只進一次結局
+
+    /// <summary>
+    /// 最後一根燭火 → 結局。
+    /// 凍結玩家 → 播 M5 文字卡（播完維持全黑，把畫面交給下一個場景）→ 載入繪本結局。
+    /// 原本這段掛在 MirrorWallAbsorbCutscene，但鏡牆觸發區就在玩家起點右邊 2.7 公尺，
+    /// 走一秒就會結束遊戲，整個 Boss 段跳過。改掛在這裡才是對的順序。
+    /// </summary>
+    private IEnumerator PlayEndingRoutine()
+    {
+        if (_endingFired) yield break;
+        _endingFired = true;
+
+        if (_pm != null) _pm.isCutsceneFrozen = true;
+
+        if (StoryCardPlayer.Instance != null && !string.IsNullOrEmpty(endingCardId)
+            && StoryCardPlayer.Instance.HasCard(endingCardId))
+        {
+            // 第二個參數 true ＝播完維持全黑，不要閃一下亮再黑
+            yield return StoryCardPlayer.Instance.Play(endingCardId, true, false);
+        }
+
+        EndCredits.EndingMode = true;
+        if (!string.IsNullOrEmpty(endingBookScene))
+            UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -927,12 +967,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             return;
         }
 
-        _totalCandles = candles.Length;
-        _lastCandleByX = candles[0];
+        // ★只算真的接上的燭火。用 candles.Length 會把空格算進去，
+        //   收永遠收不滿，玩家會打不倒怪物也看不到結局，而且完全沒有錯誤訊息。
+        int nullSlots = 0;
+        _totalCandles = 0;
+        _lastCandleByX = null;
         foreach (var c in candles)
         {
-            if (c != null && c.transform.position.x > _lastCandleByX.transform.position.x)
+            if (c == null) { nullSlots++; continue; }
+            _totalCandles++;
+            if (_lastCandleByX == null || c.transform.position.x > _lastCandleByX.transform.position.x)
                 _lastCandleByX = c;
+        }
+        if (nullSlots > 0)
+            Debug.LogWarning($"【影子怪物】⚠ candles[] 有 {nullSlots} 個空格沒接東西，已忽略。" +
+                             $"實際有效燭火 {_totalCandles} 根——請到 Inspector 補齊或縮短陣列。", this);
+        if (_totalCandles == 0)
+        {
+            Debug.LogError("【影子怪物】⚠⚠ 一根有效燭火都沒有！怪物將無法被打倒，結局也不會觸發。", this);
+            return;
         }
 
         Debug.Log($"【影子怪物】共 {_totalCandles} 根燭火。" +
