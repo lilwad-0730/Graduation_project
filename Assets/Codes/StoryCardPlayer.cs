@@ -777,7 +777,11 @@ public class StoryCardPlayer : MonoBehaviour
         _curtain = curtainGo.AddComponent<Image>();
         _curtain.color = new Color(bgColor.r, bgColor.g, bgColor.b, 0f);
         _curtain.raycastTarget = true;
-        RectTransform cr = curtainGo.AddComponent<RectTransform>();
+        // ★ AddComponent<Image>() / AddComponent<TextMeshProUGUI>() 會自動把 Transform
+        //   換成 RectTransform。這時再 AddComponent<RectTransform>() 會失敗並回傳 null，
+        //   下面整段設定就被 if 擋掉——黑幕會停在預設的 100×100 置中小方塊，
+        //   看起來就是「沒有蓋滿全螢幕、也看不出淡入淡出」。改用既有的 rectTransform。
+        RectTransform cr = _curtain.rectTransform;
         if (cr != null)
         {
             cr.anchorMin = new Vector2(0f, 0f);
@@ -795,7 +799,8 @@ public class StoryCardPlayer : MonoBehaviour
 
         ApplyTextStyle();
 
-        _labelRect = labelGo.AddComponent<RectTransform>();
+        // ★同上：TextMeshProUGUI 已經帶了 RectTransform，不能再 AddComponent。
+        _labelRect = _label.rectTransform;
         if (_labelRect != null)
         {
             _labelRect.anchorMin = new Vector2(0.5f, 0.5f);

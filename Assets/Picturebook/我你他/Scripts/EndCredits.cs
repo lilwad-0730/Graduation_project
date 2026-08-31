@@ -507,7 +507,9 @@ public class EndCredits : MonoBehaviour
         _curtain = curtainGo.AddComponent<Image>();
         _curtain.raycastTarget = true;
         _curtain.color = new Color(bgColor.r, bgColor.g, bgColor.b, 0f);
-        RectTransform cr = curtainGo.AddComponent<RectTransform>();
+        // ★AddComponent<Image>() 已自動加上 RectTransform，再 Add 一次會回傳 null，
+        //   黑幕就會停在預設 100×100。改用既有的 rectTransform。
+        RectTransform cr = _curtain.rectTransform;
         if (cr != null)
         {
             cr.anchorMin = new Vector2(0f, 0f);
@@ -604,7 +606,9 @@ public class EndCredits : MonoBehaviour
         t.lineSpacing = 20f;
         t.characterSpacing = charSpacing;
 
-        RectTransform r = go.AddComponent<RectTransform>();
+        // ★同上：TextMeshProUGUI 已帶 RectTransform。之前這裡回傳 null，
+        //   每一列名單的位置與寬度都沒被設定，全部疊在同一個點上。
+        RectTransform r = t.rectTransform;
         if (r != null)
         {
             r.anchorMin = new Vector2(0.5f, 1f);
