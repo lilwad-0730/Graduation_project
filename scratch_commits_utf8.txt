@@ -1,0 +1,706 @@
+commit 61fd4f62046aeb402d751d8661b4271e24c07c6b
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 12:25:26 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 12:25:26 2026 +0000
+
+    播卡暫停加三重安全網：絕不把遊戲留在 timeScale=0
+    
+    日誌卡播放期間會把世界暫停，若中途出意外（協程被中止、場景切換、
+    播放器被銷毀），timeScale 可能卡在 0 導致整個遊戲凍結。補上：
+    1. try/finally——不論正常結束、被中止或拋例外都還原
+    2. OnSceneLoaded——換場景時若還停著卻沒在播卡，立刻解除
+    3. OnDisable——播放器關閉或銷毀時強制還原
+    另：不再把別人設的 timeScale=0 記成常態值（還原時退回 1）。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 8ee9539163a46215917f8698a97c1917363c13c8
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 12:46:29 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 12:46:29 2026 +0000
+
+    接上結局出口、修正廢墟轉場順序、根治文字豆腐塊
+    
+    【結局出口】玻璃館鏡牆吸入演完 → M5 過場文字 → 結尾漫畫（第63頁起）
+    → 片尾感謝名單自動捲動 → 回主選單。EndCredits 加 EndingMode 靜態旗標與
+    sceneAfterCredits；MirrorWallAbsorbCutscene 只加三個欄位與收尾呼叫，未動既有演出。
+    
+    【廢墟→荒原】StormSceneTransition 在 LoadScene 前等 M2 播完：
+    龍捲風帶走她 → 讀她的心聲 → 落在荒原。原本兩者平行，文字會被場景切換打斷。
+    場景裡重複的 M2／M5 觸發器已移除，改由轉場程式單一串接。
+    
+    【文字顯示】Chinese_Dynamic_SDF 沒有來源字型檔（m_SourceFontFile: 0、0 glyph），
+    動態模式無字可造，四關的過場文字會全變豆腐塊。改用 Msjh_SDF
+    （來源 Assets/Fonts/msjh.ttc 在專案內，跨平台與出貨都安全）。
+    另加 TMP 全域 fallback＝Msjh_SDF，任何字型缺字自動補；
+    片尾與主選單的「・」改為「與」（辰宇落雁未收該符號）。
+    驗證：662 字與片尾名單在兩種字型下皆 0 缺字。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 3be192d03fb2958b78d1c10fece2a5dca38ae872
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 12:53:25 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 12:53:25 2026 +0000
+
+    結局流程收尾防護：關畢展自動翻頁、清章節殘留、維持全黑切主選單
+    
+    - 結局模式下停用 ExhibitMode：不然玩家看慢一點就被丟回第一頁
+    - 清掉 BookTransitionManager 的章節狀態：避免翻到最後一頁被判成章節結束而跳關
+    - 名單結束不淡出（不露出繪本最後一頁），全黑停 1.2 秒直接切主選單
+    
+    全循環閉合：主選單 → 棉花堡M1 → 廢墟M2 → 荒原M3 → 水下D1-3＋M4
+    → 玻璃館M5 → 結尾漫畫 → 片尾名單 → 主選單
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 3325cd9753784ca6683cefbd98f0e7907f5b1732
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 13:47:29 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 13:47:29 2026 +0000
+
+    修復辰宇落雁字型資產斷掉的來源引用
+    
+    ChenYuluoyan-2.asset 的 m_SourceFontFileGUID 記錄正確，但實際引用
+    m_SourceFontFile 是 {fileID: 0}（斷開）。動態模式無來源檔只能用已烘焙的
+    4075 字，主選單「製作人員與來源」的「製」與精簡名單的「、。翊製，」
+    都不在其中，會退到黑體 fallback，與旁邊的手寫字不搭。
+    接回 TextMesh Pro/ChenYuluoyan-2.0-Thin.ttf 後可造全部 10137 字。
+    
+    全專案 54 個文字元件複驗：字型自身顯示不出的只剩主選單「芫荽 ChenYuluoyan」
+    的「荽」（UoqMunThenKhung 未收，走全域 fallback），無任何無解缺字。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit e7aa6a7dd5c5e37b704ac84cf75914fbd14f6578
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 14:52:54 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 14:52:54 2026 +0000
+
+    教學整合：統一操作提示系統，補上 E 拉桿與 W／S 游泳
+    
+    原本教學只在第一關用世界空間文字教 A／D、空白鍵、Shift，之後的荒原、
+    水下、玻璃館一句提示都沒有；E（拉桿）和 W／S（水下升降）從頭到尾沒教過。
+    
+    新增（Assets/Codes/）
+    - InputHint.cs：畫面下方一條骨白小字，跟文字卡同字型、同淡入淡出，
+      但不蓋黑幕、不停時間、不打斷遊戲。sortingOrder 9000 壓在文字卡底下。
+      播卡、演過場（isCutsceneFrozen）、重生流程中自動讓路，倒數只在真的
+      看得見時才走，所以不會「從過場回來提示已經自己過期」。
+      自己開機生成、換場景自己補探針，場景裡什麼都不用掛。
+    - InputHintLeverProbe.cs：走近拉桿亮「按下 E　拉動拉桿」，按下或走開就收，
+      拉過就不再出現。掛在組員的 LeverSystem 同一個物件上收同一批 Trigger 事件，
+      LeverSystem 一行都沒改。
+    - InputHintSwimProbe.cs：第一次入水亮一次「W／S　上浮與下潛／連續上浮會
+      脫力，稍等再游」——水下的隱形游泳體力沒講過，玩家會以為是壞掉。
+    
+    SampleScene
+    - TutorialZone 掛載 10 個 → 5 個。多出來的 5 個是掛在文字自己身上、
+      tutorialText 指向自己的重複件。
+    - 連帶把 3 個殘留的 BoxCollider 補成 Trigger：它們原本靠 TutorialZone.Start()
+      強制轉 Trigger，腳本一拿掉就會變成看不見的實心牆。
+    - 文案改成「按鍵＋動作／為什麼」，並修掉三處會誤導的講法：
+      A／D 標成「前後移動」→ 左右移動；Shift 標成「按下」→ 按住（實作是
+      GetKeyDown 抓、GetKeyUp 放）；「接著有趣的冒險即將展開」多出來的引號。
+    
+    設定選單（SETTING.prefab／InGameSettingsSystem.prefab）
+    - 操作頁補上 Shift 抓取物體、E 拉動拉桿、W／S 水中上浮下潛三列。
+    - 鍵帽沿用既有 keyboard.png，位置對齊 A／D 那一欄（x=-1.558）；
+      說明文字左緣對齊既有說明欄（x=-0.719）。鍵名與說明拆成兩個文字物件，
+      才不會像原本「一個文字＋Tab」那樣，鍵名一變長兩邊就一起歪掉。
+    
+    驗過
+    - 兩支腳本在有無 ENABLE_LEGACY_INPUT_MANAGER 下都編譯通過。
+    - 場景與 prefab：無重複 fileID、無懸空引用。
+    - 字型覆蓋：教學（辰宇落雁）、提示條（Msjh）、設定表（UoqMunThenKhung）
+      三套字型對新字全部有字，不會出現豆腐塊。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 7cca42c18b1c7726beb8970f066eec91d27bb3e7
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 15:06:01 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 15:06:01 2026 +0000
+
+    第一關補上遊戲中設定系統（暫停選單）
+    
+    SampleScene 原本沒有掛 InGameSettingsSystem，所以第一關按不出設定，
+    只有荒原、水下、玻璃館三關有。現在四關一致。
+    
+    這個 prefab 會自己定位：gearwheel 與 SETTING 面板身上的 CameraViewportAnchor
+    在 LateUpdate 用 Camera.main 換算視埠座標（齒輪 0.95/0.92、面板置中），
+    SettingsHudGearwheelPresenter 自己生 HUD Canvas 與 EventSystem，
+    所以這次的實例只帶最小修改（根座標歸零＋名稱），不必像其他場景那樣
+    手填 targetCamera 與各自的世界座標——那些值執行時本來就會被覆蓋。
+    
+    SampleScene 有 Main Camera（tag=MainCamera），沒有 EventSystem，
+    兩個條件都符合這個 prefab 的預期。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit c7fa49836f111a9f6feb6ff6541dd98bbfe99da7
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 15:23:01 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 15:23:01 2026 +0000
+
+    荒原加入高空盤旋的鳥群
+    
+    原本荒原的 57 隻鳥（組員的 IndividualBirdEnemy）掛在 BirdEnemy 底下，
+    世界 Y 只有 1.3–7.4，差不多在她眼睛的高度，而且 detectionRange=10，
+    要玩家走進 10 公尺內才會動作。在那之前牠們只是一排幾乎不動的黑點——
+    玩家「看不到鳥群」，只會突然被俯衝。分鏡 Q5-S5「鳥影」→ Q5-S6「她抬頭」
+    那一拍在遊戲裡是不存在的。
+    
+    新增 Assets/Codes/CirclingFlock.cs 與場景物件 BirdFlock_Circling：
+    天上一直有一圈鳥在繞，看得到、追不到、也不會傷人。等到組員那批真的
+    俯衝下來，玩家才知道剛剛那圈是什麼。
+    
+    參數（都能在 Inspector 調）
+    - 9 隻，沿 15 × 3.4 的扁橢圓繞，一圈 13 秒；每隻半徑、速度、拍翅相位
+      各自錯開，不然九隻會像同一隻複製九份
+    - 圈心鎖在畫面高度 82% 處，用 SmoothDamp 遲滯 1.6 秒跟著鏡頭——
+      跟得慢一點才像遠方的東西，黏太緊會像貼在螢幕上的貼紙
+    - 深度 z=0.3：背景（0.5）之前、玩法（0）之後
+    - 縮放 9.5，約是組員俯衝鳥（世界 21.5）的四成多，讀起來是「遠處」
+    
+    三個不會出事的地方
+    - 完全不動組員那 57 隻，也不共用任何物件；場景裡 IndividualBirdEnemy
+      的 114 處引用一個都沒少
+    - 生出來的鳥會被拔掉所有 Collider 與 Rigidbody，永遠碰不到玩家
+    - 調暗用 MaterialPropertyBlock，不碰共用材質，所以不會把組員的鳥一起改色
+    - 用 Time.deltaTime（不是 unscaled），開設定選單暫停時鳥也跟著停
+    
+    驗過：兩種輸入模式都編譯通過；desert.unity 無重複 fileID、無懸空引用；
+    crow.FBX 與 birdAnimatorController 的引用格式跟組員現有的鳥一致。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit fce3b0913bb6c4d1a9be1ee8297e6de13ce75973
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 15:58:08 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 15:58:08 2026 +0000
+
+    盤旋鳥群改成不規則路徑，軸心鎖在玩家身上
+    
+    兩點修正：
+    
+    一　軸心從「鏡頭」改成「玩家」
+    原本圈心掛在畫面高度 82% 處，等於黏在螢幕上；現在鎖在 PlayerMovement
+    的 transform 上（anchor = Player）。她走到哪、跳多高，這圈就跟到哪，
+    甩不掉。找不到玩家時（重生、換場的空窗）自動退回用鏡頭頂著，等她出現。
+    centerOffset 預設 (0, 8)：軸心跟著她，但整圈抬高 8 公尺在她頭上。
+    要完全貼在她身上就設 (0, 0)——只是那樣半個圈會埋進地面。
+    followLag 0.55 秒：跟得緊但不是硬鎖，她跑起來時鳥群會被拉出一點尾巴。
+    
+    二　從乾淨的橢圓改成不規則運動
+    橢圓現在只是骨架，真正的路徑由三層 Perlin 噪聲決定：
+    - wanderAngle 0.55：角度會忽快忽慢，不是等速繞圈
+    - wanderRadius 0.26：圈會忽大忽小，不是固定的一圈
+    - driftAmplitude 2.6：每隻再各自亂飄，這條最影響「像不像活的」
+    - flockWander 1.4：整團圈心也在她身上小幅晃，不像釘死的儀器
+    每隻的四組噪聲種子都不同，所以沒有兩隻走同一條線，同一隻也不會走第二遍
+    同樣的路。朝向改用「實際位移」算，不用理論切線——不規則之後兩者已經不同。
+    
+    離線把這段數學跑過 10 秒：鳥群幾何中心相對軸心的偏差平均 0.78 公尺、
+    最大 2.75 公尺（圈半徑 15），所以「軸心的中點始終在玩家身上」成立，
+    不會因為亂飄就整團漂走。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 8bc4dee5755f54f0a74caef7b39dc85ff6ce6994
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 16:10:23 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 16:10:23 2026 +0000
+
+    鳥群改成獨立提案資料夾，不動組員原本那套
+    
+    上一版把 CirclingFlock.cs 放進 Assets/Codes/（大家共用的腳本資料夾），
+    物件也是直接生在場景裡。這一版整包搬出來，變成一個自成一體、
+    「隨時可以整個刪掉」的提案。
+    
+    新資料夾 Assets/鳥群系統_提案/
+      README_先看這裡.md        說清楚這是提案不是取代、怎麼接手、怎麼還原
+      Scripts/ScatteredFlock.cs 散落盤旋的鳥群本體（含俯衝攻擊，預設關閉）
+      Scripts/FlockTakeover.cs  接手／還原的開關
+      Prefabs/鳥群_提案版.prefab 拖進任何場景就能用，不用手接任何東西
+    
+    一　散落，不規則（不再是排整齊的一圈）
+    每隻在 30×10 公尺的區域裡各自找位置，高低遠近都不同，大小也各差三成；
+    每隻有自己的小圈（半徑差 ±45%、速度差 ±35%），路徑再疊三層 Perlin 噪聲。
+    散落位移在生成時會扣掉平均值，所以「軸心的中點」在數學上就是玩家本人，
+    不管牠們飄得多亂整團都不會漂走。另加 minHeightAbovePlayer 安全網，
+    不會有鳥掉進地面。
+    
+    二　具備接手的能力，但現在不接手
+    FlockTakeover 提供三個右鍵選項：接手／還原／只看狀態。
+    接手＝把組員的 BirdEnemy 整組 SetActive(false)，並打開新鳥群的俯衝攻擊；
+    還原＝全部開回來。takeOverOnStart 預設關閉，所以進遊戲什麼都不會變。
+    
+    ★接手是「關掉」不是「刪掉」——場景檔裡組員那 57 隻一個都沒少，
+      這次 commit 之後 IndividualBirdEnemy 的 114 處引用一處未動。
+      真的要永久換掉要等大家決定，由人手動做，不是這支腳本的工作。
+    
+    攻擊模式的判定完全沿用專案既有規則，沒有自己發明：護盾（PlayerShield）、
+    無敵（PlayerPetrification.IsGodMode）、重生中與剛重生（PlayerRespawnSystem）、
+    雨傘（UmbrellaZone），命中呼叫 PlayerRespawnSystem.TriggerRespawn()。
+    
+    三　場景這邊
+    desert.unity 裡我上次直接生的三個文件已拆掉，改成一個 prefab 實例。
+    要移除整個提案只要刪那一個物件加這個資料夾，場景不會留下任何殘骸。
+    舊的 CirclingFlock.cs 已移出 Assets/Codes/（放到 _to_delete/），
+    確認全專案沒有任何檔案還引用它的 GUID。
+    
+    驗過：兩種輸入模式都編譯通過；7 個新 GUID 全專案唯一；
+    desert.unity 無重複 fileID、無懸空引用；BirdEnemy 根物件與 114 處引用都在。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 327e178b7e2bc901368d34cd63f21d30ee94f6d2
+Merge: 8bc4dee 39bf22c
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Sun Aug 30 17:24:03 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Sun Aug 30 17:24:03 2026 +0000
+
+    Merge origin/main：收下組員的 MonsterMutant7 Animator
+    
+    遠端兩個 commit（340efe6、39bf22c）只動了這一個檔——
+    MonsterMutant7 Animator Controller 在不同機器上會被 Unity 重新產生
+    內部 fileID。以組員推上來的版本為準，本地那份未提交的重生結果丟棄，
+    之後大家都對齊同一份，不再互相蓋來蓋去。
+    
+    我本地的 9 個 commit（教學整合、設定選單、鳥群提案等）與遠端無檔案重疊，
+    全部原樣保留。
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit c07474da1de43f69cc86ed2447c9aa1b6b2f0d0f
+Merge: 327e178 e0f00a8
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 00:11:39 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 00:11:39 2026 +0000
+
+    Merge origin/main：收下鏡頭跟隨與鳥敵優化，重掛我的場景改動
+    
+    組員這兩個 commit（19a7298、e0f00a8）：
+    - 馬力歐式鏡頭跟隨（CameraTargetXFollower 全面改寫、CinemachineCameraConfiner3D）
+    - 石化辨識度顏色（PlayerPetrification）
+    - 鳥敵人盤旋優化（IndividualBirdEnemy 加 8 個新欄位：figureEightStrength、
+      noiseStrength、maxBankingAngle 等，desert 114 個掛載全數更新）
+    - PlayerMovement、PlayerRespawnSystem 微調、MonsterMutant7 Animator 重序列化
+    
+    兩個場景雙方都動過，合併方式＝以組員的新場景為底，把我的改動重掛回去：
+    - SampleScene：教學文案 4 處、拆 5 個重複 TutorialZone、3 個殘留 collider
+      設 Trigger、補 InGameSettingsSystem prefab 實例——逐項斷言驗證後重放
+    - desert：重掛鳥群提案 prefab 實例（組員的 114 隻與新欄位原樣保留）
+    
+    相依 API 全數確認仍在：IsAnyRespawning、IsPlayerMovingAfterRespawn、
+    TriggerRespawn、IsGodMode、isUnderwater、isCutsceneFrozen、
+    LeverSystem 與 CollectibleNote 未被動過。
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 98c0b7b827b3b33427e086182863cf02f04a0765
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 02:21:05 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 02:21:05 2026 +0000
+
+    push 前自查修正：提示條讓路暫停選單、去掉每幀掃場景與每幀配置
+    
+    自己審自己的程式抓到三個問題，push 前修掉：
+    
+    一　設定選單暫停時提示條會浮在選單上面
+    提示條 sortingOrder 9000，設定面板才 2002+。玩家站在拉桿區裡開設定，
+    「按下 E」會蓋在選單上。修法：Time.timeScale == 0 一律讓路——
+    順便涵蓋所有暫停情境，不用逐一列舉誰在暫停。
+    
+    二　InputHint.IsSuppressed 每幀 FindFirstObjectByType<PlayerMovement>
+    每幀掃整個場景找玩家。改成快取，最多每秒補找一次，換場景時清掉。
+    
+    三　拉桿探針在區域內每幀 InputHint.Show
+    同 key 每幀移除再新增一個項目，白白每幀配置記憶體。改成狀態改變才 Show，
+    離開／拉下／停用時重置旗標。
+    
+    兩種輸入模式編譯通過。行為不變，只是不再浪費與不再蓋錯層。
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 19c6093c555f8aeacb557000e871b24754bf7546
+Author:     andywang <andywang940730@gmail.com>
+AuthorDate: Mon Aug 31 16:56:38 2026 +0800
+Commit:     andywang <andywang940730@gmail.com>
+CommitDate: Mon Aug 31 16:56:38 2026 +0800
+
+    荒漠音效debug
+
+commit abf19381978df01e4a4fc6da93ef60e435fb5c95
+Author:     andywang <andywang940730@gmail.com>
+AuthorDate: Mon Aug 31 17:56:04 2026 +0800
+Commit:     andywang <andywang940730@gmail.com>
+CommitDate: Mon Aug 31 17:56:04 2026 +0800
+
+    怪物controller debug
+
+commit a2dfc41897eceb1533de56f54900a25b1098ddd5
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 12:25:57 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 12:25:57 2026 +0000
+
+    轉場觸發強化（Codex 產出）＋修正 Build Settings 裡過期的場景 GUID
+    
+    Codex 對 10 支轉場相關腳本的改動，此處先原樣提交，之後才好跟遠端合併：
+    SceneTransitionZone、StoryCardZoneHook、WaterOasisTransition、
+    SceneTransitionController、StormSceneTransition、MirrorWallAbsorbCutscene、
+    BookTransitionManager、MainMenuController、StartMenuSceneTransition、
+    PlayerRespawnSystem（共 +476 / −65）。
+    
+    主要是替各觸發器加上 EnsureColliderSetup：進場時強制 isTrigger、
+    並把觸發框的 z 深度撐開，避免玩家從 z 方向擦邊而過沒被判定到。
+    
+    另外 EditorBuildSettings.asset 裡 SampleScene 記的是過期 GUID
+    （8c9cfa26…），已更正為實際的 c78b8e82…。查過全專案沒有任何檔案
+    還引用舊 GUID，所以這是修正不是破壞。
+    
+    確認我先前掛的三個鉤子在這批改動後都完好：
+    StormSceneTransition 的 storyCardId(M2) 與播卡呼叫、
+    MirrorWallAbsorbCutscene 的 playEndingAfterCutscene/endingCardId/endingBookScene。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 5417c2689982b099e1a36845554b28347e72213c
+Merge: a2dfc41 abf1938
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 12:26:30 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 12:26:30 2026 +0000
+
+    Merge origin/main：收下荒漠音效與怪物 controller 的 debug
+    
+    遠端兩個 commit（19c6093 荒漠音效debug、abf1938 怪物controller debug）
+    動到 PlayerMovement、三個場景（dark glasses 改了 5367 行）、
+    MonsterMutant7 Animator、Msjh_SDF 圖集，以及移除 Graduation_project.slnx。
+    
+    檢查過我這邊唯一未推的 commit（a2dfc41，Codex 的轉場強化）跟遠端改動
+    零檔案重疊，所以這八個檔一律以遠端為準，本地不做取捨。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 18d100b0284605b422447f3416fe5712d2a9dccd
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 12:31:33 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 12:31:33 2026 +0000
+
+    結局改由「最後一根燭火」觸發，接上原本沒作用的燭火機制
+    
+    ★ 修掉一個會讓整個 Boss 段被跳過的流程錯誤
+    
+    把玻璃館所有物件的世界座標排出來之後才發現：
+    
+        x = -47.70  玩家起點
+        x = -45.04  鏡牆演出觸發區   ← 結局原本掛在這
+        x = -35.70  黑影追逐開始
+        x = -18.93 起  五根燭火
+    
+    玩家進場往右走 2.7 公尺（約一秒）就踩到鏡牆觸發區，直接進結局。
+    黑影 Boss 與燭火整段永遠玩不到。這是我上次接結局時只驗「鏈有沒有接上」、
+    沒驗「玩家會不會太早踩到」造成的。
+    
+    燭火機制其實是半成品
+      ・Candles 底下本來就有五根燭火（−18.93 / 58.17 / 144.07 / 218.87 / 307.87），
+        有圖、有 Animator、有光暈、有 Trigger 框，但五根都沒掛 CandleCollectible，
+        所以完全沒作用。
+      ・場景裡唯一一個 CandleCollectible 掛錯在黑影自己身上
+        （MonsterMutant7_Run1 的 AddedComponents），因為判定是「怪物靠近燭火」，
+        這根會在追逐一開始自己收集自己，白送一次削弱。
+      ・兩隻黑影的 candles[] 是 [0,0] 與 [1154181977,0]，收不滿就永遠打不倒。
+    
+    這次做的
+      ・五根燭火各補上 CandleCollectible，兩隻黑影的 candles[] 都接滿五根
+      ・移除掛錯在黑影身上的那個 CandleCollectible（含 PrefabInstance 裡的引用）
+      ・MirrorWallAbsorbCutscene.playEndingAfterCutscene 預設改 false
+        （程式碼保留，要改回鏡牆結局打開開關即可）。鏡牆演出照常播，它是 Q10 該演的
+      ・ShadowMonsterController 收滿最後一根 → 立刻凍結玩家 → 播 M5（維持全黑）
+        → 載入 Book。不等消散動畫演完，動畫與結局同時走
+    
+    順手修掉兩個會靜默出錯的地方
+      ・SetupCandles 原本 _totalCandles = candles.Length，會把空格算進去，
+        收永遠收不滿而且沒有任何錯誤訊息。改成只算非 null，有空格時警告、
+        一根都沒有時報 LogError
+      ・_lastCandleByX 原本直接取 candles[0]，第一格是 null 會 NullReference
+    
+    結局協程有 static 防重入，整場遊戲只會進一次。
+    
+    驗過：場景無重複 fileID、無懸空引用；五根燭火間距 74–89 公尺（判定是 3.5，
+    不會一次燒兩根）；兩隻黑影都接滿；兩支腳本括號平衡、行數 1361 / 1070。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 3ea83199f05f133c0c33fb9b38893b8ac6dce2d7
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 14:39:42 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 14:39:42 2026 +0000
+
+    玻璃館流程定序：鏡牆 → M5 文字 → 回到遊戲 → 黑影追逐 → 燭火 → 結局
+    
+    看了實機錄影才確認 M5 的位置：影片 18–30 秒播的正是 M5 五頁
+    （情緒將我淹沒／我只能住前／好奇怪為什麼／原來我也可以求救／
+    她離開了深不見底的黑暗），它是「鏡牆之後、追逐之前」的過場，
+    不是結局卡。上一版把它當結局卡用，等於整段 Boss 被它跳過。
+    
+    現在的順序（＝使用者指定的）
+      光球飛入鏡牆、鏡牆碎裂
+      → M5 五頁播完
+      → 黑幕收掉、解凍玩家、回到遊戲
+      → 往前走踩到 ShadowMonsterTrigger，黑影開始追
+      → 引黑影經過五根燭火
+      → 最後一根 → 黑影消散 ＋ 進繪本結局
+    
+    MirrorWallAbsorbCutscene
+      ・playEndingAfterCutscene → 換成 playCardAfterCutscene（預設開）
+        ＋ afterCutsceneCardId（預設 M5）
+      ・播法從 Play(id, true, false)（維持全黑交給場景載入）
+        改成 Play(id, true, true)（自己淡入、自己淡出，畫面回到遊戲）
+      ・播完務必把 isCutsceneFrozen 設回 false，否則玩家會卡在原地動不了
+      ・不再載入 Book 場景。舊的 endingCardId/endingBookScene 欄位保留但標為已停用
+    
+    ShadowMonsterController
+      ・endingCardId 預設改成空字串——M5 已經在鏡牆播過，結局不重播
+      ・沒有要播卡時改用專案既有的 SceneTransitionController.TransitionToScene
+        蓋黑再切，不硬切（原本我寫了一個不存在的 FadeToBlack，已修掉）
+    
+    括號平衡檢查通過；沒有殘留不存在的 API 呼叫。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 39f8ecd3c013af68757d4d10b3a576a42092814f
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 15:02:38 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 15:02:38 2026 +0000
+
+    修正編譯錯誤：MirrorWallAbsorbCutscene 重複的 Tooltip 屬性
+    
+    上一版改欄位名稱時，把新的 [Tooltip] 疊在舊的上面沒清掉，
+    造成 CS0579 Duplicate 'Tooltip' attribute（26 行、32 行），
+    整個 Assembly-CSharp 編不過，Unity 無法進 Play Mode。
+    
+    - 刪掉兩行殘留的舊 [Tooltip]
+    - 順手刪掉已停用的 endingCardId / endingBookScene 兩個死欄位
+      （結局已移到 ShadowMonsterController 的「最後一根燭火」）
+    - dark glasses.unity 裡對應的序列化欄位一併換成新名稱，
+      避免 Unity 下次存檔時自己改寫、產生無謂的 diff
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit a9f1120a05d55dd3b6eb6442a6b2fff969e4c19c
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 15:04:52 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 15:04:52 2026 +0000
+
+    結局旗標每次載入場景歸零，避免第二輪玩不到結局
+    
+    _endingFired 是 static，同一個 Play 期間不會自己重置。
+    玩家「通關 → 回主選單 → 再玩一次」時它還留著 true，
+    第二輪收完最後一根燭火就不會進結局。改成在 Awake 歸零。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 9331c12f4962de7f8fb65fcc87bde01c9db8db8f
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 15:39:41 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 15:39:41 2026 +0000
+
+    修好黑幕：文字卡與片尾名單的 RectTransform 一直是 null
+    
+    AddComponent<Image>() 和 AddComponent<TextMeshProUGUI>() 會自動把物件的
+    Transform 換成 RectTransform。程式接著又 AddComponent<RectTransform>()，
+    這在已經有 RectTransform 的物件上會失敗並回傳 null，
+    於是後面 if (rect != null) { 設定錨點與大小 } 整段都沒執行。
+    
+    結果：
+    - 文字卡的黑幕停在預設的 100×100 置中小方塊
+      → 就是「黑幕沒有蓋滿全螢幕、也看不出淡入淡出」的原因
+    - 文字框沒有設定寬度與位置
+    - 片尾名單每一列的位置與寬度都沒設定，全部疊在同一個點上
+    
+    改用元件本來就有的 rectTransform。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 9a39d997ebed2832c325f60a300c68350fe53a9c
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 15:40:06 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 15:40:06 2026 +0000
+
+    怪物登場運鏡：先看怪物、怪物動起來、鏡頭再回到主角
+    
+    原本踩到觸發點怪物就直接在原地淡入然後開追，玩家根本沒看清楚
+    是什麼東西在追她，很突兀。改成一段演出：
+    
+    1. 凍住主角並把她的水平速度歸零
+    2. 鏡頭飛到怪物身上
+       對準點取全身 Renderer 的中心，不是 transform——怪物 Pivot 在腳底，
+       直接對 Pivot 會對到玻璃地板下面的空氣。Z 沿用主角的，
+       相機才不會因為怪物在 z=-13.2 而整個往後退。
+    3. 怪物在鏡頭裡浮現、吼一聲
+    4. 怪物在鏡頭前開始移動（這時才切 Chasing）
+    5. 鏡頭飛回主角，還原相機，解凍，開始遊戲
+    
+    配套：
+    - 演出期間 _revealActive = true，怪物不能抓被凍住的主角
+    - 場景的 Cinemachine PositionDamping 是 1，鏡頭太黏會飛不到怪物身上
+      就被叫回來；演出期間暫時調成 0.4，結束還原
+    - 相機還原時如果原本的 Follow 是 null（場景裡 TrackingTarget 是空的，
+      靠腳本在跑時指定），退回主角，免得相機從此不跟人
+    - ResetToInitialState 會 StopAllCoroutines 把演出砍在半路，
+      所以那裡呼叫 RevealCancel() 把鏡頭與控制權還回去
+    
+    全部參數都在 Inspector：useRevealCutscene、revealCameraTravel、
+    revealHoldBeforeMove、revealWatchMoveSeconds、revealFocusOffset、
+    revealCameraDamping。關掉 useRevealCutscene 就回到原本的行為。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 594c562d9d57ffc2f57c57a752cc2475d4967087
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 15:40:06 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 15:40:06 2026 +0000
+
+    停止每次編譯都重建 Animator Controller
+    
+    RebuildCleanAnimatorController 上掛了 [InitializeOnLoadMethod]，
+    所以每一次編譯、每一次進 Play Mode 都會 DeleteAsset 再整份重建
+    MonsterMutant7 Animator Controller.controller。
+    這份檔案 23,565 行，等於每次都整份改寫，組員每次 pull 都會撞衝突。
+    
+    拿掉 [InitializeOnLoadMethod]，保留 [MenuItem]。
+    需要重建時從 Tools > Rebuild MonsterMutant7 Animator Controller 手動點。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit f3e847e0826a927860dc4705a3fad8f20cb68c2e
+Author:     andywang <andywang940730@gmail.com>
+AuthorDate: Tue Sep 1 00:25:59 2026 +0800
+Commit:     andywang <andywang940730@gmail.com>
+CommitDate: Tue Sep 1 00:25:59 2026 +0800
+
+    UI介面增加SFX音量控制
+
+commit 05ed0de53973999a8400733bf575109d7139b7e8
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 16:29:49 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 16:29:49 2026 +0000
+
+    登場運鏡修正：怪物要看得到、開場要有距離
+    
+    【1】鏡頭飛到怪物身上卻看不到怪物，兩個原因疊在一起：
+    
+    (a) 對準點是用 Renderer.bounds 算的，但那時候 SetVisualAlpha(0) 已經把
+        所有 Renderer 關掉了。關掉的 Renderer（尤其 SkinnedMeshRenderer）
+        回報的 bounds 是舊的或空的，鏡頭就飛去一個沒有東西的地方。
+        → 改成從 Mesh 資產本身的 bounds 算（sharedMesh.bounds 轉到本地空間），
+          Renderer 關著也算得出來。
+    
+    (b) 怪物是等鏡頭飛到之後才開始淡入的，鏡頭飛過去那一秒多牠還是隱形的。
+        → 改成鏡頭一出發怪物就同步開始現身。
+    
+    【2】這隻怪物比整個畫面還高，鏡頭對準牠只會看到肚子。
+        量了模型：body1 的 mesh 高 2.064 單位，場景縮放 21.67 倍
+        ＝ 世界高度約 45 單位；相機是正交 size 13.5，一次只看得到 27 單位。
+        → 演出時自動把鏡頭拉遠到整隻裝得下（revealZoomPadding，預設留 20% 邊），
+          演完再收回原本大小。只拉遠不拉近。
+    
+    【3】開場距離太近，沒有遊玩空間。
+        場景裡怪物在 x=-59.3，觸發點在 x=-35.7，只差 23.6 單位，
+        而鏡頭一次就看得到 48 單位寬——等於一開始怪物就貼在臉上。
+        → ActivateChase() 時把怪物擺到主角後方 spawnDistanceBehindPlayer
+          （預設 45）單位。只改 X，Y／Z 保持美術擺好的樣子。
+          45 > runDistanceThreshold(30)，怪物會切成跑步（3.2×1.35＝4.32）追上來，
+          主角 5，還是跑得掉，但一直有壓迫感。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit ea9287dd324611da3ad9f21d4235f680f99339b0
+Merge: 05ed0de f3e847e
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 16:38:19 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 16:38:19 2026 +0000
+
+    Merge origin/main：收下 SFX 音量通道
+    
+    組員把三個音量通道做完了（AudioManager.BgmVolume / SfxVolume / ScaleSfx，
+    UI 加了 WorldSpaceSfxVolumeSlider，主選單換了 GenSenRounded2TW-L 字體）。
+    
+    兩個檔案兩邊都動到，手動合併：
+    
+    - ShadowMonsterController.cs
+      我這邊有登場運鏡與結局；組員有 8 處 PlayClipAtPoint 包 ScaleSfx()、
+      追逐 BGM 乘上 BgmVolume、以及 UpdateProximityAudioTension 改用
+      unscaledDeltaTime。兩邊都保留，音訊呼叫已比對過與組員版本逐字相同。
+      注意：登場運鏡新加的吼聲搬進了 PlayRoar()，組員那行改動也一起搬過去了。
+    
+    - MirrorWallAbsorbCutscene.cs
+      我這邊改的是欄位宣告（過場文字卡）；組員改的是 5 處播放音量，
+      位置不重疊，兩邊都保留。
+    
+    Unity 產生的三個檔（Animator Controller、Msjh_SDF、UoqMunThenKhung Bitmap）
+    本地有我這台 Unity 的重生成噪音，一律採用組員的版本。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit fb015facfa4439fdfd7a496740e25f50cf7ecc44
+Author:     mathewkong <mathewkong04@gmail.com>
+AuthorDate: Mon Aug 31 16:40:32 2026 +0000
+Commit:     mathewkong <mathewkong04@gmail.com>
+CommitDate: Mon Aug 31 16:40:32 2026 +0000
+
+    鳥群提案的叫聲接上 SFX 通道
+    
+    ScatteredFlock 的俯衝警告叫聲之前是直接 PlayClipAtPoint(clip, pos, cryVolume)，
+    完全繞過 SFX 通道，只吃得到 Master。改成 AudioManager.ScaleSfx(cryVolume)。
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti

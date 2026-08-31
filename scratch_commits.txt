@@ -1,0 +1,825 @@
+commit 61fd4f62046aeb402d751d8661b4271e24c07c6b
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 12:25:26 2026 +0000
+
+    剖⊥怠銝摰函雯嚗蝯銝脩 timeScale=0
+    
+    亥⊥剜暹銝怠嚗乩葉箸憭嚗蝔鋡思葉甇Ｕ湔臬
+    剜曉刻◤瑟嚗嚗timeScale 航賢∪ 0 撠湔游脣蝯鋆銝嚗
+    1. try/finally銝隢甇撣貊鋡思葉甇Ｘ靘憭賡
+    2. OnSceneLoaded湔舀仿餅冽剖∴蝡餉圾
+    3. OnDisable剜曉券瑟撘瑕園
+    佗銝乩犖閮剔 timeScale=0 閮撣豢潘 1嚗
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/StoryCardPlayer.cs | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+commit 8ee9539163a46215917f8698a97c1917363c13c8
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 12:46:29 2026 +0000
+
+    乩蝯撅箏靽格迤撱Ｗ頧湧摨寞祥摮鞊憛
+    
+    蝯撅箏餌擗券∠詨交摰  M5 湔摮  蝯撠暹憤恬蝚63韏瘀
+     撠暹雓株芸脣  銝駁詨柴EndCredits  EndingMode 璅
+    sceneAfterCredits嚗MirrorWallAbsorbCutscene 芸銝甈雿嗅偏澆恬芸Ｘ瞍箝
+    
+    撱ＷStormSceneTransition  LoadScene 蝑 M2 剖嚗
+    樴脤◢撣嗉粥憟  霈憟寧敹  賢刻砍抵撟唾嚗摮鋡怠湔臬瑯
+    湔航ㄐ銴 M2嚗M5 閫貊澆典歇蝘駁歹寧梯渡撘桐銝脫乓
+    
+    摮憿舐內Chinese_Dynamic_SDF 瘝靘皞摮瑼嚗m_SourceFontFile: 00 glyph嚗嚗
+    璅∪∪舫嚗湔摮刻鞊憛寧 Msjh_SDF
+    嚗靘皞 Assets/Fonts/msjh.ttc 典獢改頝典像啗箄疏賢剁
+    血 TMP 典 fallback嚗Msjh_SDF嚗隞颱摮蝻箏芸鋆嚗
+    撠曇銝駁詨桃颯寧箝嚗颲啣賡芣嗉府蝚西嚗
+    撽霅嚗662 摮撠曉桀典拍車摮銝 0 蝻箏
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/MirrorWallAbsorbCutscene.cs           |    26 +
+ Assets/Codes/StormSceneTransition.cs               |    11 +
+ Assets/Picturebook/Resources/Credits.txt           |     2 +-
+ .../Scripts/EndCredits.cs"                         |    42 +
+ Assets/Scenes/MainMenuScene.unity                  |     2 +-
+ Assets/Scenes/SampleScene.unity                    |    19 +-
+ Assets/Scenes/dark glasses.unity                   | 62147 +++++++++----------
+ Assets/Scenes/desert.unity                         |     2 +-
+ Assets/Scenes/underwater.unity                     |     2 +-
+ Assets/TextMesh Pro/Resources/TMP Settings.asset   |     3 +-
+ 10 files changed, 31151 insertions(+), 31105 deletions(-)
+
+commit 3be192d03fb2958b78d1c10fece2a5dca38ae872
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 12:53:25 2026 +0000
+
+    蝯撅瘚蝔嗅偏脰風嚗Ｗ芸蝧駁皜蝡蝭畾蝬剜券銝駁詨
+    
+    - 蝯撅璅∪銝 ExhibitMode嚗銝嗥拙振Ｖ暺撠梯◤銝蝚砌
+    - 皜 BookTransitionManager 蝡蝭嚗踹蝧餃唳敺銝鋡怠斗蝡蝭蝯頝喲
+    - 桃銝瘛∪綽銝脣箇鼓祆敺銝嚗嚗券 1.2 蝘湔亙銝駁詨
+    
+    典儐圈嚗銝駁詨  璉勗﹐1  撱ＷM2  M3  瘞港D1-3嚗M4
+     餌擗決5  蝯撠暹憤  撠曉  銝駁詨
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ .../Scripts/EndCredits.cs"                         | 37 ++++++++++++++++------
+ 1 file changed, 28 insertions(+), 9 deletions(-)
+
+commit 3325cd9753784ca6683cefbd98f0e7907f5b1732
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 13:47:29 2026 +0000
+
+    靽桀儔颲啣賡摮鞈Ｘ瑟靘皞撘
+    
+    ChenYuluoyan-2.asset  m_SourceFontFileGUID 閮甇蝣綽雿撖阡撘
+    m_SourceFontFile  {fileID: 0}嚗琿嚗璅∪∩皞瑼芾賜典歇
+    4075 摮嚗銝駁詨柴鋆賭鈭箏∟靘皞鋆賬蝎曄陛桃蝧鋆踝
+    賭典嗡葉嚗圈擃 fallback嚗撖怠銝准
+    亙 TextMesh Pro/ChenYuluoyan-2.0-Thin.ttf 敺舫券 10137 摮
+    
+    典獢 54 摮隞嗉撽嚗摮芾澈憿舐內銝箇芸拐蜓詨柴怨 ChenYuluoyan
+    賬嚗UoqMunThenKhung 芣塚韏啣典 fallback嚗嚗∩遙雿∟圾蝻箏
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/TextMesh Pro/ChenYuluoyan-2.asset | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit e7aa6a7dd5c5e37b704ac84cf75914fbd14f6578
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 14:52:54 2026 +0000
+
+    摮豢游嚗蝯曹雿蝷箇頂蝯梧鋆銝 E 獢輯 W嚗S 皜豢陶
+    
+    祆摮詨芸函洵銝其蝛粹摮 A嚗D蝛箇賡萸Shift嚗銋敺
+    瘞港餌擗其交蝷粹賣嚗E嚗獢選 W嚗S嚗瘞港嚗敺剖啣偏瘝
+    
+    啣嚗Assets/Codes/嚗
+    - InputHint.cs嚗恍Ｖ嫣璇撉函賢摮嚗頝摮∪摮瘛∪交楚綽
+      雿銝暺撟銝銝琿脯sortingOrder 9000 憯冽摮∪銝
+      剖～瞍湛isCutsceneFrozen嚗瘚蝔銝剛芸霈頝荔詨芸函
+      敺閬韏堆隞乩敺游靘蝷箏歇蝬芸楛
+      芸楛璈湔航芸楛鋆ａ嚗湔航ㄐ隞暻潮賭冽
+    - InputHintLeverProbe.cs嚗韏啗獢蹂漁銝 E獢踴嚗銝韏圈撠望塚
+      撠曹箇整函∠ LeverSystem 銝拐辣銝嗅銝 Trigger 鈭隞塚
+      LeverSystem 銝銵賣嫘
+    - InputHintSwimProbe.cs嚗蝚砌甈∪交偌鈭桐甈～W嚗S銝瘚株銝瞏嚗蝥銝瘚格
+      怠嚗蝔蝑皜詻瘞港勗耦皜豢陶擃瘝雓嚗拙振隞亦箸臬
+    
+    SampleScene
+    - TutorialZone 頛 10   5 憭箔 5 舀冽摮芸楛頨思
+      tutorialText 芸楛銴隞嗚
+    - 撣嗆 3 畾 BoxCollider 鋆 Trigger嚗摰祇 TutorialZone.Start()
+      撘瑕嗉 Trigger嚗單砌踵撠望霈銝閬撖血
+    - 獢寞蛛雿嚗箔暻潦嚗銝虫耨銝隤文雓瘜嚗
+      A嚗D 璅敺蝘餃 撌血喟宏嚗Shift 璅銝 雿嚗撖虫
+      GetKeyDown GetKeyUp 橘嚗亥頞芸喳撅憭箔撘
+    
+    閮剖詨殷SETTING.prefab嚗InGameSettingsSystem.prefab嚗
+    - 雿鋆銝 Shift 拚E 獢踴W嚗S 瘞港葉銝瘚桐瞏銝
+    - 萄蜇瘝輻冽Ｘ keyboard.png嚗雿蝵桀朣 A嚗D 銝甈嚗x=-1.558嚗嚗
+      隤芣摮撌衣楠撠朣Ｘ隤芣甈嚗x=-0.719嚗萄隤芣拙摮拐辣嚗
+      銝研銝摮嚗Tab璅嚗萄銝霈瑕拚撠曹韏瑟酊
+    
+    撽
+    - 拇航單砍冽 ENABLE_LEGACY_INPUT_MANAGER 銝賜楊霅舫
+    - 湔航 prefab嚗⊿銴 fileID⊥貊征撘具
+    - 摮閬嚗摮賂颲啣賡嚗蝷箸嚗Msjh嚗閮剖銵剁UoqMunThenKhung嚗
+      銝憟摮撠啣券冽摮嚗銝箇曇憛
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/InputHint.cs                |  323 +++++++++
+ Assets/Codes/InputHint.cs.meta           |   11 +
+ Assets/Codes/InputHintLeverProbe.cs      |  121 ++++
+ Assets/Codes/InputHintLeverProbe.cs.meta |   11 +
+ Assets/Codes/InputHintSwimProbe.cs       |   44 ++
+ Assets/Codes/InputHintSwimProbe.cs.meta  |   11 +
+ Assets/Scenes/SampleScene.unity          |   89 +--
+ Assets/UI/InGameSettingsSystem.prefab    | 1116 ++++++++++++++++++++++++++++++
+ Assets/UI/SETTING.prefab                 | 1116 ++++++++++++++++++++++++++++++
+ 9 files changed, 2760 insertions(+), 82 deletions(-)
+
+commit 7cca42c18b1c7726beb8970f066eec91d27bb3e7
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 15:06:01 2026 +0000
+
+    蝚砌鋆銝脖葉閮剖蝟餌絞嚗怠詨殷
+    
+    SampleScene 祆 InGameSettingsSystem嚗隞亦洵銝銝箄身摰嚗
+    芣瘞港餌擗其曉典銝氬
+    
+     prefab 芸楛摰雿嚗gearwheel  SETTING Ｘ輯澈銝 CameraViewportAnchor
+     LateUpdate  Camera.main 蝞閬摨扳嚗朣頛 0.95/0.92Ｘ輻蔭銝哨嚗
+    SettingsHudGearwheelPresenter 芸楛 HUD Canvas  EventSystem嚗
+    隞仿甈∠撖虫芸葆撠靽格對孵漣璅甇賊塚蝔梧嚗銝敹嗡湔舫璅
+    憛 targetCamera 芰銝摨扳鈭澆瑁砌撠望鋡怨
+    
+    SampleScene  Main Camera嚗tag=MainCamera嚗嚗瘝 EventSystem嚗
+    拙璇隞園賜泵 prefab 
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Scenes/SampleScene.unity | 58 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+commit c7fa49836f111a9f6feb6ff6541dd98bbfe99da7
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 15:23:01 2026 +0000
+
+    仿蝛箇斗曈亦黎
+    
+    祈 57 駁野嚗蝯∠ IndividualBirdEnemy嚗 BirdEnemy 摨銝嚗
+    銝 Y 芣 1.37.4嚗撌桐憭典旦潛擃摨佗銝 detectionRange=10嚗
+    閬拙振韏圈 10 砍偕扳雿券銋芣臭撟曆銝暺暺
+    拙振銝圈野蝢扎嚗芣蝒嗉◤靽航 Q5-S5曈亙蔣 Q5-S6憟寞祇准
+    銝券脰ㄐ臭摮函
+    
+    啣 Assets/Codes/CirclingFlock.cs 湔舐拐辣 BirdFlock_Circling嚗
+    憭拐銝湔銝曈亙函嚗敺啜餈賭啜銋銝瑚犖蝑啁⊿寧
+    靽航銝靘嚗拙振仿臭暻潦
+    
+    賂質賢 Inspector 隤選
+    - 9 鳴瘝 15  3.4 璈Ｗ蝜嚗銝 13 蝘嚗瘥餃敺摨艾蝧訾
+      芷舫嚗銝嗡餅銝餉鋆賭隞
+    - 敹函恍ａ摨 82% 嚗 SmoothDamp 脫趙 1.6 蝘頝⊿凌
+      頝敺Ｖ暺寧梯正嚗暺憭芰鞎澆刻Ｗ銝鞎潛
+    - 瘛勗漲 z=0.3嚗荔0.5嚗銋拇嚗0嚗銋敺
+    - 蝮格 9.5嚗蝝舐∩膳銵曈伐銝 21.5嚗憭嚗霈韏瑚胯
+    
+    銝銝箔唳
+    - 摰其蝯⊿ 57 鳴銋銝梁其遙雿拐辣嚗湔航ㄐ IndividualBirdEnemy
+       114 撘其賣撠
+    - 箔曈交鋡急 Collider  Rigidbody嚗瘞賊蝣唬啁拙振
+    - 隤踵 MaterialPropertyBlock嚗銝蝣啣梁冽鞈迎隞乩蝯∠曈乩韏瑟寡
+    -  Time.deltaTime嚗銝 unscaled嚗嚗閮剖詨格怠曈乩頝
+    
+    撽嚗拍車頛詨交芋撘賜楊霅舫嚗desert.unity ⊿銴 fileID⊥貊征撘剁
+    crow.FBX  birdAnimatorController 撘冽澆頝蝯∠暹曈乩氬
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/CirclingFlock.cs      | 250 +++++++++++++++++++++++++++++++++++++
+ Assets/Codes/CirclingFlock.cs.meta |  11 ++
+ Assets/Scenes/desert.unity         |  63 ++++++++++
+ 3 files changed, 324 insertions(+)
+
+commit fce3b0913bb6c4d1a9be1ee8297e6de13ce75973
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 15:58:08 2026 +0000
+
+    斗曈亦黎寞銝閬頝臬嚗頠詨函拙振頨思
+    
+    拚靽格迤嚗
+    
+    銝頠詨敺⊿准寞拙振
+    砍敹函恍ａ摨 82% 嚗蝑潮刻Ｗ銝嚗曉券 PlayerMovement
+     transform 銝嚗anchor = Player嚗憟寡粥啣芥頝喳擃嚗撠梯啣迎
+    拐曆啁拙振嚗渡蝛箇嚗芸券⊿剝嚗蝑憟孵箇整
+    centerOffset 閮 (0, 8)嚗頠詨頝憟對雿游祇 8 砍偕典旦凋
+    閬摰刻票典旦頨思撠梯身 (0, 0)芣舫璅脣圈Ｕ
+    followLag 0.55 蝘嚗頝敺蝺雿銝舐′嚗憟寡韏瑚曈亦黎鋡急箔暺撠曉毀
+    
+    鈭敺銋暹楊璈Ｗ寞銝閬
+    璈Ｗ曉典芣舫爸塚甇頝臬曹撅 Perlin 芾脫捱摰嚗
+    - wanderAngle 0.55嚗閫摨行敹賢翰敹賣ｇ銝舐蝜
+    - wanderRadius 0.26嚗敹賢之敹賢嚗銝臬箏銝
+    - driftAmplitude 2.6嚗瘥餃芯憌嚗璇敶梢踴銝瘣餌
+    - flockWander 1.4嚗游敹銋典旦頨思撠撟嚗銝甇餌
+    瘥餌蝯芾脩車摮賭嚗隞交拚餉粥銝璇蝺嚗銝颱銝韏啁洵鈭
+    璅頝胯寧具撖阡雿蝘颯蝞嚗銝函隢蝺銝閬銋敺抵撌脩銝
+    
+    Ｙ畾菜詨飛頝 10 蝘嚗曈亦黎撟曆銝剖詨頠詨撌桀像 0.78 砍偕
+    憭 2.75 砍偕嚗敺 15嚗嚗隞乓頠詨銝剝憪蝯函拙振頨思蝡嚗
+    銝箔憌撠望游瞍韏啜
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/CirclingFlock.cs | 226 ++++++++++++++++++++++++++++++------------
+ Assets/Scenes/desert.unity    |  17 ++--
+ 2 files changed, 175 insertions(+), 68 deletions(-)
+
+commit 8bc4dee5755f54f0a74caef7b39dc85ff6ce6994
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 16:10:23 2026 +0000
+
+    曈亦黎寞函獢鞈憭橘銝蝯∪祇憟
+    
+    銝銝 CirclingFlock.cs 暸 Assets/Codes/嚗憭批振梁函單祈憭橘嚗
+    拐辣銋舐湔亦典湔航ㄐ銝游砍箔嚗霈銝芣銝擃
+    冽臭誑游芣獢
+    
+    啗憭 Assets/曈亦黎蝟餌絞_獢/
+      README_鋆.md        隤芣璆舀獢銝臬隞暻潭交暻潮
+      Scripts/ScatteredFlock.cs 賜斗曈亦黎祇嚗思膳銵餅嚗閮剝嚗
+      Scripts/FlockTakeover.cs  交嚗
+      Prefabs/曈亦黎_獢.prefab 脖遙雿湔臬停賜剁銝冽乩遙雿梯正
+    
+    銝踝銝閬嚗銝舀湧銝嚗
+    瘥餃 3010 砍偕鋆∪芣曆蝵殷擃雿餈賭嚗憭批銋撌桐嚗
+    瘥餅芸楛撠嚗敺撌 簣45%摨血榆 簣35%嚗嚗頝臬銝撅 Perlin 芾脯
+    賭蝘餃函撟喳潘隞乓頠詨銝剝冽詨飛銝撠望舐拙振砌犖嚗
+    銝蝞∠憌敺憭鈭游賭瞍韏啜血 minHeightAbovePlayer 摰函雯嚗
+    銝曈交脣圈Ｕ
+    
+    鈭瑕交賢嚗雿曉其交
+    FlockTakeover 靘銝喲菟賊嚗交嚗嚗芰
+    交嚗蝯∠ BirdEnemy 渡 SetActive(false)嚗銝行圈野蝢斤靽航餅嚗
+    嚗券券靘takeOverOnStart 閮剝嚗隞仿脤脖暻潮賭霈
+    
+    交胯銝胯芣湔舀鋆∠⊿ 57 颱賣撠嚗
+      甈 commit 銋敺 IndividualBirdEnemy  114 撘其芸
+      閬瘞訾閬蝑憭批振瘙箏嚗曹犖嚗銝舫航單祉撌乩
+    
+    餅璅∪文摰冽窒典獢Ｘ閬嚗瘝芸楛潭嚗霅瑞橘PlayerShield嚗
+    ⊥蛛PlayerPetrification.IsGodMode嚗銝剛嚗PlayerRespawnSystem嚗
+    典嚗UmbrellaZone嚗嚗賭葉澆 PlayerRespawnSystem.TriggerRespawn()
+    
+    銝湔舫
+    desert.unity 鋆⊥銝甈∠湔亦銝隞嗅歇嚗寞銝 prefab 撖虫
+    閬蝘駁斗游獢芾芷銝拐辣鞈憭橘湔臭銝隞颱畾撉詻
+     CirclingFlock.cs 撌脩宏 Assets/Codes/嚗曉 _to_delete/嚗嚗
+    蝣箄典獢瘝隞颱瑼獢撘典 GUID
+    
+    撽嚗拍車頛詨交芋撘賜楊霅舫嚗7  GUID 典獢臭嚗
+    desert.unity ⊿銴 fileID⊥貊征撘剁BirdEnemy 寧拐辣 114 撘券賢具
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/CirclingFlock.cs                      | 352 --------------
+ Assets/Scenes/desert.unity                         | 122 +++--
+ ...\273\347\265\261_\346\217\220\346\241\210.meta" |   8 +
+ .../Prefabs.meta"                                  |   8 +
+ ...44_\346\217\220\346\241\210\347\211\210.prefab" |  99 ++++
+ ...46\217\220\346\241\210\347\211\210.prefab.meta" |   7 +
+ ...205\210\347\234\213\351\200\231\350\243\241.md" | 121 +++++
+ ...10\347\234\213\351\200\231\350\243\241.md.meta" |   7 +
+ .../Scripts.meta"                                  |   8 +
+ .../Scripts/FlockTakeover.cs"                      | 163 +++++++
+ .../Scripts/FlockTakeover.cs.meta"                 |   2 +-
+ .../Scripts/ScatteredFlock.cs"                     | 513 +++++++++++++++++++++
+ .../Scripts/ScatteredFlock.cs.meta"                |  11 +
+ 13 files changed, 1002 insertions(+), 419 deletions(-)
+
+commit 327e178b7e2bc901368d34cd63f21d30ee94f6d2
+Merge: 8bc4dee 39bf22c
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Sun Aug 30 17:24:03 2026 +0000
+
+    Merge origin/main嚗嗡蝯∠ MonsterMutant7 Animator
+    
+    蝡臬拙 commit嚗340efe639bf22c嚗芸鈭銝瑼
+    MonsterMutant7 Animator Controller 其璈其鋡 Unity 啁Ｙ
+    折 fileID隞亦⊥其靘祉箸嚗砍圈隞賣芣鈭斤蝯銝璉嚗
+    銋敺憭批振賢朣銝隞踝銝鈭貉靘颯
+    
+    砍啁 9  commit嚗摮豢游閮剖詨柴曈亦黎獢蝑嚗蝡舐⊥獢嚗
+    券典璅靽
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit c07474da1de43f69cc86ed2447c9aa1b6b2f0d0f
+Merge: 327e178 e0f00a8
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 00:11:39 2026 +0000
+
+    Merge origin/main嚗嗡⊿剛刻曈交萄芸嚗湔舀孵
+    
+    蝯⊿拙 commit嚗19a7298e0f00a8嚗嚗
+    - 擐砍甇撘⊿剛剁CameraTargetXFollower 券Ｘ孵神CinemachineCameraConfiner3D嚗
+    - 喳颲刻摨阡莎PlayerPetrification嚗
+    - 曈交萎犖斗芸嚗IndividualBirdEnemy  8 唳雿嚗figureEightStrength
+      noiseStrengthmaxBankingAngle 蝑嚗desert 114 頛冽豢湔堆
+    - PlayerMovementPlayerRespawnSystem 敺株矽MonsterMutant7 Animator 摨
+    
+    拙湔舫寥賢嚗雿菜孵嚗隞亦∠啣湔舐箏嚗孵鳴
+    - SampleScene嚗摮豢獢 4  5 銴 TutorialZone3 畾 collider
+      閮 Trigger鋆 InGameSettingsSystem prefab 撖虫瑁撽霅敺
+    - desert嚗曈亦黎獢 prefab 撖虫嚗蝯∠ 114 餉唳雿璅靽嚗
+    
+    訾 API 冽貊Ⅱ隤隞剁IsAnyRespawningIsPlayerMovingAfterRespawn
+    TriggerRespawnIsGodModeisUnderwaterisCutsceneFrozen
+    LeverSystem  CollectibleNote 芾◤
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 98c0b7b827b3b33427e086182863cf02f04a0765
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 02:21:05 2026 +0000
+
+    push 芣乩耨甇嚗蝷箸霈頝舀怠詨柴餅瘥撟湔航瘥撟蝵
+    
+    芸楛撖抵芸楛蝔撘唬憿嚗push 靽格嚗
+    
+    銝閮剖詨格怠蝷箸瘚桀券詨桐
+    蝷箸 sortingOrder 9000嚗閮剖Ｘ踵 2002+拙振蝡冽獢踹鋆⊿閮剖嚗
+    銝 E券詨桐靽格嚗Time.timeScale == 0 銝敺霈頝胼
+    靘踵項怠憓嚗銝券銝隤啣冽怠
+    
+    鈭InputHint.IsSuppressed 瘥撟 FindFirstObjectByType<PlayerMovement>
+    瘥撟游湔舀曄拙振寞敹怠嚗憭瘥蝘鋆曆甈∴湔舀皜
+    
+    銝獢踵ａ典扳撟 InputHint.Show
+     key 瘥撟蝘駁文啣銝殷賜賣撟蝵株園寞寡 Show嚗
+    ａ嚗銝嚗冽蝵格璅
+    
+    拍車頛詨交芋撘蝺刻陌銵箔霈嚗芣臭瘚芾祥銝臬惜
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/InputHint.cs           | 19 ++++++++++++++++---
+ Assets/Codes/InputHintLeverProbe.cs | 10 +++++++++-
+ 2 files changed, 25 insertions(+), 4 deletions(-)
+
+commit 19c6093c555f8aeacb557000e871b24754bf7546
+Author: andywang <andywang940730@gmail.com>
+Date:   Mon Aug 31 16:56:38 2026 +0800
+
+    瞍單debug
+
+ Assets/Codes/PlayerMovement.cs                     |    17 +-
+ .../MonsterMutant7 Animator Controller.controller  | 54178 +++++++++----------
+ Assets/Scenes/SampleScene.unity                    |   391 +-
+ Assets/Scenes/desert.unity                         |   771 +-
+ Assets/TextMesh Pro/Msjh_SDF.asset                 |   501 +-
+ Graduation_project.slnx                            |     5 -
+ 6 files changed, 27995 insertions(+), 27868 deletions(-)
+
+commit abf19381978df01e4a4fc6da93ef60e435fb5c95
+Author: andywang <andywang940730@gmail.com>
+Date:   Mon Aug 31 17:56:04 2026 +0800
+
+    芰妾ontroller debug
+
+ Assets/Codes/MonsterMutantRun1AutoSpawner.cs       |    1 -
+ .../MonsterMutant7 Animator Controller.controller  |  238 +-
+ Assets/Scenes/dark glasses.unity                   | 5367 +++++++++++---------
+ Assets/Scenes/desert.unity                         |  692 +--
+ 4 files changed, 3413 insertions(+), 2885 deletions(-)
+
+commit a2dfc41897eceb1533de56f54900a25b1098ddd5
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 12:25:57 2026 +0000
+
+    頧渲孛澆撥嚗Codex Ｗ綽嚗靽格迤 Build Settings 鋆⊿湔 GUID
+    
+    Codex 撠 10 航渡賊單祉孵嚗甇方璅鈭歹銋敺憟質蝡臬雿蛛
+    SceneTransitionZoneStoryCardZoneHookWaterOasisTransition
+    SceneTransitionControllerStormSceneTransitionMirrorWallAbsorbCutscene
+    BookTransitionManagerMainMenuControllerStartMenuSceneTransition
+    PlayerRespawnSystem嚗 +476 / 65嚗
+    
+    銝餉舀踹閫貊澆典銝 EnsureColliderSetup嚗脣湔撘瑕 isTrigger
+    銝行閫貊潭 z 瘛勗漲嚗踹拙振敺 z 孵阡瘝鋡怠文啜
+    
+    血 EditorBuildSettings.asset 鋆 SampleScene 閮舫 GUID
+    嚗8c9cfa26佗嚗撌脫湔迤箏祕 c78b8e82艾仿典獢瘝隞颱瑼獢
+    撘刻 GUID嚗隞仿臭耨甇銝舐游
+    
+    蝣箄銝文券寞孵敺賢憟踝
+    StormSceneTransition  storyCardId(M2) 剖∪澆怒
+    MirrorWallAbsorbCutscene  playEndingAfterCutscene/endingCardId/endingBookScene
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/BookTransitionManager.cs     | 16 +++++-
+ Assets/Codes/MainMenuController.cs        | 16 ++++++
+ Assets/Codes/MirrorWallAbsorbCutscene.cs  | 71 +++++++++++++++++++++++-
+ Assets/Codes/PlayerRespawnSystem.cs       | 33 ++++++++---
+ Assets/Codes/SceneTransitionController.cs | 65 ++++++++++++++++++----
+ Assets/Codes/SceneTransitionZone.cs       | 86 +++++++++++++++++++++++------
+ Assets/Codes/StartMenuSceneTransition.cs  | 16 ++++++
+ Assets/Codes/StormSceneTransition.cs      | 57 ++++++++++++++++---
+ Assets/Codes/StoryCardZoneHook.cs         | 90 ++++++++++++++++++++++++++----
+ Assets/Codes/WaterOasisTransition.cs      | 91 +++++++++++++++++++++++++++++--
+ ProjectSettings/EditorBuildSettings.asset |  6 +-
+ 11 files changed, 479 insertions(+), 68 deletions(-)
+
+commit 5417c2689982b099e1a36845554b28347e72213c
+Merge: a2dfc41 abf1938
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 12:26:30 2026 +0000
+
+    Merge origin/main嚗嗡瞍單芰 controller  debug
+    
+    蝡臬拙 commit嚗19c6093 瞍單debugabf1938 芰妾ontroller debug嚗
+     PlayerMovement銝湔荔dark glasses 嫣 5367 銵嚗
+    MonsterMutant7 AnimatorMsjh_SDF 嚗隞亙蝘駁 Graduation_project.slnx
+    
+    瑼Ｘ仿臭芣函 commit嚗a2dfc41嚗Codex 頧游撥嚗頝蝡舀孵
+    嗆獢嚗隞仿怠瑼銝敺隞仿蝡舐箸嚗砍唬具
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit 18d100b0284605b422447f3416fe5712d2a9dccd
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 12:31:33 2026 +0000
+
+    蝯撅寧晞敺銝寧剔怒閫貊潘乩祆雿函剔急
+    
+     靽格銝霈游 Boss 畾菔◤頝喲瘚蝔航炊
+    
+    餌擗冽拐辣銝摨扳箔銋敺潛橘
+    
+        x = -47.70  拙振韏琿
+        x = -45.04  ∠瞍箄孛澆    蝯撅祆券
+        x = -35.70  暺敶梯蕭憪
+        x = -18.93 韏  鈭寧剔
+    
+    拙振脣游唾粥 2.7 砍偕嚗蝝銝蝘嚗撠梯萱圈∠閫貊澆嚗湔仿脩撅
+    暺敶 Boss 剔急湔挾瘞賊拐啜舀銝甈⊥亦撅芷瘝乩
+    瘝撽拙振銝憭芣抵萱啜
+    
+    剔急嗅嗅祕臬
+      翟andles 摨銝砌撠望鈭寧剔恬18.93 / 58.17 / 144.07 / 218.87 / 307.87嚗嚗
+         Animator Trigger 獢嚗雿鈭寥賣 CandleCollectible嚗
+        隞亙冽雿具
+      餃湔航ㄐ臭銝 CandleCollectible 臬券敶梯芸楛頨思
+        嚗MonsterMutant7_Run1  AddedComponents嚗嚗箏文胯芰拚餈剔怒嚗
+        寞刻蕭銝憪芸楛園芸楛嚗賡銝甈∪撘晞
+      餃拚駁敶梁 candles[]  [0,0]  [1154181977,0]嚗嗡皛踹停瘞賊銝
+    
+    甈∪
+      颱寧剔怠鋆銝 CandleCollectible嚗拚駁敶梁 candles[] 賣交遛鈭
+      餌宏斗臬券敶梯澈銝 CandleCollectible嚗 PrefabInstance 鋆∠撘剁
+      膂irrorWallAbsorbCutscene.playEndingAfterCutscene 閮剜 false
+        嚗蝔撘蝣潔嚗閬孵∠蝯撅喳荔∠瞍箇批虜哨摰 Q10 閰脫
+      艋hadowMonsterController 嗆遛敺銝  蝡餃蝯拙振   M5嚗蝬剜券嚗
+         頛 Book銝蝑瘨急摰嚗怨蝯撅韏
+    
+    靽格拙暺粹舐唳
+      艋etupCandles  _totalCandles = candles.Length嚗蝛箸潛脣鳴
+        嗆偶嗡皛輯銝瘝隞颱航炊閮胯寞芰 null嚗蝛箸潭霅血
+        銝寥賣 LogError
+      蓓lastCandleByX 祉湔亙 candles[0]嚗蝚砌潭 null  NullReference
+    
+    蝯撅蝔 static 脤伐游湧脣芣脖甈～
+    
+    撽嚗湔舐⊿銴 fileID⊥貊征撘剁鈭寧剔恍頝 7489 砍偕嚗文 3.5嚗
+    銝銝甈∠拇對嚗拚駁敶梢賣交遛嚗拇航單祆祈撟唾﹛銵 1361 / 1070
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/MirrorWallAbsorbCutscene.cs |   2 +-
+ Assets/Codes/ShadowMonsterController.cs  |  59 ++++++++++++++-
+ Assets/Scenes/dark glasses.unity         | 124 +++++++++++++++++++++++++------
+ 3 files changed, 157 insertions(+), 28 deletions(-)
+
+commit 3ea83199f05f133c0c33fb9b38893b8ac6dce2d7
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 14:39:42 2026 +0000
+
+    餌擗冽蝔摰摨嚗∠  M5 摮  圈  暺敶梯蕭  剔  蝯撅
+    
+    鈭撖行敶望蝣箄 M5 雿蝵殷敶梁 1830 蝘剔甇 M5 鈭
+    嚗蝺撠瘛寞嚗芾賭嚗憟賢芰箔暻潘靘銋臭誑瘙嚗
+    憟寥ａ鈭瘛曹閬摨暺嚗嚗摰胯∠銋敺餈賡銋湛
+    銝舐撅～銝銝摰嗥撅∠剁蝑潭湔挾 Boss 鋡怠頝喲
+    
+    曉函摨嚗嚗雿輻刻摰嚗
+      憌仿∠∠蝣鋆
+       M5 鈭剖
+       暺撟嗆閫拙振圈
+       敺韏啗萱 ShadowMonsterTrigger嚗暺敶梢憪餈
+       撘暺敶梁鈭寧剔
+       敺銝  暺敶望 嚗 脩鼓祉撅
+    
+    MirrorWallAbsorbCutscene
+      裴layEndingAfterCutscene   playCardAfterCutscene嚗閮剝嚗
+        嚗 afterCutsceneCardId嚗閮 M5嚗
+      餅剜敺 Play(id, true, false)嚗蝬剜券鈭斤策湔航伐
+        寞 Play(id, true, true)嚗芸楛瘛∪乓芸楛瘛∪綽恍Ｗ圈莎
+      餅剖敹 isCutsceneFrozen 閮剖 false嚗血拙振∪典啣銝鈭
+      颱頛 Book 湔胯 endingCardId/endingBookScene 甈雿靽雿璅箏歇
+    
+    ShadowMonsterController
+      蜜ndingCardId 閮剜寞蝛箏銝聆M5 撌脩券∠剝嚗蝯撅銝
+      餅閬剖⊥寧典獢Ｘ SceneTransitionController.TransitionToScene
+        暺嚗銝蝖砍嚗祆撖思銝銝摮函 FadeToBlack嚗撌脖耨嚗
+    
+    祈撟唾﹛瑼Ｘ仿嚗瘝畾銝摮函 API 澆怒
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/MirrorWallAbsorbCutscene.cs | 24 ++++++++++++++++--------
+ Assets/Codes/ShadowMonsterController.cs  | 17 ++++++++++++-----
+ 2 files changed, 28 insertions(+), 13 deletions(-)
+
+commit 39f8ecd3c013af68757d4d10b3a576a42092814f
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 15:02:38 2026 +0000
+
+    靽格迤蝺刻陌航炊嚗MirrorWallAbsorbCutscene 銴 Tooltip 撅祆
+    
+    銝銝寞雿蝔望嚗啁 [Tooltip] 刻銝Ｘ皜嚗
+     CS0579 Duplicate 'Tooltip' attribute嚗26 銵32 銵嚗嚗
+    游 Assembly-CSharp 蝺其嚗Unity ⊥ Play Mode
+    
+    - 芣抵畾 [Tooltip]
+    - 芣撌脣函 endingCardId / endingBookScene 拙甇餅雿
+      嚗蝯撅撌脩宏 ShadowMonsterController 敺銝寧剔怒嚗
+    - dark glasses.unity 鋆∪摨甈雿銝雿菜啣蝔梧
+      踹 Unity 銝甈∪瑼芸楛孵神Ｙ∟ diff
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/MirrorWallAbsorbCutscene.cs | 14 +++++---------
+ Assets/Scenes/dark glasses.unity         |  5 ++---
+ 2 files changed, 7 insertions(+), 12 deletions(-)
+
+commit a9f1120a05d55dd3b6eb6442a6b2fff969e4c19c
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 15:04:52 2026 +0000
+
+    蝯撅璅瘥甈∟亙湔舀飛塚踹蝚砌頛芰拐啁撅
+    
+    _endingFired  static嚗銝 Play 銝芸楛蝵柴
+    拙振  銝駁詨  拐甈～摰 true嚗
+    蝚砌頛芣嗅敺銝寧剔怠停銝脩撅寞 Awake 甇賊嗚
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/ShadowMonsterController.cs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+commit 9331c12f4962de7f8fb65fcc87bde01c9db8db8f
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 15:39:41 2026 +0000
+
+    靽桀末暺撟嚗摮∟撠曉桃 RectTransform 銝湔 null
+    
+    AddComponent<Image>()  AddComponent<TextMeshProUGUI>() 芸拐辣
+    Transform  RectTransform蝔撘亥 AddComponent<RectTransform>()嚗
+    典歇蝬 RectTransform 拐辣銝憭望銝血 null嚗
+    潭臬 if (rect != null) { 閮剖券憭批 } 湔挾賣瑁
+    
+    蝯嚗
+    - 摮∠暺撟券閮剔 100100 蝵桐葉撠孵
+       撠望胯暺撟瘝皛踹刻Ｗ銋銝箸楚交楚箝
+    - 摮獢瘝閮剖撖砍漲雿蝵
+    - 撠曉格銝雿蝵株撖砍漲賣閮剖嚗券函典銝暺銝
+    
+    寧典隞嗆砌撠望 rectTransform
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/StoryCardPlayer.cs                                  | 9 +++++++--
+ .../\346\210\221\344\275\240\344\273\226/Scripts/EndCredits.cs"  | 8 ++++++--
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+commit 9a39d997ebed2832c325f60a300c68350fe53a9c
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 15:40:06 2026 +0000
+
+    芰拍餃湧∴芰押芰拙韏瑚⊿剖唬蜓閫
+    
+    祈萱啗孛潮芰拙停湔亙典唳楚亦嗅餈踝拙振寞祆皜璆
+    臭暻潭梯正刻蕭憟對敺蝒寞銝畾菜綽
+    
+    1. 雿銝餉銝行憟寧瘞游像摨行飛
+    2. ⊿剝唳芰抵澈銝
+       撠皞暺刻澈 Renderer 銝剖嚗銝 transform芰 Pivot 刻喳嚗
+       湔亙 Pivot 撠啁餌唳蹂Ｙ蝛箸除Z 瘝輻其蜓閫嚗
+       豢銝箸芰拙 z=-13.2 游敺敺
+    3. 芰拙券⊿剛ㄐ瘚桃整潔
+    4. 芰拙券⊿剖憪蝘餃嚗 Chasing嚗
+    5. ⊿剝銝餉嚗豢嚗閫嚗憪
+    
+    憟嚗
+    - 瞍箸 _revealActive = true嚗芰拐賣鋡怠雿銝餉
+    - 湔舐 Cinemachine PositionDamping  1嚗⊿剖云暺憌銝唳芰抵澈銝
+      撠梯◤怠靘嚗瞍箸急隤踵 0.4嚗蝯
+    - 豢憒祉 Follow  null嚗湔航ㄐ TrackingTarget 舐征嚗
+      單砍刻摰嚗嚗銝餉嚗敺豢敺甇支頝鈭
+    - ResetToInitialState  StopAllCoroutines 瞍箇典頝荔
+      隞仿鋆∪澆 RevealCancel() ⊿剛批嗆
+    
+    券典賊賢 Inspector嚗useRevealCutscenerevealCameraTravel
+    revealHoldBeforeMoverevealWatchMoveSecondsrevealFocusOffset
+    revealCameraDamping useRevealCutscene 撠勗啣祉銵箝
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/ShadowMonsterController.cs | 280 ++++++++++++++++++++++++++++++--
+ 1 file changed, 266 insertions(+), 14 deletions(-)
+
+commit 594c562d9d57ffc2f57c57a752cc2475d4967087
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 15:40:06 2026 +0000
+
+    甇Ｘ甈∠楊霅舫賡撱 Animator Controller
+    
+    RebuildCleanAnimatorController 銝鈭 [InitializeOnLoadMethod]嚗
+    隞交銝甈∠楊霅胯瘥銝甈⊿ Play Mode 賣 DeleteAsset 港遢撱
+    MonsterMutant7 Animator Controller.controller
+    隞賣獢 23,565 銵嚗蝑潭甈⊿賣港遢孵神嚗蝯⊥甈 pull 賣銵蝒
+    
+    踵 [InitializeOnLoadMethod]嚗靽 [MenuItem]
+    閬撱箸敺 Tools > Rebuild MonsterMutant7 Animator Controller 暺
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/MonsterMutantRun1AutoSpawner.cs | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit f3e847e0826a927860dc4705a3fad8f20cb68c2e
+Author: andywang <andywang940730@gmail.com>
+Date:   Tue Sep 1 00:25:59 2026 +0800
+
+    UI隞ＷSFX喲批
+
+ Assets/Codes/AmbientSoundTrigger.cs                |     4 +-
+ Assets/Codes/AtmosphericCrackFloor.cs              |     2 +-
+ Assets/Codes/AudioManager.cs                       |    60 +-
+ Assets/Codes/BackgroundShadowCreature.cs           |     2 +-
+ Assets/Codes/BubbleClusterFx.cs                    |     4 +-
+ Assets/Codes/CandleCollectible.cs                  |     2 +-
+ Assets/Codes/DesertSandRustle.cs                   |     4 +-
+ Assets/Codes/Destructible.cs                       |     4 +-
+ Assets/Codes/GuidanceLight.cs                      |     6 +-
+ Assets/Codes/IndividualBirdEnemy.cs                |     8 +-
+ Assets/Codes/MainMenuController.cs                 |     4 +-
+ Assets/Codes/MenuSpriteHoverEffect.cs              |     2 +-
+ Assets/Codes/MirrorWallAbsorbCutscene.cs           |    10 +-
+ Assets/Codes/NoteRelief.cs                         |     2 +-
+ Assets/Codes/OasisWaterAmbient.cs                  |     8 +-
+ Assets/Codes/PlayerMovement.cs                     |     4 +-
+ Assets/Codes/PlayerPetrification.cs                |     4 +-
+ Assets/Codes/PlayerRespawnSystem.cs                |     2 +-
+ Assets/Codes/QuestClearBarrierRock.cs              |     2 +-
+ Assets/Codes/RollingRockVisual.cs                  |     2 +-
+ Assets/Codes/SceneTransitionZone.cs                |     2 +-
+ Assets/Codes/ShadowMonsterController.cs            |    26 +-
+ Assets/Codes/SkyDiveTeleportTrigger.cs             |     2 +-
+ Assets/Codes/StormSceneTransition.cs               |     2 +-
+ Assets/Codes/StoryCardZoneHook.cs                  |     2 +-
+ Assets/Codes/TornadoFollowCamera.cs                |     8 +
+ Assets/Codes/TornadoVortexTransition.cs            |     2 +-
+ Assets/Codes/UnderwaterNurseryItem.cs              |     4 +-
+ Assets/Codes/UnderwaterSuffocationEffect.cs        |     2 +-
+ Assets/Codes/UnlockableMovableObject.cs            |     4 +-
+ Assets/Codes/WindGustSystem.cs                     |     3 +
+ Assets/Codes/WolfEnemy.cs                          |     3 +-
+ Assets/Codes/WorldSpaceBgmVolumeSlider.cs          |     8 +-
+ Assets/Codes/WorldSpaceMasterVolumeSlider.cs       |     2 +-
+ Assets/Codes/WorldSpaceSfxVolumeSlider.cs          |   100 +
+ Assets/Codes/WorldSpaceSfxVolumeSlider.cs.meta     |     2 +
+ .../MonsterMutant7 Animator Controller.controller  |   238 +-
+ Assets/Scenes/MainMenuScene.meta                   |     8 +
+ Assets/Scenes/MainMenuScene.unity                  |   419 +-
+ Assets/Scenes/MainMenuScene/LightingData.asset     |     8 +
+ .../Scenes/MainMenuScene/LightingData.asset.meta   |     8 +
+ Assets/TextMesh Pro/Msjh_SDF.asset                 |  4624 +-
+ Assets/UI/GenSenRounded2TW-L SDF.asset             | 61112 +++++++++++++++++++
+ Assets/UI/GenSenRounded2TW-L SDF.asset.meta        |     8 +
+ Assets/UI/GenSenRounded2TW-L.otf                   |   Bin 0 -> 16508604 bytes
+ Assets/UI/GenSenRounded2TW-L.otf.meta              |    21 +
+ Assets/UI/InGameSettingsSystem.prefab              |  1975 +-
+ Assets/UI/SETTING.prefab                           |  1087 +-
+ Assets/UI/UoqMunThenKhung-Regular Bitmap.asset     |  3475 +-
+ 49 files changed, 70581 insertions(+), 2710 deletions(-)
+
+commit 05ed0de53973999a8400733bf575109d7139b7e8
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 16:29:49 2026 +0000
+
+    餃湧∩耨甇嚗芰抵敺啜渲頝
+    
+    1⊿剝唳芰抵澈銝餌銝唳芰抬拙其韏瘀
+    
+    (a) 撠皞暺舐 Renderer.bounds 蝞嚗雿 SetVisualAlpha(0) 撌脩
+         Renderer 鈭 Renderer嚗撠文 SkinnedMeshRenderer嚗
+        梁 bounds 航蝛箇嚗⊿剖停憌颱瘝梯正唳嫘
+         寞敺 Mesh 鞈Ｘ祈澈 bounds 蝞嚗sharedMesh.bounds 頧唳砍啁征嚗嚗
+          Renderer 銋蝞敺箔
+    
+    (b) 芰拇舐⊿剝唬敺憪瘛∪亦嚗⊿剝駁銝蝘憭舫勗耦
+         寞⊿凋箇潭芰拙停甇仿憪曇澈
+    
+    2餅芰拇游恍ａ擃嚗⊿剖皞芣啗摮
+        鈭璅∪嚗body1  mesh 擃 2.064 桐嚗湔舐葬 21.67 
+        嚗 銝擃摨衣 45 桐嚗豢舀迤鈭 size 13.5嚗銝甈∪芰敺 27 桐
+         瞍箸芸⊿剜唳湧餉敺銝嚗revealZoomPadding嚗閮剔 20% 嚗嚗
+          瞍摰嗅砍之撠芣銝餈
+    
+    3渲Ｗ云餈嚗瘝拍征
+        湔航ㄐ芰拙 x=-59.3嚗閫貊潮 x=-35.7嚗芸榆 23.6 桐嚗
+        ⊿凋甈∪停敺 48 桐撖砂蝑潔憪芰拙停鞎澆刻銝
+         ActivateChase() 芰拇箏唬蜓閫敺 spawnDistanceBehindPlayer
+          嚗閮 45嚗桐芣 X嚗Y嚗Z 靽蝢銵箏末璅摮
+          45 > runDistanceThreshold(30)嚗芰拇頝甇伐3.21.35嚗4.32嚗餈賭靘嚗
+          銝餉 5嚗航敺嚗雿銝湔憯餈急
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ Assets/Codes/ShadowMonsterController.cs | 190 ++++++++++++++++++++++++++------
+ 1 file changed, 155 insertions(+), 35 deletions(-)
+
+commit ea9287dd324611da3ad9f21d4235f680f99339b0
+Merge: 05ed0de f3e847e
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 16:38:19 2026 +0000
+
+    Merge origin/main嚗嗡 SFX 喲
+    
+    蝯⊥銝喲摰鈭嚗AudioManager.BgmVolume / SfxVolume / ScaleSfx嚗
+    UI 鈭 WorldSpaceSfxVolumeSlider嚗銝駁詨格鈭 GenSenRounded2TW-L 摮擃嚗
+    
+    拙瑼獢拚賢堆雿蛛
+    
+    - ShadowMonsterController.cs
+      餃湧∟蝯撅嚗蝯⊥ 8  PlayClipAtPoint  ScaleSfx()
+      餈賡 BGM 銋銝 BgmVolume隞亙 UpdateProximityAudioTension 寧
+      unscaledDeltaTime拚賭嚗唾澆怠歇瘥撠蝯∠祇摮詨
+      瘜冽嚗餃湧⊥啣潸脫祇脖 PlayRoar()嚗蝯⊿銵孵銋銝韏瑟祇颱
+    
+    - MirrorWallAbsorbCutscene.cs
+      寧舀雿摰嚗湔摮∴嚗蝯⊥寧 5 剜暸喲嚗
+      雿蝵桐嚗拚賭
+    
+    Unity Ｙ銝瑼嚗Animator ControllerMsjh_SDFUoqMunThenKhung Bitmap嚗
+    砍唳 Unity 芷喉銝敺∠函∠研
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+commit fb015facfa4439fdfd7a496740e25f50cf7ecc44
+Author: mathewkong <mathewkong04@gmail.com>
+Date:   Mon Aug 31 16:40:32 2026 +0000
+
+    曈亦黎獢怨脫乩 SFX 
+    
+    ScatteredFlock 靽航霅血怨脖舐湔 PlayClipAtPoint(clip, pos, cryVolume)嚗
+    摰函 SFX 嚗芸敺 Master寞 AudioManager.ScaleSfx(cryVolume)
+    
+    Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YVYbGgVa5ojmU4WotKzRti
+
+ .../Scripts/ScatteredFlock.cs"                                          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
