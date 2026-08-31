@@ -433,7 +433,7 @@ public class ScatteredFlock : MonoBehaviour
 
         // 1　叫聲警告：先讓她知道有東西要下來
         if (m.anim != null && !string.IsNullOrEmpty(warnStateName)) m.anim.Play(warnStateName, 0, 0f);
-        if (warningCry != null) AudioSource.PlayClipAtPoint(warningCry, m.tr.position, cryVolume);
+        if (warningCry != null) AudioSource.PlayClipAtPoint(warningCry, m.tr.position, AudioManager.ScaleSfx(cryVolume));   // ★走 SFX 通道
         float wt = 0f;
         while (wt < warningSeconds)
         {
