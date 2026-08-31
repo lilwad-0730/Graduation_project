@@ -155,7 +155,7 @@ public class StormSceneTransition : MonoBehaviour
         // 2. 播放狂風暴風音效
         if (stormVortexSFX != null)
         {
-            AudioSource.PlayClipAtPoint(stormVortexSFX, transform.position, sfxVolume);
+            AudioSource.PlayClipAtPoint(stormVortexSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 3. 透過 PlayerMovement 原生物理牽引 (100% 適應地形斜坡與地面碰撞，絕不穿模)

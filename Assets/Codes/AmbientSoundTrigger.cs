@@ -55,7 +55,7 @@ public class AmbientSoundTrigger : MonoBehaviour
             }
             else
             {
-                AudioSource.PlayClipAtPoint(soundClip, transform.position, volume);
+                AudioSource.PlayClipAtPoint(soundClip, transform.position, AudioManager.ScaleSfx(volume));
             }
         }
         else
@@ -66,7 +66,7 @@ public class AmbientSoundTrigger : MonoBehaviour
             }
             else
             {
-                AudioSource.PlayClipAtPoint(soundClip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, volume);
+                AudioSource.PlayClipAtPoint(soundClip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, AudioManager.ScaleSfx(volume));
             }
         }
 

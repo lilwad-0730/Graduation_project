@@ -266,7 +266,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 hoverAudioSource.maxDistance = hoverHearDistance * 1.5f;
             }
 
-            hoverAudioSource.volume = sfxVolume;
+            hoverAudioSource.volume = AudioManager.ScaleSfx(sfxVolume);
 
             if (!hoverAudioSource.isPlaying)
             {
@@ -592,7 +592,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             sfxAudioSource.playOnAwake = false;
             sfxAudioSource.spatialBlend = 0f; // 2D 全螢幕立體聲，零衰減保證 100% 清晰播放
         }
-        sfxAudioSource.PlayOneShot(clip, volume);
+        sfxAudioSource.PlayOneShot(clip, AudioManager.ScaleSfx(volume));
     }
 
     /// <summary>
@@ -737,7 +737,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
             if (flashAudioSource != null && flashAudioSource.isPlaying)
             {
-                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+                flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha)));
             }
 
             yield return null;
@@ -746,7 +746,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         flashImage.color = new Color(1f, 1f, 1f, maxFlashAlpha);
         if (flashAudioSource != null && flashAudioSource.isPlaying)
         {
-            flashAudioSource.volume = sfxVolume;
+            flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume);
         }
 
         float outDuration = Mathf.Max(0.5f, totalDuration - flashFadeInDuration);
@@ -760,7 +760,7 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
             if (flashAudioSource != null && flashAudioSource.isPlaying)
             {
-                flashAudioSource.volume = sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha));
+                flashAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * (a / Mathf.Max(0.01f, maxFlashAlpha)));
             }
 
             yield return null;

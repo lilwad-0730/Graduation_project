@@ -155,8 +155,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
                     _runAudioSource.spatialBlend = 1f; // 3D 空間音效
                     _runAudioSource.minDistance = 3f;
                     _runAudioSource.maxDistance = 20f;
-                    _runAudioSource.volume = soundVolume * 0.75f;
+                    _runAudioSource.volume = AudioManager.ScaleSfx(soundVolume * 0.75f);
                 }
+                _runAudioSource.volume = AudioManager.ScaleSfx(soundVolume * 0.75f);
                 if (!_runAudioSource.isPlaying) _runAudioSource.Play();
             }
         }

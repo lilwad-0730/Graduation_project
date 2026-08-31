@@ -210,7 +210,7 @@ public class PlayerRespawnSystem : MonoBehaviour
             _directAudioSource.playOnAwake = false;
             _directAudioSource.spatialBlend = 0f; // 2D 零衰減直出，保證 100% 清晰響亮
         }
-        _directAudioSource.PlayOneShot(clip, volume);
+        _directAudioSource.PlayOneShot(clip, AudioManager.ScaleSfx(volume));
     }
 
     private void AutoLoadMissingSFX()

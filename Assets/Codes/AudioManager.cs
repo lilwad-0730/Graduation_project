@@ -6,6 +6,53 @@ public class AudioManager : MonoBehaviour
     // 單例模式，讓全域都可以方便呼叫 AudioManager.Instance.PlayBGM(...)
     public static AudioManager Instance;
 
+    public const string BgmVolumePrefsKey = "BGMVolume";
+    private static float _bgmVolume = -1f;
+
+    public static float BgmVolume
+    {
+        get
+        {
+            if (_bgmVolume < 0f)
+                _bgmVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(BgmVolumePrefsKey, 0.75f));
+            return _bgmVolume;
+        }
+    }
+
+    public static void SetBgmVolume(float volume)
+    {
+        _bgmVolume = Mathf.Clamp01(volume);
+        if (Instance != null && Instance._fadeCoroutine == null)
+        {
+            AudioSource activeSource = Instance._isUsingSource1 ? Instance._bgmSource1 : Instance._bgmSource2;
+            if (activeSource != null && activeSource.isPlaying)
+                activeSource.volume = _bgmVolume;
+        }
+    }
+
+    public const string SfxVolumePrefsKey = "SFXVolume";
+    private static float _sfxVolume = -1f;
+
+    public static float SfxVolume
+    {
+        get
+        {
+            if (_sfxVolume < 0f)
+                _sfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(SfxVolumePrefsKey, 0.75f));
+            return _sfxVolume;
+        }
+    }
+
+    public static void SetSfxVolume(float volume)
+    {
+        _sfxVolume = Mathf.Clamp01(volume);
+    }
+
+    public static float ScaleSfx(float volume)
+    {
+        return Mathf.Max(0f, volume) * SfxVolume;
+    }
+
     [Header("音樂設定")]
     [Tooltip("淡入淡出需要的時間 (秒)")]
     public float crossfadeDuration = 1.5f;
@@ -105,6 +152,7 @@ public class AudioManager : MonoBehaviour
         newSource.Play();
 
         float timer = 0f;
+        float startingVolume = activeSource.volume;
 
         // 交叉淡出淡入：舊的變小聲，新的變大聲
         while (timer < crossfadeDuration)
@@ -112,8 +160,8 @@ public class AudioManager : MonoBehaviour
             timer += Time.deltaTime;
             float progress = timer / crossfadeDuration;
 
-            activeSource.volume = Mathf.Lerp(1f, 0f, progress);
-            newSource.volume = Mathf.Lerp(0f, 1f, progress);
+            activeSource.volume = Mathf.Lerp(startingVolume, 0f, progress);
+            newSource.volume = Mathf.Lerp(0f, BgmVolume, progress);
 
             yield return null;
         }
@@ -121,7 +169,7 @@ public class AudioManager : MonoBehaviour
         // 確保最終狀態
         activeSource.volume = 0f;
         activeSource.Stop();
-        newSource.volume = 1f;
+        newSource.volume = BgmVolume;
 
         // 切換主要來源
         _isUsingSource1 = !_isUsingSource1;
@@ -154,11 +202,11 @@ public class AudioManager : MonoBehaviour
         if (clip == null) return;
         if (_sfxSource != null)
         {
-            _sfxSource.PlayOneShot(clip, volume);
+            _sfxSource.PlayOneShot(clip, ScaleSfx(volume));
         }
         else
         {
-            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, volume);
+            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, ScaleSfx(volume));
         }
     }
 
@@ -168,6 +216,6 @@ public class AudioManager : MonoBehaviour
     public void PlaySFXAt(AudioClip clip, Vector3 position, float volume = 1.0f)
     {
         if (clip == null) return;
-        AudioSource.PlayClipAtPoint(clip, position, volume);
+        AudioSource.PlayClipAtPoint(clip, position, ScaleSfx(volume));
     }
 }

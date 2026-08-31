@@ -566,7 +566,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (appearSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(appearSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(appearSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(appearSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         transform.localScale = _baseScale * _currentScaleMultiplier;
@@ -608,7 +608,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (roarSFX == null) return;
         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(roarSFX, transform.position, sfxVolume);
-        else AudioSource.PlayClipAtPoint(roarSFX, transform.position, sfxVolume);
+        else AudioSource.PlayClipAtPoint(roarSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -921,7 +921,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (hitSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(hitSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(hitSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(hitSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         float startMult = _currentScaleMultiplier;
@@ -952,12 +952,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (victoryReliefSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(victoryReliefSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(victoryReliefSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(victoryReliefSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
         else if (vanishSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(vanishSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(vanishSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(vanishSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 恢復玩家的移動速度
@@ -1004,7 +1004,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (attackSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(attackSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(attackSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(attackSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 2. 等待巨爪向下揮擊的命中點瞬間 (約 0.55 秒)
@@ -1031,7 +1031,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             if (catchPlayerSFX != null)
             {
                 if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(catchPlayerSFX, player.position, sfxVolume);
-                else AudioSource.PlayClipAtPoint(catchPlayerSFX, player.position, sfxVolume);
+                else AudioSource.PlayClipAtPoint(catchPlayerSFX, player.position, AudioManager.ScaleSfx(sfxVolume));
             }
 
             // 定身主角
@@ -1081,7 +1081,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (punishTeleportSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(punishTeleportSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(punishTeleportSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(punishTeleportSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         _currentScaleMultiplier = 1f;
@@ -1694,11 +1694,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-            _chaseAudioSource.volume = Mathf.Lerp(startVol, targetVolume, t);
+            float scaledTargetVolume = targetVolume * AudioManager.BgmVolume;
+            _chaseAudioSource.volume = Mathf.Lerp(startVol, scaledTargetVolume, t);
             yield return null;
         }
 
-        _chaseAudioSource.volume = targetVolume;
+        _chaseAudioSource.volume = targetVolume * AudioManager.BgmVolume;
 
         if (!playIfStarting && targetVolume <= 0.001f)
         {
@@ -1713,17 +1714,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (_chaseAudioSource == null || !_chaseAudioSource.isPlaying || player == null || _chaseBgmFadeCoroutine != null) return;
 
+        float bgmVolume = AudioManager.BgmVolume;
         float dist = Mathf.Abs(player.position.x - transform.position.x);
         if (dist < 8.5f)
         {
             // 怪物越靠近，追逐音樂音量與緊張度稍微提高
             float t = Mathf.InverseLerp(8.5f, 2.5f, dist);
-            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t);
+            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t) * bgmVolume;
             _chaseAudioSource.pitch = Mathf.Lerp(1.0f, 1.05f, t);
         }
         else
         {
-            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume, Time.deltaTime * 0.5f);
+            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume * bgmVolume, Time.unscaledDeltaTime * 0.5f);
             _chaseAudioSource.pitch = Mathf.MoveTowards(_chaseAudioSource.pitch, 1.0f, Time.deltaTime * 0.5f);
         }
     }

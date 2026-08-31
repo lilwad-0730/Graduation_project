@@ -159,7 +159,7 @@ public class StoryCardZoneHook : MonoBehaviour
         // 2　轉場音效（原本 SceneTransitionZone 上填的那個）
         if (_zone.transitionSFX != null && playerObj != null)
         {
-            AudioSource.PlayClipAtPoint(_zone.transitionSFX, playerObj.transform.position, _zone.sfxVolume);
+            AudioSource.PlayClipAtPoint(_zone.transitionSFX, playerObj.transform.position, AudioManager.ScaleSfx(_zone.sfxVolume));
         }
 
         // 3　沉水模式：先讓她沉下去，再播卡
