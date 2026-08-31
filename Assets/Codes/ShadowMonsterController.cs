@@ -39,8 +39,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("收完所有燭火後是否直接進結局（原本掛在鏡牆演出上，已改到這裡）")]
     public bool playEndingAfterAllCandles = true;
 
-    [Tooltip("進結局前播的文字卡 ID")]
-    public string endingCardId = "M5";
+    [Tooltip("進結局前要不要再播一張卡。M5 已在鏡牆演出後播過，這裡預設留空＝不重播")]
+    public string endingCardId = "";
 
     [Tooltip("結局要載入的場景（繪本）")]
     public string endingBookScene = "Book";
@@ -469,13 +469,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (StoryCardPlayer.Instance != null && !string.IsNullOrEmpty(endingCardId)
             && StoryCardPlayer.Instance.HasCard(endingCardId))
         {
-            // 第二個參數 true ＝播完維持全黑，不要閃一下亮再黑
+            // (true, false) ＝自己淡入黑幕，播完維持全黑交給場景載入
             yield return StoryCardPlayer.Instance.Play(endingCardId, true, false);
         }
 
         EndCredits.EndingMode = true;
-        if (!string.IsNullOrEmpty(endingBookScene))
-            UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
+        if (string.IsNullOrEmpty(endingBookScene)) yield break;
+
+        // 沒播卡的話用專案既有的轉場控制器蓋黑再切，別硬切
+        if (endingCardId == "" && SceneTransitionController.Instance != null)
+        {
+            SceneTransitionController.Instance.TransitionToScene(endingBookScene);
+            yield break;
+        }
+        UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
     }
 
     // ──────────────────────────────────────────────────────────────────────────

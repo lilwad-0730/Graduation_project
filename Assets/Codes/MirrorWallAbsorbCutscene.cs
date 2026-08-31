@@ -23,8 +23,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     // ══════════════════════════════════════════
     [Header("🎬 結局出口")]
     [Tooltip("演出結束後接結尾漫畫與片尾名單（整局的最後一段）")]
-    public bool playEndingAfterCutscene = false;   // ★結局已改由「最後一根燭火」觸發，見 ShadowMonsterController
+    [Tooltip("鏡牆吸入演完後，是否播一段過場文字（播完回到遊戲，不載場景）")]
+    public bool playCardAfterCutscene = true;
+
+    [Tooltip("鏡牆演完要播哪張卡")]
+    public string afterCutsceneCardId = "M5";
     [Tooltip("接結尾前要播的過場文字卡")]
+    [Tooltip("（已停用）結局改由 ShadowMonsterController 的最後一根燭火觸發")]
     public string endingCardId = "M5";
     [Tooltip("結尾漫畫所在的場景名稱")]
     public string endingBookScene = "Book";
@@ -902,19 +907,22 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         IsAnyCutsceneRunning = false;
         Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
 
-        // ★【結局】鏡牆吸入演完 → 過場文字 M5 →（維持全黑）→ 結尾漫畫 → 片尾名單 → 主選單
-        if (playEndingAfterCutscene)
+        // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）
+        //   接下來玩家往前走會踩到 ShadowMonsterTrigger，黑影才開始追。
+        //   結局不在這裡，在「收完最後一根燭火」——見 ShadowMonsterController。
+        if (playCardAfterCutscene && !string.IsNullOrEmpty(afterCutsceneCardId))
         {
             if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
 
-            if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(endingCardId))
+            if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(afterCutsceneCardId))
             {
-                yield return StoryCardPlayer.Instance.Play(endingCardId, true, false);
+                // (true, true) ＝自己淡入黑幕、播完自己淡出，播完畫面回到遊戲
+                yield return StoryCardPlayer.Instance.Play(afterCutsceneCardId, true, true);
             }
 
-            EndCredits.EndingMode = true;
-            Debug.Log("🎬【結局】載入結尾漫畫場景：" + endingBookScene);
-            UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
+            // ★一定要解凍，不然玩家會卡在原地動不了
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = false;
+            Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
         }
     }
 
