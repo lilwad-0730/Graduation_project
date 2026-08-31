@@ -45,6 +45,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("結局要載入的場景（繪本）")]
     public string endingBookScene = "Book";
 
+    [Header("★ 登場運鏡：先看怪物，再回到主角")]
+    [Tooltip("觸發追逐時，先把鏡頭帶到怪物身上演一段，再把鏡頭交還主角")]
+    public bool useRevealCutscene = true;
+
+    [Tooltip("鏡頭飛去怪物、以及飛回主角，各自等多久（留時間給 Cinemachine 的阻尼追上）")]
+    public float revealCameraTravel = 1.2f;
+
+    [Tooltip("怪物完全浮現之後、開始移動之前的停頓")]
+    public float revealHoldBeforeMove = 0.4f;
+
+    [Tooltip("怪物開始移動後，鏡頭還要停在牠身上看多久")]
+    public float revealWatchMoveSeconds = 0.9f;
+
+    [Tooltip("鏡頭對準點的微調。對準點預設取全身 Renderer 的中心（怪物 Pivot 在腳底，直接看 Pivot 會對到地板下面）")]
+    public Vector2 revealFocusOffset = Vector2.zero;
+
+    [Tooltip("演出期間暫時把 Cinemachine 的位置阻尼調小，鏡頭才追得上。場景預設是 1，太黏會飛不到怪物身上就被叫回來。設負數＝不動它")]
+    public float revealCameraDamping = 0.4f;
+
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
     public bool chaseWhileAppearing = true;
@@ -213,6 +232,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private List<CinemachineVirtualCamera> _vcamsLegacy = new List<CinemachineVirtualCamera>();
     private List<Transform> _origFollow = new List<Transform>();
 
+    // 登場運鏡（跟 LockCamera 分開記錄，免得兩邊互相蓋掉還原值）
+    private bool _revealActive = false;          // 整段演出期間為 true：不准抓人
+    private bool _revealCamTaken = false;
+    private Transform _revealFocus;              // 鏡頭要看的點（怪物視覺中心）
+    private List<CinemachineCamera> _revealVcams3 = new List<CinemachineCamera>();
+    private List<CinemachineVirtualCamera> _revealVcamsLegacy = new List<CinemachineVirtualCamera>();
+    private List<Transform> _revealOrigFollow = new List<Transform>();
+    private List<CinemachineFollow> _revealFollows = new List<CinemachineFollow>();
+    private List<Vector3> _revealOrigDamping = new List<Vector3>();
+    private Renderer[] _revealRenderers;
+
     // Coroutine 追蹤
     private Coroutine _stateCoroutine;
     private Coroutine _hitShrinkCoroutine;
@@ -343,7 +373,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         switch (currentState)
         {
             case MonsterState.Appearing:
-                if (chaseWhileAppearing)
+                // ★登場運鏡進行中：怪物先站著讓鏡頭看，不移動也不抓人
+                if (chaseWhileAppearing && !_revealActive)
                 {
                     MoveTowardPlayer(chaseSpeed);
                     CheckCatch();
@@ -354,7 +385,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
             case MonsterState.Chasing:
                 MoveTowardPlayer(chaseSpeed);
-                CheckCatch();
+                // ★演出還沒收尾（鏡頭還在飛回來、主角還被凍住）時不准抓人
+                if (!_revealActive) CheckCatch();
                 CheckCandleCollisions();
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
@@ -403,6 +435,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private void CheckCollisionCatch(GameObject go)
     {
+        if (_revealActive) return;   // ★登場運鏡期間主角是凍住的，不能被吃
         if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
         if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
         {
@@ -514,30 +547,248 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         PlayAnimationByName(walkAnimationName);
 
-        float t = 0f;
-        while (t < appearDuration)
+        // ★有運鏡就走運鏡版：鏡頭先看怪物 → 怪物動起來 → 鏡頭回到主角 → 還控制權
+        if (useRevealCutscene && player != null)
         {
-            t += Time.deltaTime;
-            float progress = Mathf.SmoothStep(0f, 1f, t / appearDuration);
+            yield return StartCoroutine(RevealCutsceneRoutine());
+        }
+        else
+        {
+            float t = 0f;
+            while (t < appearDuration)
+            {
+                t += Time.deltaTime;
+                float progress = Mathf.SmoothStep(0f, 1f, t / appearDuration);
 
-            // 漸漸顯示登場
-            SetVisualAlpha(progress);
+                // 漸漸顯示登場
+                SetVisualAlpha(progress);
+                transform.localScale = _baseScale * _currentScaleMultiplier;
+
+                yield return null;
+            }
+
+            SetVisualAlpha(1f);
             transform.localScale = _baseScale * _currentScaleMultiplier;
 
-            yield return null;
-        }
-
-        SetVisualAlpha(1f);
-        transform.localScale = _baseScale * _currentScaleMultiplier;
-
-        if (roarSFX != null)
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(roarSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(roarSFX, transform.position, sfxVolume);
+            PlayRoar();
         }
 
         currentState = MonsterState.Chasing;
         Debug.Log("【影子怪物】登場完成，全力追逐！");
+    }
+
+    private void PlayRoar()
+    {
+        if (roarSFX == null) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(roarSFX, transform.position, sfxVolume);
+        else AudioSource.PlayClipAtPoint(roarSFX, transform.position, sfxVolume);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★登場運鏡
+    //   1. 凍住主角，鏡頭飛到怪物身上
+    //   2. 怪物在鏡頭裡浮現、吼一聲
+    //   3. 怪物在鏡頭前開始移動（讓玩家看清楚是什麼東西在追她）
+    //   4. 鏡頭飛回主角，還原相機，解凍，開始遊戲
+    //   全程 _revealActive = true：怪物抓不到被凍住的主角。
+    // ══════════════════════════════════════════════════════════════════════════
+    private IEnumerator RevealCutsceneRoutine()
+    {
+        _revealActive = true;
+
+        // 1) 凍住主角並把她停下來，免得放開時還帶著慣性
+        if (_pm != null)
+        {
+            _pm.isCutsceneFrozen = true;
+            Rigidbody prb = _pm.GetComponent<Rigidbody>();
+            if (prb != null) prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
+        }
+
+        // 2) 鏡頭飛去怪物
+        //    對準點不是 transform（Pivot 在腳底，會對到地板下面），
+        //    而是全身 Renderer 的中心，並且沿用主角的 Z，讓相機留在原本的景深平面上。
+        EnsureRevealFocus();
+        UpdateRevealFocus();
+        RevealCameraTakeOver();
+        RevealCameraLookAt(_revealFocus);
+
+        float travel = Mathf.Max(0f, revealCameraTravel);
+        float e = 0f;
+        while (e < travel) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
+
+        // 3) 怪物浮現
+        float dur = Mathf.Max(0.01f, appearDuration);
+        float t2 = 0f;
+        while (t2 < dur)
+        {
+            t2 += Time.deltaTime;
+            SetVisualAlpha(Mathf.SmoothStep(0f, 1f, t2 / dur));
+            transform.localScale = _baseScale * _currentScaleMultiplier;
+            UpdateRevealFocus();
+            yield return null;
+        }
+        SetVisualAlpha(1f);
+        transform.localScale = _baseScale * _currentScaleMultiplier;
+
+        PlayRoar();
+
+        e = 0f;
+        while (e < Mathf.Max(0f, revealHoldBeforeMove)) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
+
+        // 4) ★怪物在鏡頭前開始移動
+        currentState = MonsterState.Chasing;
+        e = 0f;
+        while (e < Mathf.Max(0f, revealWatchMoveSeconds)) { e += Time.deltaTime; UpdateRevealFocus(); yield return null; }
+
+        // 5) 鏡頭飛回主角
+        RevealCameraLookAt(player != null ? player : transform);
+        e = 0f;
+        while (e < travel) { e += Time.deltaTime; yield return null; }
+
+        // 6) 還原相機、解凍、開始遊戲
+        RevealFinish();
+        Debug.Log("【影子怪物】登場運鏡結束，控制權交還玩家。");
+    }
+
+    /// <summary> 演出正常收尾：還原相機、解凍主角。 </summary>
+    private void RevealFinish()
+    {
+        RevealCameraRestore();
+        if (_pm != null) _pm.isCutsceneFrozen = false;
+        _revealActive = false;
+    }
+
+    /// <summary> 演出被中斷（死亡重生 / 關卡重置）時，一定要把鏡頭和控制權還回去。 </summary>
+    private void RevealCancel()
+    {
+        if (!_revealActive && !_revealCamTaken) return;
+        RevealFinish();
+        if (_revealFocus != null) Destroy(_revealFocus.gameObject);
+        _revealFocus = null;
+    }
+
+    private void EnsureRevealFocus()
+    {
+        if (_revealFocus == null)
+            _revealFocus = new GameObject("ShadowMonster_RevealFocus").transform;
+        // 每幀 GetComponentsInChildren 會一直配置陣列，開演前抓一次就好
+        if (_revealRenderers == null || _revealRenderers.Length == 0)
+            _revealRenderers = GetComponentsInChildren<Renderer>(true);
+    }
+
+    /// <summary> 對準點＝全身 Renderer 的中心 ＋ 微調，Z 沿用主角，讓相機不要往後退。 </summary>
+    private void UpdateRevealFocus()
+    {
+        if (_revealFocus == null) return;
+        Vector3 c = MonsterVisualCenter();
+        float z = player != null ? player.position.z : c.z;
+        _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, z);
+    }
+
+    private Vector3 MonsterVisualCenter()
+    {
+        Renderer[] rs = _revealRenderers != null && _revealRenderers.Length > 0
+            ? _revealRenderers
+            : GetComponentsInChildren<Renderer>(true);
+        bool any = false;
+        Bounds b = new Bounds(transform.position, Vector3.zero);
+        foreach (var r in rs)
+        {
+            if (r == null) continue;
+            if (!any) { b = r.bounds; any = true; }
+            else b.Encapsulate(r.bounds);
+        }
+        return any ? b.center : transform.position;
+    }
+
+    private void RevealCameraTakeOver()
+    {
+        if (_revealCamTaken) return;
+        _revealCamTaken = true;
+
+        _revealVcams3.Clear();
+        _revealVcamsLegacy.Clear();
+        _revealOrigFollow.Clear();
+        _revealFollows.Clear();
+        _revealOrigDamping.Clear();
+
+        foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+        {
+            _revealVcams3.Add(v);
+            _revealOrigFollow.Add(v.Follow);
+
+            // 場景的 PositionDamping 是 1，鏡頭會很黏；演出期間先調小，結束再還原
+            CinemachineFollow cf = v != null ? v.GetComponent<CinemachineFollow>() : null;
+            _revealFollows.Add(cf);
+            _revealOrigDamping.Add(cf != null ? cf.TrackerSettings.PositionDamping : Vector3.zero);
+            if (cf != null && revealCameraDamping >= 0f)
+            {
+                var ts = cf.TrackerSettings;
+                ts.PositionDamping = new Vector3(revealCameraDamping, revealCameraDamping, ts.PositionDamping.z);
+                cf.TrackerSettings = ts;
+            }
+        }
+        foreach (var v in FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None))
+        {
+            _revealVcamsLegacy.Add(v);
+            _revealOrigFollow.Add(v.Follow);
+        }
+    }
+
+    private void RevealCameraLookAt(Transform target)
+    {
+        if (target == null) return;
+
+        foreach (var v in _revealVcams3)
+        {
+            if (v == null) continue;
+            var tg = v.Target;
+            tg.TrackingTarget = target;
+            v.Target = tg;
+            v.Follow = target;
+        }
+        foreach (var v in _revealVcamsLegacy)
+        {
+            if (v != null) v.Follow = target;
+        }
+    }
+
+    private void RevealCameraRestore()
+    {
+        if (!_revealCamTaken) return;
+        _revealCamTaken = false;
+
+        // 阻尼先還原
+        for (int i = 0; i < _revealFollows.Count; i++)
+        {
+            CinemachineFollow cf = _revealFollows[i];
+            if (cf == null || i >= _revealOrigDamping.Count) continue;
+            var ts = cf.TrackerSettings;
+            ts.PositionDamping = _revealOrigDamping[i];
+            cf.TrackerSettings = ts;
+        }
+
+        int idx = 0;
+        foreach (var v in _revealVcams3)
+        {
+            if (v != null && idx < _revealOrigFollow.Count)
+            {
+                // 接管前如果本來就沒有目標（場景裡 TrackingTarget 是空的，靠腳本在跑時指定），
+                // 還原成 null 會讓相機從此不跟人。這種情況退回主角。
+                Transform back = _revealOrigFollow[idx] != null ? _revealOrigFollow[idx] : player;
+                var tg = v.Target;
+                tg.TrackingTarget = back;
+                v.Target = tg;
+                v.Follow = back;
+            }
+            idx++;
+        }
+        foreach (var v in _revealVcamsLegacy)
+        {
+            if (v != null && idx < _revealOrigFollow.Count)
+                v.Follow = _revealOrigFollow[idx] != null ? _revealOrigFollow[idx] : player;
+            idx++;
+        }
     }
 
     /// <summary> 吃到燭火：播放 gethit3 受擊動畫並漸漸變小 </summary>
@@ -1218,6 +1469,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         RemoveFear();
         UnlockCamera();
+        RevealCancel();   // ★StopAllCoroutines 會把演出砍在半路，這裡要把鏡頭與控制權還回去
 
         transform.position = _initialPosition;
         transform.localScale = _baseScale * _currentScaleMultiplier;
