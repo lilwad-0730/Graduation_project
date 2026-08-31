@@ -2,17 +2,22 @@ using UnityEngine;
 using System.Collections;
 
 public enum BirdBehavior { DirectPlayer, PlayerOffset, HomingPlayer }
+public enum BirdTriggerMode { Both, DistanceDetection, TriggerZoneOrCollisionOnly }
 
 /// <summary>
 /// 個別鳥類敵人控制器：
-/// 1. 自動偵測玩家距離 (detectionRange)：玩家靠近自動發出警報並俯衝！
-/// 2. 相容 living birds 的動畫控制器 (flying, worried, landing, die)。
-/// 3. 發出叫聲警報 ➔ 高速俯衝 ➔ 撞擊護盾彈飛 / 撞擊玩家石化 / 撞擊地面卡住消退。
+/// 1. 每隻鳥為完全獨立的 AI 實例，各自維護狀態機 (Idle, Warning, Diving, Stuck, Bounced)。
+/// 2. 支援距離感應 (DistanceDetection) 與專屬碰撞觸發 (TriggerZoneOrCollisionOnly)，一隻鳥被驚動絕不干擾其他鳥！
+/// 3. 相容 living birds 的動畫控制器 (flying, worried, landing, die)。
+/// 4. 待機時各自分散進行有機 3D 浮動與微盤旋，不全體盯著玩家，呈現逼真生態感。
 /// </summary>
 public class IndividualBirdEnemy : MonoBehaviour, IResettable
 {
-    [Header("自動偵測玩家攻擊")]
-    [Tooltip("是否在玩家進入範圍時自動引爆俯衝攻擊？(預設開啟)")]
+    [Header("獨立攻擊觸發模式 (Individual Attack Trigger)")]
+    [Tooltip("此鳥的觸發機制：Both(兩者皆可，預設)、DistanceDetection(距離感應)、TriggerZoneOrCollisionOnly(僅靠碰撞/專屬區域觸發)")]
+    public BirdTriggerMode triggerMode = BirdTriggerMode.Both;
+
+    [Tooltip("是否在玩家進入範圍時自動引爆俯衝攻擊？(若關閉則只依靠碰撞/專屬TriggerZone)")]
     public bool autoDetectPlayer = true;
 
     [Tooltip("自動偵測玩家的攻擊距離 (米，預設 12)")]
@@ -22,8 +27,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("此隻鳥的俯衝行為類型：DirectPlayer(直撲玩家當下位置，可閃避)、PlayerOffset(偏移攻擊)、HomingPlayer(動態追蹤)")]
     public BirdBehavior behaviorType = BirdBehavior.DirectPlayer;
 
-    [Tooltip("俯衝攻擊的速度 (預設 12)")]
-    public float diveSpeed = 12f;
+    [Tooltip("俯衝攻擊的速度 (預設 9.8，降低約 18% 提供玩家更舒適的反應時間)")]
+    public float diveSpeed = 9.8f;
 
     [Tooltip("【偏移模式限定】X 軸的偏移量 (預設 3)")]
     public float targetOffset = 3f;
@@ -67,18 +72,40 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("反彈旋轉角度 (度，預設 180 度)")]
     public float bounceSpinAngle = 180f;
 
-    [Header("空中自然微巡航與懸停 (Idle Hover & Patrol)")]
-    [Tooltip("是否啟用空中待機時的微幅自然浮動與巡航？(預設開啟)")]
+    [Header("3D 空中 8 字巡航與盤旋 (3D Figure-8 Hover & Patrol)")]
+    [Tooltip("是否啟用空中待機時的自然漂浮與 8 字巡航？(預設開啟)")]
     public bool enableIdleHover = true;
 
-    [Tooltip("垂直浮動上下幅度 (米，預設 0.35)")]
-    public float hoverAmplitudeY = 0.35f;
+    [Header("軌跡尺寸與頻率 (Scale & Speed)")]
+    [Tooltip("水平左右滑翔巡航半徑 (米，預設 2.2，在正交鏡頭下左右滑翔清晰流暢)")]
+    public float patrolRadiusX = 2.2f;
 
-    [Tooltip("浮動擺動頻率 (預設 1.6)")]
-    public float hoverFrequency = 1.6f;
+    [Tooltip("垂直上下呼吸與 8 字起伏高度 (米，預設 0.6)")]
+    public float hoverAmplitudeY = 0.6f;
 
-    [Tooltip("水平微巡航左右半徑 (米，預設 0.6)")]
-    public float patrolRadiusX = 0.6f;
+    [Tooltip("前後 3D 環形深度半徑 (米，預設 0.35)")]
+    public float patrolRadiusZ = 0.35f;
+
+    [Tooltip("巡航飛行速度/頻率 (預設 0.9)")]
+    public float hoverFrequency = 0.9f;
+
+    [Header("飛行形態與姿態 (Flight Morphology)")]
+    [Tooltip("8 字型軌跡強度 (0 = 單純左右滑翔，0.5 = 橢圓弧線，1.0 = 完整經典 8 字 (∞) 盤旋，預設 1.0)")]
+    [Range(0f, 1f)]
+    public float figureEightStrength = 1.0f;
+
+    [Tooltip("微風氣流擾動強度 (0~1，預設 0.15，保持鳥群秩序)")]
+    [Range(0f, 1f)]
+    public float noiseStrength = 0.15f;
+
+    [Tooltip("迎風轉彎時的自然側傾角 (Banking Tilt，度數，預設 10.0 度)")]
+    public float maxBankingAngle = 10.0f;
+
+    [Tooltip("位置平滑過渡速度 (預設 5.0)")]
+    public float hoverSmoothSpeed = 5.0f;
+
+    [Tooltip("飛行轉向平滑速度 (預設 4.0)")]
+    public float rotationSmoothSpeed = 4.0f;
 
     [Header("地面與環境偵測")]
     [Tooltip("地面的 Tag (預設 Floor，自動支援 Floor, Ground, Terrain)")]
@@ -109,6 +136,22 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private bool hasAttackedOrDied = false;
 
     private Vector3 originalScale = Vector3.one;
+
+    // 每隻鳥生成時隨機決定一次的專屬特徵 (Runtime Individual Profile)
+    private float _indivSpeedMult = 1.0f;
+    private float _indivRadiusX = 1.0f;
+    private float _indivAmpY = 1.0f;
+    private float _indivRadiusZ = 1.0f;
+    private float _indivPhase = 0f;
+    private float _noiseSeedX, _noiseSeedY;
+    private Vector3 _currentHoverOffset = Vector3.zero;
+    private float _lastDriftX = 0f;
+    private float _currentTiltZ = 0f;
+
+    // 攝影機視角 2D 畫面投影基準軸 (Camera Basis Vectors)
+    private Vector3 _camRight = Vector3.right;
+    private Vector3 _camUp = Vector3.up;
+    private Vector3 _camForward = Vector3.forward;
 
     private void Awake()
     {
@@ -145,10 +188,56 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         originalPosition = transform.position;
         originalRotation = transform.rotation;
         originalScale = transform.localScale != Vector3.zero ? transform.localScale : Vector3.one;
-        hoverRandomOffset = Random.Range(0f, 100f); // 每隻鳥擁有獨立的浮動相位，群體錯落自然
+
+        // 初始化攝影機基準平面與專屬漂移特徵
+        UpdateCameraBasis();
+        InitializeHoverProfile();
 
         // 預設播放待機飛行動畫 (flying)
         PlayAnim(idleAnimName);
+    }
+
+    /// <summary>
+    /// 動態捕獲當前攝影機視角的畫面基準向量 (Camera.right, Camera.up, Camera.forward)
+    /// </summary>
+    public void UpdateCameraBasis()
+    {
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            _camRight = cam.transform.right;
+            _camUp = cam.transform.up;
+            _camForward = cam.transform.forward;
+        }
+        else
+        {
+            _camRight = Vector3.right;
+            _camUp = Vector3.up;
+            _camForward = Vector3.forward;
+        }
+    }
+
+    /// <summary>
+    /// 初始化每隻鳥專屬的隨機漂移參數 (生成時執行一次，確保每隻鳥個體節奏與軌跡獨一無二)
+    /// </summary>
+    private void InitializeHoverProfile()
+    {
+        UpdateCameraBasis();
+
+        // 隨機差異收斂至小範圍 (±5% ~ ±7%)，保持鳥群秩序感與同一物種的統一協調性
+        _indivSpeedMult = Random.Range(0.93f, 1.07f);
+        _indivRadiusX = Random.Range(0.93f, 1.07f);
+        _indivAmpY = Random.Range(0.93f, 1.07f);
+        _indivRadiusZ = Random.Range(0.90f, 1.10f);
+
+        // 隨機起點相位 (每隻鳥在 8 字軌跡上的不同出發點，杜絕同步)
+        _indivPhase = Random.Range(0f, Mathf.PI * 2f);
+        _noiseSeedX = Random.Range(0f, 1000f);
+        _noiseSeedY = Random.Range(0f, 1000f);
+
+        _currentHoverOffset = Vector3.zero;
+        _lastDriftX = 0f;
+        _currentTiltZ = 0f;
     }
 
     private void EnsureComponents()
@@ -157,6 +246,13 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             animator = GetComponent<Animator>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
+        }
+
+        // 強制關閉 Root Motion，防止動畫強行覆蓋或鎖定鳥的 Transform Position
+        Animator[] allAnims = GetComponentsInChildren<Animator>(true);
+        foreach (var a in allAnims)
+        {
+            if (a != null) a.applyRootMotion = false;
         }
 
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
@@ -207,25 +303,20 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void Update()
     {
-        // 核心功能 1：空中待機時的微巡航與自然氣流浮動 (有機上下起伏與左右輕盈滑行)
+        // 核心功能 1：3D 有機空中漂浮與自然微盤旋 (多頻率波形 + Perlin 氣流雜訊)
         if (currentState == BirdState.Idle && enableIdleHover)
         {
-            float timeVal = Time.time * hoverFrequency + hoverRandomOffset;
-            float offsetY = Mathf.Sin(timeVal) * hoverAmplitudeY;
-            float offsetX = Mathf.Cos(timeVal * 0.65f) * patrolRadiusX;
-
-            Vector3 targetHoverPos = new Vector3(originalPosition.x + offsetX, originalPosition.y + offsetY, originalPosition.z);
-            transform.position = targetHoverPos;
+            UpdateOrganicIdleHover();
         }
 
-        // 核心功能 2：自動偵測玩家距離並觸發俯衝 (若正在重生過場中、冷卻中或玩家在遮陽傘下則不攻擊)
+        // 核心功能 2：獨立偵測玩家距離並觸發俯衝 (僅在此鳥設定允許距離感應時運作)
         if (postRespawnDelayTimer > 0f)
         {
             postRespawnDelayTimer -= Time.deltaTime;
             return;
         }
 
-        if (autoDetectPlayer && currentState == BirdState.Idle)
+        if (currentState == BirdState.Idle && autoDetectPlayer && triggerMode != BirdTriggerMode.TriggerZoneOrCollisionOnly)
         {
             if (PlayerRespawnSystem.IsAnyRespawning || !PlayerRespawnSystem.IsPlayerMovingAfterRespawn || UmbrellaZone.IsPlayerUnderUmbrella)
             {
@@ -236,39 +327,128 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
             if (playerTrans != null)
             {
-                // 計算 2.5D 水平距離與 3D 距離 (防止天空高處的鳥因為 Y 軸落差過大而無法觸發)
+                // 計算 2.5D 水平距離與 3D 距離
                 float xDist = Mathf.Abs(transform.position.x - playerTrans.position.x);
                 float totalDist = Vector3.Distance(transform.position, playerTrans.position);
 
                 if (xDist <= detectionRange || totalDist <= detectionRange)
                 {
-                    Debug.LogWarning($"【鳥群系統】玩家進入偵測範圍 (水平距離 {xDist:F1}m <= {detectionRange}m)！{gameObject.name} 正式發起俯衝攻擊！");
+                    Debug.LogWarning($"【鳥群系統】玩家進入此鳥獨立偵測範圍 (水平距離 {xDist:F1}m <= {detectionRange}m)！{gameObject.name} 單獨發起俯衝攻擊！");
                     StartAttackSequence();
                 }
             }
         }
 
-        // 核心功能 3：待機與警報狀態下，自動平滑面向玩家 (左或右) 並配合氣流微幅傾角 (Banking Tilt)
-        if (currentState == BirdState.Idle || currentState == BirdState.Warning)
+        // 核心功能 3：警報姿態控制 (Idle 狀態的飛行旋轉與 Banking 已由 UpdateOrganicIdleHover 統一接管)
+        if (currentState == BirdState.Warning)
         {
             if (playerTrans != null)
             {
                 float dx = playerTrans.position.x - transform.position.x;
                 Vector3 lookDir = dx < 0 ? Vector3.left : Vector3.right;
-                
-                // 模擬真實鳥類在氣流中維持平衡的自然微傾角 (±3.5 度)
-                float tiltZ = (currentState == BirdState.Idle && enableIdleHover) ? Mathf.Sin(Time.time * hoverFrequency + hoverRandomOffset) * 3.5f : 0f;
-                Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up) * Quaternion.Euler(modelRotationOffset + new Vector3(0f, 0f, tiltZ));
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+                Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up) * Quaternion.Euler(modelRotationOffset);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 8f);
             }
         }
     }
 
-    // 在 Scene 視窗繪製可視化感應範圍圈
+    /// <summary>
+    /// 計算 8 字 (∞) / 橢圓 / 巡航的參數化理論路徑座標 (嚴格以 Camera 視角 2D 畫面平面為基準)
+    /// </summary>
+    public Vector3 GetParametricHoverPosition(Vector3 center, float t)
+    {
+        // 確保 Camera 投影基準軸已初始化
+        if (_camRight == Vector3.zero) UpdateCameraBasis();
+
+        // 1. 畫面水平方向 (Screen X ➔ Camera.right)：主要左右巡航滑翔
+        float x = Mathf.Sin(t) * (patrolRadiusX * _indivRadiusX);
+
+        // 2. 畫面垂直方向 (Screen Y ➔ Camera.up)：橫向 8 字 (∞) Lissajous 軌跡 + 週期性滑翔/盤旋形態平滑調變
+        // 形態調變週期 (約 3~5 秒一輪)：Figure-8 盤旋 ➔ 左右平滑滑翔 ➔ Figure-8 盤旋 (平滑無縫切換)
+        float patternMod = (Mathf.Sin(t * 0.4f) + 1f) * 0.5f; // 0 ~ 1 緩慢平滑波動
+        float currentFig8Weight = Mathf.Lerp(0.3f, 1.0f, patternMod) * figureEightStrength;
+
+        float figureEightY = Mathf.Sin(2f * t);
+        float glideY = Mathf.Sin(t * 0.5f);
+        float y = Mathf.Lerp(glideY * 0.35f, figureEightY, currentFig8Weight) * (hoverAmplitudeY * _indivAmpY);
+
+        // 3. 畫面深度方向 (Screen Z ➔ Camera.forward)：極小微幅輔助 (<= 0.04m，避免在玩家看不到的深度軸浪費運動量)
+        float z = Mathf.Cos(t) * (patrolRadiusZ * _indivRadiusZ * 0.1f);
+
+        // 4. 嚴格投射至 Camera 視角畫面平面 (中心點永遠為每隻鳥自己的 Spawn Point / originalPosition)
+        return center + (_camRight * x) + (_camUp * y) + (_camForward * z);
+    }
+
+    /// <summary>
+    /// 執行自然 3D 空中 8 字 (∞) 滑翔與微盤旋算法 (嚴格在 Camera 2D 畫面投影平面上優雅巡航)
+    /// </summary>
+    private void UpdateOrganicIdleHover()
+    {
+        float t = Time.time * hoverFrequency * _indivSpeedMult + _indivPhase;
+
+        // 1. 計算純淨的 Camera-Relative Parametric Curve 目標點
+        Vector3 rawTargetPos = GetParametricHoverPosition(originalPosition, t);
+
+        // 2. 疊加微幅平滑氣流雜訊 (不破壞主要可視巡航形狀)
+        if (noiseStrength > 0.01f)
+        {
+            float noiseX = (Mathf.PerlinNoise(_noiseSeedX, Time.time * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (patrolRadiusX * 0.15f);
+            float noiseY = (Mathf.PerlinNoise(_noiseSeedY, Time.time * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (hoverAmplitudeY * 0.15f);
+            rawTargetPos += (_camRight * noiseX) + (_camUp * noiseY);
+        }
+
+        // 3. 平滑更新鳥的世界座標 (嚴格以 originalPosition 為中心，絕不越界漂移)
+        _currentHoverOffset = rawTargetPos - originalPosition;
+        Vector3 newPos = Vector3.Lerp(transform.position, rawTargetPos, Time.deltaTime * hoverSmoothSpeed);
+        transform.position = newPos;
+        if (rb != null && rb.isKinematic)
+        {
+            rb.position = newPos;
+        }
+
+        // 4. 計算切線飛行速度向量 (Velocity Tangent) 以獲取鳥頭精確朝向
+        Vector3 nextPathPoint = GetParametricHoverPosition(originalPosition, t + 0.12f);
+        Vector3 flightDir = (nextPathPoint - transform.position).normalized;
+
+        if (flightDir.sqrMagnitude > 0.001f)
+        {
+            // 5. 迎風自然側傾角 (Banking Tilt)：在 8 字兩端迴轉處側傾最明顯
+            float turnRate = Mathf.Cos(t);
+            float targetTiltZ = -turnRate * maxBankingAngle * Mathf.Sign(Vector3.Dot(flightDir, _camRight));
+            _currentTiltZ = Mathf.Lerp(_currentTiltZ, targetTiltZ, Time.deltaTime * 5f);
+
+            // 6. 綜合 LookRotation 與 模型旋轉偏移 (modelRotationOffset)
+            Quaternion targetRot = Quaternion.LookRotation(flightDir, _camUp) * Quaternion.Euler(modelRotationOffset + new Vector3(0f, 0f, _currentTiltZ));
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothSpeed);
+        }
+    }
+
+    // 在 Scene 視窗繪製可視化感應範圍圈與 8 字盤旋軌跡 (Movement Debug)
     private void OnDrawGizmosSelected()
     {
+        UpdateCameraBasis();
+
+        // 1. 繪製攻擊偵測範圍圈 (青色)
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        // 2. 繪製 8 字型 / 盤旋預期活動軌跡 (金黃色，100% 貼合 Camera 2D 平面)
+        Vector3 center = Application.isPlaying ? originalPosition : transform.position;
+        Gizmos.color = new Color(1f, 0.82f, 0.2f, 0.85f);
+        
+        int steps = 50;
+        Vector3 prevPoint = GetParametricHoverPosition(center, 0f);
+        for (int i = 1; i <= steps; i++)
+        {
+            float tVal = (float)i / steps * Mathf.PI * 2f;
+            Vector3 nextPoint = GetParametricHoverPosition(center, tVal);
+            Gizmos.DrawLine(prevPoint, nextPoint);
+            prevPoint = nextPoint;
+        }
+
+        // 3. 繪製中心點 (綠色小球)
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(center, 0.15f);
     }
 
     /// <summary>
@@ -816,6 +996,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         if (currentState == BirdState.Bounced || currentState == BirdState.Stuck) return;
 
+        // 0. 當處於待機狀態且玩家直接接觸此鳥時，單獨觸發攻擊
+        if (currentState == BirdState.Idle && (hitObj.CompareTag("Player") || hitObj.GetComponentInParent<PlayerMovement>() != null))
+        {
+            if (!PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
+            {
+                Debug.Log($"【個別鳥觸發】玩家直接接觸 {gameObject.name}！該鳥單獨發起攻擊！");
+                StartAttackSequence();
+                return;
+            }
+        }
+
         // 1. 碰撞到玩家護盾
         PlayerShield shield = hitObj.GetComponentInParent<PlayerShield>();
         if (shield == null) shield = hitObj.GetComponent<PlayerShield>();
@@ -994,6 +1185,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         hasAttackedOrDied = false;
         gameObject.SetActive(true);
         currentState = BirdState.Idle;
+        InitializeHoverProfile();
         transform.position = originalPosition;
         transform.rotation = originalRotation;
         transform.localScale = originalScale;
@@ -1001,6 +1193,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            rb.position = originalPosition;
             rb.isKinematic = true;
         }
         RestoreMaterialsOpaque();

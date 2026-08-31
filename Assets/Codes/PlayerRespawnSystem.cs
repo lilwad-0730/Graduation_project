@@ -503,6 +503,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             GameObject customTarget = GameObject.Find("CameraFollowTarget");
             if (customTarget != null) {
+                customTarget.SendMessage("UpdatePosition", SendMessageOptions.DontRequireReceiver);
                 Vector3 camPos = transform.position + cameraOffsetFromPlayer;
                 camPos.y = customTarget.transform.position.y;
                 _mainCam.transform.position = camPos;
@@ -918,6 +919,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             GameObject customTarget = GameObject.Find("CameraFollowTarget");
             if (customTarget != null) {
+                customTarget.SendMessage("UpdatePosition", SendMessageOptions.DontRequireReceiver);
                 Vector3 camPos = transform.position + cameraOffsetFromPlayer;
                 camPos.y = customTarget.transform.position.y;
                 _mainCam.transform.position = camPos;

@@ -148,70 +148,50 @@ public class CinemachineCameraConfiner3D : MonoBehaviour
         float minY = float.MinValue;
         float maxY = float.MaxValue;
 
-        // 智能計算環繞在玩家周遭的所有邊界牆或大包圍盒
+        // 1. 【核心升級】：將與玩家處於同一高度層的所有背景區塊自動合併為整排大包圍盒 (Compound Row Bounds)
+        Bounds? mergedRowBounds = null;
         foreach (var col in _cachedBoundaries)
         {
             if (col == null || !col.enabled) continue;
             Bounds b = col.bounds;
 
-            // 判斷是否為「大區域背景包圍盒」（能完全容納鏡頭視野）
-            if (b.size.x >= halfWidth * 2f && b.size.y >= halfHeight * 2f)
+            // 判斷是否為玩家所在的垂直高度層 (Y 軸重疊或相近)
+            if (targetPos.y >= b.min.y - 5f && targetPos.y <= b.max.y + 5f)
             {
-                // 若玩家身在此大背景內，限制不能看穿大背景邊界
-                if (targetPos.x >= b.min.x - 2f && targetPos.x <= b.max.x + 2f &&
-                    targetPos.y >= b.min.y - 2f && targetPos.y <= b.max.y + 2f)
+                if (b.size.x >= 2f && b.size.y >= 2f)
                 {
-                    minX = Mathf.Max(minX, b.min.x + halfWidth);
-                    maxX = Mathf.Min(maxX, b.max.x - halfWidth);
-                    minY = Mathf.Max(minY, b.min.y + halfHeight);
-                    maxY = Mathf.Min(maxY, b.max.y - halfHeight);
-                }
-            }
-            else
-            {
-                // 判斷為「獨立單面邊界牆」 (如左牆、右牆、天花板、地面)
-                // 檢查該牆面是否在玩家視野的高度/寬度範圍內
-                bool inYRange = (targetPos.y >= b.min.y - halfHeight && targetPos.y <= b.max.y + halfHeight);
-                bool inXRange = (targetPos.x >= b.min.x - halfWidth && targetPos.x <= b.max.x + halfWidth);
-
-                if (inYRange)
-                {
-                    // 左側邊界牆：相機左邊緣不能穿透該牆的右側
-                    if (b.max.x <= targetPos.x + 2f)
+                    if (mergedRowBounds == null) mergedRowBounds = b;
+                    else
                     {
-                        minX = Mathf.Max(minX, b.max.x + halfWidth);
-                    }
-                    // 右側邊界牆：相機右邊緣不能穿透該牆的左側
-                    if (b.min.x >= targetPos.x - 2f)
-                    {
-                        maxX = Mathf.Min(maxX, b.min.x - halfWidth);
-                    }
-                }
-
-                if (inXRange)
-                {
-                    // 下方邊界牆/地板：相機下邊緣不能穿透該牆的頂部
-                    if (b.max.y <= targetPos.y + 2f)
-                    {
-                        minY = Mathf.Max(minY, b.max.y + halfHeight);
-                    }
-                    // 上方天花板：相機上邊緣不能穿透該牆的底部
-                    if (b.min.y >= targetPos.y - 2f)
-                    {
-                        maxY = Mathf.Min(maxY, b.min.y - halfHeight);
+                        Bounds m = mergedRowBounds.Value;
+                        m.Encapsulate(b);
+                        mergedRowBounds = m;
                     }
                 }
             }
         }
 
-        // 3. 【限制相機座標，絕不強制死鎖】
+        if (mergedRowBounds.HasValue)
+        {
+            Bounds mb = mergedRowBounds.Value;
+            minX = mb.min.x + halfWidth;
+            maxX = mb.max.x - halfWidth;
+            minY = mb.min.y + halfHeight;
+            maxY = mb.max.y - halfHeight;
+        }
+
+        // 2. 【限制相機座標，絕不超出整排背景世界】
         if (collideX)
         {
             if (minX <= maxX)
             {
                 clampedPos.x = Mathf.Clamp(camPos.x, minX, maxX);
             }
-            // 若邊界矛盾 (牆壁距離小於相機寬度)，不鎖死，直接跟隨目標 X
+            else if (mergedRowBounds.HasValue)
+            {
+                // 整排背景寬度小於視野時，居中鎖定
+                clampedPos.x = mergedRowBounds.Value.center.x;
+            }
         }
 
         if (collideY)

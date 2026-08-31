@@ -42,19 +42,26 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         }
     }
 
-    [Header("石化設定")]
+    [Header("🎨 石化外觀與顏色微調 (可在 Inspector 自由自訂)")]
+    [Tooltip("石化時的主體顏色 (點擊色盤即可自由調整深灰、淺灰、石青或岩石白)")]
+    public Color petrifyColor = new Color(0.72f, 0.72f, 0.72f, 1f);
+
+    [Tooltip("石雕立體輪廓微光強度 (0 為純平光，0.2 ~ 0.8 為立體紋理自發光，數值越大在荒原越醒目)")]
+    [Range(0f, 2f)]
+    public float stoneGlowIntensity = 0.4f;
+
+    [Header("⏱️ 石化機制數值調整")]
     [Tooltip("被石化幾次會觸發死亡重生？(預設 3)")]
+    [Range(1, 10)]
     public int maxPetrifyCount = 3;
 
     [Tooltip("每次石化持續時間 (秒，預設 2.5)")]
+    [Range(0.5f, 10f)]
     public float petrifyDuration = 2.5f;
 
-    [Tooltip("石化時角色的變色 (預設全黑/深灰色)")]
-    public Color petrifyColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-
-    [Header("開局與重生防護")]
-    [Tooltip("開局或重生後，保護玩家免受石化的免疫時間 (秒，預設 5)")]
-    public float respawnGracePeriod = 5.0f;
+    [Tooltip("解除石化後，給予玩家移動避難的免疫時間 (秒，預設 5)")]
+    [Range(0f, 10f)]
+    public float unpetrifyGraceDuration = 5.0f;
 
     [Header("🎵 石化與解石音效 (Petrification SFX)")]
     [Tooltip("主角被石化時播放的音效 (例如 石化.mp3)")]
@@ -323,6 +330,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
         foreach (var r in renderers)
         {
+            if (r == null) continue;
+
             if (r is SpriteRenderer sr)
             {
                 if (petrified)
@@ -332,39 +341,83 @@ public class PlayerPetrification : MonoBehaviour, IResettable
                 }
                 else
                 {
-                    if (originalColors.TryGetValue(sr, out Color c))
-                    {
-                        sr.color = c;
-                    }
-                    else
-                    {
-                        sr.color = Color.white; // 備用方案：若快取失敗則強制還原為白色
-                    }
+                    if (originalColors.TryGetValue(sr, out Color c)) sr.color = c;
+                    else sr.color = Color.white;
                 }
             }
             else
             {
-                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color"))
+                // 3D 角色模型 (SkinnedMeshRenderer / MeshRenderer)
+                Material[] mats = r.materials;
+                for (int i = 0; i < mats.Length; i++)
                 {
+                    Material mat = mats[i];
+                    if (mat == null) continue;
+
                     if (petrified)
                     {
-                        if (!originalColors.ContainsKey(r)) originalColors[r] = r.sharedMaterial.color;
-                        r.material.color = petrifyColor;
+                        if (mat.HasProperty("_Color"))
+                        {
+                            if (!originalColors.ContainsKey(r)) originalColors[r] = mat.color;
+                            mat.color = petrifyColor;
+                        }
+                        else if (mat.HasProperty("_BaseColor"))
+                        {
+                            if (!originalColors.ContainsKey(r)) originalColors[r] = mat.GetColor("_BaseColor");
+                            mat.SetColor("_BaseColor", petrifyColor);
+                        }
+
+                        // 同步開啟石化微光/紋理對比，讓淺灰色在荒原中極其顯眼！
+                        if (mat.HasProperty("_EmissionColor"))
+                        {
+                            if (stoneGlowIntensity > 0.01f)
+                            {
+                                mat.EnableKeyword("_EMISSION");
+                                mat.SetColor("_EmissionColor", petrifyColor * stoneGlowIntensity);
+                            }
+                            else
+                            {
+                                mat.SetColor("_EmissionColor", Color.black);
+                            }
+                        }
                     }
                     else
                     {
-                        if (originalColors.TryGetValue(r, out Color c))
+                        Color orig = Color.white;
+                        if (originalColors.TryGetValue(r, out Color c)) orig = c;
+
+                        if (mat.HasProperty("_Color")) mat.color = orig;
+                        if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", orig);
+                        if (mat.HasProperty("_EmissionColor"))
                         {
-                            r.material.color = c;
-                        }
-                        else
-                        {
-                            r.material.color = Color.white;
+                            mat.SetColor("_EmissionColor", Color.black);
                         }
                     }
                 }
             }
         }
+    }
+
+    private void OnValidate()
+    {
+        // 若在運行或預覽中石化，即時同步 Inspector 調整的顏色與微光強度
+        if (isPetrified)
+        {
+            ApplyPetrifyVisual(true);
+        }
+    }
+
+    [ContextMenu("🎨 即時預覽石化外觀 (Preview Petrify)")]
+    public void EditorPreviewPetrify()
+    {
+        CacheOriginalRenderers();
+        ApplyPetrifyVisual(true);
+    }
+
+    [ContextMenu("🔄 恢復正常外觀 (Preview Normal)")]
+    public void EditorPreviewNormal()
+    {
+        ApplyPetrifyVisual(false);
     }
 
     private IEnumerator DeathSequence()
