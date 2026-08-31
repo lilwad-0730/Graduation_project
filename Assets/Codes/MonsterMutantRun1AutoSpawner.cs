@@ -162,7 +162,9 @@ public class MonsterMutantRun1AutoSpawner : MonoBehaviour
         Debug.Log("[Fix] ✅✅✅ 全部修復完成！請直接按 Play 測試動畫。");
     }
 
-    [UnityEditor.InitializeOnLoadMethod]
+    // ★拿掉了 [InitializeOnLoadMethod]：它會在「每一次」編譯／進 Play Mode 時
+    //   刪掉再重建整份 Animator Controller，害這個 23,000 行的檔案每次都整份改寫，
+    //   組員每次 pull 都會撞衝突。需要重建時從 Tools 選單手動點一次就好。
     [UnityEditor.MenuItem("Tools/Rebuild MonsterMutant7 Animator Controller")]
     public static void RebuildCleanAnimatorController()
     {
