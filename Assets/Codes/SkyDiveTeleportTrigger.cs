@@ -141,7 +141,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
         // 播放過渡音效
         if (transitionSFX != null)
         {
-            AudioSource.PlayClipAtPoint(transitionSFX, transform.position, sfxVolume);
+            AudioSource.PlayClipAtPoint(transitionSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 1. 極速白霧淡入 (螢幕變白)

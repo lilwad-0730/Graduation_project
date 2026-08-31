@@ -328,7 +328,7 @@ public class BubbleClusterFx : MonoBehaviour
                     }
 
                     float volumeFactor = Mathf.Clamp01(1f - (dist / hearDistance));
-                    loopAudioSource.volume = sfxVolume * Mathf.SmoothStep(0.2f, 1f, volumeFactor);
+                    loopAudioSource.volume = AudioManager.ScaleSfx(sfxVolume * Mathf.SmoothStep(0.2f, 1f, volumeFactor));
 
                     if (!loopAudioSource.isPlaying)
                     {
@@ -370,7 +370,7 @@ public class BubbleClusterFx : MonoBehaviour
                 burstAudioSource.playOnAwake = false;
                 burstAudioSource.spatialBlend = 0.3f;
             }
-            burstAudioSource.PlayOneShot(bubbleBurstSFX, sfxVolume);
+            burstAudioSource.PlayOneShot(bubbleBurstSFX, AudioManager.ScaleSfx(sfxVolume));
         }
     }
 }

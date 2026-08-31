@@ -213,7 +213,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
         if (reliefSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(reliefSFX, sfxVolume);
-            else AudioSource.PlayClipAtPoint(reliefSFX, Camera.main != null ? Camera.main.transform.position : Vector3.zero, sfxVolume);
+            else AudioSource.PlayClipAtPoint(reliefSFX, Camera.main != null ? Camera.main.transform.position : Vector3.zero, AudioManager.ScaleSfx(sfxVolume));
         }
 
         if (imgFlash != null) StartCoroutine(FlashEffect());

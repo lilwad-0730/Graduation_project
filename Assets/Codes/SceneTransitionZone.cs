@@ -176,7 +176,7 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         if (transitionSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(transitionSFX, sfxVolume);
-            else AudioSource.PlayClipAtPoint(transitionSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(transitionSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         StartCoroutine(TransitionRoutine());

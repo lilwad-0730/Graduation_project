@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -194,7 +194,7 @@ public class UnderwaterNurseryItem : MonoBehaviour, IResettable
             sfxHost.transform.position = Camera.main.transform.position;
         }
 
-        float remainingVol = Mathf.Max(0.1f, volumeMultiplier);
+        float remainingVol = Mathf.Max(0f, AudioManager.ScaleSfx(volumeMultiplier));
         while (remainingVol > 0.01f)
         {
             float trackVol = Mathf.Min(1.0f, remainingVol);

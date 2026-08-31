@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(BoxCollider2D))]
-public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+public sealed class WorldSpaceSfxVolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [Header("場景物件")]
     [SerializeField] private BoxCollider2D interactionCollider;
@@ -13,8 +13,8 @@ public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandl
     [SerializeField] private Camera inputCamera;
     [SerializeField] private TMP_Text volumePercentText;
 
-    [Header("BGM 音量")]
-    [SerializeField] private string playerPrefsKey = "BGMVolume";
+    [Header("SFX 音量")]
+    [SerializeField] private string playerPrefsKey = AudioManager.SfxVolumePrefsKey;
     [SerializeField, Range(0f, 1f)] private float defaultVolume = 0.75f;
 
     public float Value { get; private set; }
@@ -30,8 +30,7 @@ public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandl
         if (inputCamera == null)
             inputCamera = Camera.main;
 
-        float savedVolume = PlayerPrefs.GetFloat(playerPrefsKey, defaultVolume);
-        ApplyVolume(savedVolume);
+        ApplyVolume(PlayerPrefs.GetFloat(playerPrefsKey, defaultVolume));
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -96,6 +95,6 @@ public sealed class WorldSpaceBgmVolumeSlider : MonoBehaviour, IPointerDownHandl
         if (volumePercentText != null)
             volumePercentText.text = Mathf.RoundToInt(Value * 100f).ToString();
 
-        AudioManager.SetBgmVolume(Value);
+        AudioManager.SetSfxVolume(Value);
     }
 }

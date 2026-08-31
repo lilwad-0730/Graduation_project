@@ -109,7 +109,7 @@ public class TornadoVortexTransition : MonoBehaviour
         // 播放狂風咆哮音效
         if (vortexSFX != null)
         {
-            AudioSource.PlayClipAtPoint(vortexSFX, transform.position, sfxVolume);
+            AudioSource.PlayClipAtPoint(vortexSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 1. 凍結玩家常規移動，接管位移

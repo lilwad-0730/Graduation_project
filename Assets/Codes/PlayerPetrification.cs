@@ -267,7 +267,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         if (petrifySFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(petrifySFX, sfxVolume);
-            else AudioSource.PlayClipAtPoint(petrifySFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(petrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 檢查是否達到 3 次
@@ -305,7 +305,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         if (unpetrifySFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(unpetrifySFX, sfxVolume);
-            else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 給予 5 秒免疫緩衝期，讓玩家有充裕時間跑進掩體

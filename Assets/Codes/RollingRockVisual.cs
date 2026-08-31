@@ -141,7 +141,7 @@ public class RollingRockVisual : MonoBehaviour
             }
             else
             {
-                AudioSource.PlayClipAtPoint(impactSFX, collision.contacts[0].point, impactVolume);
+                AudioSource.PlayClipAtPoint(impactSFX, collision.contacts[0].point, AudioManager.ScaleSfx(impactVolume));
             }
         }
     }

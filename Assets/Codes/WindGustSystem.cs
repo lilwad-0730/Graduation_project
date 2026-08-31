@@ -176,6 +176,9 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     private void Update()
     {
+        if (windAudioSource != null)
+            windAudioSource.volume = AudioManager.SfxVolume;
+
         timer += Time.deltaTime;
 
         if (currentState == WindState.Calm)

@@ -115,7 +115,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
         if (collectSFX != null)
         {
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(collectSFX, transform.position, sfxVolume);
-            else AudioSource.PlayClipAtPoint(collectSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(collectSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
         // 播放收集特效
