@@ -8087,7 +8087,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.534536, y: 5.29, z: -10}
+  m_LocalPosition: {x: 10.4662, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14525,7 +14525,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.534536, y: 5.29, z: 0}
+  m_LocalPosition: {x: 13.4662, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15319,6 +15319,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 541617750}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.237}
+--- !u!21 &796189137
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 1747839912}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &797476968
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22572,7 +22646,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1506811044}
+  - {fileID: 1816331134}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -28247,52 +28321,6 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!28 &1239247343
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Procedural_SoftCircle
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 4
-  m_Width: 32
-  m_Height: 32
-  m_CompleteImageSize: 4096
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 4096
-  _typelessdata: ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff03ffffff0bffffff18ffffff28ffffff3bffffff51ffffff68ffffff80ffffff97ffffffaeffffffc4ffffffd7ffffffe7fffffff4fffffffcfffffffffffffffcfffffff4ffffffe7ffffffd7ffffffc4ffffffaeffffff97ffffff80ffffff68ffffff51ffffff3bffffff28ffffff18ffffff0bffffff03ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &1258893434
 GameObject:
   m_ObjectHideFlags: 0
@@ -29798,7 +29826,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1413948721}
+  - {fileID: 2139553881}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -36246,80 +36274,6 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!21 &1413948721
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 1239247343}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &1420397823
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37904,80 +37858,6 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!21 &1489989271
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 1239247343}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &1494404774
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38082,80 +37962,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
   m_PrefabInstance: {fileID: 1494404774}
   m_PrefabAsset: {fileID: 0}
---- !u!21 &1506811044
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 1239247343}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &1515099755 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -41261,6 +41067,80 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
+--- !u!21 &1680940366
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 1747839912}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1688040281
 GameObject:
   m_ObjectHideFlags: 0
@@ -42525,6 +42405,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 541617750}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!28 &1747839912
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Procedural_SoftCircle
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
+  m_Width: 32
+  m_Height: 32
+  m_CompleteImageSize: 4096
+  m_MipsStripped: 0
+  m_TextureFormat: 4
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 4096
+  _typelessdata: ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff03ffffff0bffffff18ffffff28ffffff3bffffff51ffffff68ffffff80ffffff97ffffffaeffffffc4ffffffd7ffffffe7fffffff4fffffffcfffffffffffffffcfffffff4ffffffe7ffffffd7ffffffc4ffffffaeffffff97ffffff80ffffff68ffffff51ffffff3bffffff28ffffff18ffffff0bffffff03ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &1752739369 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -43213,7 +43139,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2059954911}
+  - {fileID: 1680940366}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -48773,6 +48699,80 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
+--- !u!21 &1816331134
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 1747839912}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1821257613 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -52439,7 +52439,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.534536, y: 5.29, z: -10}
+  m_LocalPosition: {x: 10.4662, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -53346,7 +53346,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1489989271}
+  - {fileID: 796189137}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -58883,80 +58883,6 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!21 &2059954911
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 1239247343}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &2067308743
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60018,6 +59944,80 @@ MonoBehaviour:
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
   modelRotationOffset: {x: 0, y: 0, z: 0}
+--- !u!21 &2139553881
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 1747839912}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &355908065880826960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60072,7 +60072,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 37.749
+      value: 37.619164
+      objectReference: {fileID: 0}
+    - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.57
       objectReference: {fileID: 0}
     - target: {fileID: 9199010635575890847, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: targetCamera
