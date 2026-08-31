@@ -15574,9 +15574,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21322cda0c7f9fe4e9afd352dd9828ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MirrorWallAbsorbCutscene
-  playEndingAfterCutscene: 1
-  endingCardId: M5
-  endingBookScene: Book
+  playCardAfterCutscene: 1
+  afterCutsceneCardId: M5
   mirrorWall: {fileID: 0}
   fairyLights:
   - {fileID: 1156514570}

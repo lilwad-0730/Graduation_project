@@ -19,20 +19,16 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 {
 
     // ══════════════════════════════════════════
-    // 結局出口（吸入演出結束後接上結尾）
+    // 鏡牆演完 → 過場文字 → 回到遊戲
+    // ★結局不在這裡：結局在 ShadowMonsterController 的「最後一根燭火」
     // ══════════════════════════════════════════
-    [Header("🎬 結局出口")]
-    [Tooltip("演出結束後接結尾漫畫與片尾名單（整局的最後一段）")]
+    [Header("🎬 演出結束後的過場文字")]
     [Tooltip("鏡牆吸入演完後，是否播一段過場文字（播完回到遊戲，不載場景）")]
     public bool playCardAfterCutscene = true;
 
-    [Tooltip("鏡牆演完要播哪張卡")]
+    [Tooltip("鏡牆演完要播哪張卡（預設 M5）")]
     public string afterCutsceneCardId = "M5";
-    [Tooltip("接結尾前要播的過場文字卡")]
-    [Tooltip("（已停用）結局改由 ShadowMonsterController 的最後一根燭火觸發")]
-    public string endingCardId = "M5";
-    [Tooltip("結尾漫畫所在的場景名稱")]
-    public string endingBookScene = "Book";
+
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
     public GameObject mirrorWall;
