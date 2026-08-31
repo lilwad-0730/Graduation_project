@@ -101,6 +101,8 @@ public class InputHint : MonoBehaviour
     {
         // 換場景：上一關殘留的提示一律清掉，再幫新場景補探針
         _stack.Clear();
+        _pmCache = null;
+        _pmNextLookup = 0f;
         AttachProbes();
     }
 
@@ -227,13 +229,24 @@ public class InputHint : MonoBehaviour
         get { return _instance != null && _instance.IsSuppressed(); }
     }
 
-    /// <summary>播文字卡、演過場、重生流程中：提示讓路。</summary>
+    private PlayerMovement _pmCache;
+    private float _pmNextLookup;
+
+    /// <summary>播文字卡、演過場、重生流程、遊戲暫停中：提示讓路。</summary>
     private bool IsSuppressed()
     {
+        // ★遊戲暫停（設定選單 PauseGameWhileActive 或任何 timeScale=0）一律讓路：
+        //   提示條 sortingOrder 9000 比設定面板高，不讓路會浮在選單上面
+        if (Time.timeScale == 0f) return true;
         if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying) return true;
         if (PlayerRespawnSystem.IsAnyRespawning) return true;
-        PlayerMovement pm = Object.FindFirstObjectByType<PlayerMovement>();
-        if (pm != null && pm.isCutsceneFrozen) return true;
+        // 玩家快取著用，每秒最多找一次，不要每幀掃場景
+        if (_pmCache == null && Time.unscaledTime >= _pmNextLookup)
+        {
+            _pmCache = Object.FindFirstObjectByType<PlayerMovement>();
+            _pmNextLookup = Time.unscaledTime + 1f;
+        }
+        if (_pmCache != null && _pmCache.isCutsceneFrozen) return true;
         return false;
     }
 

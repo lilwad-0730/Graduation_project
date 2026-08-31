@@ -20,6 +20,7 @@ public class InputHintLeverProbe : MonoBehaviour
     private string _key = "lever";
     private bool _inZone;
     private bool _done;
+    private bool _showing;   // 已經亮著就不要每幀重掛（每幀 Show 會每幀配置一個項目）
 
     private static System.Reflection.FieldInfo _pulledField;
     private static bool _pulledFieldChecked;
@@ -37,6 +38,7 @@ public class InputHintLeverProbe : MonoBehaviour
 
     private void OnDisable()
     {
+        _showing = false;
         InputHint.Hide(_key);
     }
 
@@ -51,6 +53,7 @@ public class InputHintLeverProbe : MonoBehaviour
     {
         if (!IsPlayer(other)) return;
         _inZone = false;
+        _showing = false;
         InputHint.Hide(_key);
     }
 
@@ -81,12 +84,17 @@ public class InputHintLeverProbe : MonoBehaviour
         if (_done) return;
         if (_lever != null && _lever.triggerOnEnter) return;   // 碰到就自動拉，沒東西可提示
         if (IsPulled()) { Finish(); return; }
-        if (_inZone) InputHint.Show(_key, hintText);
+        if (_inZone && !_showing)
+        {
+            _showing = true;
+            InputHint.Show(_key, hintText);
+        }
     }
 
     private void Finish()
     {
         _done = true;
+        _showing = false;
         InputHint.Hide(_key);
     }
 
