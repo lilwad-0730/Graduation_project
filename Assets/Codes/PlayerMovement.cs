@@ -48,14 +48,37 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
+    private static float _hardLockSince = -1f;
+
+    /// <summary>安全網：演出旗標若卡住超過這麼久，強制放開，免得玩家永遠不能動。</summary>
+    public const float HardLockSafetySeconds = 45f;
+
     /// <summary>
     /// 全域演出鎖定狀態查詢 (包含重生、鏡牆演出、過場文字卡、黑影怪物特寫等所有相機被接管的情境)
     /// </summary>
-    public static bool IsAnyCutsceneActive =>
-        PlayerRespawnSystem.IsAnyRespawning ||
-        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning ||
-        (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying) ||
-        ShadowMonsterController.IsAnyRevealRunning;
+    public static bool IsHardCutsceneLocked
+    {
+        get
+        {
+            bool locked =
+                PlayerRespawnSystem.IsAnyRespawning
+                || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning
+                || ShadowMonsterController.IsAnyRevealRunning
+                || (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying);
+
+            if (!locked) { _hardLockSince = -1f; return false; }
+
+            // ★因為拿掉了「按鍵就自動解鎖」的逃生門，這裡補一個時間上限。
+            //   任何演出旗標忘了關（協程被 StopCoroutine 砍掉之類），
+            //   最多鎖 45 秒就放人。正常的卡片與運鏡都遠短於這個。
+            if (_hardLockSince < 0f) _hardLockSince = Time.unscaledTime;
+            if (Time.unscaledTime - _hardLockSince > HardLockSafetySeconds) return false;
+
+            return true;
+        }
+    }
+
+    public static bool IsAnyCutsceneActive => IsHardCutsceneLocked;
 
     /// <summary>
     /// 當前主角是否處於完全鎖定操作狀態
@@ -63,7 +86,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsControlLocked =>
         isCutsceneFrozen ||
         freezeHorizontal ||
-        IsAnyCutsceneActive;
+        IsHardCutsceneLocked;
 
     [Header("📦 推動物件機制 (Pushing Object System)")]
     [Tooltip("推動物件偵測距離 (向前檢測 Pushable Tag 物件)")]
@@ -417,7 +440,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // ★ 當處於任何演出鎖定狀態時，嚴格禁止玩家任何移動輸入，且絕不可因為玩家按鍵而自動解鎖！
+            // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (IsControlLocked) 時，嚴格禁止玩家移動
             if (IsControlLocked)
             {
                 rawInput = 0f;
@@ -429,14 +452,19 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                if (Mathf.Abs(rawInput) > 0.1f)
+                // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖。
+                bool wantsToMove = Mathf.Abs(rawInput) > 0.1f
+                                   || Input.GetKeyDown(KeyCode.W)
+                                   || Input.GetKeyDown(KeyCode.Space)
+                                   || Input.GetKeyDown(KeyCode.UpArrow);
+                if (wantsToMove)
                 {
                     // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
                     isStrictLockingX = false;
                     freezeHorizontal = false;
                 }
 
-                moveInput = rawInput;
+                moveInput = (actuallyFreeze || isCutsceneFrozen || IsHardCutsceneLocked) ? 0f : rawInput;
 
                 if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
                 if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -458,6 +486,13 @@ public class PlayerMovement : MonoBehaviour
                       $" - freezeHorizontal: {freezeHorizontal}\n" +
                       $" - isCutsceneFrozen: {isCutsceneFrozen}\n" +
                       $" - isStrictLockingX: {isStrictLockingX}\n" +
+                      $" - isJumping: {isJumping}\n" +
+                      $" - isUnderwater: {isUnderwater}（水下就不能跳）\n" +
+                      $" - IsHardCutsceneLocked: {IsHardCutsceneLocked}"
+                      + $"（重生中:{PlayerRespawnSystem.IsAnyRespawning}"
+                      + $" 鏡牆演出:{MirrorWallAbsorbCutscene.IsAnyCutsceneRunning}"
+                      + $" 怪物登場:{ShadowMonsterController.IsRevealRunning}"
+                      + $" 文字卡:{(StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying)}）\n" +
                       $" - 石化狀態 isPetrified: {(petr != null ? petr.isPetrified.ToString() : "無石化組件")}\n" +
                       $" - 當前速度 currentSpeed: {currentSpeed}\n" +
                       $" - 剛體速度 velocity: {(rb != null ? rb.linearVelocity.ToString() : "NULL")}");
@@ -912,8 +947,28 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 陸地跳躍 (非水下、非演出鎖定中)
-        if (!IsControlLocked && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        // 陸地跳躍 (非水下、非演出中、非重生中)
+        bool _jumpPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
+
+        // ★按了跳躍卻沒起跳時，直接指名是哪個條件擋住的
+        if (_jumpPressed && (IsControlLocked || isUnderwater || !isGrounded))
+        {
+            // 一行寫完，Console 不用展開就看得到
+            Debug.LogWarning("🚫跳不了 froz=" + (isCutsceneFrozen ? "T" : "F")
+                + " hard=" + (IsHardCutsceneLocked ? "T" : "F")
+                + "(生" + (PlayerRespawnSystem.IsAnyRespawning ? "T" : "F")
+                + " 鏡" + (MirrorWallAbsorbCutscene.IsAnyCutsceneRunning ? "T" : "F")
+                + " 怪" + (ShadowMonsterController.IsAnyRevealRunning ? "T" : "F")
+                + " 卡" + ((StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying) ? "T" : "F") + ")"
+                + " 水=" + (isUnderwater ? "T" : "F")
+                + " 地=" + (isGrounded ? "T" : "F")
+                + " 跳中=" + (isJumping ? "T" : "F")
+                + " kine=" + ((rb != null && rb.isKinematic) ? "T" : "F")
+                + " y=" + (rb != null ? rb.linearVelocity.y.ToString("F1") : "-")
+                + " x=" + transform.position.x.ToString("F1"));
+        }
+
+        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded)
         {
             // 陸地標準跳躍
             isJumping = true;

@@ -115,6 +115,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     // 全域靜態旗標 (供其他系統即時查詢)
     public static bool IsAnyCutsceneRunning = false;
 
+    /// <summary>
+    /// ★整段演出（含碎裂與過場文字）已經跑完。
+    /// 存檔點在鏡牆右邊（x≈-36.6），所以演完之後死亡重生時
+    /// 不可以再把鏡牆變回完整的——那等於在玩家臉上重新立一道她已經打破的牆。
+    /// </summary>
+    private bool _sequenceCompleted = false;
+
     // 內部狀態變數
     private bool hasTriggered = false;
     private bool isCutsceneRunning = false;
@@ -906,9 +913,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 // (true, true) ＝自己淡入黑幕、播完自己淡出，播完畫面回到遊戲
                 yield return StoryCardPlayer.Instance.Play(afterCutsceneCardId, true, true);
             }
-            Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
-        }
-
         if (cachedPlayer != null)
         {
             cachedPlayer.isCutsceneFrozen = false;
@@ -916,6 +920,30 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
 
         isCutsceneRunning = false;
         IsAnyCutsceneRunning = false;
+        _sequenceCompleted = true;
+
+        // ★關鍵：鏡牆的 Destructible 自己也是 IResettable，重生時它會自行
+        //   SetActive(true) ＋ 重新開啟所有 Renderer 與 Collider 把自己復原。
+        //   光是我這邊不還原沒有用，得直接告訴它「碎了就別再站起來」。
+        if (mirrorWall != null)
+        {
+            Destructible d = mirrorWall.GetComponent<Destructible>();
+            if (d == null) d = mirrorWall.GetComponentInChildren<Destructible>();
+            if (d != null)
+            {
+                d.keepShatteredOnReset = true;
+                Debug.Log("🪞【鏡牆】演出完成，已標記為「重生後保持破碎」。");
+            }
+            else
+            {
+                Debug.LogWarning("🪞【鏡牆】找不到 Destructible，無法標記保持破碎——重生後鏡牆可能會復原。");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("🪞【鏡牆】mirrorWall 參考是空的，無法標記保持破碎。");
+        }
+
         Debug.Log("✅【鏡牆演出全流程結束】相機已還原追蹤主角，玩家控制權已完全恢復！");
     }
 
@@ -924,6 +952,48 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     /// </summary>
     public void ResetToInitialState()
     {
+        // ★★ 演出已經整段跑完就不要還原鏡牆 ★★
+        //   玻璃館的存檔點在 x=-36.6，而鏡牆本體在 x=-37.73（實體碰撞 -38.33 ~ -37.12）。
+        //   演完之後死亡重生，如果照舊「100% 還原鏡牆與 4 顆光球」，
+        //   玩家一睜眼旁邊就立著一道她剛剛才打破的牆，演出也被重新武裝，
+        //   往回走還會再播一次。這裡只做收尾，不還原場景物件。
+        if (_sequenceCompleted)
+        {
+            Debug.Log("🔄【鏡牆演出】演出早已完成，重生時保持鏡牆破碎狀態，只收尾殘留狀態。");
+
+            StopAllCoroutines();
+            mainCutsceneCoroutine = null;
+            flashCoroutine = null;
+            isCutsceneRunning = false;
+            IsAnyCutsceneRunning = false;
+            // hasTriggered 保持 true：不要讓演出重新武裝
+
+            if (hoverAudioSource != null) hoverAudioSource.Stop();
+            if (flashAudioSource != null) flashAudioSource.Stop();
+            if (flashImage != null) flashImage.color = new Color(1f, 1f, 1f, 0f);
+
+            // 相機與控制權還是要還給玩家
+            FindCinemachineCameras();
+            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+            if (cachedPlayer != null)
+            {
+                SetCameraTarget(cachedPlayer.transform, false);
+                cachedPlayer.isCutsceneFrozen = false;
+            }
+            if (activeVcam3 != null)
+            {
+                var lens2 = activeVcam3.Lens;
+                if (isOrthographic) lens2.OrthographicSize = originalLensSize;
+                else lens2.FieldOfView = originalLensSize;
+                activeVcam3.Lens = lens2;
+            }
+
+            // 碎片還是要清掉，不然會留一地碎玻璃
+            ShatteredObject[] stale = FindObjectsByType<ShatteredObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var so in stale) { if (so != null) Destroy(so.gameObject); }
+            return;
+        }
+
         Debug.Log("🔄【鏡牆演出】收到重生重置訊號！全面中止演出並刷新 4 顆光球與鏡牆...");
 
         // 1. 中止所有演出協程
@@ -1005,6 +1075,22 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             GlassShatterFX gfx = mirrorWall.GetComponent<GlassShatterFX>();
             if (gfx == null) gfx = mirrorWall.GetComponentInChildren<GlassShatterFX>();
             if (gfx != null) gfx.ResetToInitialState();
+        }
+
+        // 4.5 ★保險：把場上殘留的碎片全部清掉
+        //   碎裂時生成的碎片（ShatteredObject）是獨立的場景根物件，不掛在鏡牆底下。
+        //   只要 Destructible 那邊的參考斷了——例如本體 Shatter() 之後被 SetActive(false)、
+        //   或碎片自己先被 disappearDelay 處理過——重生後就會看到一地碎玻璃，
+        //   鏡牆明明復原了、破掉的那份卻還在畫面上。整場掃一次，確保不會留。
+        //   重生本來就會把所有可破壞物復原，所以連玻璃地板的碎片一起清掉才是對的。
+        ShatteredObject[] leftovers = FindObjectsByType<ShatteredObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (leftovers != null && leftovers.Length > 0)
+        {
+            Debug.Log($"🧹【鏡牆演出】清掉場上殘留的 {leftovers.Length} 份碎片。");
+            foreach (var so in leftovers)
+            {
+                if (so != null) Destroy(so.gameObject);
+            }
         }
 
         // 5. 還原相機鏡頭尺寸與目標

@@ -237,6 +237,9 @@ public class StoryCardPlayer : MonoBehaviour
 
     private void OnDisable()
     {
+        // ★播放旗標一定要歸零：PlayerMovement 現在會依這個旗標硬鎖玩家，
+        //   協程被中途砍掉的話旗標會留在 true，玩家就永遠動不了。
+        _playing = false;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         // ★安全網三：播放器被關掉或銷毀時，絕不把世界留在暫停狀態
         ReleaseTimePause(1f);
