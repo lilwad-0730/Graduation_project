@@ -294,6 +294,19 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
     }
 
+    public void HideAura()
+    {
+        StopAllCoroutines();
+        isFadingIn = false;
+        fadeTimer = 0f;
+        hasBeenTriggered = false;
+
+        if (auraTransform == null || auraSr == null)
+            SetupAuraObject();
+
+        SetAuraHidden();
+    }
+
     public void ResetToInitialState()
     {
         StopAllCoroutines();
