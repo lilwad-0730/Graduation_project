@@ -4,7 +4,8 @@ using UnityEngine;
 /// 實體風暴沙塵危害組件 (Physical Storm Hazard Wave)
 /// 掛載於風暴/風沙物件 (WindParticles / DesertWindDustFX) 上。
 /// 只有當玩家物理碰撞體真正進入風暴沙塵的 Trigger 範圍內，且【未處於掩體背風面】時，
-/// 才會受到逆風推力並觸發石化懲罰，徹底擺脫全場景隔空必中的問題！
+/// 才會受到逆風推力，徹底擺脫全場景隔空必中的問題！
+/// ※ 石化已改制：不再由風暴強制觸發，而是玩家按住 ⬇/S 的主動自保（見 PlayerPetrification）。
 /// </summary>
 public class StormHazardWave : MonoBehaviour
 {
@@ -110,8 +111,17 @@ public class StormHazardWave : MonoBehaviour
             return;
         }
 
-        // 3. 檢查玩家是否躲在掩體背風面內 (有掩體保護 100% 免疫風暴推力與石化！)
+        // 3. 檢查玩家是否躲在掩體背風面內 (有掩體保護 100% 免疫風暴推力！)
         if (WindGustSystem.IsPlayerSheltered)
+        {
+            return;
+        }
+
+        // 3.5 主動石化硬撐中：她就是一顆石頭，風推不動、也沒有另外的懲罰
+        PlayerPetrification braced = hitObj.GetComponent<PlayerPetrification>();
+        if (braced == null) braced = hitObj.GetComponentInParent<PlayerPetrification>();
+        if (braced == null) braced = hitObj.GetComponentInChildren<PlayerPetrification>();
+        if (braced != null && braced.isPetrified)
         {
             return;
         }
@@ -125,26 +135,7 @@ public class StormHazardWave : MonoBehaviour
             pm.ApplyWindPush(pushSpeed);
         }
 
-        // 5. 觸發石化懲罰 (一次陣風期間只會觸發一次，防止連續重複石化)
-        if (!hasAppliedPetrifyThisGust)
-        {
-            if (PlayerPetrification.IsGodMode)
-            {
-                hasAppliedPetrifyThisGust = true;
-                Debug.Log("🛡️【無敵模式】實體風暴沙塵吹過無敵主角，風力推力正常計算，免疫石化與死亡！");
-                return;
-            }
-
-            PlayerPetrification petrify = hitObj.GetComponent<PlayerPetrification>();
-            if (petrify == null) petrify = hitObj.GetComponentInParent<PlayerPetrification>();
-            if (petrify == null) petrify = hitObj.GetComponentInChildren<PlayerPetrification>();
-
-            if (petrify != null && !petrify.isPetrified)
-            {
-                hasAppliedPetrifyThisGust = true;
-                Debug.LogWarning("🌪️【實體風暴石化】玩家身體接觸到風暴沙塵且無掩體保護，觸發石化！");
-                petrify.Petrify();
-            }
-        }
+        // 5.（已改制）風暴不再強制石化——石化改為玩家按住 ⬇/S 的主動自保（見 PlayerPetrification）。
+        //     沒躲好也沒硬撐的下場只有被逆風往回推，把「懲罰」換成「損失路程」。
     }
 }

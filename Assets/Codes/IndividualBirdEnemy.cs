@@ -669,6 +669,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                     // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
                     if (distToPlayer <= 1.1f)
                     {
+                        // 主動石化硬撐中：她是石頭，啄不動，直接彈飛（企劃：按住不放＝抗風抗鳥）
+                        PlayerPetrification pet = playerTrans.GetComponentInParent<PlayerPetrification>();
+                        if (pet == null) pet = playerTrans.GetComponentInChildren<PlayerPetrification>();
+                        if (pet != null && pet.isPetrified)
+                        {
+                            Debug.LogWarning($"🪨【鳥群系統】{gameObject.name} 撞上石化硬撐中的主角！啄不動，彈飛！");
+                            BounceOff(null);
+                            yield break;
+                        }
+
                         if (PlayerPetrification.IsGodMode)
                         {
                             Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
@@ -999,7 +1009,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 0. 當處於待機狀態且玩家直接接觸此鳥時，單獨觸發攻擊
         if (currentState == BirdState.Idle && (hitObj.CompareTag("Player") || hitObj.GetComponentInParent<PlayerMovement>() != null))
         {
-            if (!PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
+            if (postRespawnDelayTimer <= 0f && !PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
             {
                 Debug.Log($"【個別鳥觸發】玩家直接接觸 {gameObject.name}！該鳥單獨發起攻擊！");
                 StartAttackSequence();
@@ -1211,6 +1221,6 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
         }
         PlayAnim(idleAnimName);
-        postRespawnDelayTimer = 1.5f; // 重生後給予 1.5 秒初始冷卻緩衝
+        postRespawnDelayTimer = 4f; // 重生後給予 4 秒冷卻緩衝：剛復活時鳥群不會立刻發起襲擊
     }
 }

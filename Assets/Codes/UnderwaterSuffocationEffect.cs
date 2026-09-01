@@ -10,7 +10,7 @@ using System.Collections;
 ///   視覺上產生「外圍暗且模糊、邊緣帶暈散」的窒息效果。
 ///   完全不使用 GrabPass，URP 與 Built-In RP 都能正常運作。
 /// </summary>
-public class UnderwaterSuffocationEffect : MonoBehaviour
+public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
 {
     // ==========================================
     // Inspector 可調參數
@@ -48,6 +48,16 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
 
     [Tooltip("閃光持續時間（秒）")]
     public float reliefFlashDuration = 0.5f;
+
+    [Header("【呼吸機制（企劃正典：光圈＝她的一口氣）】")]
+    [Tooltip("開啟後光圈會一路閉合到 deathRadius，見底撐過 deathGraceSeconds 就溺斃重生；關閉則回到舊行為（只暗到 maxDarknessRadius，永不死）")]
+    public bool enableSuffocationDeath = true;
+
+    [Tooltip("溺斃半徑：光圈縮到這裡＝畫面幾乎閉合（建議 0.10 ~ 0.15）")]
+    public float deathRadius = 0.12f;
+
+    [Tooltip("光圈見底之後，再撐幾秒才溺斃（留給玩家最後找光的機會）")]
+    public float deathGraceSeconds = 1.5f;
 
     [Header("🎵 緩解音效 (Relief SFX)")]
     [Tooltip("吃到日記紙條緩解窒息時播放的音效 (例如 水下_日誌接觸_02.wav)")]
@@ -99,6 +109,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
     private bool isRelieving = false;
     private bool isPaused    = false;
     private float delayTimer = 0f;
+    private float _deathTimer = 0f;
     private bool delayDone   = false;
     private Coroutine reliefCoroutine;
 
@@ -154,13 +165,39 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
             if (delayTimer >= startDelay) delayDone = true;
         }
 
-        // 暗化推進
+        // 暗化推進（呼吸機制開啟時，光圈可一路閉合到 deathRadius；否則停在 maxDarknessRadius）
+        float radiusFloor = enableSuffocationDeath ? Mathf.Min(maxDarknessRadius, deathRadius) : maxDarknessRadius;
         if (effectEnabled && delayDone && !isPaused && !isRelieving)
         {
-            if (currentRadius > maxDarknessRadius)
+            if (currentRadius > radiusFloor)
             {
                 currentRadius -= darknessIncreaseRate * Time.deltaTime;
-                currentRadius  = Mathf.Max(currentRadius, maxDarknessRadius);
+                currentRadius  = Mathf.Max(currentRadius, radiusFloor);
+            }
+        }
+
+        // 呼吸機制：一口氣用完 → 短暫倒數 → 溺斃重生
+        if (enableSuffocationDeath && effectEnabled && delayDone && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            if (currentRadius <= deathRadius + 0.005f)
+            {
+                _deathTimer += Time.deltaTime;
+                if (_deathTimer >= deathGraceSeconds)
+                {
+                    _deathTimer = 0f;
+                    Debug.LogWarning("🫁【呼吸機制】一口氣用完了，光圈閉合——觸發溺斃重生。");
+                    PlayerRespawnSystem sys = FindFirstObjectByType<PlayerRespawnSystem>();
+                    if (sys != null)
+                    {
+                        sys.enabled = true;
+                        sys.TriggerRespawn();
+                    }
+                    ResetEffect();   // 重生＝重新呼吸
+                }
+            }
+            else
+            {
+                _deathTimer = 0f;
             }
         }
 
@@ -177,8 +214,14 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
     /// </summary>
     public void TriggerRelief()
     {
+        RestoreBreath(reliefAmount);
+    }
+
+    /// <summary>光球＝氧氣（0805 企劃定案）：把呼吸光圈補回指定量。由光絮吸收、日誌緩解等呼叫。</summary>
+    public void RestoreBreath(float amount)
+    {
         if (reliefCoroutine != null) StopCoroutine(reliefCoroutine);
-        reliefCoroutine = StartCoroutine(ReliefSequence());
+        reliefCoroutine = StartCoroutine(ReliefSequence(amount));
     }
 
     /// <summary>強制重置（重生或場景重開用）</summary>
@@ -188,8 +231,15 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
         isRelieving   = false;
         isPaused      = false;
         delayTimer    = 0f;
+        _deathTimer   = 0f;
         delayDone     = (startDelay <= 0f);
         currentRadius = startRadius;
+    }
+
+    // --- IResettable：任何一種死法重生後，都重新呼吸 ---
+    public void ResetToInitialState()
+    {
+        ResetEffect();
     }
 
     /// <summary>動態開關效果</summary>
@@ -205,7 +255,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
     // ==========================================
     // 緩解協程
     // ==========================================
-    private IEnumerator ReliefSequence()
+    private IEnumerator ReliefSequence(float amount)
     {
         isRelieving = true;
         isPaused    = false;
@@ -220,8 +270,8 @@ public class UnderwaterSuffocationEffect : MonoBehaviour
 
         // 只恢復 reliefAmount，不超過 startRadius - 0.05（保持部分窒息感）
         float targetRadius = Mathf.Clamp(
-            currentRadius + reliefAmount,
-            maxDarknessRadius,
+            currentRadius + amount,
+            Mathf.Min(maxDarknessRadius, deathRadius),
             startRadius - 0.05f
         );
 

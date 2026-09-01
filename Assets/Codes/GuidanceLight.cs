@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Cinemachine;
 
 public class GuidanceLight : MonoBehaviour
 {
@@ -67,6 +68,8 @@ public class GuidanceLight : MonoBehaviour
     private float[] originalLightIntensities;
     private Coroutine absorbCoroutine;
     private AudioSource hoverAudioSource;
+    private CinemachineCamera _cutsceneVcam;      // 演出期間被借走 Follow 的相機
+    private Transform _cutsceneOriginalFollow;    // 借走前的 Follow，結束時還回去
 
     void Start()
     {
@@ -214,30 +217,78 @@ public class GuidanceLight : MonoBehaviour
 
     private IEnumerator CutsceneFlightSequence(PlayerMovement pm)
     {
-        // 1. 立即停止玩家行動
+        // 1. 立即停止玩家行動（一路鎖到鏡頭回到玩家身上為止）
         pm.isCutsceneFrozen = true;
-        isLockingPlayer = true; 
+        isLockingPlayer = true;
 
-        // 2. 停頓一下 (讓玩家感覺到「觸發了」某件事)
+        // 2. 鏡頭交給光絮：把場上啟用中的 Cinemachine 相機 Follow 暫時換成光絮。
+        //    阻尼維持原設定，鏡頭會平滑地「沿著光絮的飛行路徑」移動，不硬切、不卡頓。
+        _cutsceneVcam = null;
+        _cutsceneOriginalFollow = null;
+        foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+        {
+            if (v != null && v.isActiveAndEnabled)
+            {
+                _cutsceneVcam = v;
+                break;
+            }
+        }
+        if (_cutsceneVcam != null)
+        {
+            _cutsceneOriginalFollow = _cutsceneVcam.Follow;
+            _cutsceneVcam.Follow = transform;
+        }
+
+        // 3. 停頓一下 (讓玩家感覺到「觸發了」某件事)
         yield return new WaitForSeconds(flyDelay);
 
-        // 3. 切換目標點
+        // 4. 切換目標點，開始飛行（鏡頭全程跟著光絮走）
         currentWaypointIndex++;
         Transform nextWP = waypoints[currentWaypointIndex];
 
-        // 4. 開始飛行
         while (Vector3.Distance(logicPosition, nextWP.position) > waypointThreshold)
         {
             FlyTowards(nextWP.position);
             yield return null; // 等待下一幀
         }
 
-        // 5. 到下一個路徑點停頓一下 (讓玩家視角跟上、喘口氣)
+        // 5. 光絮停下後，先讓鏡頭穩穩停在光絮上一小段
         yield return new WaitForSeconds(unlockDelay);
 
-        // 6. 解凍玩家
+        // 6. 鏡頭還給玩家；等它「真的」回到玩家身上，才解鎖操作
+        if (_cutsceneVcam != null)
+        {
+            if (_cutsceneOriginalFollow != null) _cutsceneVcam.Follow = _cutsceneOriginalFollow;
+            else if (player != null) _cutsceneVcam.Follow = player;
+            _cutsceneVcam = null;
+
+            float waitStart = Time.unscaledTime;
+            while (Time.unscaledTime - waitStart < 4f)   // 最多等 4 秒，防呆不卡死
+            {
+                Camera cam = Camera.main;
+                if (cam == null || player == null) break;
+                float dx = Mathf.Abs(cam.transform.position.x - player.position.x);
+                float dy = Mathf.Abs(cam.transform.position.y - player.position.y);
+                if (dx < 2.5f && dy < 7f) break;   // 垂直方向本來就有取景偏移，放寬判定
+                yield return null;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        // 7. 解凍玩家
         pm.isCutsceneFrozen = false;
         isLockingPlayer = false;
+    }
+
+    private void OnDisable()
+    {
+        // 保險：演出中途被停用／換場景時，把鏡頭 Follow 還回去，避免鏡頭永遠黏在光絮上
+        if (_cutsceneVcam != null)
+        {
+            if (_cutsceneOriginalFollow != null) _cutsceneVcam.Follow = _cutsceneOriginalFollow;
+            else if (player != null) _cutsceneVcam.Follow = player;
+            _cutsceneVcam = null;
+        }
     }
 
     private void StartAbsorbSequence(PlayerMovement pm)
@@ -282,6 +333,12 @@ public class GuidanceLight : MonoBehaviour
         // 3. 觸發吸收完成事件 (供外部/主角加成偵測使用)
         OnAbsorbed?.Invoke();
         Debug.Log("【光絮】已被玩家吸收！觸發 OnAbsorbed 事件。");
+
+        // 光球＝氧氣（0805 企劃定案）：吸收光絮＝補一大口氣，呼吸光圈擴回來
+        if (UnderwaterSuffocationEffect.Instance != null)
+        {
+            UnderwaterSuffocationEffect.Instance.RestoreBreath(0.45f);
+        }
 
         // 4. 切換到下一個路徑點
         if (currentWaypointIndex + 1 < waypoints.Length)
