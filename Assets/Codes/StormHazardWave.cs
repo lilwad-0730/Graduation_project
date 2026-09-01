@@ -21,7 +21,7 @@ public class StormHazardWave : MonoBehaviour
 
     [Header("🪨 風暴強制石化開關")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
-    public bool enableStormPassivePetrify = true;
+    public bool enableStormPassivePetrify = false;   // 依團隊決議：荒原石化改為玩家主動（按 ⬇/S）；風暴不再被動強制石化。保留開關供日後切換
 
     private Collider hazardCollider;
     private bool hasAppliedPetrifyThisGust = false;

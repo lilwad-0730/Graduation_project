@@ -46,7 +46,7 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     [Header("🪨 風暴石化與危害設定")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
-    public bool enableStormPassivePetrify = true;
+    public bool enableStormPassivePetrify = false;   // 依團隊決議：荒原石化改為玩家主動（按 ⬇/S）；風暴不再被動強制石化。保留開關供日後切換
     [Tooltip("吹風時是否對未受掩體保護的玩家施加逆風推力？")]
     public bool enableWindPush = true;
 
