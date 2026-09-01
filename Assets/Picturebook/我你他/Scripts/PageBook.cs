@@ -48,6 +48,9 @@ public class PageBook : MonoBehaviour
     public System.Action<int> OnPageChanged;   // 翻完，帶新頁碼
     public System.Action<int> OnTurnStarted;   // 開始翻，帶 +1 / -1
 
+    /// <summary>往前翻的下限頁（0 起算）。結局模式由 EndCredits 設成結尾漫畫第一頁；平常 0＝不限制。</summary>
+    [System.NonSerialized] public int minPage = 0;
+
     enum Mode { Idle, Turning, Dragging }
 
     Mode mode = Mode.Idle;
@@ -281,7 +284,7 @@ public class PageBook : MonoBehaviour
         }
         else
         {
-            if (index <= 0) return false;
+            if (index <= Mathf.Max(0, minPage)) return false;   // 結局模式：最多翻回結尾漫畫第一頁
             toIdx = index - 1;
             SetTex(curlMat, Page(toIdx));
             SetTex(underMat, Page(index));
@@ -309,7 +312,7 @@ public class PageBook : MonoBehaviour
 
     public void GoTo(int i, bool animate = false)
     {
-        i = Mathf.Clamp(i, 0, Mathf.Max(0, PageCount - 1));
+        i = Mathf.Clamp(i, Mathf.Max(0, minPage), Mathf.Max(0, PageCount - 1));   // Home 在結局模式也只回到結尾第一頁
         if (i == index) return;
         if (animate) { if (i > index) Next(); else Prev(); return; }
         index = i;
