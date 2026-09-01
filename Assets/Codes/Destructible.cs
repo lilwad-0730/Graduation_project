@@ -12,6 +12,13 @@ public class Destructible : MonoBehaviour, IResettable
     [Header("Shattered Prefab (選填)")]
     public GameObject shatteredPrefab;
 
+    /// <summary>
+    /// ★由劇情腳本設定：碎了之後，重生時不要再把自己復原。
+    /// 鏡牆用得到——存檔點在鏡牆右邊，演出跑完之後死亡重生如果又把牆立回來，
+    /// 玩家一睜眼旁邊就是一道她剛打破的牆。
+    /// </summary>
+    [HideInInspector] public bool keepShatteredOnReset = false;
+
     [Header("碎裂設定")]
     [Tooltip("碰撞時是否自動碎裂")]
     public bool shatterOnCollision = false;
@@ -140,6 +147,17 @@ public class Destructible : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        // ★劇情已經翻頁的破壞物（例如演完的鏡牆）：保持破碎，只把碎片清掉
+        if (keepShatteredOnReset && hasShattered)
+        {
+            if (createdShatteredInstance != null)
+            {
+                Destroy(createdShatteredInstance);
+                createdShatteredInstance = null;
+            }
+            return;
+        }
+
         // 徹底銷毀先前生成的碎裂切片
         if (createdShatteredInstance != null)
         {

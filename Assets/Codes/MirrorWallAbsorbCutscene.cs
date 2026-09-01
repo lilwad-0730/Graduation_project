@@ -929,6 +929,28 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         }
 
         _sequenceCompleted = true;
+
+        // ★關鍵：鏡牆的 Destructible 自己也是 IResettable，重生時它會自行
+        //   SetActive(true) ＋ 重新開啟所有 Renderer 與 Collider 把自己復原。
+        //   光是我這邊不還原沒有用，得直接告訴它「碎了就別再站起來」。
+        if (mirrorWall != null)
+        {
+            Destructible d = mirrorWall.GetComponent<Destructible>();
+            if (d == null) d = mirrorWall.GetComponentInChildren<Destructible>();
+            if (d != null)
+            {
+                d.keepShatteredOnReset = true;
+                Debug.Log("🪞【鏡牆】演出完成，已標記為「重生後保持破碎」。");
+            }
+            else
+            {
+                Debug.LogWarning("🪞【鏡牆】找不到 Destructible，無法標記保持破碎——重生後鏡牆可能會復原。");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("🪞【鏡牆】mirrorWall 參考是空的，無法標記保持破碎。");
+        }
     }
 
     /// <summary>
