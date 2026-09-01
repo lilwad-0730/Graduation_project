@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Cinemachine;
 
@@ -103,6 +103,7 @@ public class CameraTargetXFollower : MonoBehaviour
     private BackgroundZone _lastZone = BackgroundZone.None;
     private CinemachineCamera _vcam;
     private Camera _mainCam;
+    private ParallaxGroup _ruinsParallaxGroup;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoEnsureInScene()
@@ -251,7 +252,10 @@ public class CameraTargetXFollower : MonoBehaviour
                 if (fb.size.x > 0.5f && fb.size.y > 0.5f) _fallingBoundsList.Add(fb);
             }
 
-            if (t == "Background" || t == "RuinedBackground" || n.Contains("background") || n.Contains("sky") || n.Contains("ruin") || n.Contains("split"))
+            bool isVisualBg = (t == "Background" || t == "RuinedBackground" || n.Contains("background") || n.Contains("sky") || n.Contains("split"))
+                              && t != "Floor" && t != "Ground" && !n.Contains("ground") && !n.Contains("floor") && !n.Contains("furniture");
+
+            if (isVisualBg)
             {
                 Bounds b = sr.bounds;
                 if (b.size.x < 0.5f || b.size.y < 0.5f) continue;
@@ -643,6 +647,7 @@ public class CameraTargetXFollower : MonoBehaviour
             }
             else
             {
+                // 廢墟層：使用穩定的全關卡背景邊界（與 Parallax 即時位移解耦）
                 minBoundX = _ruinMinX;
                 maxBoundX = _ruinMaxX;
             }
@@ -660,14 +665,24 @@ public class CameraTargetXFollower : MonoBehaviour
         float minCamX = minBoundX + halfWidth;
         float maxCamX = maxBoundX - halfWidth;
 
+        float finalCameraX = rawX;
         if (minCamX <= maxCamX)
         {
-            return Mathf.Clamp(rawX, minCamX, maxCamX);
+            finalCameraX = Mathf.Clamp(rawX, minCamX, maxCamX);
         }
         else
         {
-            return (minBoundX + maxBoundX) * 0.5f;
+            finalCameraX = Mathf.Clamp(rawX, minBoundX, maxBoundX);
         }
+
+        #if UNITY_EDITOR
+        if (!isDesertScene && playerY <= ruinedZoneThresholdY && Time.frameCount % 60 == 0)
+        {
+            Debug.Log($"[RuinsCamera]\nPlayerX = {rawX:F2}\nRawCameraX = {rawX:F2}\nBackgroundMinX = {minBoundX:F2}\nBackgroundMaxX = {maxBoundX:F2}\nHalfWidth = {halfWidth:F2}\nMinCameraX = {minCamX:F2}\nMaxCameraX = {maxCamX:F2}\nFinalCameraX = {finalCameraX:F2}");
+        }
+        #endif
+
+        return finalCameraX;
     }
 
     private void ApplyOrthoSize(float size)

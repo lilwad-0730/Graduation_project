@@ -222,7 +222,19 @@ public class ScatteredFlock : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            GameObject go = Object.Instantiate(birdPrefab, transform);
+            GameObject go = null;
+            try
+            {
+                Object spawnedObj = Object.Instantiate((Object)birdPrefab, transform);
+                if (spawnedObj is GameObject g) go = g;
+                else if (spawnedObj is Component c) go = c.gameObject;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[ScatteredFlock] 生成模型例外: {ex.Message}");
+            }
+
+            if (go == null) continue;
             go.name = "FlockBird_" + i;
 
             // ★安全：這團是純景，不參與任何碰撞（攻擊用距離判定，不用 collider）
@@ -260,6 +272,18 @@ public class ScatteredFlock : MonoBehaviour
 
     private static void StripPhysics(GameObject go)
     {
+        // 移除 living birds 原生 AI 腳本（避免與純視覺鳥群系統衝突並缺少 Rigidbody 報錯）
+        MonoBehaviour[] scripts = go.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < scripts.Length; i++)
+        {
+            if (scripts[i] == null) continue;
+            string sName = scripts[i].GetType().Name.ToLower();
+            if (sName.StartsWith("lb_") || sName.Contains("birdcontroller"))
+            {
+                Object.Destroy(scripts[i]);
+            }
+        }
+
         Collider[] cols = go.GetComponentsInChildren<Collider>(true);
         for (int i = 0; i < cols.Length; i++) Object.Destroy(cols[i]);
         Rigidbody[] rbs = go.GetComponentsInChildren<Rigidbody>(true);

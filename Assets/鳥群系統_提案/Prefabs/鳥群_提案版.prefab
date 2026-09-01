@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f81d52bd8cd9c7dd6d35383019bb77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  birdPrefab: {fileID: 100100000, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
+  birdPrefab: {fileID: 100124, guid: 3a5320db60c4f694f9724f4273599524, type: 3}
   birdAnimator: {fileID: 9100000, guid: a24ec9cf4c2103646a47e0497a925d6b, type: 2}
   flyStateName: flying
   warnStateName: worried

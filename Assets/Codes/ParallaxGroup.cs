@@ -37,11 +37,21 @@ public class ParallaxGroup : MonoBehaviour, IResettable
     [Tooltip("是否啟用玩家移動時的背景視差跟隨？(預設開啟)")]
     public bool enablePlayerParallax = true;
 
-    [Tooltip("背景跟隨主角 X 移動的視差比例 (0 = 完全不跟, 0.5 = 跟隨一半, 預設 0.3)")]
-    public float followFactorX = 0.3f;
+    [Tooltip("玩家向右移動時的視差比例（背景微幅向左，預設 0.15）")]
+    public float rightMoveParallaxFactor = 0.15f;
+
+    [Tooltip("玩家向左移動時的視差比例（背景更小幅度向右，預設 0.08）")]
+    public float leftMoveParallaxFactor = 0.08f;
 
     [Tooltip("判定玩家停止的位移門檻 (小於此值視為玩家停止，預設 0.001)")]
     public float playerStopThreshold = 0.001f;
+
+    /// <summary>相容性屬性：對應向右視差比例</summary>
+    public float followFactorX
+    {
+        get => rightMoveParallaxFactor;
+        set => rightMoveParallaxFactor = value;
+    }
 
     [Header("自主緩慢漂移設定 (Autonomous Drift)")]
     [Tooltip("是否啟用背景自主緩慢漂移？(預設開啟，玩家停止時依然保持緩慢漂移)")]
@@ -196,28 +206,39 @@ public class ParallaxGroup : MonoBehaviour, IResettable
         float playerDeltaX = currentPlayerX - _lastPlayerX;
         _lastPlayerX = currentPlayerX; // 每一幀嚴格更新，杜絕停止後重新起步時累積任何歷史位移
 
-        // 判定玩家本幀是否正在移動
-        isPlayerMoving = Mathf.Abs(playerDeltaX) >= playerStopThreshold;
-
-        // 1. 玩家視差位移 (Player Parallax Delta) - 玩家停止時歸零
+        // 1. 玩家視差跟隨 (Player-follow Parallax)：
+        // 玩家向右 (playerDeltaX > 0) -> 背景微幅向左 (-X)
+        // 玩家停止 (Abs < threshold) -> Player Parallax = 0 (背景定住)
+        // 玩家向左 (playerDeltaX < 0) -> 背景更小幅度向右 (+X)
         float playerParallaxDelta = 0f;
-        if (enablePlayerParallax && isPlayerMoving)
+        if (enablePlayerParallax)
         {
-            playerParallaxDelta = playerDeltaX * followFactorX;
+            if (Mathf.Abs(playerDeltaX) < playerStopThreshold)
+            {
+                playerParallaxDelta = 0f;
+            }
+            else if (playerDeltaX > 0f)
+            {
+                playerParallaxDelta = -Mathf.Abs(playerDeltaX) * rightMoveParallaxFactor;
+            }
+            else
+            {
+                playerParallaxDelta = Mathf.Abs(playerDeltaX) * leftMoveParallaxFactor;
+            }
         }
 
-        // 2. 自主緩慢漂移 (Autonomous Drift Delta) - 玩家停止時依然持續平滑漂移！
+        // 2. 自主環境漂移 (Autonomous Drift)：原本慢速環境漂移（玩家停止時持續漂移）
         float driftDelta = 0f;
         if (enableAutonomousDrift)
         {
             driftDelta = driftSpeedX * Time.deltaTime;
         }
 
-        // 3. 總位移量
+        // 3. 總位移量疊加
         float totalDeltaX = playerParallaxDelta + driftDelta;
         currentTotalOffsetX += totalDeltaX;
 
-        // 統一套用位移至受管物件（確保彼此相對位置 100% 剛性不變）
+        // 統一套用位移至受管物件（確保彼此相對位置 100% 剛性不變，只改動 X 座標，絕不改動 Y 與 Z 座標）
         if (Mathf.Abs(totalDeltaX) > 0.000001f)
         {
             ApplyDelta(totalDeltaX, 0f);

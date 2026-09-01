@@ -65,7 +65,23 @@ public class lb_Bird : MonoBehaviour {
 	int dieTriggerHash;
 
 	void OnEnable () {
+		if (controller == null)
+		{
+			controller = Object.FindFirstObjectByType<lb_BirdController>();
+			if (controller == null)
+			{
+				this.enabled = false;
+				return;
+			}
+		}
+
 		birdCollider = gameObject.GetComponent<BoxCollider>();
+		if (birdCollider == null)
+		{
+			this.enabled = false;
+			return;
+		}
+
 		bColCenter = birdCollider.center;
 		bColSize = birdCollider.size;
 		solidCollider = gameObject.GetComponent<SphereCollider>();
@@ -94,7 +110,7 @@ public class lb_Bird : MonoBehaviour {
 		singTriggerHash = Animator.StringToHash ("sing");
 		flyingDirectionHash = Animator.StringToHash("flyingDirectionX");
 		dieTriggerHash = Animator.StringToHash ("die");
-		anim.SetFloat ("IdleAgitated",agitationLevel);
+		if (anim != null) anim.SetFloat ("IdleAgitated",agitationLevel);
 		if (dead){
 			Revive();
 		}
@@ -426,23 +442,23 @@ public class lb_Bird : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider col){
-		if (col.tag == "lb_bird"){
-			FlyAway ();
+		if (col != null && col.tag == "lb_bird"){
+			if (controller != null) FlyAway ();
 		}
 	}
 
 	void OnTriggerExit(Collider col){
 		//if bird has hopped out of the target area lets fly
-		if (onGround && (col.tag == "lb_groundTarget" || col.tag == "lb_perchTarget")){
-			FlyAway ();
+		if (onGround && col != null && (col.tag == "lb_groundTarget" || col.tag == "lb_perchTarget")){
+			if (controller != null) FlyAway ();
 		}
 	}
 
 	void AbortFlyToTarget(){
 		StopCoroutine("FlyToTarget");
-		solidCollider.enabled = false;
-		anim.SetBool(landingBoolHash, false);
-		anim.SetFloat (flyingDirectionHash,0);
+		if (solidCollider != null) solidCollider.enabled = false;
+		if (anim != null) anim.SetBool(landingBoolHash, false);
+		if (anim != null) anim.SetFloat (flyingDirectionHash,0);
 		transform.localEulerAngles = new Vector3(
 			0.0f,
 			transform.localEulerAngles.y,
@@ -453,8 +469,8 @@ public class lb_Bird : MonoBehaviour {
 	void FlyAway(){
 		if(!dead){
 			StopCoroutine("FlyToTarget");
-			anim.SetBool(landingBoolHash, false);
-			controller.SendMessage ("BirdFindTarget",gameObject);
+			if (anim != null) anim.SetBool(landingBoolHash, false);
+			if (controller != null) controller.SendMessage ("BirdFindTarget",gameObject);
 		}
 	}
 

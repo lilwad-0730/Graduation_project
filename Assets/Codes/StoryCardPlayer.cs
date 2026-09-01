@@ -446,7 +446,14 @@ public class StoryCardPlayer : MonoBehaviour
 
             string page = pages[i] != null ? pages[i] : "";
             _label.text = page;
-            _label.ForceMeshUpdate();
+            try
+            {
+                _label.ForceMeshUpdate();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[StoryCardPlayer] ForceMeshUpdate 警告: {ex.Message}");
+            }
 
             // 這一頁的緩升（換頁或跳過時 token 一變就自己停）
             _driftToken++;
@@ -911,10 +918,29 @@ public class StoryCardPlayer : MonoBehaviour
         if (_label == null) return;
 
         TMP_FontAsset f = fontAsset;
-        if (f == null && !string.IsNullOrEmpty(fontResourcePath))
+        // 檢查字型是否有效（防範 m_AtlasTextures 未指派拋出例外崩潰）
+        bool isFontValid = f != null && f.atlasTextures != null && f.atlasTextures.Length > 0 && f.atlasTextures[0] != null;
+
+        if (!isFontValid)
         {
-            f = Resources.Load<TMP_FontAsset>(fontResourcePath);
+            if (!string.IsNullOrEmpty(fontResourcePath))
+            {
+                f = Resources.Load<TMP_FontAsset>(fontResourcePath);
+            }
+            if (f == null || f.atlasTextures == null || f.atlasTextures.Length == 0 || f.atlasTextures[0] == null)
+            {
+                f = Resources.Load<TMP_FontAsset>("Msjh_SDF");
+            }
+            if (f == null || f.atlasTextures == null || f.atlasTextures.Length == 0 || f.atlasTextures[0] == null)
+            {
+                f = Resources.Load<TMP_FontAsset>("UI/GenSenRounded2TW-L SDF");
+            }
+            if (f == null || f.atlasTextures == null || f.atlasTextures.Length == 0 || f.atlasTextures[0] == null)
+            {
+                f = TMPro.TMP_Settings.defaultFontAsset;
+            }
         }
+
         if (f != null) _label.font = f;
 
         _label.color = textColor;
