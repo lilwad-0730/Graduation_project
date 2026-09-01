@@ -649,8 +649,19 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 stagnationTimer = 0f;
             }
 
-            // 最低高度防穿防呆：若掉落到地表以下過深，自動觸發插地
-            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 3.5f))
+            // ★ 落地掃描：沿俯衝方向掃這一幀會走過的距離，碰到地面／岩石／掩體就停在表面，就地縮小消失
+            //   （以前靠物理碰撞，高速俯衝常直接穿過地板、在地底才消失，玩家看不到落地）
+            float sweepLen = diveSpeed * Time.deltaTime + 0.4f;
+            if (SweepForSurface(diveDirection, sweepLen, out Vector3 surfacePoint))
+            {
+                transform.position = surfacePoint - diveDirection * 0.12f;
+                Debug.Log($"【鳥群系統】{gameObject.name} 衝到地面，就地縮小消失！");
+                OnHitGround();
+                yield break;
+            }
+
+            // 最低高度防穿防呆：若掉落到地表以下（掃描沒抓到的邊緣情況），也立刻就地消失
+            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 2.0f))
             {
                 Debug.LogWarning($"【鳥群系統】{gameObject.name} 俯衝低於地表高度，觸發防穿插地！");
                 OnHitGround();
@@ -778,6 +789,33 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         Color tail = telegraphColor; tail.a = telegraphColor.a * pulse * 0.25f;
         _telegraphLine.startColor = head;
         _telegraphLine.endColor = tail;
+    }
+
+    /// <summary>沿俯衝方向掃描實體表面（地面、岩石、掩體）。略過自己、玩家、護盾、其他鳥與 Trigger。</summary>
+    private bool SweepForSurface(Vector3 dir, float length, out Vector3 point)
+    {
+        point = Vector3.zero;
+        if (dir.sqrMagnitude < 0.0001f) return false;
+
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, dir, length, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        bool found = false;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider c = hits[i].collider;
+            if (c == null) continue;
+            Transform ct = c.transform;
+            if (ct == transform || ct.IsChildOf(transform)) continue;
+            if (c.GetComponentInParent<IndividualBirdEnemy>() != null) continue;
+            if (c.CompareTag("Player") || c.GetComponentInParent<PlayerMovement>() != null || c.GetComponentInParent<PlayerShield>() != null) continue;
+            if (hits[i].distance < best)
+            {
+                best = hits[i].distance;
+                point = hits[i].point;
+                found = true;
+            }
+        }
+        return found;
     }
 
     /// <summary>
@@ -914,20 +952,20 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             animator.speed = 0f;
         }
 
-        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地表/掩體！立刻停格鎖定姿態插在表面，{stuckDuration} 秒後漸漸消失。");
+        Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地表/掩體！停格一瞬，就地縮小消失。");
         StartCoroutine(FadeAndDestroyCoroutine());
     }
 
     private IEnumerator FadeAndDestroyCoroutine()
     {
-        // 俯衝插地/撞擊後停留 1.2 秒
-        yield return new WaitForSeconds(Mathf.Min(stuckDuration, 1.2f));
+        // 撞擊後只停格一瞬（讓玩家看到牠釘在哪），接著就地縮小消失
+        yield return new WaitForSeconds(Mathf.Min(stuckDuration, 0.2f));
 
         // 啟動淡出前將材質設定為透明渲染模式
         SetupMaterialsForFade();
 
         float elapsed = 0f;
-        float realFadeDuration = fadeDuration > 0.05f ? fadeDuration : 1.0f;
+        float realFadeDuration = Mathf.Clamp(fadeDuration, 0.25f, 0.5f);   // 縮小消失要快，不拖
         while (elapsed < realFadeDuration)
         {
             elapsed += Time.deltaTime;

@@ -656,7 +656,7 @@ MonoBehaviour:
   rightMoveParallaxFactor: 0.15
   leftMoveParallaxFactor: 0.08
   playerStopThreshold: 0.001
-  enableAutonomousDrift: 1
+  enableAutonomousDrift: 0
   driftSpeedX: 0.5
   isPlayerInRuinedZone: 0
   isFollowActive: 0

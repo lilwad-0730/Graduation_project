@@ -339,6 +339,7 @@ public class GuidanceLight : MonoBehaviour
         {
             UnderwaterSuffocationEffect.Instance.RestoreBreath(0.45f);
         }
+        UnderwaterCheckpoint.MarkHere(this, "吸收光絮");   // 只在水下作用
 
         // 4. 切換到下一個路徑點
         if (currentWaypointIndex + 1 < waypoints.Length)

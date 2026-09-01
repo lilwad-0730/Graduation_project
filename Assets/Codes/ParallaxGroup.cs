@@ -54,8 +54,8 @@ public class ParallaxGroup : MonoBehaviour, IResettable
     }
 
     [Header("自主緩慢漂移設定 (Autonomous Drift)")]
-    [Tooltip("是否啟用背景自主緩慢漂移？(預設開啟，玩家停止時依然保持緩慢漂移)")]
-    public bool enableAutonomousDrift = true;
+    [Tooltip("是否啟用背景自主緩慢漂移？（預設關閉：主角不動背景就不動；開著的話久站背景會滑出畫面破圖）")]
+    public bool enableAutonomousDrift = false;
 
     [Tooltip("每秒背景自主漂移的距離 (正值 = +X 方向, 負值 = -X 方向，預設 0.5)")]
     public float driftSpeedX = 0.5f;

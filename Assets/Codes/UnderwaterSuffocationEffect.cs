@@ -59,6 +59,9 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
     [Tooltip("光圈見底之後，再撐幾秒才溺斃（留給玩家最後找光的機會）")]
     public float deathGraceSeconds = 1.5f;
 
+    [Tooltip("一口氣能撐幾秒：從滿圈縮到溺斃半徑的總秒數（呼吸機制開啟時取代 darknessIncreaseRate）。撿日誌、吸光絮會補回")]
+    public float breathSecondsToDeath = 75f;
+
     [Header("🎵 緩解音效 (Relief SFX)")]
     [Tooltip("吃到日記紙條緩解窒息時播放的音效 (例如 水下_日誌接觸_02.wav)")]
     public AudioClip reliefSFX;
@@ -171,7 +174,12 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         {
             if (currentRadius > radiusFloor)
             {
-                currentRadius -= darknessIncreaseRate * Time.deltaTime;
+                float rate = darknessIncreaseRate;
+                if (enableSuffocationDeath && breathSecondsToDeath > 0.5f)
+                {
+                    rate = Mathf.Max(0.0001f, (startRadius - deathRadius) / breathSecondsToDeath);   // 一口氣＝breathSecondsToDeath 秒
+                }
+                currentRadius -= rate * Time.deltaTime;
                 currentRadius  = Mathf.Max(currentRadius, radiusFloor);
             }
         }

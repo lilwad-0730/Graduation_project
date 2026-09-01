@@ -139,7 +139,9 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
 
     private void TryStartTransition(GameObject hitObj)
     {
-        if (isTransitioning || hitObj == null) return;
+        // ★ Unity 就算腳本被停用，OnTriggerEnter/Stay 照樣會被呼叫——
+        //   StoryCardZoneHook 接管時會把本腳本停用，這裡必須自己擋掉，否則兩邊搶著轉場、漫畫段被吃掉。
+        if (!enabled || isTransitioning || hitObj == null) return;
 
         PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
         if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();

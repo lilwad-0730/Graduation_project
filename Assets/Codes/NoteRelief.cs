@@ -128,6 +128,7 @@ public class NoteRelief : MonoBehaviour
     {
         if (consumed) return;
         consumed = true;
+        UnderwaterCheckpoint.MarkHere(this, "吸收紙條「" + noteName + "」");
 
         Debug.Log($"[NoteRelief] 玩家吸收了「{noteName}」！觸發窒息緩解效果。");
 
@@ -140,7 +141,13 @@ public class NoteRelief : MonoBehaviour
         // 1. 播放吸收動畫
         if (noteAnimator != null)
         {
-            noteAnimator.SetTrigger(absorbTriggerName);
+            // 動畫控制器沒有這個參數就不呼叫，免得每張紙條都噴「Parameter 'Absorb' does not exist」
+            bool hasParam = false;
+            foreach (var p in noteAnimator.parameters)
+            {
+                if (p.name == absorbTriggerName) { hasParam = true; break; }
+            }
+            if (hasParam) noteAnimator.SetTrigger(absorbTriggerName);
         }
 
         // 2. 通知窒息效果系統

@@ -61,6 +61,7 @@ public class CollectibleNote : MonoBehaviour
     {
         if (_isCollected) return;
         _isCollected = true;
+        UnderwaterCheckpoint.MarkHere(this, "撿到日誌 " + gameObject.name);
 
         StartCoroutine(ShrinkAndDestroyRoutine());
     }

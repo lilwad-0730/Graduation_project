@@ -163,6 +163,7 @@ public class UnderwaterNurseryItem : MonoBehaviour, IResettable
         isCollected = true;
 
         Debug.Log($"✨【水下育兒物品】玩家接觸拾取 [{gameObject.name}]！");
+        UnderwaterCheckpoint.MarkHere(this, "拾取育兒物品 " + gameObject.name);
 
         // 播放超清晰響亮接觸音效
         if (contactClip != null)
