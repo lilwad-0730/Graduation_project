@@ -59,6 +59,34 @@ private void Awake()
         PlayerPrefs.Save();
     }
 
+    private void OnMouseDown()
+    {
+        if (NeedsMouseFallback())
+            UpdateFromPointer(Input.mousePosition, inputCamera);
+    }
+
+    private void OnMouseDrag()
+    {
+        if (NeedsMouseFallback())
+            UpdateFromPointer(Input.mousePosition, inputCamera);
+    }
+
+    private void OnMouseUp()
+    {
+        if (!NeedsMouseFallback())
+            return;
+
+        PlayerPrefs.SetFloat(playerPrefsKey, Value);
+        PlayerPrefs.Save();
+    }
+
+    private bool NeedsMouseFallback()
+    {
+        Camera cameraToUse = inputCamera != null ? inputCamera : Camera.main;
+        return EventSystem.current == null || cameraToUse == null ||
+               cameraToUse.GetComponent<Physics2DRaycaster>() == null;
+    }
+
 private void UpdateFromPointer(Vector2 screenPosition, Camera eventCamera)
     {
         if (trackRenderer == null || interactionCollider == null || volumePointRenderer == null)

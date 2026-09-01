@@ -137,15 +137,23 @@ public class CandleCollectible : MonoBehaviour, IResettable
         // 隱藏燭火視覺組件（但 GameObject 保持 Active 以支援 IResettable 重置）
         if (hideOnCollect)
         {
-            RefreshVisualComponents();
-            foreach (var renderer in _renderers)
-                if (renderer != null) renderer.enabled = false;
+            CandleAuraGlow aura = GetComponent<CandleAuraGlow>();
+            if (aura != null)
+            {
+                aura.HideAura();
+            }
+            else
+            {
+                RefreshVisualComponents();
+                foreach (var renderer in _renderers)
+                    if (renderer != null) renderer.enabled = false;
 
-            foreach (var l in _lights)
-                if (l != null) l.enabled = false;
+                foreach (var l in _lights)
+                    if (l != null) l.enabled = false;
 
-            foreach (var ps in _particles)
-                if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                foreach (var ps in _particles)
+                    if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
         }
 
         return true;

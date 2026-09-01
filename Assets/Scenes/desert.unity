@@ -1449,6 +1449,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &198497820
 PrefabInstance:
@@ -1731,6 +1735,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &198497827
 Rigidbody:
@@ -1899,6 +1907,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &209746466 stripped
 GameObject:
@@ -2077,6 +2089,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &224980042 stripped
 GameObject:
@@ -2255,6 +2271,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &239759718
 GameObject:
@@ -7480,6 +7500,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &295856593
 PrefabInstance:
@@ -7952,6 +7976,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &308089449
 GameObject:
@@ -8577,6 +8605,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &327007296 stripped
 GameObject:
@@ -8750,6 +8782,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &340062527 stripped
 GameObject:
@@ -8923,6 +8959,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &341364196
 GameObject:
@@ -9188,80 +9228,6 @@ MonoBehaviour:
   protectFrontDistance: 0
   protectHeight: 5.5
   offsetY: 0
---- !u!21 &370877509
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 697710767}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &372427837
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9543,6 +9509,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &372427844
 Rigidbody:
@@ -9711,6 +9681,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &376656439
 PrefabInstance:
@@ -10039,80 +10013,6 @@ MonoBehaviour:
   protectFrontDistance: 0
   protectHeight: 5.5
   offsetY: 0
---- !u!21 &405385094
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 697710767}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &405446342
 GameObject:
   m_ObjectHideFlags: 0
@@ -10226,6 +10126,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 778340340}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &412264224
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 926337158}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &419708010
 GameObject:
   m_ObjectHideFlags: 0
@@ -10730,6 +10704,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &446626816 stripped
 GameObject:
@@ -10903,6 +10881,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &452239496 stripped
 GameObject:
@@ -10976,8 +10958,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.8224945, y: 13.942949, z: 1}
-  m_Center: {x: -2.1487503, y: 1.3947439, z: 0}
+  m_Size: {x: 17.533936, y: 8.470269, z: 1}
+  m_Center: {x: -9.004471, y: -3.0666785, z: 0}
 --- !u!4 &468753312
 Transform:
   m_ObjectHideFlags: 0
@@ -11440,6 +11422,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &480514349
 Rigidbody:
@@ -11608,6 +11594,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &492759901 stripped
 GameObject:
@@ -11924,6 +11914,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &508028242 stripped
 GameObject:
@@ -12097,6 +12091,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &530181473
 GameObject:
@@ -12261,7 +12259,6 @@ Transform:
   - {fileID: 721313413}
   - {fileID: 991520696}
   - {fileID: 1838278289}
-  - {fileID: 1855975712}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &541617751
@@ -12741,6 +12738,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -13021,6 +13019,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &596971190
 PrefabInstance:
@@ -13295,6 +13297,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &636829700
 GameObject:
@@ -13344,6 +13350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -13632,6 +13639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -14053,52 +14061,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 541617750}
   m_LocalEulerAnglesHint: {x: 4.559, y: -16.593, z: -1.357}
---- !u!28 &697710767
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Procedural_SoftCircle
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 4
-  m_Width: 32
-  m_Height: 32
-  m_CompleteImageSize: 4096
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 4096
-  _typelessdata: ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff03ffffff0bffffff18ffffff28ffffff3bffffff51ffffff68ffffff80ffffff97ffffffaeffffffc4ffffffd7ffffffe7fffffff4fffffffcfffffffffffffffcfffffff4ffffffe7ffffffd7ffffffc4ffffffaeffffff97ffffff80ffffff68ffffff51ffffff3bffffff28ffffff18ffffff0bffffff03ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1 &709769302
 GameObject:
   m_ObjectHideFlags: 0
@@ -14524,6 +14486,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &738394998
 Rigidbody:
@@ -14692,6 +14658,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &747122038
 GameObject:
@@ -15031,6 +15001,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &748939896 stripped
 GameObject:
@@ -15204,6 +15178,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &754483469 stripped
 GameObject:
@@ -15377,6 +15355,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &778340339
 GameObject:
@@ -15776,6 +15758,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &797557924 stripped
 GameObject:
@@ -15949,81 +15935,11 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!21 &798909602
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 697710767}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &799729485
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16891,6 +16807,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &837637432
 Rigidbody:
@@ -17059,6 +16979,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &840317286 stripped
 GameObject:
@@ -17232,6 +17156,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &848223933 stripped
 GameObject:
@@ -17506,6 +17434,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &852823267 stripped
 GameObject:
@@ -17679,6 +17611,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &859091808
 PrefabInstance:
@@ -18065,6 +18001,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &862704299
 Rigidbody:
@@ -18233,6 +18173,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &863241826 stripped
 GameObject:
@@ -18406,6 +18350,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &867742666
 PrefabInstance:
@@ -18688,6 +18636,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &867742673
 Rigidbody:
@@ -18856,6 +18808,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &879180877
 GameObject:
@@ -18905,6 +18861,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -19185,6 +19142,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &910000020
 GameObject:
@@ -19279,6 +19240,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardId: M3
   takeOver: 1
+  comicStartPage: -1
+  comicEndPage: -1
 --- !u!1 &918943784
 GameObject:
   m_ObjectHideFlags: 0
@@ -19425,6 +19388,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -19440,6 +19404,52 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
   m_PrefabInstance: {fileID: 2055887399}
   m_PrefabAsset: {fileID: 0}
+--- !u!28 &926337158
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Procedural_SoftCircle
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 4
+  m_Width: 32
+  m_Height: 32
+  m_CompleteImageSize: 4096
+  m_MipsStripped: 0
+  m_TextureFormat: 4
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 4096
+  _typelessdata: ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff03ffffff0bffffff18ffffff28ffffff3bffffff51ffffff68ffffff80ffffff97ffffffaeffffffc4ffffffd7ffffffe7fffffff4fffffffcfffffffffffffffcfffffff4ffffffe7ffffffd7ffffffc4ffffffaeffffff97ffffff80ffffff68ffffff51ffffff3bffffff28ffffff18ffffff0bffffff03ffffff00ffffff03ffffff0bffffff17ffffff27ffffff3affffff50ffffff66ffffff7effffff96ffffffacffffffc2ffffffd5ffffffe5fffffff1fffffff9fffffffcfffffff9fffffff1ffffffe5ffffffd5ffffffc2ffffffacffffff96ffffff7effffff66ffffff50ffffff3affffff27ffffff17ffffff0bffffff03ffffff00ffffff02ffffff0affffff15ffffff25ffffff37ffffff4cffffff63ffffff7affffff91ffffffa7ffffffbcffffffceffffffdeffffffeafffffff1fffffff4fffffff1ffffffeaffffffdeffffffceffffffbcffffffa7ffffff91ffffff7affffff63ffffff4cffffff37ffffff25ffffff15ffffff0affffff02ffffff00ffffff01ffffff08ffffff13ffffff21ffffff33ffffff47ffffff5cffffff73ffffff89ffffff9effffffb2ffffffc4ffffffd3ffffffdeffffffe5ffffffe7ffffffe5ffffffdeffffffd3ffffffc4ffffffb2ffffff9effffff89ffffff73ffffff5cffffff47ffffff33ffffff21ffffff13ffffff08ffffff01ffffff00ffffff01ffffff06ffffff0fffffff1dffffff2dffffff40ffffff54ffffff69ffffff7effffff92ffffffa5ffffffb6ffffffc4ffffffceffffffd5ffffffd7ffffffd5ffffffceffffffc4ffffffb6ffffffa5ffffff92ffffff7effffff69ffffff54ffffff40ffffff2dffffff1dffffff0fffffff06ffffff01ffffff00ffffff00ffffff04ffffff0cffffff18ffffff26ffffff37ffffff4affffff5effffff71ffffff84ffffff96ffffffa5ffffffb2ffffffbcffffffc2ffffffc4ffffffc2ffffffbcffffffb2ffffffa5ffffff96ffffff84ffffff71ffffff5effffff4affffff37ffffff26ffffff18ffffff0cffffff04ffffff00ffffff00ffffff00ffffff02ffffff08ffffff12ffffff1fffffff2effffff3fffffff51ffffff63ffffff74ffffff84ffffff92ffffff9effffffa7ffffffacffffffaeffffffacffffffa7ffffff9effffff92ffffff84ffffff74ffffff63ffffff51ffffff3fffffff2effffff1fffffff12ffffff08ffffff02ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0cffffff17ffffff24ffffff33ffffff43ffffff53ffffff63ffffff71ffffff7effffff89ffffff91ffffff96ffffff97ffffff96ffffff91ffffff89ffffff7effffff71ffffff63ffffff53ffffff43ffffff33ffffff24ffffff17ffffff0cffffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff07ffffff0fffffff1affffff27ffffff35ffffff43ffffff51ffffff5effffff69ffffff73ffffff7affffff7effffff80ffffff7effffff7affffff73ffffff69ffffff5effffff51ffffff43ffffff35ffffff27ffffff1affffff0fffffff07ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff09ffffff11ffffff1cffffff27ffffff33ffffff3fffffff4affffff54ffffff5cffffff63ffffff66ffffff68ffffff66ffffff63ffffff5cffffff54ffffff4affffff3fffffff33ffffff27ffffff1cffffff11ffffff09ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff04ffffff0affffff11ffffff1affffff24ffffff2effffff37ffffff40ffffff47ffffff4cffffff50ffffff51ffffff50ffffff4cffffff47ffffff40ffffff37ffffff2effffff24ffffff1affffff11ffffff0affffff04ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff04ffffff09ffffff0fffffff17ffffff1fffffff26ffffff2dffffff33ffffff37ffffff3affffff3bffffff3affffff37ffffff33ffffff2dffffff26ffffff1fffffff17ffffff0fffffff09ffffff04ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff03ffffff07ffffff0cffffff12ffffff18ffffff1dffffff21ffffff25ffffff27ffffff28ffffff27ffffff25ffffff21ffffff1dffffff18ffffff12ffffff0cffffff07ffffff03ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff08ffffff0cffffff0fffffff13ffffff15ffffff17ffffff18ffffff17ffffff15ffffff13ffffff0fffffff0cffffff08ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff02ffffff04ffffff06ffffff08ffffff0affffff0bffffff0bffffff0bffffff0affffff08ffffff06ffffff04ffffff02ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff01ffffff01ffffff02ffffff03ffffff03ffffff03ffffff02ffffff01ffffff01ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &927373807 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -19612,6 +19622,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &937310458
 GameObject:
@@ -20026,6 +20040,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &950837339
 GameObject:
@@ -20427,6 +20445,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &994402413 stripped
 GameObject:
@@ -20659,6 +20681,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1046791338
 PrefabInstance:
@@ -20941,6 +20967,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1057586024
 GameObject:
@@ -21190,16 +21220,28 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: 062dc0a37729fdd41b5c6dc18d910cbd, type: 3}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.5211875
+      objectReference: {fileID: 0}
+    - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5056015
+      objectReference: {fileID: 0}
+    - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.9950001
+      objectReference: {fileID: 0}
+    - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -6.7
+      value: -7.8019
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.7560635
+      value: -1.9525
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.018505
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -21433,6 +21475,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1069608645 stripped
 GameObject:
@@ -21606,6 +21652,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1076271210
 GameObject:
@@ -21832,6 +21882,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1083144185
 PrefabInstance:
@@ -22493,6 +22547,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1147295696
 Rigidbody:
@@ -22661,6 +22719,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1166126468
 GameObject:
@@ -22841,7 +22903,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 405385094}
+  - {fileID: 2055441493}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -27952,6 +28014,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1229319572
 GameObject:
@@ -28347,6 +28413,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1235777195
 Rigidbody:
@@ -28515,6 +28585,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1259780287
 GameObject:
@@ -28779,6 +28853,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1264987126
 PrefabInstance:
@@ -29061,6 +29139,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1264987133
 Rigidbody:
@@ -29229,6 +29311,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1279824611
 GameObject:
@@ -29278,6 +29364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -29434,6 +29521,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -29714,6 +29802,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1326084089
 GameObject:
@@ -29763,6 +29855,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -29930,7 +30023,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 798909602}
+  - {fileID: 1754888185}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -34970,6 +35063,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1362677365 stripped
 GameObject:
@@ -35143,6 +35240,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1376206461
 GameObject:
@@ -35377,6 +35478,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Destructible
   shatteredPrefab: {fileID: 0}
+  keepShatteredOnReset: 0
   shatterOnCollision: 0
   disappearDelay: 2.5
   minGridSubdivisions: 6
@@ -35805,6 +35907,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1389233650
 GameObject:
@@ -36091,6 +36197,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1399529194
 GameObject:
@@ -36377,6 +36487,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1420397823
 PrefabInstance:
@@ -36641,6 +36755,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1440046342 stripped
 GameObject:
@@ -36814,6 +36932,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1444385478 stripped
 GameObject:
@@ -36987,6 +37109,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1453928884
 PrefabInstance:
@@ -37269,6 +37395,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1453928891
 Rigidbody:
@@ -37437,6 +37567,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1460206123 stripped
 GameObject:
@@ -37610,81 +37744,11 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
---- !u!21 &1461400802
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DesertWind_SoftMat
-  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _FLIPBOOKBLENDING_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 697710767}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _BumpMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _AlphaClip: 0
-    - _AlphaToMask: 0
-    - _Blend: 0
-    - _BlendOp: 0
-    - _CameraFadingEnabled: 0
-    - _CameraFarFadeDistance: 2
-    - _CameraNearFadeDistance: 1
-    - _ColorMode: 0
-    - _Cull: 2
-    - _Cutoff: 0.5
-    - _DistortionBlend: 0.5
-    - _DistortionEnabled: 0
-    - _DistortionStrength: 1
-    - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _FlipbookBlending: 0
-    - _FlipbookMode: 0
-    - _Mode: 0
-    - _QueueOffset: 0
-    - _SoftParticlesEnabled: 0
-    - _SoftParticlesFarFadeDistance: 1
-    - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 1
-    - _SrcBlendAlpha: 1
-    - _Surface: 0
-    - _ZWrite: 1
-    m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!43 &1463530621
 Mesh:
   m_ObjectHideFlags: 0
@@ -38035,6 +38099,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1494404774
 PrefabInstance:
@@ -38312,6 +38380,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1525900690 stripped
 GameObject:
@@ -38485,6 +38557,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1534076190
 GameObject:
@@ -38898,6 +38974,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1545679102 stripped
 GameObject:
@@ -39175,6 +39255,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1594557421
 PrefabInstance:
@@ -39447,6 +39531,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1607187551 stripped
 GameObject:
@@ -39620,6 +39708,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1625430969
 PrefabInstance:
@@ -39892,6 +39984,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1628159571
 PrefabInstance:
@@ -40164,6 +40260,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1639217559 stripped
 GameObject:
@@ -40337,6 +40437,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1657044647
 PrefabInstance:
@@ -40609,6 +40713,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1657807653
 GameObject:
@@ -40972,6 +41080,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1675996994
 PrefabInstance:
@@ -41244,6 +41356,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1688040281
 GameObject:
@@ -41508,6 +41624,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1712628209 stripped
 GameObject:
@@ -41681,6 +41801,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1715981104
 PrefabInstance:
@@ -41963,6 +42087,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1715981111
 Rigidbody:
@@ -42131,6 +42259,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1719821682
 GameObject:
@@ -42417,6 +42549,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1744740335
 GameObject:
@@ -42514,6 +42650,80 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
   m_PrefabInstance: {fileID: 1960167367}
   m_PrefabAsset: {fileID: 0}
+--- !u!21 &1754888185
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 926337158}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1767478121 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -42686,6 +42896,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1770549944
 GameObject:
@@ -43137,6 +43351,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1790475359
 GameObject:
@@ -43197,7 +43415,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 370877509}
+  - {fileID: 2007338882}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -48146,6 +48364,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1792429549 stripped
 GameObject:
@@ -48319,6 +48541,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1794822145 stripped
 GameObject:
@@ -48492,6 +48718,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1812729720
 PrefabInstance:
@@ -48756,6 +48986,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1821257613 stripped
 GameObject:
@@ -48929,6 +49163,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1823686047 stripped
 GameObject:
@@ -49102,6 +49340,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1825610762
 PrefabInstance:
@@ -49384,6 +49626,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &1825610769
 Rigidbody:
@@ -49552,6 +49798,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1835300432
 GameObject:
@@ -49852,6 +50102,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1855975710
 GameObject:
@@ -49938,11 +50192,11 @@ Transform:
   m_GameObject: {fileID: 1855975710}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.1, y: 0, z: 0}
-  m_LocalScale: {x: 1.5390856, y: 1.3991687, z: 1.3991687}
+  m_LocalPosition: {x: 245.3126, y: -4.64, z: 0}
+  m_LocalScale: {x: 1.7140797, y: 1.388675, z: 1.3991687}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 541617750}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1857802565 stripped
 GameObject:
@@ -50116,6 +50370,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1858188625 stripped
 GameObject:
@@ -50289,6 +50547,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1860318834 stripped
 GameObject:
@@ -50467,6 +50729,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1868895076 stripped
 GameObject:
@@ -50640,6 +50906,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1882475287 stripped
 GameObject:
@@ -50813,6 +51083,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1893617914
 GameObject:
@@ -51176,6 +51450,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1918916555
 GameObject:
@@ -51507,6 +51785,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1923538536
 GameObject:
@@ -51824,6 +52106,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &1960167367
 PrefabInstance:
@@ -52088,6 +52374,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1970097111
 GameObject:
@@ -52352,6 +52642,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &1978253942
 GameObject:
@@ -52684,6 +52978,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 541617750}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &2007338882
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 926337158}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &2009862536
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52955,6 +53323,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &2011832821
 PrefabInstance:
@@ -53227,6 +53599,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &2014794179
 GameObject:
@@ -53330,7 +53706,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1461400802}
+  - {fileID: 412264224}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -58394,6 +58770,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &2051816438 stripped
 GameObject:
@@ -58422,6 +58802,80 @@ MonoBehaviour:
   - desert
   - "\u8352\u6F20"
   - "\u8352\u539F"
+--- !u!21 &2055441493
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DesertWind_SoftMat
+  m_Shader: {fileID: 4800000, guid: 0406db5a14f94604a8c57ccfbc9f3b46, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _FLIPBOOKBLENDING_OFF
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 926337158}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
+    - _ColorMode: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0.1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _FlipbookBlending: 0
+    - _FlipbookMode: 0
+    - _Mode: 0
+    - _QueueOffset: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
+    - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &2055887399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58693,6 +59147,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &2058465744 stripped
 GameObject:
@@ -58866,6 +59324,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &2067308743
 PrefabInstance:
@@ -59138,6 +59600,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1 &2071087495
 GameObject:
@@ -59477,6 +59943,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &2105805957
 PrefabInstance:
@@ -59759,6 +60229,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!54 &2105805964
 Rigidbody:
@@ -59927,6 +60401,10 @@ MonoBehaviour:
   groundTag: Floor
   warningClip: {fileID: 8300000, guid: e2622b95524aab94b9a0448a1a4c6fc8, type: 3}
   flapClip: {fileID: 8300000, guid: ec93ec1896a65fe47a6a54a91b8d057c, type: 3}
+  showAttackTelegraph: 1
+  telegraphColor: {r: 1, g: 0.25, b: 0.2, a: 0.9}
+  telegraphWidth: 0.18
+  telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
 --- !u!1001 &355908065880826960
 PrefabInstance:
@@ -59983,6 +60461,10 @@ PrefabInstance:
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 37.718464
+      objectReference: {fileID: 0}
+    - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 19.57
       objectReference: {fileID: 0}
     - target: {fileID: 9199010635575890847, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: targetCamera
@@ -60081,6 +60563,7 @@ SceneRoots:
   - {fileID: 1379682353}
   - {fileID: 10950399}
   - {fileID: 355908065880826960}
+  - {fileID: 1855975712}
   - {fileID: 541617750}
   - {fileID: 2071087496}
   - {fileID: 910000021}
