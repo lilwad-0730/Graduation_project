@@ -913,6 +913,9 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 // (true, true) ＝自己淡入黑幕、播完自己淡出，播完畫面回到遊戲
                 yield return StoryCardPlayer.Instance.Play(afterCutsceneCardId, true, true);
             }
+            Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
+        }
+
         if (cachedPlayer != null)
         {
             cachedPlayer.isCutsceneFrozen = false;
