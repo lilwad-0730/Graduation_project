@@ -940,17 +940,19 @@ public class PlayerMovement : MonoBehaviour
         // ★按了跳躍卻沒起跳時，直接指名是哪個條件擋住的
         if (_jumpPressed && (isCutsceneFrozen || IsHardCutsceneLocked || isUnderwater || !isGrounded))
         {
-            Debug.LogWarning("🚫【跳躍被擋】"
-                + $"isCutsceneFrozen={isCutsceneFrozen}  "
-                + $"IsHardCutsceneLocked={IsHardCutsceneLocked}"
-                + $"（重生中:{PlayerRespawnSystem.IsAnyRespawning}"
-                + $" 鏡牆演出:{MirrorWallAbsorbCutscene.IsAnyCutsceneRunning}"
-                + $" 怪物登場:{ShadowMonsterController.IsRevealRunning}"
-                + $" 文字卡:{(StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying)}）  "
-                + $"isUnderwater={isUnderwater}  isGrounded={isGrounded}  isJumping={isJumping}  "
-                + $"isKinematic={(rb != null ? rb.isKinematic.ToString() : "NULL")}  "
-                + $"y速度={(rb != null ? rb.linearVelocity.y.ToString("F2") : "-")}  "
-                + $"座標={transform.position}");
+            // 一行寫完，Console 不用展開就看得到
+            Debug.LogWarning("🚫跳不了 froz=" + (isCutsceneFrozen ? "T" : "F")
+                + " hard=" + (IsHardCutsceneLocked ? "T" : "F")
+                + "(生" + (PlayerRespawnSystem.IsAnyRespawning ? "T" : "F")
+                + " 鏡" + (MirrorWallAbsorbCutscene.IsAnyCutsceneRunning ? "T" : "F")
+                + " 怪" + (ShadowMonsterController.IsRevealRunning ? "T" : "F")
+                + " 卡" + ((StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying) ? "T" : "F") + ")"
+                + " 水=" + (isUnderwater ? "T" : "F")
+                + " 地=" + (isGrounded ? "T" : "F")
+                + " 跳中=" + (isJumping ? "T" : "F")
+                + " kine=" + ((rb != null && rb.isKinematic) ? "T" : "F")
+                + " y=" + (rb != null ? rb.linearVelocity.y.ToString("F1") : "-")
+                + " x=" + transform.position.x.ToString("F1"));
         }
 
         if (!isCutsceneFrozen && !IsHardCutsceneLocked && !isUnderwater && _jumpPressed && isGrounded)

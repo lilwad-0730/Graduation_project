@@ -49,6 +49,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("觸發追逐時，先把鏡頭帶到怪物身上演一段，再把鏡頭交還主角")]
     public bool useRevealCutscene = true;
 
+    [Tooltip("登場運鏡整場遊戲只演一次。追逐段的存檔點就在觸發器前面 1 個單位，不勾的話每次死亡重生走兩步就要重看一次六秒演出，期間完全不能動")]
+    public bool revealOnlyOnce = true;
+
     [Tooltip("鏡頭飛去怪物、以及飛回主角，各自等多久（留時間給 Cinemachine 的阻尼追上）")]
     public float revealCameraTravel = 1.2f;
 
@@ -278,6 +281,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private bool _revealActive = false;          // 整段演出期間為 true：不准抓人
     /// <summary> ★給 PlayerMovement 用：登場運鏡期間要硬鎖玩家，按鍵不能自己解鎖。 </summary>
     public static bool IsRevealRunning = false;
+    private static bool _revealPlayed = false;   // 這場遊戲已經演過登場運鏡了
     private bool _revealCamTaken = false;
     private Transform _revealFocus;              // 鏡頭要看的點（怪物視覺中心）
     private List<CinemachineCamera> _revealVcams3 = new List<CinemachineCamera>();
@@ -402,6 +406,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   _endingFired 還留著 true，第二輪收完最後一根燭火就不會進結局了。
         _endingFired = false;
         IsRevealRunning = false;
+        _revealPlayed = false;
 
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
@@ -610,8 +615,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         PlayAnimationByName(walkAnimationName);
 
         // ★有運鏡就走運鏡版：鏡頭先看怪物 → 怪物動起來 → 鏡頭回到主角 → 還控制權
-        if (useRevealCutscene && player != null)
+        //   但只演第一次。追逐段的存檔點在 x=-36.6、觸發器在 x=-35.7，
+        //   死亡重生後往前走不到一個單位就會再踩到，每次都重演六秒、期間完全不能動——
+        //   玩家會覺得「重生後不能跳」。第二次以後直接用原本的原地淡入。
+        bool doReveal = useRevealCutscene && player != null && !(revealOnlyOnce && _revealPlayed);
+        if (doReveal)
         {
+            _revealPlayed = true;
             yield return StartCoroutine(RevealCutsceneRoutine());
         }
         else
