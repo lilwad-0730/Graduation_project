@@ -9,6 +9,22 @@ public sealed class StartMenuSceneTransition : MonoBehaviour
     [SerializeField] private TransitionEffect transitionEffect;
     private bool transitionRequested;
 
+    private void Awake()
+    {
+        transitionRequested = false;
+        Collider2D buttonCollider = GetComponent<Collider2D>();
+        if (buttonCollider != null)
+            buttonCollider.enabled = true;
+    }
+
+    private void OnEnable()
+    {
+        transitionRequested = false;
+        Collider2D buttonCollider = GetComponent<Collider2D>();
+        if (buttonCollider != null)
+            buttonCollider.enabled = true;
+    }
+
     private void OnMouseDown()
     {
         BeginTransition();

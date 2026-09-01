@@ -1023,6 +1023,14 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             flashImage.color = new Color(1f, 1f, 1f, 0f);
         }
 
+        // ★ 核心狀態分支：如果玩家已經完成鏡牆演出（到達鏡牆後方 Checkpoint 重生）
+        if (_sequenceCompleted)
+        {
+            Debug.Log("🪞【鏡牆演出】玩家已通關鏡牆並在後方重生：執行 HideMirrorFrontVisualsAfterRespawn()...");
+            HideMirrorFrontVisualsAfterRespawn();
+            return;
+        }
+
         // 3. 100% 還原所有 4 顆光球的位置、大小、顯示狀態與粒子
         if (fairyLights != null)
         {
@@ -1125,6 +1133,81 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         }
 
         Debug.Log("✅【鏡牆演出】光球、鏡牆與相機已全數刷新重置完畢！");
+    }
+
+    /// <summary>
+    /// 鏡牆後方 Checkpoint 重生：隱藏前方 4 顆光球與鏡牆視覺，但保留鏡牆實體 Collider 阻擋玩家往回走
+    /// </summary>
+    public void HideMirrorFrontVisualsAfterRespawn()
+    {
+        // 1. 隱藏前方 4 顆光球
+        if (fairyLights != null)
+        {
+            foreach (var lightObj in fairyLights)
+            {
+                if (lightObj != null)
+                {
+                    lightObj.SetActive(false);
+                }
+            }
+        }
+
+        // 2. 處理鏡牆：視覺關閉 (Renderer OFF)、碰撞開啟 (Collider ON)
+        if (mirrorWall != null)
+        {
+            mirrorWall.SetActive(true); // 保持 GameObject 啟動狀態以維持 Collider 物理作用
+
+            // 關閉所有視覺渲染組件 (SpriteRenderer / MeshRenderer)
+            SpriteRenderer[] srs = mirrorWall.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var sr in srs)
+            {
+                if (sr != null) sr.enabled = false;
+            }
+
+            MeshRenderer[] mrs = mirrorWall.GetComponentsInChildren<MeshRenderer>(true);
+            foreach (var mr in mrs)
+            {
+                if (mr != null) mr.enabled = false;
+            }
+
+            // 確保實體碰撞體開啟，阻擋玩家往鏡牆前方走
+            Collider[] cols = mirrorWall.GetComponentsInChildren<Collider>(true);
+            foreach (var col in cols)
+            {
+                if (col != null)
+                {
+                    col.enabled = true;
+                    col.isTrigger = false;
+                }
+            }
+
+            // 保持 Destructible 為破碎完成狀態
+            Destructible dest = mirrorWall.GetComponent<Destructible>();
+            if (dest == null) dest = mirrorWall.GetComponentInChildren<Destructible>();
+            if (dest != null)
+            {
+                dest.keepShatteredOnReset = true;
+            }
+        }
+
+        // 3. 清理場上殘留碎片
+        ShatteredObject[] leftovers = FindObjectsByType<ShatteredObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (leftovers != null && leftovers.Length > 0)
+        {
+            foreach (var so in leftovers)
+            {
+                if (so != null) Destroy(so.gameObject);
+            }
+        }
+
+        // 4. 相機目標確保為主角
+        FindCinemachineCameras();
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+        if (cachedPlayer != null)
+        {
+            SetCameraTarget(cachedPlayer.transform, false);
+            cachedPlayer.isCutsceneFrozen = false;
+        }
     }
 
     private Vector3 GetMirrorWallCenter()

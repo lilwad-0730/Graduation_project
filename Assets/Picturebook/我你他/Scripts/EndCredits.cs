@@ -377,6 +377,34 @@ public class EndCredits : MonoBehaviour
         yield return Finish(false);
     }
 
+    /// <summary>
+    /// 離開 Ending ➔ 載入 MainMenu 之前的最終清理程序：
+    /// 確保 TimeScale、演出鎖定旗標、重生狀態、StoryCard 黑幕與滑鼠游標 100% 恢復初始正常狀態！
+    /// </summary>
+    public static void FinalEndingCleanup()
+    {
+        EndingMode = false;
+        Time.timeScale = 1f;
+
+        PlayerRespawnSystem.IsAnyRespawning = false;
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
+        if (ShadowMonsterController.Instance != null)
+        {
+            ShadowMonsterController.Instance.ResetToInitialState();
+        }
+        BookTransitionManager.ResetTransientState();
+
+        if (StoryCardPlayer.Instance != null)
+        {
+            StoryCardPlayer.Instance.ForceStopAll();
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log("🧹【結局清理】已完成離開 Ending ➔ MainMenu 的全域狀態重置 (TimeScale, EndingMode, CutsceneFlags, StoryCard, Cursor)！");
+    }
+
     private IEnumerator Finish(bool skipped)
     {
         // ★結局模式：名單結束（含被跳過）→ 維持全黑直接切主選單，
@@ -384,10 +412,11 @@ public class EndCredits : MonoBehaviour
         if (EndingMode)
         {
             _rolling = false;
-            EndingMode = false;
+            FinalEndingCleanup();
             if (!string.IsNullOrEmpty(sceneAfterCredits))
             {
                 yield return Wait(endingTailHold);
+                FinalEndingCleanup();
                 SceneManager.LoadScene(sceneAfterCredits);
                 yield break;
             }

@@ -33,8 +33,24 @@ public class MainMenuController : MonoBehaviour
     private bool _isInputDisabled = false;
     private GameObject _lastSelectedGameObject;
 
+    private void Awake()
+    {
+        _isInputDisabled = false;
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        PrepareNewGameRun();
+    }
+
     private void Start()
     {
+        // 確保 EventSystem 存在且啟用
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.enabled = true;
+        }
+
         // 播放背景音樂
         if (AudioManager.Instance != null && bgmClip != null)
         {
@@ -46,17 +62,50 @@ public class MainMenuController : MonoBehaviour
             sfxAudioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // 為所有按鈕綁定點擊事件
-        if (menuButtons != null && menuButtons.Length >= 4)
+        // 為所有按鈕綁定點擊事件 (加入防呆，防止 Inspector 欄位為空時拋出 NullReferenceException)
+        if (menuButtons != null)
         {
-            menuButtons[0].onClick.AddListener(OnStartGameClicked);
-            menuButtons[1].onClick.AddListener(OnSettingsClicked);
-            menuButtons[2].onClick.AddListener(OnQuitClicked);
-            menuButtons[3].onClick.AddListener(OnCreditsClicked);
+            if (menuButtons.Length > 0 && menuButtons[0] != null) menuButtons[0].onClick.AddListener(OnStartGameClicked);
+            if (menuButtons.Length > 1 && menuButtons[1] != null) menuButtons[1].onClick.AddListener(OnSettingsClicked);
+            if (menuButtons.Length > 2 && menuButtons[2] != null) menuButtons[2].onClick.AddListener(OnQuitClicked);
+            if (menuButtons.Length > 3 && menuButtons[3] != null) menuButtons[3].onClick.AddListener(OnCreditsClicked);
         }
 
         // 預設焦點設為第 0 項「開始遊戲」
-        SelectButton(0, true);
+        if (menuButtons != null && menuButtons.Length > 0 && menuButtons[0] != null)
+        {
+            SelectButton(0, true);
+        }
+
+        // 列印除錯報告
+        PrintDebugStatus();
+    }
+
+    private void PrintDebugStatus()
+    {
+        bool endingMode = EndCredits.EndingMode;
+        bool isAnyRespawning = PlayerRespawnSystem.IsAnyRespawning;
+        float ts = Time.timeScale;
+        EventSystem es = EventSystem.current;
+        bool esEnabled = es != null && es.enabled;
+        GameObject curSel = es != null ? es.currentSelectedGameObject : null;
+        bool startActive = menuButtons != null && menuButtons.Length > 0 && menuButtons[0] != null && menuButtons[0].gameObject.activeInHierarchy;
+        bool startInteractable = menuButtons != null && menuButtons.Length > 0 && menuButtons[0] != null && menuButtons[0].interactable;
+        var inputModule = es != null ? es.currentInputModule : null;
+        bool inputModuleEnabled = inputModule != null && inputModule.enabled;
+
+        Debug.Log("=== MAIN MENU INPUT DEBUG ===\n" +
+                  $"EndingMode = {endingMode}\n" +
+                  $"IsAnyRespawning = {isAnyRespawning}\n" +
+                  $"isCutsceneFrozen = (Gameplay Level Separated)\n" +
+                  $"Time.timeScale = {ts}\n" +
+                  $"EventSystem.current = {(es != null ? es.gameObject.name : "null")}\n" +
+                  $"EventSystem.enabled = {esEnabled}\n" +
+                  $"currentSelectedGameObject = {(curSel != null ? curSel.name : "null")}\n" +
+                  $"StartButton.interactable = {startInteractable}\n" +
+                  $"StartButton.activeInHierarchy = {startActive}\n" +
+                  $"UI Input Module enabled = {inputModuleEnabled} ({(inputModule != null ? inputModule.GetType().Name : "None")})\n" +
+                  "==============================");
     }
 
     private void Update()

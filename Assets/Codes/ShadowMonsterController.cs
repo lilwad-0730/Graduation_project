@@ -442,6 +442,32 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         CreateHaloEffect();
         SetupChaseAudioSource();
         ApplyCurrentScale();
+        EnsureCameraSafeDepth();
+    }
+
+    /// <summary>
+    /// 確保場景中所有 Cinemachine 相機在正常追逐時，景深 (FollowOffset.z) 退至 -70.0f。
+    /// 由於怪物 3D 身軀巨大 (厚達 25m 以上，且面向右側時胸腔朝 -Z 突出至 Z ≈ -26m)，
+    /// 若相機維持在 Z = -15m，Near Clip 切面 (Z = -14.9m) 會直接將怪物的胸腔剖切開洞！
+    /// 將正交相機後移至 Z = -70m 可 100% 完整容納整隻 3D 巨獸，且正交視角下像素尺寸完全不變！
+    /// </summary>
+    public void EnsureCameraSafeDepth()
+    {
+        foreach (var cf in FindObjectsByType<CinemachineFollow>(FindObjectsSortMode.None))
+        {
+            if (cf != null && cf.FollowOffset.z > -60f)
+            {
+                cf.FollowOffset = new Vector3(cf.FollowOffset.x, cf.FollowOffset.y, -70.0f);
+            }
+        }
+        foreach (var cam in FindObjectsByType<Camera>(FindObjectsSortMode.None))
+        {
+            if (cam != null)
+            {
+                cam.nearClipPlane = Mathf.Min(cam.nearClipPlane, 0.1f);
+                cam.farClipPlane = Mathf.Max(cam.farClipPlane, 5000f);
+            }
+        }
     }
 
     private void SetupVisualContainer()
@@ -1135,7 +1161,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             v.Lens = lens;
         }
 
-        // 阻尼與 FollowOffset 還原
+        // 阻尼與 FollowOffset 還原 (維持 -70.0f 安全景深，確保正常追逐時怪物身軀不會被裁切開洞)
         for (int i = 0; i < _revealFollows.Count; i++)
         {
             CinemachineFollow cf = _revealFollows[i];
@@ -1146,10 +1172,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 ts.PositionDamping = _revealOrigDamping[i];
                 cf.TrackerSettings = ts;
             }
-            if (i < _revealOrigFollowOffset.Count)
-            {
-                cf.FollowOffset = _revealOrigFollowOffset[i];
-            }
+            Vector3 origOffset = (i < _revealOrigFollowOffset.Count) ? _revealOrigFollowOffset[i] : new Vector3(0, 2.2f, -70f);
+            cf.FollowOffset = new Vector3(origOffset.x, origOffset.y, Mathf.Min(origOffset.z, -70.0f));
         }
 
         int idx = 0;

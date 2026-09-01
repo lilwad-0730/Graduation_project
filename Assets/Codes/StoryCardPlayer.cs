@@ -502,8 +502,19 @@ public class StoryCardPlayer : MonoBehaviour
             SetCurtainAlpha(0f);
             SetLabelAlpha(0f);
             SetGroupAlpha(_photoGroup, 0f);
+            if (_curtain != null) _curtain.raycastTarget = false;
             _canvas.enabled = false;
         }
+    }
+
+    /// <summary>強制停止所有卡片播放與黑幕，恢復 TimeScale 與點擊穿透</summary>
+    public void ForceStopAll()
+    {
+        StopAllCoroutines();
+        _playing = false;
+        _pausedByMe = false;
+        Time.timeScale = 1f;
+        ReleaseCurtain();
     }
 
     public bool HasCard(string cardId)
