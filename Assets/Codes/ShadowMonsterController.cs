@@ -71,8 +71,37 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("觸發追逐時，把怪物擺到主角後方固定距離，玩家才有跑的空間。關掉＝用怪物在場景裡擺的位置")]
     public bool repositionOnActivate = true;
 
-    [Tooltip("怪物出現在主角後方幾個世界單位。鏡頭一次看得到 48 單位寬，所以 45 大約是一個畫面外。超過 runDistanceThreshold（30）怪物會切成跑步追上來")]
+    [Tooltip("怪物出現在主角後方幾個世界單位。鏡頭一次看得到 48 單位寬，所以 45 大約是一個畫面外")]
     public float spawnDistanceBehindPlayer = 45f;
+
+    [Header("★ 追逐速度智慧調整")]
+    [Tooltip("開啟後怪物會依落後距離自動調速，維持在理想距離帶內。關掉＝回到原本的 chaseSpeed／runSpeedMultiplier 二段式")]
+    public bool smartChaseSpeed = true;
+
+    [Tooltip("理想落後距離的下限。比這個近，怪物會放慢腳步（要大於 attackTriggerDistance，不然牠會直接貼上來）")]
+    public float idealLagMin = 16f;
+
+    [Tooltip("理想落後距離的上限。比這個遠，怪物會加速追上來")]
+    public float idealLagMax = 26f;
+
+    [Tooltip("落後很多時允許的最高速度。要大於玩家速度（預設 5）牠才追得回來，也才走得到後面的燭火")]
+    public float catchUpMaxSpeed = 7.5f;
+
+    [Tooltip("貼太近時降到的速度")]
+    public float easeOffSpeed = 2.2f;
+
+    [Tooltip("速度變化的平滑度，每秒最多變化多少。太大會忽快忽慢")]
+    public float speedSmooth = 3f;
+
+    [Header("★ 縮小與燭火判定")]
+    [Tooltip("怪物的 Pivot 在腳底，直接縮放會整隻沉到玻璃地板下面、也就吃不到燭火了。開啟後縮放時會補償 Y，讓視覺中心維持在同一個高度")]
+    public bool keepVisualCenterHeight = true;
+
+    [Tooltip("燭火判定的水平範圍")]
+    public float candleReachX = 6f;
+
+    [Tooltip("燭火判定的垂直額外寬容量（實際判定＝怪物目前半高 ＋ 這個值）")]
+    public float candleReachYMargin = 3f;
 
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
@@ -244,6 +273,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     // 登場運鏡（跟 LockCamera 分開記錄，免得兩邊互相蓋掉還原值）
     private bool _revealActive = false;          // 整段演出期間為 true：不准抓人
+    /// <summary> ★給 PlayerMovement 用：登場運鏡期間要硬鎖玩家，按鍵不能自己解鎖。 </summary>
+    public static bool IsRevealRunning = false;
     private bool _revealCamTaken = false;
     private Transform _revealFocus;              // 鏡頭要看的點（怪物視覺中心）
     private List<CinemachineCamera> _revealVcams3 = new List<CinemachineCamera>();
@@ -252,7 +283,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private List<CinemachineFollow> _revealFollows = new List<CinemachineFollow>();
     private List<Vector3> _revealOrigDamping = new List<Vector3>();
     private List<float> _revealOrigLens = new List<float>();
-    private Bounds _revealLocalBounds = new Bounds(Vector3.zero, Vector3.one);
+    private Bounds _visualLocalBounds = new Bounds(Vector3.zero, Vector3.one);
+    private bool _visualBoundsMeasured = false;
+    private float _visualAnchorY = 0f;      // 縮放時要維持的視覺中心高度
+    private float _smoothedChaseSpeed = -1f;
     private float _revealTargetLens = 0f;
     private bool _revealZoomEnabled = false;
 
@@ -283,6 +317,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _baseScale = Vector3.one;
         }
         _initialPosition = transform.position;
+        EnsureVisualBounds();
+        _visualAnchorY = _initialPosition.y + _visualLocalBounds.center.y * Mathf.Abs(_baseScale.y);
 
         // 自動修正動畫名稱設定，確保目標為 walk4 與 run2
         if (string.IsNullOrEmpty(walkAnimationName) || walkAnimationName.Equals("Walk", System.StringComparison.OrdinalIgnoreCase))
@@ -362,6 +398,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   不然玩家「通關 → 回主選單 → 再玩一次」時（同一個 Play 期間不會重置 static），
         //   _endingFired 還留著 true，第二輪收完最後一根燭火就不會進結局了。
         _endingFired = false;
+        IsRevealRunning = false;
 
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
@@ -423,15 +460,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         foreach (var c in candles)
         {
-            if (c != null && !c.isCollected)
+            if (c != null && !c.isCollected && OverlapsCandle(c.transform.position))
             {
-                float dx = Mathf.Abs(transform.position.x - c.transform.position.x);
-                float dy = Mathf.Abs(transform.position.y - c.transform.position.y);
-
-                if (dx <= 3.5f && dy <= 6.5f)
-                {
-                    c.Collect();
-                }
+                c.Collect();
             }
         }
     }
@@ -469,6 +500,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   等於一開始怪物就貼在臉上，沒有跑的空間。
         //   只改 X，Y／Z 保持美術擺好的樣子（牠是半身埋在玻璃地板下的巨影）。
         EnsurePlayerReference();
+        _smoothedChaseSpeed = -1f;   // 每次重新開追都從當下的目標速度起步
         if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
         {
             Vector3 sp = transform.position;
@@ -622,6 +654,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private IEnumerator RevealCutsceneRoutine()
     {
         _revealActive = true;
+        IsRevealRunning = true;
 
         // 1) 凍住主角並把她停下來，免得放開時還帶著慣性
         if (_pm != null)
@@ -636,7 +669,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //      關掉的 Renderer（尤其 SkinnedMeshRenderer）回報的 bounds 是舊的／空的，
         //      鏡頭就會飛去一個沒有東西的地方——這就是「鏡頭鎖定怪物但怪物沒顯示」。
         //      改成從 Mesh 資產本身的 bounds 算，關著也算得出來。
-        MeasureRevealBounds();
+        EnsureVisualBounds();
         EnsureRevealFocus();
         UpdateRevealFocus();
 
@@ -702,6 +735,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         RevealCameraRestore();
         if (_pm != null) _pm.isCutsceneFrozen = false;
         _revealActive = false;
+        IsRevealRunning = false;
     }
 
     /// <summary> 演出被中斷（死亡重生 / 關卡重置）時，一定要把鏡頭和控制權還回去。 </summary>
@@ -724,14 +758,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void UpdateRevealFocus()
     {
         if (_revealFocus == null) return;
-        Vector3 c = transform.TransformPoint(_revealLocalBounds.center);
+        Vector3 c = transform.TransformPoint(_visualLocalBounds.center);
         float z = player != null ? player.position.z : c.z;
         _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, z);
     }
 
     // ── 從 Mesh 資產量身高（Renderer 關著也算得出來）────────────────────────
-    private void MeasureRevealBounds()
+    private void EnsureVisualBounds()
     {
+        if (_visualBoundsMeasured) return;
+        _visualBoundsMeasured = true;
+
         Matrix4x4 toLocal = transform.worldToLocalMatrix;
         bool any = false;
         Bounds acc = new Bounds(Vector3.zero, Vector3.zero);
@@ -764,9 +801,45 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             if (!any) acc = new Bounds(Vector3.zero, Vector3.one);
         }
 
-        _revealLocalBounds = acc;
+        _visualLocalBounds = acc;
         Debug.Log($"【影子怪物】量到的視覺範圍（本地）中心 {acc.center}，大小 {acc.size}；" +
                   $"世界高度約 {acc.size.y * Mathf.Abs(transform.lossyScale.y):F1} 單位。");
+    }
+
+    /// <summary> 怪物的視覺中心（世界座標）。牠的 Pivot 在腳底，所有判定都該用這個點。 </summary>
+    public Vector3 VisualCenter
+    {
+        get
+        {
+            EnsureVisualBounds();
+            return transform.TransformPoint(_visualLocalBounds.center);
+        }
+    }
+
+    /// <summary> 目前縮放下的視覺半高。 </summary>
+    public float VisualHalfHeight
+    {
+        get
+        {
+            EnsureVisualBounds();
+            return _visualLocalBounds.extents.y * Mathf.Abs(transform.lossyScale.y);
+        }
+    }
+
+    /// <summary>
+    /// 燭火是否進入怪物的身體範圍。
+    /// ★原本兩邊都是寫死的 dx&lt;=3.5、dy&lt;=6.5，而怪物腳底在 y≈-60、燭火在 y≈-36，
+    ///   dy 差 23 個單位，那個判定從頭到尾就沒成立過——真正在收燭火的是碰撞體重疊，
+    ///   所以怪物一縮小、身體構不到燭火，後面幾根就吃不到了。
+    ///   改成用視覺中心＋目前半高判定，縮放多少都算得準。
+    /// </summary>
+    public bool OverlapsCandle(Vector3 candlePosition)
+    {
+        Vector3 c = VisualCenter;
+        float dx = Mathf.Abs(candlePosition.x - c.x);
+        if (dx > candleReachX) return false;
+        float dy = Mathf.Abs(candlePosition.y - c.y);
+        return dy <= VisualHalfHeight + candleReachYMargin;
     }
 
     private static void AccumulateBounds(ref Bounds acc, ref bool any, Bounds local, Matrix4x4 m)
@@ -801,7 +874,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         bool ortho = _mainCam == null || _mainCam.orthographic;
 
         // 這隻怪物比整個畫面還高，算出要把鏡頭拉多遠才裝得下
-        float halfH = _revealLocalBounds.extents.y * Mathf.Abs(transform.lossyScale.y);
+        float halfH = _visualLocalBounds.extents.y * Mathf.Abs(transform.lossyScale.y);
         _revealZoomEnabled = ortho && revealZoomPadding > 0f && halfH > 0.01f;
         _revealTargetLens = halfH * revealZoomPadding;
 
@@ -1126,6 +1199,48 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
     }
 
+    /// <summary>
+    /// 依落後距離決定速度，把怪物維持在 idealLagMin ~ idealLagMax 的距離帶內。
+    ///
+    /// 為什麼要做這個：原本最快只有 chaseSpeed(3.2) × runSpeedMultiplier(1.35) ＝ 4.32，
+    /// 而玩家是 5，所以怪物永遠追不上，也永遠走不到後面那幾根燭火——
+    /// 追逐沒有壓迫感，最後一根燭火也收不到。
+    ///
+    /// 落後太多 → 允許超過玩家速度追回來；貼太近 → 放慢，給玩家喘息，
+    /// 在距離帶內 → 大致跟著玩家的速度走。
+    /// </summary>
+    private float SmartSpeed(float baseChaseSpeed, float lagDistance)
+    {
+        float playerSpeed = (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f;
+        float lo = Mathf.Min(idealLagMin, idealLagMax);
+        float hi = Mathf.Max(idealLagMin, idealLagMax);
+
+        float target;
+        if (lagDistance > hi)
+        {
+            // 落後了：越遠追越快，最多到 catchUpMaxSpeed
+            float t = Mathf.InverseLerp(hi, hi + 45f, lagDistance);
+            target = Mathf.Lerp(playerSpeed * 1.05f, Mathf.Max(catchUpMaxSpeed, playerSpeed * 1.05f), t);
+        }
+        else if (lagDistance < lo)
+        {
+            // 太近了（含跑到玩家前面去的情況）：放慢
+            float t = Mathf.InverseLerp(lo, 0f, lagDistance);
+            target = Mathf.Lerp(playerSpeed * 0.92f, Mathf.Max(0.5f, easeOffSpeed), t);
+        }
+        else
+        {
+            // 在距離帶內：跟著玩家走，讓距離慢慢收斂
+            target = playerSpeed * 0.98f;
+        }
+
+        // 別低於原本設定的基礎速度太多，也別瞬間變速
+        target = Mathf.Max(target, Mathf.Min(baseChaseSpeed, easeOffSpeed));
+        if (_smoothedChaseSpeed < 0f) _smoothedChaseSpeed = target;
+        _smoothedChaseSpeed = Mathf.MoveTowards(_smoothedChaseSpeed, target, Mathf.Max(0.1f, speedSmooth) * Time.deltaTime);
+        return _smoothedChaseSpeed;
+    }
+
     private void MoveTowardPlayer(float speed)
     {
         if (player == null) return;
@@ -1140,15 +1255,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         float currentSpeed = speed;
         if (!_isHitShrinking)
         {
-            // 只有當「黑影怪在玩家後面 30 距離以上」時才執行 run2，其餘情況一律用 walk4
-            if (lagDistance > runDistanceThreshold)
+            if (smartChaseSpeed)
             {
-                currentSpeed = speed * runSpeedMultiplier;
-                PlayAnimationByName(runAnimationName);
+                currentSpeed = SmartSpeed(speed, lagDistance);
+                // 用速度決定動畫，不再用固定距離門檻
+                float walkTop = Mathf.Max(0.01f, speed);
+                PlayAnimationByName(currentSpeed > walkTop * 1.05f ? runAnimationName : walkAnimationName);
             }
             else
             {
-                PlayAnimationByName(walkAnimationName);
+                // 原本的二段式：落後超過門檻才切跑步
+                if (lagDistance > runDistanceThreshold)
+                {
+                    currentSpeed = speed * runSpeedMultiplier;
+                    PlayAnimationByName(runAnimationName);
+                }
+                else
+                {
+                    PlayAnimationByName(walkAnimationName);
+                }
             }
         }
 
@@ -1191,7 +1316,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         float newY = transform.position.y;
 
         // ★ 自動貼地 / 隱形地板吸附邏輯
-        if (enableGroundSnap)
+        //   keepVisualCenterHeight 開著時 Y 由 ApplyCurrentScale 決定，這裡不要搶。
+        if (enableGroundSnap && !keepVisualCenterHeight)
         {
             Vector3 rayOrigin = new Vector3(newX, transform.position.y + 5.0f, transform.position.z);
             RaycastHit hit;
@@ -1379,6 +1505,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void ApplyCurrentScale()
     {
         transform.localScale = _baseScale * _currentScaleMultiplier;
+
+        // ★Pivot 在腳底，直接縮放整隻會往下沉。補償 Y，讓視覺中心留在原本的高度，
+        //   牠才會一直「半身埋在玻璃地板」的樣子，也才構得到地板上的燭火。
+        if (keepVisualCenterHeight)
+        {
+            EnsureVisualBounds();
+            Vector3 pos = transform.position;
+            pos.y = _visualAnchorY - _visualLocalBounds.center.y * Mathf.Abs(_baseScale.y) * _currentScaleMultiplier;
+            transform.position = pos;
+        }
+
         UpdateHaloRadius(_currentScaleMultiplier);
     }
 
@@ -1586,6 +1723,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         currentState = MonsterState.Dormant;
         _candlesCollected = 0;
         _currentScaleMultiplier = 1f;
+        _smoothedChaseSpeed = -1f;
 
         RemoveFear();
         UnlockCamera();

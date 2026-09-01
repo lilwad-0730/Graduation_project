@@ -47,6 +47,41 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
+    /// <summary>
+    /// ★演出硬鎖：這期間玩家按鍵不會自動解除 isCutsceneFrozen。
+    ///
+    /// 原本下面那段只認「重生中」和「鏡牆吸入演出」兩個狀態，其餘情況只要玩家
+    /// 按一下 A／D，isCutsceneFrozen 就會自己被清掉。結果就是播文字卡、演怪物
+    /// 登場運鏡的時候，畫面不在主角身上，玩家卻還能亂跑——看不到腳下會踩空。
+    /// 把「正在播文字卡」和「正在演登場運鏡」也算進硬鎖。
+    /// </summary>
+    private static float _hardLockSince = -1f;
+
+    /// <summary>安全網：演出旗標若卡住超過這麼久，強制放開，免得玩家永遠不能動。</summary>
+    public const float HardLockSafetySeconds = 45f;
+
+    public static bool IsHardCutsceneLocked
+    {
+        get
+        {
+            bool locked =
+                PlayerRespawnSystem.IsAnyRespawning
+                || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning
+                || ShadowMonsterController.IsRevealRunning
+                || (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying);
+
+            if (!locked) { _hardLockSince = -1f; return false; }
+
+            // ★因為拿掉了「按鍵就自動解鎖」的逃生門，這裡補一個時間上限。
+            //   任何演出旗標忘了關（協程被 StopCoroutine 砍掉之類），
+            //   最多鎖 45 秒就放人。正常的卡片與運鏡都遠短於這個。
+            if (_hardLockSince < 0f) _hardLockSince = Time.unscaledTime;
+            if (Time.unscaledTime - _hardLockSince > HardLockSafetySeconds) return false;
+
+            return true;
+        }
+    }
+
     [Header("🌪️ 風暴吸入物理牽引 (Wind Suction - 地形與斜坡適應)")]
     [HideInInspector] public bool isWindSuctionActive = false;
     [HideInInspector] public float windSuctionTargetX = 0f;
@@ -394,7 +429,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
-            if (PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+            if (IsHardCutsceneLocked)
             {
                 rawInput = 0f;
             }
@@ -420,7 +455,7 @@ public class PlayerMovement : MonoBehaviour
                 actuallyFreeze = false;
             }
 
-            moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
+            moveInput = (actuallyFreeze || isCutsceneFrozen || IsHardCutsceneLocked) ? 0f : rawInput;
 
             if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
             if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
@@ -850,7 +885,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // 水下隱形體力扣除與回復邏輯
-        bool isPressingSwimUp = !isCutsceneFrozen && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+        bool isPressingSwimUp = !isCutsceneFrozen && !IsHardCutsceneLocked && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
 
         if (isPressingSwimUp && !isSwimExhausted)
         {
@@ -885,7 +920,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // 陸地跳躍 (非水下、非演出中、非重生中)
-        if (!isCutsceneFrozen && !PlayerRespawnSystem.IsAnyRespawning && !MirrorWallAbsorbCutscene.IsAnyCutsceneRunning && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        if (!isCutsceneFrozen && !IsHardCutsceneLocked && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
         {
             // 陸地標準跳躍
             isJumping = true;
@@ -1305,8 +1340,8 @@ public class PlayerMovement : MonoBehaviour
             Vector3 vel = rb.linearVelocity;
 
             // 3. 水下游泳推進與下潛控制 (W/Space 向上游，S/下方向鍵 主動下潛)
-            bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
-            bool isPressingSwimDown = !isCutsceneFrozen && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+            bool isPressingSwimUp = !isCutsceneFrozen && !IsHardCutsceneLocked && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+            bool isPressingSwimDown = !isCutsceneFrozen && !IsHardCutsceneLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
 
             if (isPressingSwimUp && !isSwimExhausted)
             {

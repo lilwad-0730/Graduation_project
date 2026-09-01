@@ -78,10 +78,10 @@ public class CandleCollectible : MonoBehaviour, IResettable
         // ★ 主動 2.5D 平面距離判定 (前後 3.5 米，上下 6.5 米)
         if (ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.currentState != ShadowMonsterController.MonsterState.Dormant)
         {
-            Transform monsterTrans = ShadowMonsterController.Instance.transform;
-            float dx = Mathf.Abs(transform.position.x - monsterTrans.position.x);
-            float dy = Mathf.Abs(transform.position.y - monsterTrans.position.y);
-            if (dx <= 3.5f && dy <= 6.5f)
+            // ★原本是拿怪物的 transform（Pivot 在腳底，y≈-60）跟燭火（y≈-36）比，
+            //   dy 差 23 個單位，dy<=6.5 這個判定從來沒成立過。
+            //   改成問怪物「你的身體有沒有碰到這根燭火」，縮放多少都算得準。
+            if (ShadowMonsterController.Instance.OverlapsCandle(transform.position))
             {
                 Collect();
             }
