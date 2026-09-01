@@ -46,13 +46,18 @@ public class CandleCollectible : MonoBehaviour, IResettable
         if (_col == null) _col = gameObject.AddComponent<BoxCollider>();
         _col.isTrigger = true;
 
-        // ★ 自動擴增 Z 軸厚度至 30 米，保證 100% 覆蓋 3D 怪物模型，徹底無視 Z 軸圖層落差！
+        // ★ 精準 2.5D 物理碰撞盒：
+        //   X 軸：寬度 0.8 米 (半寬 0.4 米，緊貼燭台本體，絕不提前觸發)
+        //   Y 軸：高度 4.0 米 (涵蓋燭火火苗與底座高度)
+        //   Z 軸：厚度 30.0 米 (徹底覆蓋 2.5D 前後景深落差)
         if (_col is BoxCollider box)
         {
+            float scaleX = Mathf.Abs(transform.lossyScale.x) > 0.001f ? Mathf.Abs(transform.lossyScale.x) : 1f;
+            float scaleY = Mathf.Abs(transform.lossyScale.y) > 0.001f ? Mathf.Abs(transform.lossyScale.y) : 1f;
             float scaleZ = Mathf.Abs(transform.lossyScale.z) > 0.001f ? Mathf.Abs(transform.lossyScale.z) : 1f;
-            Vector3 sz = box.size;
-            sz.z = 30f / scaleZ;
-            box.size = sz;
+
+            box.size = new Vector3(0.8f / scaleX, 4.0f / scaleY, 30.0f / scaleZ);
+            box.center = new Vector3(0f, 1.8f / scaleY, 0f);
         }
 
         // 快取子物件中所有視覺組件（包括含在子物件中的）
@@ -73,19 +78,8 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
     private void Update()
     {
+        // 單一權威物理 Trigger 判定為主要機制；若物件已被收集直接返回
         if (isCollected) return;
-
-        // ★ 主動 2.5D 平面距離判定 (前後 3.5 米，上下 6.5 米)
-        if (ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.currentState != ShadowMonsterController.MonsterState.Dormant)
-        {
-            Transform monsterTrans = ShadowMonsterController.Instance.transform;
-            float dx = Mathf.Abs(transform.position.x - monsterTrans.position.x);
-            float dy = Mathf.Abs(transform.position.y - monsterTrans.position.y);
-            if (dx <= 3.5f && dy <= 6.5f)
-            {
-                Collect();
-            }
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -93,17 +87,23 @@ public class CandleCollectible : MonoBehaviour, IResettable
         if (isCollected) return;
         if (!IsMonster(other.gameObject)) return;
 
-        Collect();
+        TryCollect(other.gameObject);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // 公開：收集/削弱邏輯
+    // 公開：單一權威收集/削弱邏輯 (Single Authoritative Entry Point)
     // ──────────────────────────────────────────────────────────────────────────
 
-    public void Collect()
+    public bool TryCollect(GameObject collector = null)
     {
+        // ★ 核心原子防護：確保整場遊戲每根燭火 100% 只被收集一次
+        if (isCollected) return false;
         isCollected = true;
-        Debug.Log($"🔥【燭火削弱】影子怪物碰觸到 {gameObject.name}！觸發怪物削弱與縮小！(X = {transform.position.x:F1})");
+
+        // 立即關閉自身 Collider，徹底杜絕同幀內物理重疊重複觸發
+        if (_col != null) _col.enabled = false;
+
+        Debug.Log($"🔥【燭火削弱】影子怪物收集 {gameObject.name}！觸發怪物削弱與縮小！(X = {transform.position.x:F1})");
 
         // 通知影子怪物系統
         if (ShadowMonsterController.Instance != null)
@@ -122,7 +122,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
         if (collectFxPrefab != null)
             Instantiate(collectFxPrefab, transform.position, Quaternion.identity);
 
-        // 隱藏燭火視覺組件（但 GameObject 保持 Active 以支援重置）
+        // 隱藏燭火視覺組件（但 GameObject 保持 Active 以支援 IResettable 重置）
         if (hideOnCollect)
         {
             RefreshVisualComponents();
@@ -134,9 +134,14 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
             foreach (var ps in _particles)
                 if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-
-            _col.enabled = false;
         }
+
+        return true;
+    }
+
+    public void Collect()
+    {
+        TryCollect();
     }
 
     // ──────────────────────────────────────────────────────────────────────────

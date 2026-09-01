@@ -34,8 +34,17 @@ public class BreakablePlatform : MonoBehaviour, IResettable
     private float fallDuration = 1.5f;
 
     [SerializeField]
-    [Tooltip("平台隱藏後到重新引導刷新的時間 (秒)")]
-    private float respawnDelay = 3.0f;
+    [Tooltip("平台隱藏後到重新引導刷新的時間 (秒，若只在玩家死亡重生時刷新則保持 0 或勾選下方選項)")]
+    private float respawnDelay = 0.0f;
+
+    [Header("重生與存檔點設定")]
+    [SerializeField]
+    [Tooltip("是否只在玩家死亡重生時刷新 (勾選後關閉定時自動刷新，完全依賴重生系統)")]
+    private bool respawnOnlyOnPlayerDeath = true;
+
+    [SerializeField]
+    [Tooltip("是否只刷新存檔點後方 (右側) 的平台 (已通過存檔點左側的破碎平台保持碎裂)")]
+    private bool onlyRespawnAheadOfCheckpoint = true;
 
     [Header("震動參數")]
     [SerializeField]
@@ -266,16 +275,14 @@ public class BreakablePlatform : MonoBehaviour, IResettable
         // 等待掉落歷程結束
         yield return new WaitForSeconds(Mathf.Max(0.1f, fallDuration - 0.2f));
 
-        // Step 4: 隱藏平台與裂痕 (進入已破裂等待狀態)
+        // Step 4: 隱藏平台與裂痕 (進入已破裂等待狀態，遊戲進行中不自動刷新)
         currentState = BreakState.Broken;
         SetPlatformVisible(false);
 
-        // Step 5: 等待重生時間
-        if (respawnDelay > 0f)
+        // 若關閉「僅在玩家死亡時刷新」且設定了大於 0 的時間，才執行自動定時刷新
+        if (!respawnOnlyOnPlayerDeath && respawnDelay > 0f)
         {
             yield return new WaitForSeconds(respawnDelay);
-
-            // 重生刷新
             ResetToInitialState();
         }
     }
@@ -303,6 +310,29 @@ public class BreakablePlatform : MonoBehaviour, IResettable
             breakCoroutine = null;
         }
 
+        // 存檔點進度檢查：
+        // 若啟用「只刷新存檔點後方 (右側) 物件」，且當前存檔點已推進到本平台右側 (玩家已通過此處)：
+        // 若該平台先前已碎裂過，則保持碎裂狀態，不刷新！
+        if (onlyRespawnAheadOfCheckpoint)
+        {
+            Vector3 currentCheckpoint = PlayerRespawnSystem.ActiveRespawnPosition;
+            if (currentCheckpoint != Vector3.zero && (initialPosition.x < currentCheckpoint.x - 1.0f))
+            {
+                if (currentState == BreakState.Broken || currentState == BreakState.Falling)
+                {
+                    currentState = BreakState.Broken;
+                    SetPlatformVisible(false);
+                    return;
+                }
+            }
+        }
+
+        // 存檔點後方 (右側) 或尚未碎裂的平台：完整刷新復原為完好狀態！
+        RestorePlatformToIntact();
+    }
+
+    private void RestorePlatformToIntact()
+    {
         // 重置物理 transform
         transform.position = initialPosition;
         transform.rotation = initialRotation;

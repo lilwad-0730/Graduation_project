@@ -894,15 +894,6 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             yield return StartCoroutine(SmoothZoomLens(originalLensSize, zoomTransitionSpeed * 0.8f));
         }
 
-        if (cachedPlayer != null)
-        {
-            cachedPlayer.isCutsceneFrozen = false;
-        }
-
-        isCutsceneRunning = false;
-        IsAnyCutsceneRunning = false;
-        Debug.Log("✅【鏡牆演出結束】相機已還原追蹤主角，玩家控制權已恢復！");
-
         // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）
         //   接下來玩家往前走會踩到 ShadowMonsterTrigger，黑影才開始追。
         //   結局不在這裡，在「收完最後一根燭火」——見 ShadowMonsterController。
@@ -915,11 +906,17 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
                 // (true, true) ＝自己淡入黑幕、播完自己淡出，播完畫面回到遊戲
                 yield return StoryCardPlayer.Instance.Play(afterCutsceneCardId, true, true);
             }
-
-            // ★一定要解凍，不然玩家會卡在原地動不了
-            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = false;
             Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
         }
+
+        if (cachedPlayer != null)
+        {
+            cachedPlayer.isCutsceneFrozen = false;
+        }
+
+        isCutsceneRunning = false;
+        IsAnyCutsceneRunning = false;
+        Debug.Log("✅【鏡牆演出全流程結束】相機已還原追蹤主角，玩家控制權已完全恢復！");
     }
 
     /// <summary>

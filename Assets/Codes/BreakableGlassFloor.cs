@@ -95,6 +95,17 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        // 存檔點進度檢查：若當前存檔點已推進到本地磚右側且地磚已碎裂，則保持碎裂消失
+        Vector3 currentCheckpoint = PlayerRespawnSystem.ActiveRespawnPosition;
+        if (currentCheckpoint != Vector3.zero && (originalPosition.x < currentCheckpoint.x - 1.0f))
+        {
+            if (isTriggered)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+        }
+
         StopAllCoroutines();
         isTriggered = false;
         transform.position = originalPosition;

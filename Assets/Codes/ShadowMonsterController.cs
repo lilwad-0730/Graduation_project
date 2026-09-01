@@ -206,6 +206,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("留空時自動尋找場景中的 PlayerRespawnSystem")]
     public PlayerRespawnSystem respawnSystem;
 
+    [Header("【視覺地表錨點補償設定】")]
+    [Tooltip("允許的最大世界 Y 軸向上補償值 (防止極端情況下怪物浮空)")]
+    public float maxWorldVisualYOffset = 22.0f;
+
+    [Header("【燭火精準接觸收集設定】")]
+    [Tooltip("怪物收集燭火的物理觸發寬度 (X 軸米數，緊貼前胸/嘴巴接觸線，杜絕提前觸發)")]
+    public float candleTriggerWidth = 0.8f;
+    [Tooltip("怪物收集燭火的物理觸發高度 (Y 軸米數，涵蓋路面與燭火高度)")]
+    public float candleTriggerHeight = 4.0f;
+
     // ──────────── 內部狀態 ────────────
     private int _candlesCollected = 0;
     private int _totalCandles = 0;
@@ -216,6 +226,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private float _currentScaleMultiplier = 1f;
     private bool _isHitShrinking = false;
     private float _chaseTimer = 0f;  // 追逐計時，用於延遲 run2 啟動
+
+    // ──────────── 解耦架構 (Decoupled Visual & Gameplay) ────────────
+    private Transform _visualContainer;
+    private Transform _gameplayContainer;
+    private Transform _candleTriggerTransform;
+    private float _surfaceReferenceY;
+    private float _submergedDepth;
 
     // 光暈組件
     private SpriteRenderer _haloSpriteRenderer;
@@ -251,10 +268,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private List<Transform> _revealOrigFollow = new List<Transform>();
     private List<CinemachineFollow> _revealFollows = new List<CinemachineFollow>();
     private List<Vector3> _revealOrigDamping = new List<Vector3>();
+    private List<Vector3> _revealOrigFollowOffset = new List<Vector3>();
     private List<float> _revealOrigLens = new List<float>();
     private Bounds _revealLocalBounds = new Bounds(Vector3.zero, Vector3.one);
     private float _revealTargetLens = 0f;
     private bool _revealZoomEnabled = false;
+
+    /// <summary> 全域查詢：怪物登場演出中 </summary>
+    public static bool IsAnyRevealRunning => Instance != null && (Instance._revealActive || Instance._revealCamTaken);
 
     // Coroutine 追蹤
     private Coroutine _stateCoroutine;
@@ -283,6 +304,23 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _baseScale = Vector3.one;
         }
         _initialPosition = transform.position;
+
+        // 1. 地表基準線 (Surface Reference Anchor) 與沉降深度計算
+        if (candles != null && candles.Length > 0 && candles[0] != null)
+        {
+            _surfaceReferenceY = candles[0].transform.position.y;
+        }
+        else
+        {
+            _surfaceReferenceY = _initialPosition.y + 23.575f;
+        }
+        _submergedDepth = Mathf.Max(0.1f, _surfaceReferenceY - _initialPosition.y);
+
+        // 2. 建立/配置獨立的 Visual Container
+        SetupVisualContainer();
+
+        // 3. 建立/配置獨立的 Gameplay 碰撞體容器與專屬 CandleCollectionTrigger
+        SetupGameplayColliders();
 
         // 自動修正動畫名稱設定，確保目標為 walk4 與 run2
         if (string.IsNullOrEmpty(walkAnimationName) || walkAnimationName.Equals("Walk", System.StringComparison.OrdinalIgnoreCase))
@@ -326,6 +364,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _renderers = GetComponentsInChildren<Renderer>(true);
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
+        // ★ 關鍵修復：強制 SkinnedMeshRenderer 在離屏/相機移動時持續更新 Bounds，徹底杜絕動畫骨骼形變被 Frustum Culling 裁切切面
+        foreach (var smr in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (smr != null) smr.updateWhenOffscreen = true;
+        }
+
         if (_renderers != null)
         {
             _originalColors = new Color[_renderers.Length];
@@ -354,6 +398,109 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         SetupCandles();
         CreateHaloEffect();
         SetupChaseAudioSource();
+        ApplyCurrentScale();
+    }
+
+    private void SetupVisualContainer()
+    {
+        Transform existingVisual = transform.Find("MonsterVisual");
+        if (existingVisual != null)
+        {
+            _visualContainer = existingVisual;
+        }
+        else
+        {
+            GameObject visualGo = new GameObject("MonsterVisual");
+            visualGo.transform.SetParent(transform, false);
+            visualGo.transform.localPosition = Vector3.zero;
+            visualGo.transform.localRotation = Quaternion.identity;
+            visualGo.transform.localScale = Vector3.one;
+            _visualContainer = visualGo.transform;
+
+            List<Transform> childrenToMove = new List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                if (child == _visualContainer || child.name.StartsWith("Shadow_") || child.name.StartsWith("Gameplay_") || child.name.StartsWith("Candle_"))
+                    continue;
+                childrenToMove.Add(child);
+            }
+            foreach (var c in childrenToMove)
+            {
+                c.SetParent(_visualContainer, false);
+            }
+        }
+    }
+
+    private void SetupGameplayColliders()
+    {
+        Transform existingGameplay = transform.Find("GameplayColliders");
+        if (existingGameplay == null)
+        {
+            GameObject gpGo = new GameObject("GameplayColliders");
+            gpGo.transform.SetParent(transform, false);
+            gpGo.transform.localPosition = Vector3.zero;
+            gpGo.transform.localRotation = Quaternion.identity;
+            gpGo.transform.localScale = Vector3.one;
+            _gameplayContainer = gpGo.transform;
+        }
+        else
+        {
+            _gameplayContainer = existingGameplay;
+        }
+
+        Transform candleTriggerTrans = _gameplayContainer.Find("CandleCollectionTrigger");
+        GameObject triggerGo;
+        if (candleTriggerTrans == null)
+        {
+            triggerGo = new GameObject("CandleCollectionTrigger");
+            triggerGo.transform.SetParent(_gameplayContainer, false);
+            _candleTriggerTransform = triggerGo.transform;
+
+            BoxCollider triggerCol = triggerGo.AddComponent<BoxCollider>();
+            triggerCol.isTrigger = true;
+
+            MonsterCandleTrigger proxy = triggerGo.AddComponent<MonsterCandleTrigger>();
+            proxy.controller = this;
+        }
+        else
+        {
+            triggerGo = candleTriggerTrans.gameObject;
+            _candleTriggerTransform = candleTriggerTrans;
+        }
+
+        BoxCollider col = triggerGo.GetComponent<BoxCollider>();
+        if (col != null)
+        {
+            float parentScaleX = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.x));
+            float parentScaleY = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.y));
+            float parentScaleZ = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.z));
+
+            // 精準物理碰撞盒 (除以 Root Scale 轉換為 Local Size)：
+            // X 軸：candleTriggerWidth (預設 0.8m，半寬僅 0.4m，緊貼怪物前胸/嘴巴接觸線)
+            // Y 軸：candleTriggerHeight (預設 4.0m，涵蓋走道路面與燭火高度)
+            // Z 軸：35.0m (徹底無視 2.5D 深度落差)
+            col.size = new Vector3(
+                candleTriggerWidth / parentScaleX,
+                candleTriggerHeight / parentScaleY,
+                35.0f / parentScaleZ
+            );
+        }
+
+        UpdateGameplayCollidersPosition();
+    }
+
+    private void UpdateGameplayCollidersPosition()
+    {
+        if (_candleTriggerTransform != null)
+        {
+            // 永遠保持世界座標對齊，徹底消除怪物自身旋轉 (90°/270°) 造成的座標軸扭曲：
+            // X = transform.position.x (嚴格隨怪物本體水平移動)
+            // Y = _surfaceReferenceY + 1.8f (精準鎖定在走道路面燭火高度)
+            // Z = 0f (鎖定在走道深度 Z=0，配合 35m 碰撞盒深度實現完美 2.5D 接觸)
+            _candleTriggerTransform.position = new Vector3(transform.position.x, _surfaceReferenceY + 1.8f, 0f);
+            _candleTriggerTransform.rotation = Quaternion.identity;
+        }
     }
 
     void Awake()
@@ -376,12 +523,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // 初始狀態：播放待機動畫，保持全尺寸但隱藏 Alpha 透明度
         PlayAnimationByName(idleAnimationName);
         SetVisualAlpha(0f);
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        ApplyCurrentScale();
     }
 
     void Update()
     {
         EnsurePlayerReference();
+        UpdateGameplayCollidersPosition();
 
         switch (currentState)
         {
@@ -391,7 +539,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 {
                     MoveTowardPlayer(chaseSpeed);
                     CheckCatch();
-                    CheckCandleCollisions();
                 }
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
@@ -400,14 +547,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 MoveTowardPlayer(chaseSpeed);
                 // ★演出還沒收尾（鏡頭還在飛回來、主角還被凍住）時不准抓人
                 if (!_revealActive) CheckCatch();
-                CheckCandleCollisions();
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
 
             case MonsterState.Punishing:
                 MoveTowardPlayer(punishChaseSpeed);
                 CheckCatch();
-                CheckCandleCollisions();
                 if (_camLocked) ClampPlayerToCameraView();
                 if (enableProximityTension) UpdateProximityAudioTension();
                 break;
@@ -415,25 +560,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 主動 2.5D 檢測怪物身軀是否走過燭火 (前後 3.5 米、上下 6.5 米覆蓋，徹底無視 Z 軸落差)
+    /// 保留作為防呆介面 (主要由 CandleCollectionTrigger 物理觸發單一權威入口處理)
     /// </summary>
     private void CheckCandleCollisions()
     {
-        if (candles == null || candles.Length == 0) return;
-
-        foreach (var c in candles)
-        {
-            if (c != null && !c.isCollected)
-            {
-                float dx = Mathf.Abs(transform.position.x - c.transform.position.x);
-                float dy = Mathf.Abs(transform.position.y - c.transform.position.y);
-
-                if (dx <= 3.5f && dy <= 6.5f)
-                {
-                    c.Collect();
-                }
-            }
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -569,7 +699,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             else AudioSource.PlayClipAtPoint(appearSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        ApplyCurrentScale();
         SetVisualAlpha(0f);
 
         PlayAnimationByName(walkAnimationName);
@@ -589,13 +719,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
                 // 漸漸顯示登場
                 SetVisualAlpha(progress);
-                transform.localScale = _baseScale * _currentScaleMultiplier;
+                ApplyCurrentScale();
 
                 yield return null;
             }
 
             SetVisualAlpha(1f);
-            transform.localScale = _baseScale * _currentScaleMultiplier;
+            ApplyCurrentScale();
 
             PlayRoar();
         }
@@ -655,13 +785,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             e += Time.deltaTime;
             SetVisualAlpha(Mathf.Clamp01(Mathf.SmoothStep(0f, 1f, e / dur)));
-            transform.localScale = _baseScale * _currentScaleMultiplier;
+            ApplyCurrentScale();
             UpdateRevealFocus();
             UpdateRevealZoom(Mathf.Clamp01(e / travel));
             yield return null;
         }
         SetVisualAlpha(1f);
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        ApplyCurrentScale();
         UpdateRevealZoom(1f);
 
         PlayRoar();
@@ -720,13 +850,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _revealFocus = new GameObject("ShadowMonster_RevealFocus").transform;
     }
 
-    /// <summary> 對準點＝視覺中心（不是 transform，牠的 Pivot 在腳底），Z 沿用主角。 </summary>
+    /// <summary> 對準點＝視覺中心（不是 transform，牠的 Pivot 在腳底），Z 採用怪物本身的世界深度。 </summary>
     private void UpdateRevealFocus()
     {
         if (_revealFocus == null) return;
         Vector3 c = transform.TransformPoint(_revealLocalBounds.center);
-        float z = player != null ? player.position.z : c.z;
-        _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, z);
+        _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, c.z);
     }
 
     // ── 從 Mesh 資產量身高（Renderer 關著也算得出來）────────────────────────
@@ -795,6 +924,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _revealOrigFollow.Clear();
         _revealFollows.Clear();
         _revealOrigDamping.Clear();
+        _revealOrigFollowOffset.Clear();
         _revealOrigLens.Clear();
 
         if (_mainCam == null) _mainCam = Camera.main;
@@ -815,11 +945,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             CinemachineFollow cf = v != null ? v.GetComponent<CinemachineFollow>() : null;
             _revealFollows.Add(cf);
             _revealOrigDamping.Add(cf != null ? cf.TrackerSettings.PositionDamping : Vector3.zero);
-            if (cf != null && revealCameraDamping >= 0f)
+            _revealOrigFollowOffset.Add(cf != null ? cf.FollowOffset : new Vector3(0, 2.2f, -15f));
+            if (cf != null)
             {
-                var ts = cf.TrackerSettings;
-                ts.PositionDamping = new Vector3(revealCameraDamping, revealCameraDamping, ts.PositionDamping.z);
-                cf.TrackerSettings = ts;
+                if (revealCameraDamping >= 0f)
+                {
+                    var ts = cf.TrackerSettings;
+                    ts.PositionDamping = new Vector3(revealCameraDamping, revealCameraDamping, ts.PositionDamping.z);
+                    cf.TrackerSettings = ts;
+                }
+                // ★ 關鍵修復：將相機拉到怪物前方 Z = -60，遠離 Near Clip 切面，徹底解決怪物被裁切與黑塊問題！
+                cf.FollowOffset = new Vector3(cf.FollowOffset.x, cf.FollowOffset.y, -60.0f);
             }
         }
         foreach (var v in FindObjectsByType<CinemachineVirtualCamera>(FindObjectsSortMode.None))
@@ -878,14 +1014,21 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             v.Lens = lens;
         }
 
-        // 阻尼還原
+        // 阻尼與 FollowOffset 還原
         for (int i = 0; i < _revealFollows.Count; i++)
         {
             CinemachineFollow cf = _revealFollows[i];
-            if (cf == null || i >= _revealOrigDamping.Count) continue;
-            var ts = cf.TrackerSettings;
-            ts.PositionDamping = _revealOrigDamping[i];
-            cf.TrackerSettings = ts;
+            if (cf == null) continue;
+            if (i < _revealOrigDamping.Count)
+            {
+                var ts = cf.TrackerSettings;
+                ts.PositionDamping = _revealOrigDamping[i];
+                cf.TrackerSettings = ts;
+            }
+            if (i < _revealOrigFollowOffset.Count)
+            {
+                cf.FollowOffset = _revealOrigFollowOffset[i];
+            }
         }
 
         int idx = 0;
@@ -966,7 +1109,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         UnlockCamera();
 
         float t = 0f;
-        Vector3 startScale = transform.localScale;
+        float startMult = _currentScaleMultiplier;
 
         while (t < vanishDuration)
         {
@@ -974,13 +1117,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             float progress = Mathf.SmoothStep(1f, 0f, t / vanishDuration);
 
             SetVisualAlpha(progress);
-            transform.localScale = startScale * progress;
+            _currentScaleMultiplier = startMult * progress;
+            ApplyCurrentScale();
 
             yield return null;
         }
 
         SetVisualAlpha(0f);
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        _currentScaleMultiplier = minScaleMultiplier;
+        ApplyCurrentScale();
         currentState = MonsterState.Dormant;
         Debug.Log("【影子怪物】玩家收集所有燭火，怪物消散！");
     }
@@ -1085,7 +1230,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         _currentScaleMultiplier = 1f;
-        transform.localScale = _baseScale;
+        ApplyCurrentScale();
 
         ApplyFear();
         LockCamera();
@@ -1378,7 +1523,27 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private void ApplyCurrentScale()
     {
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        // ★ 關鍵架構解耦：MonsterRoot 的 Scale 保持固定不變，永不影響 Movement、GroundSnapping 與 Gameplay Colliders！
+        transform.localScale = _baseScale;
+
+        // ★ 獨立 Visual 縮放與數學地表錨點 Y 軸向上補償 (Mathematical Surface Anchor)
+        if (_visualContainer != null)
+        {
+            _visualContainer.localScale = Vector3.one * _currentScaleMultiplier;
+
+            // 1. 計算世界空間所需的 Y 軸補償量 (以走道地表錨點為基準)
+            float worldYOffset = _submergedDepth * (1.0f - _currentScaleMultiplier);
+
+            // 2. 嚴格 Clamp 防護：限制在 [0, maxWorldVisualYOffset]，徹底杜絕怪物浮空/飛天
+            worldYOffset = Mathf.Clamp(worldYOffset, 0f, maxWorldVisualYOffset);
+
+            // 3. 轉換為 _visualContainer 的 Local 座標 (除以 Root 的 lossyScale.y，避免被父節點 Scale 放大數十倍)
+            float parentScaleY = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.y));
+            float localYOffset = worldYOffset / parentScaleY;
+
+            _visualContainer.localPosition = new Vector3(0f, localYOffset, 0f);
+        }
+
         UpdateHaloRadius(_currentScaleMultiplier);
     }
 
@@ -1592,7 +1757,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         RevealCancel();   // ★StopAllCoroutines 會把演出砍在半路，這裡要把鏡頭與控制權還回去
 
         transform.position = _initialPosition;
-        transform.localScale = _baseScale * _currentScaleMultiplier;
+        _currentScaleMultiplier = 1f;
+        ApplyCurrentScale();
+        UpdateGameplayCollidersPosition();
 
         UpdateHaloRadius(1f);
         PlayAnimationByName(idleAnimationName);
@@ -1742,6 +1909,28 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.85f);
         Vector3 hitCenter = transform.position + forwardDir * (clawHitDistance * 0.5f) + Vector3.up * 15f;
         Gizmos.DrawWireCube(hitCenter, new Vector3(clawHitDistance, 35f, 4f));
+    }
+}
+
+/// <summary>
+/// 專門負責燭火收集的觸發代理元件 (Gameplay Trigger Proxy)
+/// 掛載於怪物獨立的 CandleCollectionTrigger 上，精準判定路面走道上的燭火物件
+/// </summary>
+public class MonsterCandleTrigger : MonoBehaviour
+{
+    public ShadowMonsterController controller;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other == null) return;
+        CandleCollectible candle = other.GetComponent<CandleCollectible>();
+        if (candle == null) candle = other.GetComponentInParent<CandleCollectible>();
+        if (candle == null) candle = other.GetComponentInChildren<CandleCollectible>();
+
+        if (candle != null)
+        {
+            candle.TryCollect(gameObject);
+        }
     }
 }
 

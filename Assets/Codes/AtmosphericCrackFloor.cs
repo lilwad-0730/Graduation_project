@@ -223,6 +223,13 @@ public class AtmosphericCrackFloor : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        // 存檔點進度檢查：若當前存檔點已推進到本地磚右側且地磚已龜裂，則保持龜裂
+        Vector3 currentCheckpoint = PlayerRespawnSystem.ActiveRespawnPosition;
+        if (currentCheckpoint != Vector3.zero && (originalPosition.x < currentCheckpoint.x - 1.0f))
+        {
+            if (hasCracked) return;
+        }
+
         StopAllCoroutines();
         hasCracked = false;
         transform.position = originalPosition;

@@ -6,7 +6,8 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("基本移動設定")]
     public float baseSpeed = 5f;       
-    public float pullRange = 2f;
+    [Tooltip("抓取/拉動物件 (LeftShift) 的偵測距離 (可在 Inspector 自由調整)")]
+    public float pullRange = 2.5f;
     [Tooltip("跳躍高度：數值越大跳越高（預設 5）")]
     public float jumpForce = 5f;
     
@@ -46,6 +47,29 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
+
+    /// <summary>
+    /// 全域演出鎖定狀態查詢 (包含重生、鏡牆演出、過場文字卡、黑影怪物特寫等所有相機被接管的情境)
+    /// </summary>
+    public static bool IsAnyCutsceneActive =>
+        PlayerRespawnSystem.IsAnyRespawning ||
+        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning ||
+        (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying) ||
+        ShadowMonsterController.IsAnyRevealRunning;
+
+    /// <summary>
+    /// 當前主角是否處於完全鎖定操作狀態
+    /// </summary>
+    public bool IsControlLocked =>
+        isCutsceneFrozen ||
+        freezeHorizontal ||
+        IsAnyCutsceneActive;
+
+    [Header("📦 推動物件機制 (Pushing Object System)")]
+    [Tooltip("推動物件偵測距離 (向前檢測 Pushable Tag 物件)")]
+    public float pushDetectionDistance = 0.35f;
+    [HideInInspector] public bool isPushing = false;
+    private float _collisionPushableTimer = 0f;
 
     [Header("🌪️ 風暴吸入物理牽引 (Wind Suction - 地形與斜坡適應)")]
     [HideInInspector] public bool isWindSuctionActive = false;
@@ -393,37 +417,30 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // 當處於重生中 (IsAnyRespawning) 或 劇情演出鎖定 (isCutsceneFrozen) 時，嚴格禁止玩家移動
-            if (PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning)
+            // ★ 當處於任何演出鎖定狀態時，嚴格禁止玩家任何移動輸入，且絕不可因為玩家按鍵而自動解鎖！
+            if (IsControlLocked)
             {
                 rawInput = 0f;
+                moveInput = 0f;
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+                }
             }
-            else if (isCutsceneFrozen)
+            else
             {
-                // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖
                 if (Mathf.Abs(rawInput) > 0.1f)
                 {
-                    isCutsceneFrozen = false;
+                    // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
+                    isStrictLockingX = false;
                     freezeHorizontal = false;
-                    actuallyFreeze = false;
                 }
-                else
-                {
-                    rawInput = 0f;
-                }
-            }
-            else if (Mathf.Abs(rawInput) > 0.1f)
-            {
-                // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
-                isStrictLockingX = false;
-                freezeHorizontal = false;
-                actuallyFreeze = false;
-            }
 
-            moveInput = (actuallyFreeze || isCutsceneFrozen || PlayerRespawnSystem.IsAnyRespawning || MirrorWallAbsorbCutscene.IsAnyCutsceneRunning) ? 0f : rawInput;
+                moveInput = rawInput;
 
-            if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
-            if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
+                if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
+                if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
+            }
         }
 
         CurrentMoveInput = moveInput;
@@ -447,9 +464,12 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 1. 地面狀態與著地/腳步音效判定
+        // 1. 地面狀態、推動判定與著地/腳步音效判定
         // ==========================================
         isGrounded = preliminaryGrounded;
+
+        // 偵測是否正在推動 Pushable 物件
+        UpdatePushingDetection(moveInput);
 
         if (isGrounded)
         {
@@ -487,7 +507,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // ==========================================
-        // 陸地跑步音效 Loop 控制 (微包絡淡入淡出，消除波形硬切雜音與延遲)
+        // 陸地跑步 / 推動物件音效 Loop 控制 (微包絡淡入淡出，消除波形硬切雜音與延遲)
         // ==========================================
         if (footstepSFX != null && !isUnderwater)
         {
@@ -504,7 +524,7 @@ public class PlayerMovement : MonoBehaviour
                 _footstepSource.clip = footstepSFX;
             }
 
-            bool shouldPlayFootstep = isGrounded && !isJumping && !isCutsceneFrozen && Mathf.Abs(moveInput) > 0.1f;
+            bool shouldPlayFootstep = isGrounded && !isJumping && !IsControlLocked && (Mathf.Abs(moveInput) > 0.1f || isPushing);
             float maxFootstepVol = AudioManager.ScaleSfx(sfxVolume * 0.75f);
             float targetFootstepVol = shouldPlayFootstep ? maxFootstepVol : 0f;
 
@@ -558,7 +578,7 @@ public class PlayerMovement : MonoBehaviour
                                    || Input.GetKey(KeyCode.LeftArrow) 
                                    || Input.GetKey(KeyCode.RightArrow);
 
-            bool isMovingInWater = hasActiveSwimInput && !isCutsceneFrozen;
+            bool isMovingInWater = hasActiveSwimInput && !IsControlLocked;
             if (isMovingInWater)
             {
                 if (!_swimSource.isPlaying) _swimSource.Play();
@@ -582,11 +602,13 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.applyRootMotion = false; // 每幀維持關閉 Root Motion，確保玩家速度由程式與 Physics 主導
 
-            // 自動為未來的游泳 Animator 傳遞狀態標籤 (若 Animator Controller 有對應 Parameter 則更新)
+            // 自動為未來的游泳/推動 Animator 傳遞狀態標籤 (若 Animator Controller 有對應 Parameter 則更新)
             foreach (AnimatorControllerParameter param in animator.parameters)
             {
                 if (param.name == "isUnderwater") animator.SetBool("isUnderwater", isUnderwater);
                 if (param.name == "isSwimming") animator.SetBool("isSwimming", isSwimming);
+                if (param.name == "isPushing") animator.SetBool("isPushing", isPushing);
+                if (param.name == "Pushing") animator.SetBool("Pushing", isPushing);
             }
 
             // 控制角色外觀模型轉向與水下按 W 向上 15 度仰角傾斜
@@ -644,6 +666,10 @@ public class PlayerMovement : MonoBehaviour
                 if (isFalling)
                 {
                     targetAnim = "Falling";
+                }
+                else if (isPushing)
+                {
+                    targetAnim = "Pushing";
                 }
                 else
                 {
@@ -804,20 +830,22 @@ public class PlayerMovement : MonoBehaviour
                     targetX = (_externalPushVelocity.x * 0.85f) + windOffset;
                 }
 
-                // ★★★ 實體障礙物/石柱防穿透夾角緩衝判定 (防止強風或推力把玩家頂進石柱牆面造成的 PhysX 每幀穿透反彈劇烈抖動)
+                // ★★★ 實體障礙物/石柱防穿透夾角緩衝判定 (防止強風或推力把玩家頂進不可推動石柱牆面造成的 PhysX 每幀穿透反彈劇烈抖動)
                 float playerRadius = GetPlayerRadius();
                 int obstacleMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
-                Vector3 rayLow = transform.position + Vector3.up * 0.35f;
-                Vector3 rayMid = transform.position + Vector3.up * 1.0f;
+                Vector3 centerPos = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
+                float extY = (playerCollider != null) ? playerCollider.bounds.extents.y : 1.0f;
+                Vector3 rayLow = centerPos + Vector3.down * (extY * 0.4f);
+                Vector3 rayMid = centerPos + Vector3.up * (extY * 0.2f);
 
                 if (targetX < -0.01f)
                 {
                     if (Physics.Raycast(rayLow, Vector3.left, out RaycastHit hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
                         Physics.Raycast(rayMid, Vector3.left, out hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
                     {
-                        if (hitL.normal.x > 0.15f && hitL.collider != null && !hitL.collider.isTrigger)
+                        if (hitL.normal.x > 0.15f && hitL.collider != null && !hitL.collider.isTrigger && !IsPushableObject(hitL.collider.gameObject, hitL.collider))
                         {
-                            targetX = 0f; // 緊貼石柱/障礙物時停止向左施加擠壓速度，完全消除抖動！
+                            targetX = 0f; // 緊貼非可推石柱/障礙物時停止向左施加擠壓速度，完全消除抖動！
                         }
                     }
                 }
@@ -826,9 +854,9 @@ public class PlayerMovement : MonoBehaviour
                     if (Physics.Raycast(rayLow, Vector3.right, out RaycastHit hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
                         Physics.Raycast(rayMid, Vector3.right, out hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
                     {
-                        if (hitR.normal.x < -0.15f && hitR.collider != null && !hitR.collider.isTrigger)
+                        if (hitR.normal.x < -0.15f && hitR.collider != null && !hitR.collider.isTrigger && !IsPushableObject(hitR.collider.gameObject, hitR.collider))
                         {
-                            targetX = 0f; // 緊貼右側障礙物時停止向右施加擠壓速度
+                            targetX = 0f; // 緊貼非可推右側障礙物時停止向右施加擠壓速度
                         }
                     }
                 }
@@ -850,7 +878,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // 水下隱形體力扣除與回復邏輯
-        bool isPressingSwimUp = !isCutsceneFrozen && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+        bool isPressingSwimUp = !IsControlLocked && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
 
         if (isPressingSwimUp && !isSwimExhausted)
         {
@@ -884,8 +912,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 陸地跳躍 (非水下、非演出中、非重生中)
-        if (!isCutsceneFrozen && !PlayerRespawnSystem.IsAnyRespawning && !MirrorWallAbsorbCutscene.IsAnyCutsceneRunning && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        // 陸地跳躍 (非水下、非演出鎖定中)
+        if (!IsControlLocked && !isUnderwater && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space)) && isGrounded)
         {
             // 陸地標準跳躍
             isJumping = true;
@@ -1055,20 +1083,35 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ==========================================
-    // 抓取物件邏輯 (維持不變)
+    // 抓取物件邏輯 (Pull Range 可在 Inspector 自訂調整)
     // ==========================================
     void TryGrabObject()
     {
-        Debug.DrawRay(transform.position, facingDirection * pullRange, Color.red, 2f);
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, facingDirection, pullRange);
+        Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
+        Vector3 extents = (playerCollider != null) ? playerCollider.bounds.extents : new Vector3(0.6f, 1.0f, 0.6f);
+        Vector3 rayOrigin = center + facingDirection * (extents.x * 0.75f);
+
+        Debug.DrawRay(rayOrigin, facingDirection * pullRange, Color.red, 2f);
+        RaycastHit[] hits = Physics.SphereCastAll(rayOrigin, 0.4f, facingDirection, pullRange);
         foreach (RaycastHit hit in hits)
         {
-            if (hit.collider.gameObject == this.gameObject) continue;
-            if (hit.collider.CompareTag("Pushable"))
+            if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
+            if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
-                pulledObject = hit.collider.gameObject;
+                // 優先抓取帶有 Rigidbody 的根物件
+                GameObject targetObj = hit.collider.gameObject;
+                if (targetObj.GetComponent<Rigidbody>() == null && targetObj.GetComponentInParent<Rigidbody>() != null)
+                {
+                    targetObj = targetObj.GetComponentInParent<Rigidbody>().gameObject;
+                }
+
+                pulledObject = targetObj;
                 pulledObject.transform.SetParent(this.transform);
-                pulledObject.GetComponent<Rigidbody>().isKinematic = true;
+                Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
+                if (objRb != null)
+                {
+                    objRb.isKinematic = true;
+                }
                 return; 
             }
         }
@@ -1305,8 +1348,8 @@ public class PlayerMovement : MonoBehaviour
             Vector3 vel = rb.linearVelocity;
 
             // 3. 水下游泳推進與下潛控制 (W/Space 向上游，S/下方向鍵 主動下潛)
-            bool isPressingSwimUp = !isCutsceneFrozen && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
-            bool isPressingSwimDown = !isCutsceneFrozen && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+            bool isPressingSwimUp = !IsControlLocked && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
+            bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
 
             if (isPressingSwimUp && !isSwimExhausted)
             {
@@ -1445,8 +1488,203 @@ public class PlayerMovement : MonoBehaviour
         return found;
     }
 
+    // ==========================================
+    // 推動物件 (Pushable) 判定機制
+    // ==========================================
+    private bool IsPushableObject(GameObject go, Collider col)
+    {
+        if (go == null && col == null) return false;
+        if (go != null && (go == gameObject || go.transform.IsChildOf(transform))) return false;
+        if (col != null && (col == playerCollider || col.transform.IsChildOf(transform))) return false;
+
+        // 1. 直接 Tag 檢測
+        if (go != null && go.CompareTag("Pushable")) return true;
+        if (col != null && col.CompareTag("Pushable")) return true;
+
+        // 2. 剛體 Tag 檢測
+        if (col != null && col.attachedRigidbody != null && col.attachedRigidbody.CompareTag("Pushable")) return true;
+
+        // 3. 向上遍歷父層階層直到 Root (確保石球或組合 Model 即使 Tag 掛在 Root 也能被辨識)
+        Transform t = (go != null) ? go.transform : (col != null ? col.transform : null);
+        while (t != null)
+        {
+            if (t.CompareTag("Pushable")) return true;
+            t = t.parent;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 精確確認 Pushable 物件是否位於玩家「正前方」（排除站在物件頂部/腳底下方的情況）
+    /// </summary>
+    private bool IsPushableInFront(Collider col, Vector3 playerCenter, Vector3 playerExtents)
+    {
+        if (col == null) return false;
+        if (!IsPushableObject(col.gameObject, col)) return false;
+
+        float playerFeetY = playerCenter.y - playerExtents.y;
+        float playerHeadY = playerCenter.y + playerExtents.y;
+
+        // ★ 關鍵排除條件：Pushable 物件頂部必須明顯高於玩家腳底（至少 0.35m，達到小腿以上），才視為前方障礙
+        // 若物件頂部在玩家腳底附近 (col.bounds.max.y <= playerFeetY + 0.35f)，代表玩家正站在該物件頂面，絕不判定為前方推動！
+        if (col.bounds.max.y <= playerFeetY + 0.35f)
+        {
+            return false;
+        }
+
+        // 若物件底部高於玩家頭頂，代表在玩家上方懸空，也不算前方推動
+        if (col.bounds.min.y >= playerHeadY)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void UpdatePushingDetection(float input)
+    {
+        if (playerCollider == null)
+        {
+            playerCollider = GetComponent<Collider>();
+            if (playerCollider == null) playerCollider = GetComponentInChildren<Collider>();
+            if (playerCollider == null) playerCollider = GetComponentInParent<Collider>();
+        }
+
+        // 1. 玩家若沒有輸入推動方向鍵，立即離開 Pushing (鬆開方向鍵立即回歸 Idle/Run)
+        if (Mathf.Abs(input) <= 0.05f)
+        {
+            isPushing = false;
+            _collisionPushableTimer = 0f;
+            return;
+        }
+
+        // 2. 空中跳躍/墜落、水下或鎖定狀態，不能判定為陸地 Pushing
+        bool isAirborne = isJumping || (!isGrounded && rb.linearVelocity.y < -3.0f && currentAirTime > 0.25f);
+        if (isUnderwater || isAirborne || IsControlLocked)
+        {
+            isPushing = false;
+            _collisionPushableTimer = 0f;
+            return;
+        }
+
+        Vector3 pushDir = (input > 0f) ? Vector3.right : Vector3.left;
+        bool hasPushableInFront = false;
+
+        // 3. 抓取物件中 (LeftShift)
+        if (pulledObject != null)
+        {
+            hasPushableInFront = true;
+        }
+
+        Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
+        Vector3 extents = (playerCollider != null) ? playerCollider.bounds.extents : new Vector3(0.6f, 1.0f, 0.6f);
+
+        // 4. 前方接觸面盒型範圍檢測 (精確覆蓋從腳踝到胸口的正面接觸區，且嚴格排除腳底頂部)
+        if (!hasPushableInFront)
+        {
+            int pushMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+            Vector3 boxCenter = new Vector3(center.x + pushDir.x * (extents.x + pushDetectionDistance * 0.5f), center.y, center.z);
+            Vector3 boxHalfExtents = new Vector3(pushDetectionDistance * 0.5f, extents.y * 0.85f, extents.z * 0.85f);
+
+            Collider[] hits = Physics.OverlapBox(boxCenter, boxHalfExtents, Quaternion.identity, pushMask, QueryTriggerInteraction.Ignore);
+            foreach (var col in hits)
+            {
+                if (IsPushableInFront(col, center, extents))
+                {
+                    hasPushableInFront = true;
+                    break;
+                }
+            }
+        }
+
+        // 5. 正面多層射線陣列檢測 (膝蓋、腰部、胸口前向掃描，嚴格排除腳底)
+        if (!hasPushableInFront)
+        {
+            int pushMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+            float rayStartX = center.x + pushDir.x * (extents.x * 0.8f);
+            float rayLen = (extents.x * 0.2f) + pushDetectionDistance + 0.1f;
+
+            Vector3[] rayOrigins = new Vector3[]
+            {
+                new Vector3(rayStartX, center.y - extents.y * 0.4f, center.z), // 小腿/膝蓋
+                new Vector3(rayStartX, center.y + extents.y * 0.1f, center.z), // 腰部
+                new Vector3(rayStartX, center.y + extents.y * 0.5f, center.z)  // 胸部
+            };
+
+            foreach (var origin in rayOrigins)
+            {
+                if (Physics.Raycast(origin, pushDir, out RaycastHit hit, rayLen, pushMask, QueryTriggerInteraction.Ignore))
+                {
+                    if (IsPushableInFront(hit.collider, center, extents))
+                    {
+                        hasPushableInFront = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 6. 實體碰撞接觸緩衝 (PhysX 剛體側面貼合判定)
+        if (!hasPushableInFront && _collisionPushableTimer > 0f)
+        {
+            hasPushableInFront = true;
+        }
+
+        if (_collisionPushableTimer > 0f)
+        {
+            _collisionPushableTimer -= Time.deltaTime;
+        }
+
+        // 最終判定：只要玩家在地面/斜坡、正朝著前方貼近的 Pushable 物件持續輸入，就保持 Pushing！
+        isPushing = hasPushableInFront;
+    }
+
+    private void CheckPushingCollision(Collision collision)
+    {
+        if (collision == null || collision.collider == null) return;
+        if (IsPushableObject(collision.gameObject, collision.collider))
+        {
+            if (Mathf.Abs(CurrentMoveInput) > 0.05f)
+            {
+                Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
+                Vector3 extents = (playerCollider != null) ? playerCollider.bounds.extents : new Vector3(0.6f, 1.0f, 0.6f);
+                float playerFeetY = center.y - extents.y;
+
+                // ★ 排除站在頂部的碰撞：若 Pushable 物件頂面在玩家腳底附近，不判定為側面推動
+                if (collision.collider.bounds.max.y <= playerFeetY + 0.35f) return;
+
+                Vector3 pushDir = (CurrentMoveInput > 0f) ? Vector3.right : Vector3.left;
+
+                // 檢查接觸點：必須是來自側面的水平推動接觸 (排除腳底垂直支撐接觸)
+                for (int i = 0; i < collision.contactCount; i++)
+                {
+                    ContactPoint cp = collision.GetContact(i);
+
+                    // ★ 接觸點不能在腳底（垂直支撐法線向上 cp.normal.y > 0.6f 排除）
+                    if (cp.normal.y > 0.6f) continue;
+
+                    float dotNormal = Vector3.Dot(cp.normal, -pushDir);
+                    float relX = (cp.point.x - center.x) * pushDir.x;
+                    if (dotNormal > 0.3f && relX > 0.05f)
+                    {
+                        _collisionPushableTimer = 0.2f;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        CheckPushingCollision(collision);
+    }
+
     private void OnCollisionStay(Collision collision)
     {
+        CheckPushingCollision(collision);
+
         if (!isUnderwater || collision.contactCount == 0) return;
 
         // 當水下在凹凸不平的岩石夾角間游動時，輔助法線平滑滑動，杜絕在夾角處卡住
