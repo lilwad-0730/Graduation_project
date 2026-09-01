@@ -115,6 +115,13 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     // 全域靜態旗標 (供其他系統即時查詢)
     public static bool IsAnyCutsceneRunning = false;
 
+    /// <summary>
+    /// ★整段演出（含碎裂與過場文字）已經跑完。
+    /// 存檔點在鏡牆右邊（x≈-36.6），所以演完之後死亡重生時
+    /// 不可以再把鏡牆變回完整的——那等於在玩家臉上重新立一道她已經打破的牆。
+    /// </summary>
+    private bool _sequenceCompleted = false;
+
     // 內部狀態變數
     private bool hasTriggered = false;
     private bool isCutsceneRunning = false;
@@ -920,6 +927,8 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = false;
             Debug.Log("📖【鏡牆】過場文字播完，控制權交還玩家，接下來是黑影追逐。");
         }
+
+        _sequenceCompleted = true;
     }
 
     /// <summary>
@@ -927,6 +936,48 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     /// </summary>
     public void ResetToInitialState()
     {
+        // ★★ 演出已經整段跑完就不要還原鏡牆 ★★
+        //   玻璃館的存檔點在 x=-36.6，而鏡牆本體在 x=-37.73（實體碰撞 -38.33 ~ -37.12）。
+        //   演完之後死亡重生，如果照舊「100% 還原鏡牆與 4 顆光球」，
+        //   玩家一睜眼旁邊就立著一道她剛剛才打破的牆，演出也被重新武裝，
+        //   往回走還會再播一次。這裡只做收尾，不還原場景物件。
+        if (_sequenceCompleted)
+        {
+            Debug.Log("🔄【鏡牆演出】演出早已完成，重生時保持鏡牆破碎狀態，只收尾殘留狀態。");
+
+            StopAllCoroutines();
+            mainCutsceneCoroutine = null;
+            flashCoroutine = null;
+            isCutsceneRunning = false;
+            IsAnyCutsceneRunning = false;
+            // hasTriggered 保持 true：不要讓演出重新武裝
+
+            if (hoverAudioSource != null) hoverAudioSource.Stop();
+            if (flashAudioSource != null) flashAudioSource.Stop();
+            if (flashImage != null) flashImage.color = new Color(1f, 1f, 1f, 0f);
+
+            // 相機與控制權還是要還給玩家
+            FindCinemachineCameras();
+            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();
+            if (cachedPlayer != null)
+            {
+                SetCameraTarget(cachedPlayer.transform, false);
+                cachedPlayer.isCutsceneFrozen = false;
+            }
+            if (activeVcam3 != null)
+            {
+                var lens2 = activeVcam3.Lens;
+                if (isOrthographic) lens2.OrthographicSize = originalLensSize;
+                else lens2.FieldOfView = originalLensSize;
+                activeVcam3.Lens = lens2;
+            }
+
+            // 碎片還是要清掉，不然會留一地碎玻璃
+            ShatteredObject[] stale = FindObjectsByType<ShatteredObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var so in stale) { if (so != null) Destroy(so.gameObject); }
+            return;
+        }
+
         Debug.Log("🔄【鏡牆演出】收到重生重置訊號！全面中止演出並刷新 4 顆光球與鏡牆...");
 
         // 1. 中止所有演出協程
