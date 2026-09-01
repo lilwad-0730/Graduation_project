@@ -183,6 +183,8 @@ public class EndCredits : MonoBehaviour
         if (endingStartPage >= 0 && endingStartPage < book.PageCount)
         {
             book.GoTo(endingStartPage, false);
+            // 鎖住往前翻下限：結局只能在結尾漫畫範圍內前後翻，Home 也只回到結尾第一頁
+            book.minPage = endingStartPage;
         }
         if (endingAutoRollSeconds > 0f) autoRollAfterSeconds = endingAutoRollSeconds;
         armOnLastPage = true;
