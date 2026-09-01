@@ -63,6 +63,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Range(0f, 10f)]
     public float unpetrifyGraceDuration = 5.0f;
 
+    [Header("🧎 主動石化（企劃定案：按住不放＝抗風抗鳥，但不能動）")]
+    [Tooltip("按住 ⬇ 或 S 主動石化硬撐：風暴吹不動、鳥啄不死，但完全不能動；放開立刻解除")]
+    public bool holdToPetrify = true;
+
+    [Tooltip("主動石化的按鍵（↓ 方向鍵恆定支援，這裡設第二顆鍵）")]
+    public KeyCode braceKey = KeyCode.S;
+
     [Header("🎵 石化與解石音效 (Petrification SFX)")]
     [Tooltip("主角被石化時播放的音效 (例如 石化.mp3)")]
     public AudioClip petrifySFX;
@@ -75,6 +82,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     public int currentPetrifyCount = 0;
     public bool isPetrified = false;
     private float graceTimer = 0f;
+    private bool _bracing = false;   // 目前的石化是玩家主動按出來的
 
     private PlayerMovement playerMovement;
     private PlayerRespawnSystem respawnSystem;
@@ -178,6 +186,73 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         {
             graceTimer -= Time.deltaTime;
         }
+
+        // 3. 主動石化：按住 ⬇/S 變成石頭（抗風抗鳥、不能動）；放開立刻解除
+        if (holdToPetrify)
+        {
+            bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow);
+            if (holding && !isPetrified)
+            {
+                EnsureComponents();
+                bool canBrace = playerMovement != null
+                    && playerMovement.enabled
+                    && playerMovement.isGrounded
+                    && !playerMovement.isUnderwater
+                    && !playerMovement.isCutsceneFrozen
+                    && !PlayerMovement.IsHardCutsceneLocked
+                    && !PlayerRespawnSystem.IsAnyRespawning;
+                if (canBrace) BeginBrace();
+            }
+            else if (!holding && isPetrified && _bracing)
+            {
+                EndBrace();
+            }
+        }
+    }
+
+    /// <summary>玩家按住 ⬇/S：主動石化硬撐（不計次、不會因此死亡）。</summary>
+    private void BeginBrace()
+    {
+        if (isPetrified) return;
+        _bracing = true;
+        isPetrified = true;
+        Debug.Log("🪨【石化系統】主動石化：她把自己變成石頭，硬撐過去（放開 ⬇/S 解除）。");
+
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+        if (animator != null) animator.speed = 0f;
+        ApplyPetrifyVisual(true);
+
+        if (petrifySFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(petrifySFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(petrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
+        }
+    }
+
+    /// <summary>放開 ⬇/S：解除主動石化，立即恢復行動。</summary>
+    private void EndBrace()
+    {
+        if (!isPetrified || !_bracing) return;
+        _bracing = false;
+        isPetrified = false;
+        graceTimer = 0.3f;
+
+        if (unpetrifySFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(unpetrifySFX, sfxVolume);
+            else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
+        }
+
+        if (rb != null) rb.isKinematic = false;
+        if (playerMovement != null) playerMovement.enabled = true;
+        if (animator != null) animator.speed = 1f;
+        ApplyPetrifyVisual(false);
     }
 
     private void OnGUI()
@@ -468,6 +543,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
         isPetrified = false;
         currentPetrifyCount = 0;
+        _bracing = false;
 
         // 給予短暫 0.5 秒保護，避免重生瞬間與畫面切換穿幫
         graceTimer = 0.5f;

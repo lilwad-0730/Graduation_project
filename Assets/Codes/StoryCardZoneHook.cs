@@ -35,6 +35,13 @@ public class StoryCardZoneHook : MonoBehaviour
     [Tooltip("勾起來才會接管。取消勾選＝完全不干涉，SceneTransitionZone 照原本跑")]
     public bool takeOver = true;
 
+    [Header("文字卡之後接轉場漫畫")]
+    [Tooltip("播完卡後先翻一段轉場漫畫再進下一關。-1＝依 cardId 自動（M3 荒原→水下自動接掉落段 042~048）；設 0 以上則用指定頁碼（0 起算）")]
+    public int comicStartPage = -1;
+
+    [Tooltip("轉場漫畫結束頁（0 起算，含）。僅在起始頁 >= 0 時生效")]
+    public int comicEndPage = -1;
+
     private SceneTransitionZone _zone;
     private bool _fired;
 
@@ -172,14 +179,6 @@ public class StoryCardZoneHook : MonoBehaviour
         // 4　淡黑 → 播文字卡 → 維持全黑
         yield return StoryCardPlayer.Instance.Play(cardId, true, false);
 
-        // 5　跨場景出生點（沿用原本填的值）
-        if (!string.IsNullOrEmpty(_zone.targetSpawnPointName))
-        {
-            PlayerRespawnSystem.QueueNextSceneSpawn(_zone.targetSpawnPointName);
-        }
-
-        // 6　載入場景
-        //    載完之後 StoryCardPlayer 會自己把黑幕淡掉，這裡不用管
         string targetScene = _zone.nextSceneName != null ? _zone.nextSceneName.Trim() : "";
         if (string.IsNullOrEmpty(targetScene))
         {
@@ -187,6 +186,28 @@ public class StoryCardZoneHook : MonoBehaviour
             StoryCardPlayer.Instance.ReleaseCurtain();
             if (pm != null) pm.isCutsceneFrozen = false;
             yield break;
+        }
+
+        // 5　卡片之後的轉場漫畫：M3（荒原→水下）自動接「掉落」段——池畔伸手、水面合上、一路下沉
+        int comicFrom = comicStartPage;
+        int comicTo = comicEndPage;
+        if (comicFrom < 0 && cardId == "M3")
+        {
+            comicFrom = 41;   // 042_掉-1（頁碼 0 起算＝41）
+            comicTo = 47;     // 048_掉-7
+        }
+        if (comicFrom >= 0 && comicTo >= comicFrom)
+        {
+            Debug.Log("[StoryCardZoneHook] 文字卡 " + cardId + " 播完，接轉場漫畫 頁 " + (comicFrom + 1) + "~" + (comicTo + 1) + " ➔ " + targetScene);
+            BookTransitionManager.OpenComicTransition(comicFrom, comicTo, targetScene, _zone.targetSpawnPointName);
+            yield break;
+        }
+
+        // 6　沒有轉場漫畫：跨場景出生點（沿用原本填的值）→ 直接載入場景
+        //    載完之後 StoryCardPlayer 會自己把黑幕淡掉，這裡不用管
+        if (!string.IsNullOrEmpty(_zone.targetSpawnPointName))
+        {
+            PlayerRespawnSystem.QueueNextSceneSpawn(_zone.targetSpawnPointName);
         }
 
         Debug.Log("[StoryCardZoneHook] 文字卡 " + cardId + " 播完，載入場景 " + targetScene);

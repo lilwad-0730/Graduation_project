@@ -284,7 +284,9 @@ public class PageBook : MonoBehaviour
         }
         else
         {
-            if (index <= Mathf.Max(0, minPage)) return false;   // 結局模式：最多翻回結尾漫畫第一頁
+            int backStop = Mathf.Max(0, minPage);
+            if (BookTransitionManager.isChapterMode) backStop = Mathf.Max(backStop, BookTransitionManager.chapterStartPage);
+            if (index <= backStop) return false;   // 結局／章節轉場：最多翻回本段第一頁
             toIdx = index - 1;
             SetTex(curlMat, Page(toIdx));
             SetTex(underMat, Page(index));
@@ -312,7 +314,9 @@ public class PageBook : MonoBehaviour
 
     public void GoTo(int i, bool animate = false)
     {
-        i = Mathf.Clamp(i, Mathf.Max(0, minPage), Mathf.Max(0, PageCount - 1));   // Home 在結局模式也只回到結尾第一頁
+        int lowest = Mathf.Max(0, minPage);
+        if (BookTransitionManager.isChapterMode) lowest = Mathf.Max(lowest, BookTransitionManager.chapterStartPage);
+        i = Mathf.Clamp(i, lowest, Mathf.Max(0, PageCount - 1));   // Home 在結局／章節模式只回到本段第一頁
         if (i == index) return;
         if (animate) { if (i > index) Next(); else Prev(); return; }
         index = i;

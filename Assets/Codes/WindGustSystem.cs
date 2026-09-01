@@ -115,6 +115,18 @@ public class WindGustSystem : MonoBehaviour, IResettable
             if (wave == null) wave = windParticles.gameObject.AddComponent<StormHazardWave>();
             wave.windForce = windForce;
             wave.EnsureTriggerCollider();
+
+            // 風痕鋪滿全屏：風沙特效跟著鏡頭走，發射盒撐得比畫面更大——狂風一起就是滿螢幕風痕
+            DesertWindDustFX fxCfg = windParticles.GetComponent<DesertWindDustFX>();
+            if (fxCfg != null)
+            {
+                Camera cam = Camera.main;
+                float halfH = (cam != null && cam.orthographic) ? cam.orthographicSize : 17f;
+                float halfW = halfH * (cam != null ? cam.aspect : 1.78f);
+                fxCfg.followCamera = true;
+                fxCfg.emitterSize = new Vector3(halfW * 2.5f, halfH * 2.5f, 1f);
+                fxCfg.ApplyVFXSettings();
+            }
         }
 
         if (windAudioSource == null)

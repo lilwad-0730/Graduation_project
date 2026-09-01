@@ -123,6 +123,23 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private SpriteRenderer spriteRenderer;
     private Renderer meshRenderer;
     
+    [Header("🔴 攻擊前搖與路徑預告 (Telegraph)")]
+    [Tooltip("警戒期間顯示紅色攻擊路徑：先亮路徑再俯衝。路徑鎖定「發現玩家當下」的方向，之後不再追蹤")]
+    public bool showAttackTelegraph = true;
+
+    [Tooltip("紅色路徑顏色")]
+    public Color telegraphColor = new Color(1f, 0.25f, 0.2f, 0.9f);
+
+    [Tooltip("路徑線寬")]
+    public float telegraphWidth = 0.18f;
+
+    [Tooltip("路徑越過鎖定點再延伸多遠（表示牠會衝過頭）")]
+    public float telegraphOvershoot = 12f;
+
+    private LineRenderer _telegraphLine;
+    private Vector3 _lockedDiveTarget;
+    private bool _hasLockedDiveTarget;
+
     private enum BirdState { Idle, Warning, Diving, Stuck, Bounced }
     private BirdState currentState = BirdState.Idle;
 
@@ -555,6 +572,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 1. 程式切換為警報動畫 (worried)
         PlayAnim(warningAnimName);
 
+        // ★ 前搖鎖定：在「發現玩家的瞬間」鎖住攻擊方向——之後的紅色路徑與俯衝都沿這條線，不再追蹤
+        UpdateTargetPosition();
+        _lockedDiveTarget = targetPosition;
+        _hasLockedDiveTarget = true;
+        if (showAttackTelegraph) SetTelegraphVisible(true);
+
         // 2. 播放警告叫聲
         if (warningClip != null)
         {
@@ -562,9 +585,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             else AudioSource.PlayClipAtPoint(warningClip, transform.position, AudioManager.SfxVolume);
         }
 
-        // 3. 警報期等待 (預設 1.2 秒)
+        // 3. 警報期等待（前搖）：紅色路徑亮著、呼吸閃爍，玩家有時間看路徑反向閃避
         float realWarnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
-        yield return new WaitForSeconds(realWarnTime);
+        float warnT = 0f;
+        while (warnT < realWarnTime)
+        {
+            warnT += Time.deltaTime;
+            if (showAttackTelegraph) UpdateTelegraphLine();
+            yield return null;
+        }
+        SetTelegraphVisible(false);
 
         // 4. 程式切換為俯衝飛行動畫 (flying) 並播放振翅音效
         PlayAnim(diveAnimName);
@@ -576,8 +606,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         currentState = BirdState.Diving;
         rb.isKinematic = false;
 
-        // 鎖定初始目標位置與飛行向量 (Direct / Offset 模式在發起瞬間鎖定目標位置，玩家可閃避)
-        UpdateTargetPosition();
+        // 鎖定飛行向量：沿「警戒開始那一刻」鎖定的紅色路徑直線俯衝（玩家可依路徑反向閃避）
+        if (_hasLockedDiveTarget) targetPosition = _lockedDiveTarget;
+        else UpdateTargetPosition();
         Vector3 initialPos = transform.position;
         initialPos.z = originalPosition.z;
         targetPosition.z = originalPosition.z;
@@ -626,15 +657,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 yield break;
             }
 
-            // 若為 Homing 模式，每幀動態更新追蹤目標；若是 Direct / Offset 模式，保持鎖定發起時的目標直線衝刺！
-            if (behaviorType == BirdBehavior.HomingPlayer && playerTrans != null)
-            {
-                targetPosition = new Vector3(playerTrans.position.x, playerTrans.position.y, originalPosition.z);
-                Vector3 cur = transform.position;
-                cur.z = originalPosition.z;
-                diveDirection = (targetPosition - cur).normalized;
-                diveDirection.z = 0f;
-            }
+            // （已改制）俯衝一律沿警戒時鎖定的直線前進，空中不再追蹤——
+            //  紅色路徑亮在哪，牠就衝到哪；玩家看路徑反向閃就能躲（企劃：固定直線俯衝）。
 
             rb.linearVelocity = diveDirection * diveSpeed;
             transform.position += diveDirection * (diveSpeed * Time.deltaTime);
@@ -669,6 +693,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                     // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
                     if (distToPlayer <= 1.1f)
                     {
+                        // 主動石化硬撐中：她是石頭，啄不動，直接彈飛（企劃：按住不放＝抗風抗鳥）
+                        PlayerPetrification pet = playerTrans.GetComponentInParent<PlayerPetrification>();
+                        if (pet == null) pet = playerTrans.GetComponentInChildren<PlayerPetrification>();
+                        if (pet != null && pet.isPetrified)
+                        {
+                            Debug.LogWarning($"🪨【鳥群系統】{gameObject.name} 撞上石化硬撐中的主角！啄不動，彈飛！");
+                            BounceOff(null);
+                            yield break;
+                        }
+
                         if (PlayerPetrification.IsGodMode)
                         {
                             Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
@@ -688,6 +722,62 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
             yield return null;
         }
+    }
+
+    // ── 紅色攻擊路徑（前搖預告）─────────────────────────
+    private void SetTelegraphVisible(bool on)
+    {
+        if (!on)
+        {
+            if (_telegraphLine != null) _telegraphLine.enabled = false;
+            return;
+        }
+
+        if (_telegraphLine == null)
+        {
+            GameObject lineObj = new GameObject("[AttackTelegraph]");
+            lineObj.transform.SetParent(transform, false);
+            _telegraphLine = lineObj.AddComponent<LineRenderer>();
+            _telegraphLine.useWorldSpace = true;
+            _telegraphLine.positionCount = 2;
+            _telegraphLine.textureMode = LineTextureMode.Stretch;
+            _telegraphLine.alignment = LineAlignment.View;
+            _telegraphLine.numCapVertices = 4;
+            Shader sh = Shader.Find("Sprites/Default");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+            if (sh != null) _telegraphLine.material = new Material(sh);
+            _telegraphLine.sortingOrder = 35;
+        }
+        _telegraphLine.startWidth = telegraphWidth;
+        _telegraphLine.endWidth = telegraphWidth * 0.35f;
+        _telegraphLine.enabled = true;
+        UpdateTelegraphLine();
+    }
+
+    private void UpdateTelegraphLine()
+    {
+        if (_telegraphLine == null || !_telegraphLine.enabled || !_hasLockedDiveTarget) return;
+
+        Vector3 from = transform.position;
+        Vector3 to = _lockedDiveTarget;
+        from.z = originalPosition.z;
+        to.z = originalPosition.z;
+        Vector3 dir = to - from;
+        dir.z = 0f;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return;
+        dir /= dist;
+        Vector3 end = from + dir * (dist + telegraphOvershoot);
+
+        _telegraphLine.SetPosition(0, from);
+        _telegraphLine.SetPosition(1, end);
+
+        // 呼吸閃爍，醒目但不搶戲
+        float pulse = 0.55f + 0.45f * Mathf.Sin(Time.time * 11f);
+        Color head = telegraphColor; head.a = telegraphColor.a * pulse;
+        Color tail = telegraphColor; tail.a = telegraphColor.a * pulse * 0.25f;
+        _telegraphLine.startColor = head;
+        _telegraphLine.endColor = tail;
     }
 
     /// <summary>
@@ -999,7 +1089,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 0. 當處於待機狀態且玩家直接接觸此鳥時，單獨觸發攻擊
         if (currentState == BirdState.Idle && (hitObj.CompareTag("Player") || hitObj.GetComponentInParent<PlayerMovement>() != null))
         {
-            if (!PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
+            if (postRespawnDelayTimer <= 0f && !PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
             {
                 Debug.Log($"【個別鳥觸發】玩家直接接觸 {gameObject.name}！該鳥單獨發起攻擊！");
                 StartAttackSequence();
@@ -1211,6 +1301,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
         }
         PlayAnim(idleAnimName);
-        postRespawnDelayTimer = 1.5f; // 重生後給予 1.5 秒初始冷卻緩衝
+        postRespawnDelayTimer = 4f; // 重生後給予 4 秒冷卻緩衝：剛復活時鳥群不會立刻發起襲擊
+        _hasLockedDiveTarget = false;
+        SetTelegraphVisible(false);
     }
 }

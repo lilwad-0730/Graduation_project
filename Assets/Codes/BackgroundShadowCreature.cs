@@ -92,6 +92,13 @@ public class BackgroundShadowCreature : MonoBehaviour
     private AudioSource _audioSource;
     private float _waveTimer = 0f;
 
+    // ── 鰻魚剪影（程式生成）──
+    private MeshFilter _eelMeshFilter;
+    private Vector3[] _eelBaseVerts;
+    private Vector3[] _eelWorkVerts;
+    private float _eelLength;
+    private float _eelPhase;
+
     private void Start()
     {
         Vector3 pos = transform.position;
@@ -169,6 +176,7 @@ public class BackgroundShadowCreature : MonoBehaviour
             }
         }
 
+        UpdateEelUndulation();
         UpdateProximityAudio();
     }
 
@@ -339,26 +347,89 @@ public class BackgroundShadowCreature : MonoBehaviour
             return;
         }
 
-        GameObject standinObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        standinObj.name = "[Standin_ShadowSilhouette]";
+        // 生成「鰻魚」剪影：圓頭、飽滿身體、背鰭帶、收尖長尾；游動時 UpdateEelUndulation 讓牠擺尾
+        GameObject standinObj = new GameObject("[Standin_ShadowSilhouette]");
         standinObj.transform.SetParent(transform, false);
-        standinObj.transform.localScale = standinScale;
-        standinObj.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
 
-        Collider c = standinObj.GetComponent<Collider>();
-        if (c != null) Destroy(c);
+        _eelLength = Mathf.Max(2f, standinScale.x);
+        float maxHalfHeight = Mathf.Max(0.35f, standinScale.y * 0.45f);
 
-        MeshRenderer mr = standinObj.GetComponent<MeshRenderer>();
-        if (mr != null)
+        int segs = 36;
+        Vector3[] verts = new Vector3[(segs + 1) * 2];
+        for (int i = 0; i <= segs; i++)
         {
-            Shader s = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
-            if (s != null)
-            {
-                Material shadowMat = new Material(s);
-                shadowMat.color = new Color(0.04f, 0.08f, 0.16f, 0.85f);
-                mr.material = shadowMat;
-            }
+            float t = i / (float)segs;                                           // 0 = 頭, 1 = 尾
+            float z = Mathf.Lerp(_eelLength * 0.5f, -_eelLength * 0.5f, t);      // 頭在前 (+Z＝游動方向)
+
+            // 身體厚度：頭圓、身體飽滿、尾巴收尖成絲
+            float h;
+            if (t < 0.12f) h = maxHalfHeight * Mathf.Sin((t / 0.12f) * Mathf.PI * 0.5f);
+            else if (t < 0.40f) h = maxHalfHeight;
+            else h = maxHalfHeight * Mathf.Pow(1f - (t - 0.40f) / 0.60f, 1.25f);
+            h = Mathf.Max(h, _eelLength * 0.004f);
+
+            // 背鰭帶：從前段一路延伸到尾巴的薄鰭（鰻魚的招牌輪廓）
+            float fin = maxHalfHeight * 0.35f * Mathf.Sin(Mathf.Clamp01((t - 0.15f) / 0.80f) * Mathf.PI);
+
+            verts[i * 2]     = new Vector3(0f, h + fin, z);   // 背側（含鰭）
+            verts[i * 2 + 1] = new Vector3(0f, -h, z);        // 腹側
         }
+
+        int[] tris = new int[segs * 6 * 2]; // 正反兩面都建，左右轉向時都看得到
+        int ti = 0;
+        for (int i = 0; i < segs; i++)
+        {
+            int a = i * 2, b = i * 2 + 1, c2 = (i + 1) * 2, d = (i + 1) * 2 + 1;
+            tris[ti++] = a; tris[ti++] = c2; tris[ti++] = b;
+            tris[ti++] = b; tris[ti++] = c2; tris[ti++] = d;
+            tris[ti++] = a; tris[ti++] = b; tris[ti++] = c2;   // 反面
+            tris[ti++] = b; tris[ti++] = d; tris[ti++] = c2;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.name = "EelSilhouette";
+        mesh.vertices = verts;
+        mesh.triangles = tris;
+        mesh.RecalculateNormals();
+        mesh.bounds = new Bounds(Vector3.zero, new Vector3(4f, maxHalfHeight * 8f + 4f, _eelLength + 4f)); // 撐大避免擺動時被視錐剔除
+
+        _eelMeshFilter = standinObj.AddComponent<MeshFilter>();
+        _eelMeshFilter.sharedMesh = mesh;
+        _eelBaseVerts = verts;
+        _eelWorkVerts = new Vector3[verts.Length];
+
+        MeshRenderer mr = standinObj.AddComponent<MeshRenderer>();
+        Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
+        if (sh == null) sh = Shader.Find("Sprites/Default");
+        if (sh == null) sh = Shader.Find("Unlit/Color");
+        if (sh != null)
+        {
+            Material shadowMat = new Material(sh);
+            shadowMat.color = new Color(0.04f, 0.08f, 0.16f, 0.85f);
+            mr.material = shadowMat;
+        }
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        mr.receiveShadows = false;
+    }
+
+    /// <summary>鰻魚游動擺尾：沿身體跑一道行進波，越靠尾巴擺幅越大。</summary>
+    private void UpdateEelUndulation()
+    {
+        if (_eelMeshFilter == null || _eelBaseVerts == null) return;
+
+        _eelPhase += Time.deltaTime * (2.2f + swimSpeed * 0.35f);
+        float amp = Mathf.Max(0.15f, standinScale.y * 0.28f);
+
+        for (int i = 0; i < _eelBaseVerts.Length; i++)
+        {
+            Vector3 v = _eelBaseVerts[i];
+            float t = 0.5f - v.z / _eelLength;   // 頭 0 → 尾 1
+            float wave = Mathf.Sin(t * Mathf.PI * 2f * 1.6f - _eelPhase);
+            _eelWorkVerts[i] = new Vector3(v.x, v.y + wave * amp * Mathf.Pow(Mathf.Clamp01(t), 1.2f), v.z);
+        }
+
+        Mesh m = _eelMeshFilter.sharedMesh;
+        m.vertices = _eelWorkVerts;
     }
 
     // ──────────────────────────────────────────────────────────────────────────
