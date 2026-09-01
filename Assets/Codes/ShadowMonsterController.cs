@@ -67,6 +67,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("演出時把鏡頭拉遠讓整隻怪物進畫面，留多少邊。1.2＝上下各留 20%。這隻怪物約 45 單位高、鏡頭只看得到 27 單位，不拉遠只會看到牠的肚子。設 0＝不拉遠")]
     public float revealZoomPadding = 1.2f;
 
+    [Tooltip("鏡頭要退到怪物背面多遠。怪物很厚（前後約 29 單位）又擺在 z=-13.2，相機只在焦點後方 15 單位，近裁面會直接切進牠身體裡，畫面上就是破圖、看得到內部")]
+    public float revealDepthMargin = 3f;
+
     [Header("★ 開場距離：怪物要離主角多遠")]
     [Tooltip("觸發追逐時，把怪物擺到主角後方固定距離，玩家才有跑的空間。關掉＝用怪物在場景裡擺的位置")]
     public bool repositionOnActivate = true;
@@ -758,8 +761,27 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void UpdateRevealFocus()
     {
         if (_revealFocus == null) return;
+        EnsureVisualBounds();
         Vector3 c = transform.TransformPoint(_visualLocalBounds.center);
-        float z = player != null ? player.position.z : c.z;
+
+        // ★Z 不能直接沿用主角的。
+        //   相機在焦點後方 15 單位（CinemachineFollow.FollowOffset.z），而這隻怪物
+        //   前後厚約 29 單位、又擺在 z=-13.2。焦點用主角的 z=0 的話相機落在 z=-15，
+        //   剛好切進怪物身體——正交投影的近裁面會把牠剖開，畫面上就是破圖、
+        //   可以看穿到裡面去。這裡把焦點往後推到相機能整隻看完為止。
+        float scaleXZ = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
+        float halfDepth = Mathf.Max(_visualLocalBounds.extents.x, _visualLocalBounds.extents.z) * scaleXZ;
+
+        float offsetZ = -15f;
+        for (int i = 0; i < _revealFollows.Count; i++)
+        {
+            if (_revealFollows[i] != null) { offsetZ = _revealFollows[i].FollowOffset.z; break; }
+        }
+
+        float needZ = (c.z - halfDepth) - Mathf.Max(0f, revealDepthMargin) - offsetZ;
+        float baseZ = player != null ? player.position.z : c.z;
+        float z = Mathf.Min(baseZ, needZ);
+
         _revealFocus.position = new Vector3(c.x + revealFocusOffset.x, c.y + revealFocusOffset.y, z);
     }
 

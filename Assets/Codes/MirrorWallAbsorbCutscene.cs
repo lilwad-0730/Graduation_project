@@ -1010,6 +1010,22 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
             if (gfx != null) gfx.ResetToInitialState();
         }
 
+        // 4.5 ★保險：把場上殘留的碎片全部清掉
+        //   碎裂時生成的碎片（ShatteredObject）是獨立的場景根物件，不掛在鏡牆底下。
+        //   只要 Destructible 那邊的參考斷了——例如本體 Shatter() 之後被 SetActive(false)、
+        //   或碎片自己先被 disappearDelay 處理過——重生後就會看到一地碎玻璃，
+        //   鏡牆明明復原了、破掉的那份卻還在畫面上。整場掃一次，確保不會留。
+        //   重生本來就會把所有可破壞物復原，所以連玻璃地板的碎片一起清掉才是對的。
+        ShatteredObject[] leftovers = FindObjectsByType<ShatteredObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (leftovers != null && leftovers.Length > 0)
+        {
+            Debug.Log($"🧹【鏡牆演出】清掉場上殘留的 {leftovers.Length} 份碎片。");
+            foreach (var so in leftovers)
+            {
+                if (so != null) Destroy(so.gameObject);
+            }
+        }
+
         // 5. 還原相機鏡頭尺寸與目標
         FindCinemachineCameras();
         if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerMovement>();

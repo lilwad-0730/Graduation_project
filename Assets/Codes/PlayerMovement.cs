@@ -435,8 +435,16 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (isCutsceneFrozen)
             {
-                // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖
-                if (Mathf.Abs(rawInput) > 0.1f)
+                // 若無任何全局演出正在跑，玩家主動按鍵即視為正常操作，自動解鎖。
+                // ★這裡本來只認 A／D。跳躍鍵不算的話，會出現「能走但不能跳」的怪狀況：
+                //   isCutsceneFrozen 被某個演出留在 true，玩家按 W 沒反應，
+                //   按了 A／D 才會解開。把跳躍鍵一起算進來，兩邊行為一致。
+                //   （真正在演出中的時候上面的 IsHardCutsceneLocked 就擋掉了，走不到這裡。）
+                bool wantsToMove = Mathf.Abs(rawInput) > 0.1f
+                                   || Input.GetKeyDown(KeyCode.W)
+                                   || Input.GetKeyDown(KeyCode.Space)
+                                   || Input.GetKeyDown(KeyCode.UpArrow);
+                if (wantsToMove)
                 {
                     isCutsceneFrozen = false;
                     freezeHorizontal = false;
@@ -476,6 +484,13 @@ public class PlayerMovement : MonoBehaviour
                       $" - freezeHorizontal: {freezeHorizontal}\n" +
                       $" - isCutsceneFrozen: {isCutsceneFrozen}\n" +
                       $" - isStrictLockingX: {isStrictLockingX}\n" +
+                      $" - isJumping: {isJumping}\n" +
+                      $" - isUnderwater: {isUnderwater}（水下就不能跳）\n" +
+                      $" - IsHardCutsceneLocked: {IsHardCutsceneLocked}"
+                      + $"（重生中:{PlayerRespawnSystem.IsAnyRespawning}"
+                      + $" 鏡牆演出:{MirrorWallAbsorbCutscene.IsAnyCutsceneRunning}"
+                      + $" 怪物登場:{ShadowMonsterController.IsRevealRunning}"
+                      + $" 文字卡:{(StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying)}）\n" +
                       $" - 石化狀態 isPetrified: {(petr != null ? petr.isPetrified.ToString() : "無石化組件")}\n" +
                       $" - 當前速度 currentSpeed: {currentSpeed}\n" +
                       $" - 剛體速度 velocity: {(rb != null ? rb.linearVelocity.ToString() : "NULL")}");
