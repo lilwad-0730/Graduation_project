@@ -44,6 +44,12 @@ public class WindGustSystem : MonoBehaviour, IResettable
     [Tooltip("逆風的推力強度 (建議 15 ~ 25，可配合玩家質量調整)")]
     public float windForce = 18.0f;
 
+    [Header("🪨 風暴石化與危害設定")]
+    [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
+    public bool enableStormPassivePetrify = true;
+    [Tooltip("吹風時是否對未受掩體保護的玩家施加逆風推力？")]
+    public bool enableWindPush = true;
+
     [Header("視覺與音效回饋")]
     [Tooltip("吹風時啟動的風力粒子系統 (可為空，系統自動搜尋)")]
     public ParticleSystem windParticles;
@@ -114,6 +120,8 @@ public class WindGustSystem : MonoBehaviour, IResettable
             StormHazardWave wave = windParticles.GetComponent<StormHazardWave>();
             if (wave == null) wave = windParticles.gameObject.AddComponent<StormHazardWave>();
             wave.windForce = windForce;
+            wave.enableStormPassivePetrify = enableStormPassivePetrify;
+            wave.enableWindPush = enableWindPush;
             wave.EnsureTriggerCollider();
 
             // 風痕鋪滿全屏：風沙特效跟著鏡頭走，發射盒撐得比畫面更大——狂風一起就是滿螢幕風痕

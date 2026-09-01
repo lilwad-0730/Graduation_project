@@ -16,6 +16,13 @@ public class StormHazardWave : MonoBehaviour
     [Tooltip("風向 (預設向左 -1)")]
     public float windDirectionX = -1f;
 
+    [Tooltip("是否對未受掩體保護的玩家施加逆風推力")]
+    public bool enableWindPush = true;
+
+    [Header("🪨 風暴強制石化開關")]
+    [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
+    public bool enableStormPassivePetrify = true;
+
     private Collider hazardCollider;
     private bool hasAppliedPetrifyThisGust = false;
 
@@ -111,31 +118,41 @@ public class StormHazardWave : MonoBehaviour
             return;
         }
 
-        // 3. 檢查玩家是否躲在掩體背風面內 (有掩體保護 100% 免疫風暴推力！)
+        // 3. 檢查玩家是否躲在掩體背風面內 (有掩體保護 100% 免疫風暴推力與石化！)
         if (WindGustSystem.IsPlayerSheltered)
         {
             return;
         }
 
-        // 3.5 主動石化硬撐中：她就是一顆石頭，風推不動、也沒有另外的懲罰
-        PlayerPetrification braced = hitObj.GetComponent<PlayerPetrification>();
-        if (braced == null) braced = hitObj.GetComponentInParent<PlayerPetrification>();
-        if (braced == null) braced = hitObj.GetComponentInChildren<PlayerPetrification>();
-        if (braced != null && braced.isPetrified)
+        // 3.5 主動石化硬撐中：她就是一顆石頭，風推不動、也不會受到額外被動石化計次懲罰
+        PlayerPetrification petr = hitObj.GetComponent<PlayerPetrification>();
+        if (petr == null) petr = hitObj.GetComponentInParent<PlayerPetrification>();
+        if (petr == null) petr = hitObj.GetComponentInChildren<PlayerPetrification>();
+        if (petr != null && petr.isPetrified)
         {
             return;
         }
 
         // 4. 對未受掩體保護且接觸到實體風暴的玩家施加向左平滑逆風推力 (杜絕 AddForce 物理抽搐)
-        PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
-        if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();
-        if (pm != null)
+        if (enableWindPush)
         {
-            float pushSpeed = Mathf.Sign(windDirectionX) * (windForce * 0.22f); // 約 -4.0 m/s 平滑逆風阻力
-            pm.ApplyWindPush(pushSpeed);
+            PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
+            if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();
+            if (pm != null)
+            {
+                float pushSpeed = Mathf.Sign(windDirectionX) * (windForce * 0.22f); // 約 -4.0 m/s 平滑逆風阻力
+                pm.ApplyWindPush(pushSpeed);
+            }
         }
 
-        // 5.（已改制）風暴不再強制石化——石化改為玩家按住 ⬇/S 的主動自保（見 PlayerPetrification）。
-        //     沒躲好也沒硬撐的下場只有被逆風往回推，把「懲罰」換成「損失路程」。
+        // 5. 風暴強制被動石化（可由 enableStormPassivePetrify 開關自由切換）
+        if (enableStormPassivePetrify && !hasAppliedPetrifyThisGust)
+        {
+            if (petr != null)
+            {
+                hasAppliedPetrifyThisGust = true;
+                petr.Petrify();
+            }
+        }
     }
 }
