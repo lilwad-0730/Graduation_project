@@ -255,7 +255,8 @@ public class StoryCardPlayer : MonoBehaviour
         // ★安全網二：換場景時若還停著卻沒在播卡，立刻解除（避免整個遊戲凍住）
         if (_pausedByMe && !_playing) ReleaseTimePause(1f);
 
-        // 播放器是 DontDestroyOnLoad：新場景的日誌紙也要補掛鉤
+        // 播放器是 DontDestroyOnLoad：新場景的日誌紙也要補掛鉤；有日誌的關卡重新載入時，日誌張數從 0 算
+        if (Object.FindFirstObjectByType<CollectibleNote>() != null) StoryCardNoteHook.ResetCount();
         AutoHookCollectibleNotes();
 
         if (_playing) return;

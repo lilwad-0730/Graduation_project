@@ -56,9 +56,9 @@ MonoBehaviour:
   followLag: 0.55
   cameraFallbackViewport: {x: 0.5, y: 0.8}
   depthZ: 0.3
-  scatterCenter: {x: 0, y: 8}
+  scatterCenter: {x: 0, y: 18}
   scatterSize: {x: 30, y: 10}
-  minHeightAbovePlayer: 1.5
+  minHeightAbovePlayer: 9
   orbitRadius: {x: 4.5, y: 1.6}
   radiusJitter: 0.45
   periodSeconds: 9

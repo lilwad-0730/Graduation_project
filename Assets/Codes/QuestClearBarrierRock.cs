@@ -11,7 +11,14 @@ using Unity.Cinemachine;
 /// </summary>
 public class QuestClearBarrierRock : MonoBehaviour
 {
-    [Header("📋 通關所需收集品清單")]
+    [Header("📖 日誌通關條件（企劃定案：收齊日誌 → 巨石碎開）")]
+    [Tooltip("開啟後，撿到指定張數的日誌卡（StoryCardNoteHook D1~Dn）巨石就消散；下面的 requiredItems 清單只在關閉時作為備用條件")]
+    public bool clearByDiaryCount = true;
+
+    [Tooltip("需要收齊幾張日誌卡")]
+    public int requiredDiaryCount = 3;
+
+    [Header("📋 備用：通關所需收集品清單（clearByDiaryCount 關閉時才看這個）")]
     [Tooltip("請將場景中所有需收集的物件 (如 Note Paper、日記等) 拖入此清單")]
     public GameObject[] requiredItems;
 
@@ -56,10 +63,15 @@ public class QuestClearBarrierRock : MonoBehaviour
     {
         if (_hasTriggered) return;
 
-        if (CheckAllItemsCollected())
+        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= Mathf.Max(1, requiredDiaryCount);
+        bool byItems = !clearByDiaryCount && CheckAllItemsCollected();
+        if (byDiary || byItems)
         {
             _hasTriggered = true;
-            Debug.Log($"🎉【通關條件達成】所有收集品已收集完畢！啟動封鎖巨石 '{name}' 消散特寫演出！");
+            if (byDiary)
+                Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{requiredDiaryCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
+            else
+                Debug.Log($"🎉【通關條件達成】所有收集品已收集完畢！啟動封鎖巨石 '{name}' 消散特寫演出！");
             StartCoroutine(ClearCutsceneRoutine());
         }
     }

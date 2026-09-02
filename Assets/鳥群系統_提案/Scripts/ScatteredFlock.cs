@@ -72,13 +72,13 @@ public class ScatteredFlock : MonoBehaviour
     // ══════════════════════════════════════════
     [Header("散落（不是排成一圈）")]
     [Tooltip("散落區域的中心，相對軸心。y 抬高才會整團在她頭上")]
-    public Vector2 scatterCenter = new Vector2(0f, 8f);
+    public Vector2 scatterCenter = new Vector2(0f, 18f);   // 拉高：在高空盤旋，不接觸主角
 
     [Tooltip("散落區域的大小（寬 × 高）。每隻在這個範圍內各自找位置")]
     public Vector2 scatterSize = new Vector2(30f, 10f);
 
     [Tooltip("保證每隻至少高過她多少公尺（防止有鳥掉進地面）")]
-    public float minHeightAbovePlayer = 1.5f;
+    public float minHeightAbovePlayer = 9f;   // 任何一隻都不會低於主角頭頂 9 單位
 
     [Header("每隻自己的小圈")]
     [Tooltip("繞行半徑（橫、縱）的基準")]

@@ -21,6 +21,12 @@ public class StoryCardNoteHook : MonoBehaviour
     public int maxDiaries = 3;
 
     private static int _picked;   // 撿到第幾張（整個遊戲重開才歸零）
+
+    /// <summary>目前已撿到幾張日誌卡（給通關巨石等系統判斷）。</summary>
+    public static int PickedCount => _picked;
+
+    /// <summary>進入有日誌的關卡時歸零（同一輪重生不會歸零）。</summary>
+    public static void ResetCount() { _picked = 0; }
     private bool _fired;
 
     private void OnTriggerEnter(Collider other)
