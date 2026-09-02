@@ -6010,7 +6010,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 11.1
+  orthographic size: 15
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -6035,7 +6035,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 53.44, y: -120.7, z: -10}
+  m_LocalPosition: {x: -55.274506, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10940,6 +10940,7 @@ MonoBehaviour:
   - {fileID: 2072297853}
   - {fileID: 1765964096}
   stopChaseHeightDifference: 3
+  keepOnGroundWhileChasing: 1
   spawnAttachImmunityTime: 1
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
@@ -27752,7 +27753,7 @@ MonoBehaviour:
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 34
-    OrthographicSize: 11.1
+    OrthographicSize: 15
     NearClipPlane: 0.1
     FarClipPlane: 1000
     Dutch: 0
@@ -27779,7 +27780,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 53.44, y: -120.7, z: -10}
+  m_LocalPosition: {x: -55.274506, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34087,7 +34088,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 53.44, y: -120.7, z: 0}
+  m_LocalPosition: {x: -55.274506, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34122,6 +34123,7 @@ MonoBehaviour:
   transitionSpeed: 8
   useGradualZoneTransition: 0
   enableHorizontalBoundaryClamp: 1
+  boundaryInsetX: 3
   currentMode: 0
   fallingCameraYOffset: 0
   fallingFollowSpeed: 18
@@ -34262,11 +34264,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 53.44
+      value: -69.28
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -123.2
+      value: 0.68
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -34363,11 +34365,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 71.2
+      value: -31.274508
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -111.37601
+      value: 17.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
