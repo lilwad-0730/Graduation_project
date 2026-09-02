@@ -17,6 +17,9 @@ using UnityEngine;
 /// </summary>
 public class WoNiTa_DebugProbe : MonoBehaviour
 {
+    /// <summary>★總開關：正式版關閉。要遠端監測時改成 true 再進 Play。</summary>
+    private const bool ProbeEnabled = false;
+
     private const float FrameEverySeconds = 6f;   // 畫面快照間隔
     private const float HeartbeatSeconds  = 2f;   // 狀態心跳間隔
 
@@ -34,6 +37,7 @@ public class WoNiTa_DebugProbe : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
     {
+        if (!ProbeEnabled) return;   // 關閉：不建物件、不寫 log、不存截圖
         if (_inst != null) return;
 
         GameObject go = new GameObject("~WoNiTa_DebugProbe");
