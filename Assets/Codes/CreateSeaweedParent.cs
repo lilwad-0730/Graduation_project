@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -39,3 +40,4 @@ public class CreateSeaweedParent
         Debug.Log($"[CreateSeaweedParent] 成功為 little seaweed 4 建立父物件 'little seaweed 4_Parent' (位置: {worldPos})！");
     }
 }
+#endif
