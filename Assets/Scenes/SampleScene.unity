@@ -4021,7 +4021,7 @@ GameObject:
   - component: {fileID: 300902028}
   m_Layer: 0
   m_Name: P2
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5062,7 +5062,7 @@ GameObject:
   - component: {fileID: 419984637}
   m_Layer: 0
   m_Name: P4
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5115,7 +5115,7 @@ GameObject:
   - component: {fileID: 450232556}
   m_Layer: 0
   m_Name: P6
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6457,7 +6457,7 @@ GameObject:
   - component: {fileID: 564595670}
   m_Layer: 0
   m_Name: P5
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7127,7 +7127,7 @@ GameObject:
   - component: {fileID: 622203818}
   m_Layer: 0
   m_Name: P9
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8794,7 +8794,7 @@ GameObject:
   - component: {fileID: 733639229}
   m_Layer: 0
   m_Name: P1
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11931,7 +11931,7 @@ GameObject:
   - component: {fileID: 981337945}
   m_Layer: 0
   m_Name: P8
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -17522,7 +17522,7 @@ GameObject:
   - component: {fileID: 1081794024}
   m_Layer: 0
   m_Name: P3
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -24029,7 +24029,7 @@ GameObject:
   - component: {fileID: 1580544560}
   m_Layer: 0
   m_Name: P7
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -33864,7 +33864,7 @@ GameObject:
   - component: {fileID: 2132239886}
   m_Layer: 0
   m_Name: P10
-  m_TagString: Waypoint_WaitPlayer
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34365,7 +34365,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.274508
+      value: -31.234919
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
