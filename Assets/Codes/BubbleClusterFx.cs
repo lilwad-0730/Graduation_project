@@ -223,7 +223,11 @@ public class BubbleClusterFx : MonoBehaviour
 
         if (_bubbles == null || _bubbles.Count == 0) return;
 
+#if UNITY_EDITOR
         float currentTime = Application.isPlaying ? Time.time : (float)UnityEditor.EditorApplication.timeSinceStartup;
+#else
+        float currentTime = Time.time;
+#endif
         float normalizedTime = (currentTime % cycleDuration) / cycleDuration; // 0 ~ 1
 
         float halfH = floatHeight * 0.5f;
