@@ -68,6 +68,9 @@ public class CameraTargetXFollower : MonoBehaviour
     [Header("🛡️ 整排背景世界邊界 Clamp 防護")]
     public bool enableHorizontalBoundaryClamp = true;
 
+    [Tooltip("邊界再往內縮幾個單位：背景圖邊緣常有透明留白，寬螢幕下鏡頭貼到邊界會露出一條底色（荒原左側藍條）")]
+    public float boundaryInsetX = 3f;
+
     [Header("🕳️ Falling Mode (垂直高速墜落模式)")]
     [Tooltip("當前運行的相機模式")]
     public CameraMode currentMode = CameraMode.Mario;
@@ -662,8 +665,8 @@ public class CameraTargetXFollower : MonoBehaviour
         float aspect = (_mainCam != null && _mainCam.aspect > 0.1f) ? _mainCam.aspect : (16f / 9f);
         float halfWidth = orthoSize * aspect;
 
-        float minCamX = minBoundX + halfWidth;
-        float maxCamX = maxBoundX - halfWidth;
+        float minCamX = minBoundX + halfWidth + boundaryInsetX;
+        float maxCamX = maxBoundX - halfWidth - boundaryInsetX;
 
         float finalCameraX = rawX;
         if (minCamX <= maxCamX)

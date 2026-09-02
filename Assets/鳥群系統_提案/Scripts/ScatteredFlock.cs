@@ -166,6 +166,43 @@ public class ScatteredFlock : MonoBehaviour
     private float _nextAttackAt;
     private bool _spawned, _snapped;
     private static readonly int _ColorId = Shader.PropertyToID("_Color");
+    private static readonly int _BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int _BaseMapId = Shader.PropertyToID("_BaseMap");
+    private static readonly int _MainTexId = Shader.PropertyToID("_MainTex");
+
+    /// <summary>把不是 URP 的材質換成 URP Simple Lit，貼圖與顏色照搬（否則 URP 下整隻粉紅）。</summary>
+    private static void MakeUrpSafe(GameObject go)
+    {
+        Shader urp = Shader.Find("Universal Render Pipeline/Simple Lit");
+        if (urp == null) urp = Shader.Find("Universal Render Pipeline/Lit");
+        if (urp == null) urp = Shader.Find("Universal Render Pipeline/Unlit");
+        if (urp == null) return;
+
+        Renderer[] rs = go.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < rs.Length; i++)
+        {
+            if (rs[i] == null) continue;
+            Material[] mats = rs[i].sharedMaterials;
+            bool changed = false;
+            for (int k = 0; k < mats.Length; k++)
+            {
+                Material m = mats[k];
+                if (m == null || m.shader == null) continue;
+                if (m.shader.name.StartsWith("Universal Render Pipeline/")) continue;
+
+                Material nm = new Material(urp);
+                nm.name = m.name + "_URP";
+                Texture tex = m.HasProperty(_MainTexId) ? m.GetTexture(_MainTexId) : null;
+                if (tex == null) tex = m.mainTexture;
+                if (tex != null && nm.HasProperty(_BaseMapId)) nm.SetTexture(_BaseMapId, tex);
+                Color c = m.HasProperty(_ColorId) ? m.GetColor(_ColorId) : Color.white;
+                if (nm.HasProperty(_BaseColorId)) nm.SetColor(_BaseColorId, c);
+                mats[k] = nm;
+                changed = true;
+            }
+            if (changed) rs[i].sharedMaterials = mats;
+        }
+    }
 
     /// <summary>-0.5 ~ +0.5 的平滑噪聲</summary>
     private static float N(Vector2 seed, float t)
@@ -239,6 +276,7 @@ public class ScatteredFlock : MonoBehaviour
 
             // ★安全：這團是純景，不參與任何碰撞（攻擊用距離判定，不用 collider）
             StripPhysics(go);
+            MakeUrpSafe(go);   // living birds 的原始材質是內建管線 shader，URP 下會整隻粉紅
 
             Transform t = go.transform;
             t.localScale = Vector3.one * (birdScale * (1f + Random.Range(-scaleJitter, scaleJitter)));
@@ -301,6 +339,7 @@ public class ScatteredFlock : MonoBehaviour
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             rs[i].GetPropertyBlock(mpb);
             mpb.SetColor(_ColorId, distantTint);
+            mpb.SetColor(_BaseColorId, distantTint);   // URP 材質看的是 _BaseColor
             rs[i].SetPropertyBlock(mpb);
         }
     }

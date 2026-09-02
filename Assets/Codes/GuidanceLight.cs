@@ -71,6 +71,75 @@ public class GuidanceLight : MonoBehaviour
     private CinemachineCamera _cutsceneVcam;      // 演出期間被借走 Follow 的相機
     private Transform _cutsceneOriginalFollow;    // 借走前的 Follow，結束時還回去
 
+    // ── 演出期間的玩家鎖定（剛體、動畫、呼吸）──
+    private PlayerMovement _heldPm;
+    private Rigidbody _heldRb;
+    private RigidbodyConstraints _heldConstraints;
+    private bool _heldUseGravity;
+    private Animator _heldAnim;
+    private float _heldAnimSpeed = 1f;
+    private bool _breathHeld;
+
+    /// <summary>演出開始：她不能動、不會沉、動畫定格、氧氣暫停——不然鏡頭跟著光絮飛，她在畫面外沉下去溺斃。</summary>
+    private void BeginPlayerHold(PlayerMovement pm)
+    {
+        if (pm == null || _heldPm != null) return;
+        _heldPm = pm;
+        pm.isCutsceneFrozen = true;
+
+        _heldRb = pm.GetComponent<Rigidbody>();
+        if (_heldRb == null) _heldRb = pm.GetComponentInParent<Rigidbody>();
+        if (_heldRb != null)
+        {
+            _heldConstraints = _heldRb.constraints;
+            _heldUseGravity = _heldRb.useGravity;
+            _heldRb.linearVelocity = Vector3.zero;
+            _heldRb.angularVelocity = Vector3.zero;
+            _heldRb.useGravity = false;
+            _heldRb.constraints = RigidbodyConstraints.FreezeAll;   // 用約束而不是 kinematic：別的腳本寫速度也不會噴警告
+        }
+
+        _heldAnim = pm.animator;
+        if (_heldAnim == null) _heldAnim = pm.GetComponentInChildren<Animator>();
+        if (_heldAnim != null)
+        {
+            _heldAnimSpeed = _heldAnim.speed;
+            _heldAnim.speed = 0f;
+        }
+
+        if (UnderwaterSuffocationEffect.Instance != null && !_breathHeld)
+        {
+            UnderwaterSuffocationEffect.Instance.SetHold(true);
+            _breathHeld = true;
+        }
+    }
+
+    /// <summary>演出結束：全部還原。</summary>
+    private void EndPlayerHold()
+    {
+        if (_heldRb != null)
+        {
+            _heldRb.constraints = _heldConstraints;
+            _heldRb.useGravity = _heldUseGravity;
+            _heldRb = null;
+        }
+        if (_heldAnim != null)
+        {
+            _heldAnim.speed = _heldAnimSpeed;
+            _heldAnim = null;
+        }
+        if (_breathHeld)
+        {
+            if (UnderwaterSuffocationEffect.Instance != null) UnderwaterSuffocationEffect.Instance.SetHold(false);
+            _breathHeld = false;
+        }
+        if (_heldPm != null)
+        {
+            _heldPm.isCutsceneFrozen = false;
+            _heldPm = null;
+        }
+    }
+
     void Start()
     {
         logicPosition = transform.position;
@@ -217,8 +286,8 @@ public class GuidanceLight : MonoBehaviour
 
     private IEnumerator CutsceneFlightSequence(PlayerMovement pm)
     {
-        // 1. 立即停止玩家行動（一路鎖到鏡頭回到玩家身上為止）
-        pm.isCutsceneFrozen = true;
+        // 1. 立即停止玩家行動（一路鎖到鏡頭回到玩家身上為止）：剛體、動畫、氧氣一起鎖
+        BeginPlayerHold(pm);
         isLockingPlayer = true;
 
         // 2. 鏡頭交給光絮：把場上啟用中的 Cinemachine 相機 Follow 暫時換成光絮。
@@ -275,14 +344,15 @@ public class GuidanceLight : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
 
-        // 7. 解凍玩家
-        pm.isCutsceneFrozen = false;
+        // 7. 解凍玩家（剛體、動畫、氧氣一起還原）
+        EndPlayerHold();
         isLockingPlayer = false;
     }
 
     private void OnDisable()
     {
-        // 保險：演出中途被停用／換場景時，把鏡頭 Follow 還回去，避免鏡頭永遠黏在光絮上
+        // 保險：演出中途被停用／換場景時，把玩家鎖定與鏡頭 Follow 都還回去
+        EndPlayerHold();
         if (_cutsceneVcam != null)
         {
             if (_cutsceneOriginalFollow != null) _cutsceneVcam.Follow = _cutsceneOriginalFollow;
@@ -300,7 +370,7 @@ public class GuidanceLight : MonoBehaviour
     private IEnumerator AbsorbSequence(PlayerMovement pm)
     {
         IsAbsorbing = true;
-        if (pm != null) pm.isCutsceneFrozen = true;
+        BeginPlayerHold(pm);   // 吸收期間同樣不沉、不扣氧氣
 
         // 播放光球吸收/合體音效
         if (absorbSFX != null)
@@ -393,7 +463,7 @@ public class GuidanceLight : MonoBehaviour
         }
 
         // 6. 解凍玩家與結束狀態
-        if (pm != null) pm.isCutsceneFrozen = false;
+        EndPlayerHold();
         IsAbsorbing = false;
     }
 
@@ -469,6 +539,7 @@ public class GuidanceLight : MonoBehaviour
             StopCoroutine(absorbCoroutine);
             IsAbsorbing = false;
             RestoreVisuals();
+            EndPlayerHold();   // 吸收被中斷也要把玩家還原，別讓她卡在定格
         }
 
         logicPosition = targetPosition;

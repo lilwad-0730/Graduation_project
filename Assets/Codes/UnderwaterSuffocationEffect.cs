@@ -113,6 +113,14 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
     private bool isPaused    = false;
     private float delayTimer = 0f;
     private float _deathTimer = 0f;
+    private int _holdCount = 0;
+
+    /// <summary>演出期間（光絮飛行、吸收）暫停呼吸計時：光圈不縮、不會溺斃。可巢狀呼叫。</summary>
+    public void SetHold(bool on)
+    {
+        _holdCount = Mathf.Max(0, _holdCount + (on ? 1 : -1));
+    }
+    public bool IsHeld => _holdCount > 0;
     private bool delayDone   = false;
     private Coroutine reliefCoroutine;
 
@@ -160,6 +168,14 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         }
 
         if (vignetteShader == null || imgMain == null) return;
+
+        // 演出期間暫停：不推進延遲、不縮圈、不倒數溺斃
+        if (_holdCount > 0)
+        {
+            _deathTimer = 0f;
+            UpdateLayerMaterials();
+            return;
+        }
 
         // 等候 startDelay
         if (!delayDone)
@@ -240,6 +256,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         isPaused      = false;
         delayTimer    = 0f;
         _deathTimer   = 0f;
+        _holdCount    = 0;
         delayDone     = (startDelay <= 0f);
         currentRadius = startRadius;
     }
