@@ -71,6 +71,36 @@ public class CameraTargetXFollower : MonoBehaviour
     [Tooltip("邊界再往內縮幾個單位：背景圖邊緣常有透明留白，寬螢幕下鏡頭貼到邊界會露出一條底色（荒原左側藍條）")]
     public float boundaryInsetX = 3f;
 
+    /// <summary>手動指定的一層左右邊界背景圖（每幀即時讀取實際 Renderer 邊界）</summary>
+    [System.Serializable]
+    public class ZoneBoundaryBackgrounds
+    {
+        [Tooltip("這一層「最左邊」那張背景圖的 Renderer (例如廢墟層的 Ruin_Background_1)")]
+        public Renderer leftMost;
+
+        [Tooltip("這一層「最右邊」那張背景圖的 Renderer (例如廢墟層的 Ruin_Background_Mountain)")]
+        public Renderer rightMost;
+
+        public bool IsValid => leftMost != null && rightMost != null;
+    }
+
+    [Header("🎯 手動指定左右邊界背景圖 (最推薦，優先於自動搜尋)")]
+    [Tooltip("指定後，鏡頭左右邊界每幀直接讀取這兩張背景圖「當下的實際 Renderer 邊界」。\n" +
+             "因為是即時讀取，背景被 ParallaxGroup 移動時邊界會跟著一起移動，永遠對齊，結構上不可能再破圖。\n" +
+             "留空則沿用原本的自動搜尋 + 快取邊界（背景會動的區域就有對不齊的風險）。")]
+    public ZoneBoundaryBackgrounds upperZoneBoundaryBackgrounds = new ZoneBoundaryBackgrounds();
+    public ZoneBoundaryBackgrounds skyZoneBoundaryBackgrounds = new ZoneBoundaryBackgrounds();
+    public ZoneBoundaryBackgrounds ruinsZoneBoundaryBackgrounds = new ZoneBoundaryBackgrounds();
+    public ZoneBoundaryBackgrounds desertZoneBoundaryBackgrounds = new ZoneBoundaryBackgrounds();
+
+    [Header("⛰️ 垂直跟隨特例 (由 MountainCameraZone 觸發，勿手動勾選)")]
+    [Tooltip("目前是否有垂直跟隨區生效。開啟時 Y 軸改為跟隨玩家並夾在下方指定範圍內，關閉時平滑回到該層的固定 Y")]
+    public bool verticalFollowActive = false;
+    public float verticalFollowMinY = 0f;
+    public float verticalFollowMaxY = 0f;
+    public float verticalFollowSpeed = 8f;
+    public float verticalFollowYOffset = 0f;
+
     [Header("🕳️ Falling Mode (垂直高速墜落模式)")]
     [Tooltip("當前運行的相機模式")]
     public CameraMode currentMode = CameraMode.Mario;
@@ -219,6 +249,37 @@ public class CameraTargetXFollower : MonoBehaviour
 
         ReacquireCamera();
         Debug.Log("🎬【Camera Override 結束】已無縫還原為常駐相機模式！");
+    }
+
+    #endregion
+
+    #region ⛰️ 垂直跟隨特例 API (供 MountainCameraZone 這類特別高的背景區呼叫)
+
+    /// <summary>
+    /// 啟用垂直跟隨：Y 軸改為跟隨玩家，並夾在 minY ~ maxY 之間（X 軸維持原本的 Mario 跟隨與邊界 Clamp）。
+    /// </summary>
+    public static void EnableVerticalFollow(float minY, float maxY, float followSpeed, float yOffset)
+    {
+        if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
+        if (Instance == null) return;
+
+        Instance.verticalFollowActive = true;
+        Instance.verticalFollowMinY = minY;
+        Instance.verticalFollowMaxY = maxY;
+        Instance.verticalFollowSpeed = followSpeed > 0.01f ? followSpeed : 8f;
+        Instance.verticalFollowYOffset = yOffset;
+        Debug.Log($"⛰️【垂直跟隨啟用】鏡頭改為上下跟隨玩家，範圍 Y: [{minY:F1} ~ {maxY:F1}]");
+    }
+
+    /// <summary>關閉垂直跟隨，鏡頭 Y 平滑回到該層原本的固定高度。</summary>
+    public static void DisableVerticalFollow()
+    {
+        if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
+        if (Instance == null) return;
+        if (!Instance.verticalFollowActive) return;
+
+        Instance.verticalFollowActive = false;
+        Debug.Log("⛰️【垂直跟隨關閉】鏡頭 Y 平滑回到本層固定高度。");
     }
 
     #endregion
@@ -568,6 +629,7 @@ public class CameraTargetXFollower : MonoBehaviour
                 _hasLastPlayerPos = true;
 
                 float clampedX = GetClampedX(playerPos.x, currentOrthoSize, playerY);
+                UpdateMarioTargetY(currentZone, playerPos);
                 transform.position = new Vector3(clampedX, currentTargetY, 0f);
 
                 ApplyOrthoSize(currentOrthoSize);
@@ -624,6 +686,77 @@ public class CameraTargetXFollower : MonoBehaviour
         ApplyOrthoSize(currentOrthoSize);
     }
 
+    /// <summary>取得該層原本設定的固定 Y 高度</summary>
+    private float GetZoneFixedY(BackgroundZone zone)
+    {
+        switch (zone)
+        {
+            case BackgroundZone.UpperCastle: return upperZoneFixedY;
+            case BackgroundZone.Sky: return skyZoneFixedY;
+            case BackgroundZone.Ruins: return ruinedZoneFixedY;
+            case BackgroundZone.Desert: return desertFixedY;
+        }
+        return currentTargetY;
+    }
+
+    /// <summary>
+    /// Mario 模式的 Y 軸決策：
+    /// 沒有垂直跟隨區時維持本層固定高度（原本行為完全不變）；
+    /// 進入垂直跟隨區時改為跟隨玩家，並夾在該區指定的上下邊界內；離開時平滑回到固定高度。
+    /// </summary>
+    private void UpdateMarioTargetY(BackgroundZone zone, Vector3 playerPos)
+    {
+        float zoneFixedY = GetZoneFixedY(zone);
+
+        if (!verticalFollowActive)
+        {
+            if (Mathf.Abs(currentTargetY - zoneFixedY) < 0.01f || !Application.isPlaying)
+            {
+                currentTargetY = zoneFixedY;
+            }
+            else
+            {
+                // 離開垂直跟隨區：平滑滑回本層固定高度，不要瞬間跳回去
+                currentTargetY = Mathf.Lerp(currentTargetY, zoneFixedY, Time.deltaTime * verticalFollowSpeed);
+            }
+            return;
+        }
+
+        float desiredY = playerPos.y + verticalFollowYOffset;
+
+        // 夾在這個區域指定的上下邊界內（扣掉半個畫面高度，確保鏡頭視野不會超出背景圖露出破圖）
+        float halfHeight = currentOrthoSize;
+        float lo = verticalFollowMinY + halfHeight;
+        float hi = verticalFollowMaxY - halfHeight;
+        if (lo <= hi)
+        {
+            desiredY = Mathf.Clamp(desiredY, lo, hi);
+        }
+        else
+        {
+            // 區域高度比鏡頭視野還小：直接置中，避免上下抖動
+            desiredY = (verticalFollowMinY + verticalFollowMaxY) * 0.5f;
+        }
+
+        currentTargetY = Application.isPlaying
+            ? Mathf.Lerp(currentTargetY, desiredY, Time.deltaTime * verticalFollowSpeed)
+            : desiredY;
+    }
+
+    /// <summary>取得該層手動指定的左右邊界背景圖設定（未指定時回傳 null）</summary>
+    private ZoneBoundaryBackgrounds GetExplicitBoundaryFor(BackgroundZone zone)
+    {
+        ZoneBoundaryBackgrounds b = null;
+        switch (zone)
+        {
+            case BackgroundZone.UpperCastle: b = upperZoneBoundaryBackgrounds; break;
+            case BackgroundZone.Sky: b = skyZoneBoundaryBackgrounds; break;
+            case BackgroundZone.Ruins: b = ruinsZoneBoundaryBackgrounds; break;
+            case BackgroundZone.Desert: b = desertZoneBoundaryBackgrounds; break;
+        }
+        return (b != null && b.IsValid) ? b : null;
+    }
+
     private float GetClampedX(float rawX, float orthoSize, float playerY)
     {
         if (!enableHorizontalBoundaryClamp) return rawX;
@@ -631,7 +764,18 @@ public class CameraTargetXFollower : MonoBehaviour
         float minBoundX = float.MinValue;
         float maxBoundX = float.MaxValue;
 
-        if (isDesertScene)
+        BackgroundZone zone = GetCurrentZone(playerY);
+
+        // ★ 最優先：手動指定的左右邊界背景圖，每幀即時讀取實際 Renderer 邊界。
+        //   因為是即時讀取，背景被 ParallaxGroup 移動時邊界會跟著一起移動，
+        //   不會再發生「邊界是舊快取、背景卻已經滑走」造成的破圖。
+        ZoneBoundaryBackgrounds explicitBounds = GetExplicitBoundaryFor(zone);
+        if (explicitBounds != null)
+        {
+            minBoundX = explicitBounds.leftMost.bounds.min.x;
+            maxBoundX = explicitBounds.rightMost.bounds.max.x;
+        }
+        else if (isDesertScene)
         {
             minBoundX = _desertMinX;
             maxBoundX = _desertMaxX;
