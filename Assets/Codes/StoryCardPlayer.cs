@@ -34,13 +34,13 @@ public class StoryCardPlayer : MonoBehaviour
     // ══════════════════════════════════════════
     // 卡片資料
     // ══════════════════════════════════════════
-    public enum CardStyle { Curtain, Paper }
+    public enum CardStyle { Curtain, Paper, Overlay }
 
     [System.Serializable]
     public class Card
     {
         public string cardId = "";
-        [Tooltip("Curtain＝黑幕過場卡；Paper＝紙底日誌卡（水下 D1–D3）")]
+        [Tooltip("Curtain＝黑幕過場卡；Paper＝紙底日誌卡（水下 D1–D3）；Overlay＝字疊在演出上（幕只壓暗，不全黑）")]
         public CardStyle style = CardStyle.Curtain;
         [TextArea(2, 6)] public string[] pages = new string[0];
     }
@@ -81,6 +81,10 @@ public class StoryCardPlayer : MonoBehaviour
     public Color paperInkColor = new Color(0.169f, 0.157f, 0.133f, 1f);
     [Tooltip("紙卡沒指定紙紋圖時，自動從 Resources 這個路徑載（留空＝不載，用純色）")]
     public string paperResourcePath = "Diary/diary_paper";
+
+    [Header("疊字樣式（Overlay：字疊在演出上，不全黑）")]
+    [Range(0f, 1f), Tooltip("Overlay 卡的幕透明度。0.62＝畫面壓暗六成，龍捲風／沉水／廢墟落點還看得到。1＝等同黑幕")]
+    public float overlayAlpha = 0.62f;
 
     // ══════════════════════════════════════════
     // 日誌照片頁（水下 D1–D3：先照片，再原句）
@@ -306,7 +310,9 @@ public class StoryCardPlayer : MonoBehaviour
         }
         _paper = card.style == CardStyle.Paper;
         _pendingPhoto = (_paper && diaryPhotoEnabled) ? FindDiaryPhoto(cardId) : null;
-        yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut);
+        // Overlay：幕只到 overlayAlpha，畫面在字後面繼續演；其他樣式照舊全遮
+        float curtainMax = card.style == CardStyle.Overlay ? Mathf.Clamp01(overlayAlpha) : 1f;
+        yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut, curtainMax);
     }
 
     public IEnumerator Play(string cardId)
@@ -363,8 +369,9 @@ public class StoryCardPlayer : MonoBehaviour
         Time.timeScale = restoreTo > 0f ? restoreTo : 1f;
     }
 
-    public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut)
+    public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut, float curtainMax = 1f)
     {
+        curtainMax = Mathf.Clamp(curtainMax, 0.05f, 1f);
         if (pages == null || pages.Length == 0) yield break;
 
         _playing = true;
@@ -388,16 +395,16 @@ public class StoryCardPlayer : MonoBehaviour
         _canvas.enabled = true;
         if (_curtain != null) _curtain.sprite = _paper ? _activePaperSprite : null;
         if (_label != null) _label.color = _paper ? paperInkColor : textColor;
-        SetCurtainAlpha(curtainFadeIn ? 0f : 1f);
+        SetCurtainAlpha(curtainFadeIn ? 0f : curtainMax);
         SetLabelAlpha(0f);
         _label.text = "";
 
-        // 黑幕淡入
+        // 黑幕淡入（Overlay 只淡到 curtainMax）
         if (curtainFadeIn && curtainIn > 0f)
         {
-            yield return FadeCurtain(0f, 1f, curtainIn);
+            yield return FadeCurtain(0f, curtainMax, curtainIn);
         }
-        SetCurtainAlpha(1f);
+        SetCurtainAlpha(curtainMax);
 
         // ── 照片頁（只有日誌卡有；照片缺檔就跳過，只播文字，不卡流程）──
         DiaryPhotoPage photoCfg = _pendingPhoto;
@@ -487,7 +494,7 @@ public class StoryCardPlayer : MonoBehaviour
             yield return WaitUnscaled(curtainTailHold);
             if (curtainOut > 0f)
             {
-                yield return FadeCurtain(1f, 0f, curtainOut);
+                yield return FadeCurtain(curtainMax, 0f, curtainOut);
             }
             SetCurtainAlpha(0f);
             _canvas.enabled = false;
@@ -495,6 +502,12 @@ public class StoryCardPlayer : MonoBehaviour
         else
         {
             // 維持全黑，讓呼叫端接手載入場景。
+            // Overlay 卡此時只有 curtainMax 的暗度 → 先補到全黑，交接才不會露出半透明的畫面。
+            if (curtainMax < 0.999f)
+            {
+                yield return FadeCurtain(curtainMax, 1f, 0.35f);
+            }
+            SetCurtainAlpha(1f);
             // 新場景載完後 OnSceneLoaded 會自己把黑幕淡掉。
             _canvas.enabled = true;
         }
@@ -970,65 +983,51 @@ public class StoryCardPlayer : MonoBehaviour
     {
         List<Card> list = new List<Card>();
 
-        // ── M1　棉花堡 → 廢墟　1 頁 / 39 字 ──
+        // ★ 短句版（0902 教授回饋：字太多像小說，改用畫面＋短句）
+        //   26 頁 575 字 → 11 頁約 120 字；每頁最多 2 行、每行 ≤9 字。
+        //   M1–M4 用 Overlay：字疊在演出上（落地的廢墟、龍捲風、綠洲水邊、水下），不全黑。
+        //   M5 維持黑幕，因為它接的是全黑的結局繪本。
+        //   撰稿者 8/29 原稿（26 頁）留檔於專案文件《文字卡短句版_實裝與原稿留檔_0903》，git 歷史亦可查。
+
+        // ── M1　棉花堡 → 廢墟 ──
         list.Add(NewCard("M1", new string[] {
-            "一切都是好的，\n在追尋親密關係的時候。\n而孩子通常會被視為是\n親密關係中愛情的結晶。"
-        }));
+            "一切都是好的。\n孩子，是愛的結晶。"
+        }, CardStyle.Overlay));
 
-        // ── M2　廢墟 → 荒原　5 頁 / 160 字 ──
+        // ── M2　廢墟 → 荒原（疊在龍捲風上）──
         list.Add(NewCard("M2", new string[] {
-            "但處在不斷需要重複勞動的時候，\n已經做了的東西，\n還需要日復一日地去再做，",
-            "她人帶著好意的話語，\n都會被視作壓力，\n我不是做不好，我明白怎麼做，",
-            "只是現在的我有點累了，\n我想要，也需要休息。\n但好像...沒有一個環境給我休息。",
-            "我只能不斷做著，\n沒有人可以代替我，我應當行的。",
-            "在這樣的情況下，我迎來了爆發，\n即使我知道這不對。\n可...\n真的不對嗎？"
-        }));
+            "日復一日\n沒有人能代替我",
+            "我只是累了\n真的不對嗎"
+        }, CardStyle.Overlay));
 
-        // ── M3　荒原 → 潛入水下　5 頁 / 114 字 ──
+        // ── M3　荒原 → 潛入水下（疊在綠洲水邊）──
         list.Add(NewCard("M3", new string[] {
-            "我已經累了，\n但是他們好像不允許我休息。",
-            "我顯露出的疲態，疏忽，會被批評，\n而我過去的努力好像理所應當。",
-            "我還在往前走，\n但我已經不知道當初的目標是什麼了。",
-            "內心的麻木，情緒的咆哮，\n我已經聲嘶力竭了。",
-            "我真的需要一個依靠。\n前面會是我的依靠嗎？"
-        }));
+            "還在往前走\n已經忘了要去哪",
+            "前面，會是我的依靠嗎"
+        }, CardStyle.Overlay));
 
-        // ── M4　水下 → 星空玻璃館　10 頁 / 251 字 ──
-        //    ★黑幕 59.4 秒。施工單第八節：建議拆成兩半或改用畫面上淡入
+        // ── M4　水下 → 星空玻璃館 ──
         list.Add(NewCard("M4", new string[] {
-            "不知道什麼時候開始，\n我好像身處海面上。",
-            "是我自己的選擇嗎？\n還是別人導致的？",
-            "無所謂了，我已經在這裡，\n我應該想的時候如何呼吸，\n而不是其他的。",
-            "往後的生活，\n我不斷掙扎在窒息和嗆水當中，\n漸漸地，我開始沒了力氣。",
-            // ★M4-05～07 移到水下撿日誌時播（D1–D3 紙卡），這裡不再重複
-            "就在我思索的時候，\n一團黑影籠罩著我，帶來了恐懼，，\n頁打斷了我的思考，",
-            "黑影很快就離去了，\n終於緩過氣的我也沒了思緒。\n就好跟著光球繼續往前走。",
-            "奇怪，在最黑暗的地方，\n居然還有一道光芒？"
-        }));
+            "有東西經過\n牠沒有看我一眼",
+            "最暗的地方\n還有一道光"
+        }, CardStyle.Overlay));
 
-        // ── M5　星空玻璃館 → 結局（回到棉花堡）　5 頁 / 96 字 ──
+        // ── M5　星空玻璃館 → 結局（黑幕，接全黑的結局繪本）──
         list.Add(NewCard("M5", new string[] {
-            "情緒將我淹沒，\n黑暗將我籠罩，",
-            "我只能住前，不停的往前，\n好在有燭光，",
-            "好奇怪，為什麼...\n為什麼這個時候會有光，",
-            "原來我也可以求救。",
-            "在一次次的向我尋求幫助，\n她離開了深不見底的黑暗，\n回到了她的棉花堡"
+            "原來\n我也可以求救"
         }));
 
-        // ── D1–D3　水下日誌（紙底卡）＝原 M4-05～07 ──
-        //    掛在撿日誌的位置播，撿到當下看，不進關底黑幕。
-        //    ※目前的文字是她「當下的獨白」；若撰稿者要改成
-        //      「日誌上實際寫的內容」，改這三張就好。
+        // ── D1–D3　水下日誌（紙底卡）＝日誌上真的寫的字，不是獨白 ──
+        //    照片頁先出，再出這幾行。「內心破開」改由收齊三張後巨石碎裂的畫面承擔。
         list.Add(NewPaperCard("D1", new string[] {
-            "光球...\n對！我還有光球，\n於是我朝著光球游去。"
+            "三點十分　醒\n四點零五　醒\n天亮了"
         }));
         list.Add(NewPaperCard("D2", new string[] {
-            "光球往下，我也往下。\n在這裏我看見一些東西，\n是以前我所記下的。"
+            "寫下來就會好一點"
         }));
         list.Add(NewPaperCard("D3", new string[] {
-            "我的內心好像有什麼破開了。"
+            "今天很好"
         }));
-
         return list;
     }
 
@@ -1081,11 +1080,12 @@ public class StoryCardPlayer : MonoBehaviour
         return c;
     }
 
-    private static Card NewCard(string id, string[] pages)
+    private static Card NewCard(string id, string[] pages, CardStyle style = CardStyle.Curtain)
     {
         Card c = new Card();
         c.cardId = id;
         c.pages = pages;
+        c.style = style;
         return c;
     }
 }

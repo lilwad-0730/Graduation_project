@@ -174,6 +174,14 @@ public class StormSceneTransition : MonoBehaviour
         pm.StopWindSuction();
         pm.isCutsceneFrozen = true;
 
+        // ★【文字卡】她被吸到風暴中心、龍捲風還在畫面上轉 → 短句疊在演出上（M2 是 Overlay 卡）
+        //   → 卡片自己補到全黑 → 下面的黑屏淡出在它底下跑（無害）→ 載入荒原後由播放器淡掉黑幕。
+        //   順序：龍捲風帶走她 → 兩句短句 → 落在荒原。（0902 教授回饋：字疊在畫面上，不在全黑上讀）
+        if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(storyCardId))
+        {
+            yield return StoryCardPlayer.Instance.Play(storyCardId, true, false);
+        }
+
         // 4. 到達中心，啟動畫面黑屏淡出
         CreateFadeImage();
 
@@ -199,13 +207,6 @@ public class StormSceneTransition : MonoBehaviour
         if (!string.IsNullOrEmpty(targetSpawnPointName))
         {
             PlayerRespawnSystem.QueueNextSceneSpawn(targetSpawnPointName);
-        }
-
-        // ★【文字卡】畫面此時已全黑 → 播 M2 →（維持全黑）→ 才載入荒原
-        //   順序：龍捲風帶走她 → 讀她的心聲 → 落在荒原
-        if (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(storyCardId))
-        {
-            yield return StoryCardPlayer.Instance.Play(storyCardId, false, false);
         }
 
         string targetScene = nextSceneName.Trim();
