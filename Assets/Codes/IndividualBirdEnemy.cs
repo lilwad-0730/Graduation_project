@@ -508,17 +508,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
 
             // 2. 直接狀態強制過渡 (Double Protection)
+            //    ★crow 的 birdAnimatorController 裡叫「fly」不是「flying」：交給 AnimStateResolver 對別名，
+            //      找不到就不硬播（原本 Play 不存在的 state → Animator.GotoState 警告刷屏、鳥永遠不拍翅）
             string stateToPlay = animName;
-            if (animName == "flyStraight" || animName == "fly") stateToPlay = "flying";
-
-            if (anim.HasState(0, Animator.StringToHash(stateToPlay)))
-            {
-                anim.CrossFade(stateToPlay, 0.1f);
-            }
-            else
-            {
-                anim.Play(stateToPlay, 0, 0f);
-            }
+            if (animName == "flyStraight") stateToPlay = "fly";
+            AnimStateResolver.CrossFadeSafe(anim, stateToPlay, 0.1f);
         }
     }
 

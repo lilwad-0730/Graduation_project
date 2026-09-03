@@ -83,6 +83,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     public bool isPetrified = false;
     private float graceTimer = 0f;
     private bool _bracing = false;   // 目前的石化是玩家主動按出來的
+    /// <summary>目前的石化是玩家自己按住 ⬇/S 硬撐出來的（重生守護不該把它清掉）。</summary>
+    public bool IsBracing => _bracing;
 
     private PlayerMovement playerMovement;
     private PlayerRespawnSystem respawnSystem;

@@ -496,9 +496,9 @@ public class PlayerRespawnSystem : MonoBehaviour
         if (_playerRb != null)
         {
             _playerRb.position = targetPos;
+            _playerRb.isKinematic = false;   // 先解 kinematic 再歸零速度，否則 Unity 噴「Setting linear velocity of a kinematic body」
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
-            _playerRb.isKinematic = false;
             _playerRb.useGravity = true;
         }
         if (pmComponent != null)
@@ -512,7 +512,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             yield return new WaitForFixedUpdate();
         }
-        if (_playerRb != null)
+        if (_playerRb != null && !_playerRb.isKinematic)
         {
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
@@ -644,9 +644,19 @@ public class PlayerRespawnSystem : MonoBehaviour
         float elapsed = 0f;
         float guardDuration = 5f;
 
+        PlayerPetrification petrifyRef = GetComponent<PlayerPetrification>();
         while (elapsed < guardDuration)
         {
             elapsed += Time.deltaTime;
+
+            // ★不打架：玩家自己按住 ⬇/S 硬撐出來的石化是刻意的，不是殘留；
+            //   文字卡／鏡牆／怪物特寫的硬鎖也不能在這裡被每幀強拆。
+            //   （原本每幀清一次、下一幀又被按回去，log 一秒噴幾十行、角色抖動）
+            if ((petrifyRef != null && petrifyRef.IsBracing) || PlayerMovement.IsHardCutsceneLocked)
+            {
+                yield return null;
+                continue;
+            }
 
             // 確保 Rigidbody 不被鎖死
             if (_playerRb != null && _playerRb.isKinematic)

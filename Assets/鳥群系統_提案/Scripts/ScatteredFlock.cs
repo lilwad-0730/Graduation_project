@@ -287,7 +287,7 @@ public class ScatteredFlock : MonoBehaviour
                 if (birdAnimator != null) anim.runtimeAnimatorController = birdAnimator;
                 anim.applyRootMotion = false;
                 if (anim.runtimeAnimatorController != null && !string.IsNullOrEmpty(flyStateName))
-                    anim.Play(flyStateName, 0, Random.value);   // 拍翅相位錯開
+                    AnimStateResolver.PlaySafe(anim, flyStateName, Random.value);   // 拍翅相位錯開（flying/fly 別名自動對）
             }
 
             if (tintDistant) Tint(go);
@@ -495,7 +495,7 @@ public class ScatteredFlock : MonoBehaviour
         Vector3 startLocal = m.tr.localPosition;
 
         // 1　叫聲警告：先讓她知道有東西要下來
-        if (m.anim != null && !string.IsNullOrEmpty(warnStateName)) m.anim.Play(warnStateName, 0, 0f);
+        if (m.anim != null && !string.IsNullOrEmpty(warnStateName)) AnimStateResolver.PlaySafe(m.anim, warnStateName, 0f);
         if (warningCry != null) AudioSource.PlayClipAtPoint(warningCry, m.tr.position, AudioManager.ScaleSfx(cryVolume));   // ★走 SFX 通道
         float wt = 0f;
         while (wt < warningSeconds)
@@ -506,7 +506,7 @@ public class ScatteredFlock : MonoBehaviour
         }
 
         // 2　俯衝
-        if (m.anim != null && !string.IsNullOrEmpty(flyStateName)) m.anim.Play(flyStateName, 0, 0f);
+        if (m.anim != null && !string.IsNullOrEmpty(flyStateName)) AnimStateResolver.PlaySafe(m.anim, flyStateName, 0f);
         Vector3 target = _player != null ? _player.position : m.tr.position;
         target.z = m.tr.position.z;
         float dt = 0f;
