@@ -105,9 +105,18 @@ public class AudioManager : MonoBehaviour
 
         // 找出目前正在播放的 AudioSource，看看它播的音樂是不是跟現在要求的一樣
         AudioSource activeSource = _isUsingSource1 ? _bgmSource1 : _bgmSource2;
+        AudioSource idleSource = _isUsingSource1 ? _bgmSource2 : _bgmSource1;
+
         if (activeSource.clip == newClip && activeSource.isPlaying)
         {
-            // 如果音樂一樣且正在播放，就不需要重新播，直接返回
+            // 音樂一樣且正在播放：不重播，但要順手清掉被中斷的淡入淡出留下的殘留音軌，
+            // 否則那一軌會一直疊著播且永遠關不掉
+            if (idleSource.isPlaying && _fadeCoroutine == null)
+            {
+                idleSource.Stop();
+                idleSource.volume = 0f;
+                idleSource.clip = null;
+            }
             return;
         }
 
@@ -146,6 +155,18 @@ public class AudioManager : MonoBehaviour
         AudioSource activeSource = _isUsingSource1 ? _bgmSource1 : _bgmSource2;
         AudioSource newSource = _isUsingSource1 ? _bgmSource2 : _bgmSource1;
 
+        // ★ 修復「關不掉的 BGM」：
+        //   上一次的 Crossfade 若在中途就被 StopCoroutine 打斷 (短時間內連續切換場景/區域音樂就會發生)，
+        //   被打斷的那一輪不會執行到最後的 activeSource.Stop()，也不會翻轉 _isUsingSource1，
+        //   於是兩個 AudioSource 同時在播，而之後的 StopBGM 只會關掉其中一個，
+        //   另一個就永遠關不掉、還會一直 loop (使用者觀察到的「播兩輪、只有它關不掉」)。
+        //   這裡在開始新的淡入淡出前，先把「不該再響的那一軌」硬關掉。
+        if (newSource.isPlaying)
+        {
+            newSource.Stop();
+            newSource.volume = 0f;
+        }
+
         // 準備好新的音樂
         newSource.clip = newClip;
         newSource.volume = 0f;
@@ -169,29 +190,50 @@ public class AudioManager : MonoBehaviour
         // 確保最終狀態
         activeSource.volume = 0f;
         activeSource.Stop();
+        activeSource.clip = null;
         newSource.volume = BgmVolume;
 
         // 切換主要來源
         _isUsingSource1 = !_isUsingSource1;
+        _fadeCoroutine = null;
     }
 
     private IEnumerator FadeOutRoutine()
     {
-        AudioSource activeSource = _isUsingSource1 ? _bgmSource1 : _bgmSource2;
-        float startVolume = activeSource.volume;
+        // ★ 兩軌一起淡出並關閉：
+        //   只關 activeSource 的話，若之前有被打斷的 Crossfade 留下另一軌還在播，就會關不掉。
+        float startVolume1 = _bgmSource1.volume;
+        float startVolume2 = _bgmSource2.volume;
         float timer = 0f;
 
         while (timer < crossfadeDuration)
         {
             timer += Time.deltaTime;
             float progress = timer / crossfadeDuration;
-            activeSource.volume = Mathf.Lerp(startVolume, 0f, progress);
+            _bgmSource1.volume = Mathf.Lerp(startVolume1, 0f, progress);
+            _bgmSource2.volume = Mathf.Lerp(startVolume2, 0f, progress);
             yield return null;
         }
 
-        activeSource.volume = 0f;
-        activeSource.Stop();
-        activeSource.clip = null; // 清除紀錄
+        StopAllBgmSourcesImmediate();
+        _fadeCoroutine = null;
+    }
+
+    /// <summary>立即硬關掉所有 BGM 音軌 (含被中斷的淡入淡出殘留音軌)</summary>
+    public void StopAllBgmSourcesImmediate()
+    {
+        if (_bgmSource1 != null)
+        {
+            _bgmSource1.volume = 0f;
+            _bgmSource1.Stop();
+            _bgmSource1.clip = null;
+        }
+        if (_bgmSource2 != null)
+        {
+            _bgmSource2.volume = 0f;
+            _bgmSource2.Stop();
+            _bgmSource2.clip = null;
+        }
     }
 
     /// <summary>

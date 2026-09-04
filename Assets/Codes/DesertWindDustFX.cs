@@ -137,11 +137,11 @@ public class DesertWindDustFX : MonoBehaviour
         main.playOnAwake = true;
         main.loop = true;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.9f, 1.6f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.30f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.1f, 2.0f);   // 活久一點，風線才拉得長、掃得過整個畫面
+        main.startSize = new ParticleSystem.MinMaxCurve(0.035f, 0.11f);    // 大幅變細：真實風沙是一絲一絲的，不是一條條粗帶
         main.startColor = dustColor;
         main.gravityModifier = 0f;
-        main.maxParticles = 1000;
+        main.maxParticles = 4000;                                          // 提高上限，才吃得下高密度發射量
 
         var emission = _mainStreakPS.emission;
         emission.enabled = true;
@@ -160,7 +160,7 @@ public class DesertWindDustFX : MonoBehaviour
         float minX = windSpeed * 0.85f * dir;
         float maxX = windSpeed * 1.25f * dir;
         vel.x = new ParticleSystem.MinMaxCurve(Mathf.Min(minX, maxX), Mathf.Max(minX, maxX));
-        vel.y = new ParticleSystem.MinMaxCurve(-0.15f, 0.15f);
+        vel.y = new ParticleSystem.MinMaxCurve(-0.5f, 0.5f);   // 微幅上下飄，讓風線不會整齊到像掃描線
         vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
         var col = _mainStreakPS.colorOverLifetime;
@@ -182,7 +182,7 @@ public class DesertWindDustFX : MonoBehaviour
         {
             rend.renderMode = ParticleSystemRenderMode.Stretch;
             rend.lengthScale = streakLengthScale;
-            rend.velocityScale = 0.05f;
+            rend.velocityScale = 0.18f;   // 依速度再額外拉長：風越快線越長，這是「風吹砂」拉絲感的關鍵
             rend.sortingLayerName = "Default";
             rend.sortingOrder = 22;
 
@@ -198,11 +198,11 @@ public class DesertWindDustFX : MonoBehaviour
         main.playOnAwake = true;
         main.loop = true;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.7f, 1.3f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.09f); // 極細沙粒
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.9f, 1.7f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.018f, 0.045f); // 更細的沙粒，接近真實揚沙的顆粒感
         main.startColor = new Color(dustColor.r, dustColor.g, dustColor.b, Mathf.Clamp01(dustColor.a * 1.3f));
         main.gravityModifier = 0f;
-        main.maxParticles = 1200;
+        main.maxParticles = 4000;
 
         var emission = _sandGrainPS.emission;
         emission.enabled = true;

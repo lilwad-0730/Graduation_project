@@ -91,6 +91,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("📦 推動物件機制 (Pushing Object System)")]
     [Tooltip("推動物件偵測距離 (向前檢測 Pushable Tag 物件)")]
     public float pushDetectionDistance = 0.35f;
+
+    [Tooltip("除錯用：被風推卻推不動時，在 Console 印出診斷訊息 (確認防抖判定有沒有生效)")]
+    public bool logWindBlockDebug = false;
+
     [HideInInspector] public bool isPushing = false;
     private float _collisionPushableTimer = 0f;
 
@@ -785,7 +789,7 @@ public class PlayerMovement : MonoBehaviour
                 finalSpeed = finalSpeed / 2f; // 備用方案
             }
         }
-        
+
         if (actuallyFreeze || isStrictLockingX)
         {
             rb.useGravity = true;
@@ -801,6 +805,15 @@ public class PlayerMovement : MonoBehaviour
             {
                 _windPushTimer -= Time.deltaTime;
                 windOffset = _windPushVelocityX;
+            }
+
+            // ★ 風推卡住偵測 (不依賴射線，撞到什麼都有效)：
+            //   被風推著、卻連續數幀幾乎沒有實際位移 → 一定是被石柱/牆面擋住了。
+            //   此時若繼續每幀把速度灌進障礙物裡，PhysX 會不斷把玩家擠出來，那就是抖動的來源。
+            //   直接把風推視為 0，玩家就穩穩貼著障礙物不動。
+            if (IsWindPushBlocked(windOffset))
+            {
+                windOffset = 0f;
             }
 
             if (isOnSlope)
@@ -831,14 +844,32 @@ public class PlayerMovement : MonoBehaviour
                 {
                     _externalPushTimer -= Time.deltaTime;
                     Vector3 pushSlopeDir = Vector3.ProjectOnPlane(_externalPushVelocity, groundHit.normal);
-                    rb.linearVelocity = new Vector3(pushSlopeDir.x + windOffset, pushSlopeDir.y, 0f);
+                    float pushX = pushSlopeDir.x + windOffset;
+
+                    // 斜坡上同樣要防止被外力/風推進石柱裡造成抖動
+                    if (IsBlockedByObstacle(pushX))
+                    {
+                        rb.linearVelocity = new Vector3(0f, 0f, 0f);
+                    }
+                    else
+                    {
+                        rb.linearVelocity = new Vector3(pushX, pushSlopeDir.y, 0f);
+                    }
                 }
                 else if (Mathf.Abs(windOffset) > 0.01f)
                 {
                     // 在斜坡上受到風吹：順著斜坡向後平滑滑動
-                    Vector3 windDir = new Vector3(Mathf.Sign(windOffset), 0, 0);
-                    Vector3 windSlopeDir = Vector3.ProjectOnPlane(windDir, groundHit.normal).normalized;
-                    rb.linearVelocity = windSlopeDir * Mathf.Abs(windOffset);
+                    // ★ 若後方緊貼不可推的石柱/牆面，停止繼續施加風推速度，否則 PhysX 每幀把玩家擠出來就是抖動
+                    if (IsBlockedByObstacle(windOffset))
+                    {
+                        rb.linearVelocity = Vector3.zero;
+                    }
+                    else
+                    {
+                        Vector3 windDir = new Vector3(Mathf.Sign(windOffset), 0, 0);
+                        Vector3 windSlopeDir = Vector3.ProjectOnPlane(windDir, groundHit.normal).normalized;
+                        rb.linearVelocity = windSlopeDir * Mathf.Abs(windOffset);
+                    }
                 }
                 else
                 {
@@ -866,34 +897,9 @@ public class PlayerMovement : MonoBehaviour
                 }
 
                 // ★★★ 實體障礙物/石柱防穿透夾角緩衝判定 (防止強風或推力把玩家頂進不可推動石柱牆面造成的 PhysX 每幀穿透反彈劇烈抖動)
-                float playerRadius = GetPlayerRadius();
-                int obstacleMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
-                Vector3 centerPos = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
-                float extY = (playerCollider != null) ? playerCollider.bounds.extents.y : 1.0f;
-                Vector3 rayLow = centerPos + Vector3.down * (extY * 0.4f);
-                Vector3 rayMid = centerPos + Vector3.up * (extY * 0.2f);
-
-                if (targetX < -0.01f)
+                if (IsBlockedByObstacle(targetX))
                 {
-                    if (Physics.Raycast(rayLow, Vector3.left, out RaycastHit hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
-                        Physics.Raycast(rayMid, Vector3.left, out hitL, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
-                    {
-                        if (hitL.normal.x > 0.15f && hitL.collider != null && !hitL.collider.isTrigger && !IsPushableObject(hitL.collider.gameObject, hitL.collider))
-                        {
-                            targetX = 0f; // 緊貼非可推石柱/障礙物時停止向左施加擠壓速度，完全消除抖動！
-                        }
-                    }
-                }
-                else if (targetX > 0.01f)
-                {
-                    if (Physics.Raycast(rayLow, Vector3.right, out RaycastHit hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore) ||
-                        Physics.Raycast(rayMid, Vector3.right, out hitR, playerRadius + 0.15f, obstacleMask, QueryTriggerInteraction.Ignore))
-                    {
-                        if (hitR.normal.x < -0.15f && hitR.collider != null && !hitR.collider.isTrigger && !IsPushableObject(hitR.collider.gameObject, hitR.collider))
-                        {
-                            targetX = 0f; // 緊貼非可推右側障礙物時停止向右施加擠壓速度
-                        }
-                    }
+                    targetX = 0f; // 緊貼非可推石柱/障礙物時停止繼續施加擠壓速度，完全消除抖動！
                 }
 
                 Vector3 targetVelocity = new Vector3(targetX, rb.linearVelocity.y, rb.linearVelocity.z);
@@ -1198,6 +1204,92 @@ public class PlayerMovement : MonoBehaviour
     {
         _windPushVelocityX = pushSpeedX;
         _windPushTimer = 0.15f; // 短暫維持緩衝
+    }
+
+    /// <summary>
+    /// 前方是否貼著「不可推動的實體障礙物」(石柱、牆面)。
+    /// 用於在被風/外力推向障礙物時停止繼續施加擠壓速度，避免 PhysX 每幀穿透反彈造成抖動。
+    /// ★ 射線長度改用碰撞體實際 bounds 寬度 (原本用 GetPlayerRadius() 在膠囊/子物件縮放時會算得太短而射不到)。
+    /// </summary>
+    private bool IsBlockedByObstacle(float directionX)
+    {
+        if (Mathf.Abs(directionX) < 0.01f) return false;
+        if (playerCollider == null) playerCollider = GetComponent<Collider>();
+        if (playerCollider == null) return false;
+
+        int obstacleMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+        Bounds b = playerCollider.bounds;
+        Vector3 centerPos = b.center;
+
+        Vector3 dir = directionX < 0f ? Vector3.left : Vector3.right;
+        float normalSignNeeded = directionX < 0f ? 1f : -1f;
+        float rayLen = b.extents.x + 0.25f;
+
+        // 多點高度取樣：石柱造型不規則，只掃兩點很容易剛好射空
+        float[] heights = { -0.45f, -0.15f, 0.15f, 0.45f };
+
+        foreach (float h in heights)
+        {
+            Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
+            if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
+            if (hit.collider == null || hit.collider.isTrigger) continue;
+            if (IsPushableObject(hit.collider.gameObject, hit.collider)) continue;
+            if (hit.normal.x * normalSignNeeded > 0.15f) return true;
+        }
+
+        return false;
+    }
+
+    // ── 風推卡住偵測 ───────────────────────────────────────────────
+    private float _windStuckLastX;
+    private float _windStuckTimer;
+    private bool _windStuckInitialized;
+
+    /// <summary>
+    /// 被風推著但實際上幾乎沒有位移，代表被實體障礙物擋住了。
+    /// 不依賴射線，撞到石柱、牆面、任何造型的碰撞體都有效。
+    /// </summary>
+    private bool IsWindPushBlocked(float windOffset)
+    {
+        if (Mathf.Abs(windOffset) < 0.01f)
+        {
+            _windStuckTimer = 0f;
+            _windStuckLastX = transform.position.x;
+            _windStuckInitialized = true;
+            return false;
+        }
+
+        if (!_windStuckInitialized)
+        {
+            _windStuckLastX = transform.position.x;
+            _windStuckInitialized = true;
+            return false;
+        }
+
+        float movedX = Mathf.Abs(transform.position.x - _windStuckLastX);
+        _windStuckLastX = transform.position.x;
+
+        // 這一幀理論上應該被推動的距離
+        float expectedX = Mathf.Abs(windOffset) * Time.deltaTime;
+
+        if (expectedX > 0.0001f && movedX < expectedX * 0.3f)
+        {
+            _windStuckTimer += Time.deltaTime;
+        }
+        else
+        {
+            _windStuckTimer = 0f;
+        }
+
+        // 連續 0.06 秒推不動才判定卡住，避免正常減速的瞬間被誤判
+        bool blocked = _windStuckTimer >= 0.06f;
+
+        if (blocked && logWindBlockDebug && Time.frameCount % 30 == 0)
+        {
+            Debug.Log($"[風推卡住] 風速 {windOffset:F2}，本幀實際位移 {movedX:F4} (預期 {expectedX:F4})，判定被擋住，暫停施加風推。");
+        }
+
+        return blocked;
     }
 
     private float GetPlayerRadius()

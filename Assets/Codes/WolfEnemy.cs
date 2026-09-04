@@ -139,7 +139,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
             // 只有當玩家觸地，或是高度沒有那麼高時，才執行正常的距離追逐判定
             if (distanceX <= aggroDistanceX && !isChasing)
             {
-                isChasing = true; // 進入範圍，開始追！
+                // 統一走 StartChase()：靠距離自動進入追擊時也要發出狼嚎
+                // (原本這裡直接設 isChasing = true，導致只有 WolfSpawner 生成的狼才會嚎叫)
+                StartChase();
             }
             else if (distanceX > giveUpDistanceX && isChasing)
             {

@@ -40,10 +40,46 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
     [Tooltip("消失前往下墜落的距離")]
     public float fallbackDropDistance = 1.5f;
 
+    [Tooltip("消失時往下墜落並旋轉的角度 (讓它看起來是碎掉塌下去，而不是單純淡出)")]
+    public float fallbackTiltAngle = 25f;
+
+    [Header("💥 碎裂爆發效果 (Shatter Burst)")]
+    [Tooltip("摧毀瞬間是否噴出玻璃碎片粒子")]
+    public bool spawnShatterBurst = true;
+
+    [Tooltip("碎片數量")]
+    public int shardCount = 70;
+
+    [Tooltip("碎片噴飛速度範圍")]
+    public Vector2 shardSpeedRange = new Vector2(5f, 15f);
+
+    [Tooltip("碎片大小範圍")]
+    public Vector2 shardSizeRange = new Vector2(0.08f, 0.55f);
+
+    [Tooltip("碎片存活時間 (秒)")]
+    public float shardLifetime = 1.6f;
+
+    [Tooltip("碎片重力倍率 (越大掉越快)")]
+    public float shardGravity = 3.2f;
+
+    [Tooltip("爆開瞬間的白色閃光強度 (0 = 關閉)")]
+    public float flashIntensity = 1f;
+
+    [Tooltip("細碎粉塵數量 (大碎片之外再補一層細屑，讓爆炸更有份量)")]
+    public int dustCount = 40;
+
+    [Tooltip("碎片顏色 (玻璃冷白藍)")]
+    public Color shardColor = new Color(0.85f, 0.95f, 1f, 0.95f);
+
+    [Tooltip("碎裂音效 (選填)")]
+    public AudioClip shatterSFX;
+    [Range(0f, 1f)] public float shatterSFXVolume = 0.85f;
+
     private class GlassTarget
     {
         public Transform tr;
         public Vector3 initialPosition;
+        public Quaternion initialRotation;
         public bool broken;
 
         // 內建消失表現用的原始狀態
@@ -126,6 +162,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         {
             tr = tr,
             initialPosition = tr.position,
+            initialRotation = tr.rotation,
             broken = false,
             renderers = tr.GetComponentsInChildren<SpriteRenderer>(true),
             colliders = tr.GetComponentsInChildren<Collider>(true)
@@ -224,7 +261,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         StartCoroutine(FallbackBreakRoutine(t));
     }
 
-    /// <summary>沒有任何碎裂腳本的普通玻璃地磚：關掉碰撞後往下墜落並淡出消失。</summary>
+    /// <summary>沒有任何碎裂腳本的普通玻璃地磚：噴出碎片後，本體傾倒墜落並淡出消失。</summary>
     private IEnumerator FallbackBreakRoutine(GlassTarget t)
     {
         if (t.colliders != null)
@@ -235,8 +272,19 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             }
         }
 
+        if (spawnShatterBurst && t.tr != null) SpawnShatterBurst(t.tr);
+
+        if (shatterSFX != null && t.tr != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(shatterSFX, t.tr.position, shatterSFXVolume);
+            else AudioSource.PlayClipAtPoint(shatterSFX, t.tr.position, shatterSFXVolume);
+        }
+
         Vector3 startPos = t.tr != null ? t.tr.position : Vector3.zero;
         Vector3 endPos = startPos + Vector3.down * fallbackDropDistance;
+        Quaternion startRot = t.tr != null ? t.tr.rotation : Quaternion.identity;
+        float tiltDir = Random.value > 0.5f ? 1f : -1f;
+        Quaternion endRot = startRot * Quaternion.Euler(0f, 0f, tiltDir * fallbackTiltAngle);
 
         float duration = Mathf.Max(fallbackFadeDuration, 0.1f);
         float elapsed = 0f;
@@ -247,7 +295,9 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             elapsed += Time.deltaTime;
             float p = Mathf.Clamp01(elapsed / duration);
 
-            t.tr.position = Vector3.Lerp(startPos, endPos, p);
+            // 加速墜落 (p*p) 比等速更像塌陷
+            t.tr.position = Vector3.Lerp(startPos, endPos, p * p);
+            t.tr.rotation = Quaternion.Slerp(startRot, endRot, p);
 
             if (t.renderers != null)
             {
@@ -263,7 +313,179 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             yield return null;
         }
 
-        if (t.tr != null) t.tr.gameObject.SetActive(false);
+        if (t.tr != null)
+        {
+            t.tr.rotation = startRot;
+            t.tr.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>在指定位置噴出一次性玻璃碎片爆發 (程式生成，播完自動銷毀)</summary>
+    private void SpawnShatterBurst(Transform tile)
+    {
+        Bounds b = new Bounds(tile.position, Vector3.one);
+        SpriteRenderer sr = tile.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) b = sr.bounds;
+
+        GameObject burstObj = new GameObject("[GlassShatterBurst]");
+        burstObj.transform.position = b.center;
+
+        ParticleSystem ps = burstObj.AddComponent<ParticleSystem>();
+        ps.Stop();
+
+        var main = ps.main;
+        main.loop = false;
+        main.playOnAwake = false;
+        main.duration = Mathf.Max(shardLifetime, 0.2f);
+        main.startLifetime = new ParticleSystem.MinMaxCurve(shardLifetime * 0.6f, shardLifetime);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(shardSpeedRange.x, shardSpeedRange.y);
+        main.startSize = new ParticleSystem.MinMaxCurve(shardSizeRange.x, shardSizeRange.y);
+        main.startColor = shardColor;
+        main.gravityModifier = shardGravity;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.maxParticles = Mathf.Max(shardCount, 1);
+        main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+
+        var emission = ps.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, (short)Mathf.Max(shardCount, 1)) });
+
+        // 沿著地磚本身的寬度噴發，看起來才像整片碎開，而不是一個點爆炸
+        var shape = ps.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Box;
+        shape.scale = new Vector3(Mathf.Max(b.size.x, 0.3f), Mathf.Max(b.size.y * 0.5f, 0.15f), 0.1f);
+
+        var rot = ps.rotationOverLifetime;
+        rot.enabled = true;
+        rot.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+
+        var col = ps.colorOverLifetime;
+        col.enabled = true;
+        Gradient grad = new Gradient();
+        grad.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(shardColor, 0f), new GradientColorKey(shardColor, 1f) },
+            new GradientAlphaKey[] {
+                new GradientAlphaKey(shardColor.a, 0f),
+                new GradientAlphaKey(shardColor.a, 0.6f),
+                new GradientAlphaKey(0f, 1f)
+            });
+        col.color = grad;
+
+        var rend = ps.GetComponent<ParticleSystemRenderer>();
+        if (rend != null)
+        {
+            // Stretch：碎片依飛行速度拉長，比正方塊更像玻璃尖片飛濺
+            rend.renderMode = ParticleSystemRenderMode.Stretch;
+            rend.lengthScale = 2.2f;
+            rend.velocityScale = 0.08f;
+            rend.sortingLayerName = sr != null ? sr.sortingLayerName : "Default";
+            rend.sortingOrder = (sr != null ? sr.sortingOrder : 0) + 5;
+
+            Shader s = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (s == null) s = Shader.Find("Particles/Standard Unlit");
+            if (s == null) s = Shader.Find("Sprites/Default");
+            if (s != null) rend.material = new Material(s);
+        }
+
+        ps.Play();
+        Destroy(burstObj, shardLifetime + 0.5f);
+
+        // 第二層：細碎粉塵，讓爆開的瞬間更有份量
+        if (dustCount > 0) SpawnDustPuff(b, sr);
+
+        // 第三層：爆開瞬間的白光閃一下
+        if (flashIntensity > 0.01f) StartCoroutine(FlashRoutine(b, sr));
+    }
+
+    /// <summary>細碎粉塵層：慢速、擴散、淡出，補足爆炸的體積感</summary>
+    private void SpawnDustPuff(Bounds b, SpriteRenderer sr)
+    {
+        GameObject dustObj = new GameObject("[GlassShatterDust]");
+        dustObj.transform.position = b.center;
+
+        ParticleSystem ps = dustObj.AddComponent<ParticleSystem>();
+        ps.Stop();
+
+        var main = ps.main;
+        main.loop = false;
+        main.playOnAwake = false;
+        main.duration = 1f;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.4f, 1.0f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f, 3f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.8f);
+        main.startColor = new Color(shardColor.r, shardColor.g, shardColor.b, 0.35f);
+        main.gravityModifier = 0.3f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.maxParticles = Mathf.Max(dustCount, 1);
+
+        var emission = ps.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, (short)Mathf.Max(dustCount, 1)) });
+
+        var shape = ps.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Box;
+        shape.scale = new Vector3(Mathf.Max(b.size.x, 0.3f), Mathf.Max(b.size.y * 0.6f, 0.2f), 0.1f);
+
+        var sol = ps.sizeOverLifetime;
+        sol.enabled = true;
+        sol.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 0.6f, 1f, 1.6f));
+
+        var col = ps.colorOverLifetime;
+        col.enabled = true;
+        Gradient grad = new Gradient();
+        grad.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(shardColor, 0f), new GradientColorKey(shardColor, 1f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(0.5f, 0f), new GradientAlphaKey(0f, 1f) });
+        col.color = grad;
+
+        var rend = ps.GetComponent<ParticleSystemRenderer>();
+        if (rend != null)
+        {
+            rend.renderMode = ParticleSystemRenderMode.Billboard;
+            rend.sortingLayerName = sr != null ? sr.sortingLayerName : "Default";
+            rend.sortingOrder = (sr != null ? sr.sortingOrder : 0) + 4;
+
+            Shader s = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (s == null) s = Shader.Find("Particles/Standard Unlit");
+            if (s == null) s = Shader.Find("Sprites/Default");
+            if (s != null) rend.material = new Material(s);
+        }
+
+        ps.Play();
+        Destroy(dustObj, 2f);
+    }
+
+    /// <summary>爆開瞬間的白色閃光 (一個快速放大又消失的亮片)</summary>
+    private IEnumerator FlashRoutine(Bounds b, SpriteRenderer sourceSr)
+    {
+        if (sourceSr == null || sourceSr.sprite == null) yield break;
+
+        GameObject flashObj = new GameObject("[GlassShatterFlash]");
+        flashObj.transform.position = b.center;
+        flashObj.transform.rotation = sourceSr.transform.rotation;
+        flashObj.transform.localScale = sourceSr.transform.lossyScale;
+
+        SpriteRenderer fsr = flashObj.AddComponent<SpriteRenderer>();
+        fsr.sprite = sourceSr.sprite;
+        fsr.sortingLayerName = sourceSr.sortingLayerName;
+        fsr.sortingOrder = sourceSr.sortingOrder + 6;
+
+        float dur = 0.16f;
+        Destroy(flashObj, dur + 0.2f); // 保險：即使協程被 StopAllCoroutines 中斷也不會殘留
+        float t = 0f;
+        Vector3 startScale = flashObj.transform.localScale;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / dur);
+            fsr.color = new Color(1f, 1f, 1f, (1f - p) * flashIntensity);
+            flashObj.transform.localScale = startScale * (1f + p * 0.25f);
+            yield return null;
+        }
+
+        Destroy(flashObj);
     }
 
     // --- IResettable：玩家重生時復原所有被摧毀的平台，讓怪物重新走一次時能再摧毀一遍 ---
@@ -278,6 +500,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
 
             t.broken = false;
             t.tr.position = t.initialPosition;
+            t.tr.rotation = t.initialRotation;
             t.tr.gameObject.SetActive(true);
 
             if (t.renderers != null)
