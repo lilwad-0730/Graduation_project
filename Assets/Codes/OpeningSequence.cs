@@ -22,6 +22,12 @@ public class OpeningSequence : MonoBehaviour
     // ── 設定 ──
     public static readonly string[] IntroPages =
     {
+        // ★序-1～3 是美術要補的三張（房間／影子／門外是雲），放在 Assets/Picturebook/Resources/Intro/ 底下，
+        //   檔名就叫 序-1.png、序-2.png、序-3.png。還沒畫好時找不到會自動跳過，不影響流程。
+        //   ※不要放進 Resources/Pages：那個資料夾是繪本本體，多一張檔所有頁碼都會位移（掉落漫畫 41～47、結局 62 會全錯）。
+        "Intro/序-1",       // 夜裡的房間，窗外是雲海；她坐在床沿，光在腳邊
+        "Intro/序-2",       // 同一個房間，牆上她的影子比她大（「他」第一次出現，只是影子）
+        "Intro/序-3",       // 她推開門，門外不是走廊，是雲
         "Pages/002_棉-1",   // 雲海上遠望白城：她要去一個好的地方
         "Pages/004_棉-2",   // 提著光往前走：走了很久
     };
