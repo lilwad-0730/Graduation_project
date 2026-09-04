@@ -134,7 +134,8 @@ public class StormHazardWave : MonoBehaviour
         }
 
         // 4. 對未受掩體保護且接觸到實體風暴的玩家施加向左平滑逆風推力 (杜絕 AddForce 物理抽搐)
-        if (enableWindPush)
+        //    ★WindGustSystem.globalPush 開著時推力由它全域施加（風痕在哪推力就在哪），這裡不再重複推
+        if (enableWindPush && !(WindGustSystem.Instance != null && WindGustSystem.Instance.globalPush))
         {
             PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
             if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();

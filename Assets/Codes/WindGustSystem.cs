@@ -43,10 +43,12 @@ public class WindGustSystem : MonoBehaviour, IResettable
     public float pauseDuration = 3.5f;
     [Tooltip("逆風的推力強度。推力＝windForce×0.22 m/s；主角走速 5 m/s。12.5 → 逆風 2.75 m/s：頂風走還能慢慢前進，站著不動會被推回去，硬撐（⬇/S）不動")]
     public float windForce = 12.5f;
-    [Tooltip("前搖：起風後風痕與風聲先出現，推力晚這麼多秒才來，讓玩家看得到、來得及躲或硬撐")]
-    public float windupSeconds = 0.8f;
-    [Tooltip("推力從 0 升到全速要幾秒（前搖結束後）")]
-    public float pushRampSeconds = 0.5f;
+    [Tooltip("前搖秒數。0902 決議：風痕出現的時候狂風一起到來 → 預設 0（看到風痕就是被推）。想要提前預告再調大")]
+    public float windupSeconds = 0f;
+    [Tooltip("推力從 0 升到全速要幾秒（避免瞬間一拳）")]
+    public float pushRampSeconds = 0.25f;
+    [Tooltip("★風痕鋪滿全屏，所以推力也要全域：吹風時不管在哪裡都被推（掩體內、硬撐中除外）。關掉則只在 WindParticles 的觸發區內被推")]
+    public bool globalPush = true;
 
     [Header("🪨 風暴石化與危害設定")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
@@ -219,6 +221,24 @@ public class WindGustSystem : MonoBehaviour, IResettable
             windAudioSource.volume = AudioManager.SfxVolume;
 
         timer += Time.deltaTime;
+
+        // ★全域推力：風痕在哪裡出現（跟著鏡頭鋪滿全屏），推力就在哪裡——兩者永遠同步。
+        //   原本推力只在 WindParticles／WindParticles (1) 兩個觸發盒內，盒子外面看得到風痕卻沒有風。
+        if (globalPush && enableWindPush && IsPushActive)
+        {
+            EnsurePlayerReference();
+            if (playerRb != null && !IsPlayerSheltered && !(playerPetrify != null && playerPetrify.isPetrified) && !PlayerMovement.IsHardCutsceneLocked)
+            {
+                PlayerMovement pm = playerRb.GetComponent<PlayerMovement>();
+                if (pm != null && !pm.isUnderwater)
+                {
+                    float dirX = -1f;
+                    DesertWindDustFX fx = windParticles != null ? windParticles.GetComponent<DesertWindDustFX>() : null;
+                    if (fx != null && Mathf.Abs(fx.windDirectionX) > 0.01f) dirX = Mathf.Sign(fx.windDirectionX);
+                    pm.ApplyWindPush(dirX * (windForce * 0.22f) * PushStrength01);
+                }
+            }
+        }
 
         if (currentState == WindState.Calm)
         {
