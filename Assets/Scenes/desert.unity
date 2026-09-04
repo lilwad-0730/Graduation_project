@@ -894,9 +894,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c63617d9780fb94478ca4e703336456c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WindGustSystem
-  blowDuration: 3
-  pauseDuration: 1
-  windForce: 18
+  blowDuration: 2.5
+  pauseDuration: 3.5
+  windForce: 12.5
   enableStormPassivePetrify: 0
   enableWindPush: 1
   windParticles: {fileID: 1187382265}
@@ -21512,7 +21512,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.018505
+      value: -0.3
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -28020,7 +28020,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 839278ef613ade74c83c318061f92627, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StormHazardWave
-  windForce: 18
+  windForce: 12.5
   windDirectionX: -1
   enableWindPush: 1
   enableStormPassivePetrify: 0
@@ -35890,9 +35890,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c63617d9780fb94478ca4e703336456c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WindGustSystem
-  blowDuration: 3
-  pauseDuration: 1
-  windForce: 18
+  blowDuration: 2.5
+  pauseDuration: 3.5
+  windForce: 12.5
   enableStormPassivePetrify: 0
   enableWindPush: 1
   windParticles: {fileID: 1187382265}
@@ -53986,7 +53986,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 839278ef613ade74c83c318061f92627, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StormHazardWave
-  windForce: 18
+  windForce: 12.5
   windDirectionX: -1
   enableWindPush: 1
   enableStormPassivePetrify: 0

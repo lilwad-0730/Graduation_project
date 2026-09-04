@@ -287,7 +287,10 @@ public class ScatteredFlock : MonoBehaviour
                 if (birdAnimator != null) anim.runtimeAnimatorController = birdAnimator;
                 anim.applyRootMotion = false;
                 if (anim.runtimeAnimatorController != null && !string.IsNullOrEmpty(flyStateName))
+                {
+                    AnimStateResolver.SetFlying(anim, true);                            // living birds 的 controller：flying=false 會馬上 fly→landing→Idle（變成站姿）
                     AnimStateResolver.PlaySafe(anim, flyStateName, Random.value);   // 拍翅相位錯開（flying/fly 別名自動對）
+                }
             }
 
             if (tintDistant) Tint(go);
@@ -506,7 +509,7 @@ public class ScatteredFlock : MonoBehaviour
         }
 
         // 2　俯衝
-        if (m.anim != null && !string.IsNullOrEmpty(flyStateName)) AnimStateResolver.PlaySafe(m.anim, flyStateName, 0f);
+        if (m.anim != null && !string.IsNullOrEmpty(flyStateName)) { AnimStateResolver.SetFlying(m.anim, true); AnimStateResolver.PlaySafe(m.anim, flyStateName, 0f); }
         Vector3 target = _player != null ? _player.position : m.tr.position;
         target.z = m.tr.position.z;
         float dt = 0f;

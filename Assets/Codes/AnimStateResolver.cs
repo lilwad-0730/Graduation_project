@@ -38,6 +38,21 @@ public static class AnimStateResolver
         return false;
     }
 
+    /// <summary>
+    /// living birds 的 birdAnimatorController 靠 bool 參數轉場：flying=false 時 fly 會立刻轉 landing→Idle。
+    /// 要牠一直飛，除了播 fly 還得把 flying 設 true、perched／landing 設 false。參數不存在就略過。
+    /// </summary>
+    public static void SetFlying(Animator anim, bool flying)
+    {
+        if (anim == null || anim.runtimeAnimatorController == null) return;
+        foreach (AnimatorControllerParameter p in anim.parameters)
+        {
+            if (p.type != AnimatorControllerParameterType.Bool) continue;
+            if (p.name == "flying") anim.SetBool(p.nameHash, flying);
+            else if (p.name == "perched" || p.name == "landing") anim.SetBool(p.nameHash, !flying && p.name == "perched");
+        }
+    }
+
     /// <summary>安全版 Animator.Play：state 不存在就什麼都不做（回傳 false），不噴警告。</summary>
     public static bool PlaySafe(Animator anim, string requested, float normalizedTime = 0f)
     {

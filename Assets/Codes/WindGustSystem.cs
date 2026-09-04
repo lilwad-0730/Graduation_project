@@ -37,12 +37,16 @@ public class WindGustSystem : MonoBehaviour, IResettable
     public static WindGustSystem Instance { get; private set; }
 
     [Header("時間與強度設定")]
-    [Tooltip("每次吹風的持續時間 (秒，預設 3)")]
-    public float blowDuration = 3.0f;
-    [Tooltip("每次風停的持續時間 (秒，預設 2.5)")]
-    public float pauseDuration = 2.5f;
-    [Tooltip("逆風的推力強度 (建議 15 ~ 25，可配合玩家質量調整)")]
-    public float windForce = 18.0f;
+    [Tooltip("每次吹風的持續時間 (秒)。0902 可玩性調整：2.5（原 3）")]
+    public float blowDuration = 2.5f;
+    [Tooltip("每次風停的持續時間 (秒)。0902 可玩性調整：3.5（原 1，只有一秒能前進，等於一直被吹回去）")]
+    public float pauseDuration = 3.5f;
+    [Tooltip("逆風的推力強度。推力＝windForce×0.22 m/s；主角走速 5 m/s。12.5 → 逆風 2.75 m/s：頂風走還能慢慢前進，站著不動會被推回去，硬撐（⬇/S）不動")]
+    public float windForce = 12.5f;
+    [Tooltip("前搖：起風後風痕與風聲先出現，推力晚這麼多秒才來，讓玩家看得到、來得及躲或硬撐")]
+    public float windupSeconds = 0.8f;
+    [Tooltip("推力從 0 升到全速要幾秒（前搖結束後）")]
+    public float pushRampSeconds = 0.5f;
 
     [Header("🪨 風暴石化與危害設定")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
@@ -67,6 +71,21 @@ public class WindGustSystem : MonoBehaviour, IResettable
     private bool hasAppliedWindThisGust = false;
 
     public WindState CurrentState => currentState;
+
+    /// <summary>吹風中且前搖已過：推力才生效。</summary>
+    public bool IsPushActive => currentState == WindState.Blowing && timer >= windupSeconds;
+
+    /// <summary>推力強度 0～1：前搖期間 0，之後在 pushRampSeconds 內升到 1。</summary>
+    public float PushStrength01
+    {
+        get
+        {
+            if (currentState != WindState.Blowing) return 0f;
+            float t = timer - windupSeconds;
+            if (t <= 0f) return 0f;
+            return pushRampSeconds > 0.01f ? Mathf.Clamp01(t / pushRampSeconds) : 1f;
+        }
+    }
 
     private void Awake()
     {

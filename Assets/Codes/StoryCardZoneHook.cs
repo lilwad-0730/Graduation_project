@@ -177,7 +177,19 @@ public class StoryCardZoneHook : MonoBehaviour
         }
 
         // 4　淡黑 → 播文字卡 → 維持全黑
-        yield return StoryCardPlayer.Instance.Play(cardId, true, false);
+        //    ★播卡期間整個世界暫停（卡片全走 unscaled time）：09-04 log 她在綠洲讀 M3 讀到一半被鳥啄死、
+        //      黑屏重生疊在半透明的卡上（老師看到的「破圖／被鳥群攻擊的畫面」）。暫停後鳥、風、風暴全停。
+        float prevTimeScale = Time.timeScale;
+        if (prevTimeScale <= 0f) prevTimeScale = 1f;
+        Time.timeScale = 0f;
+        try
+        {
+            yield return StoryCardPlayer.Instance.Play(cardId, true, false);
+        }
+        finally
+        {
+            Time.timeScale = prevTimeScale;   // 一定要在載入下一個場景前恢復，繪本翻頁用的是 deltaTime
+        }
 
         string targetScene = _zone.nextSceneName != null ? _zone.nextSceneName.Trim() : "";
         if (string.IsNullOrEmpty(targetScene))

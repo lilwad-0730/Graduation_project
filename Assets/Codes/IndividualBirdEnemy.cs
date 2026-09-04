@@ -665,7 +665,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             // （已改制）俯衝一律沿警戒時鎖定的直線前進，空中不再追蹤——
             //  紅色路徑亮在哪，牠就衝到哪；玩家看路徑反向閃就能躲（企劃：固定直線俯衝）。
 
-            rb.linearVelocity = diveDirection * diveSpeed;
+            if (!rb.isKinematic) rb.linearVelocity = diveDirection * diveSpeed;
             transform.position += diveDirection * (diveSpeed * Time.deltaTime);
 
             // 2D 飛行朝向：使 3D 鳥嘴/頭部 (+Z) 完全對準飛行向量 (diveDirection)，背部保持朝上 (+Y)
@@ -704,6 +704,13 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                         if (pet != null && pet.isPetrified)
                         {
                             Debug.LogWarning($"🪨【鳥群系統】{gameObject.name} 撞上石化硬撐中的主角！啄不動，彈飛！");
+                            BounceOff(null);
+                            yield break;
+                        }
+
+                        if (PlayerMovement.IsHardCutsceneLocked || PlayerRespawnSystem.IsAnyRespawning)
+                        {
+                            // 文字卡／轉場／重生進行中：她被演出凍住，不算被啄到（09-04 log：綠洲的 M3 卡播到一半被鳥啄死、黑屏重生疊在卡上）
                             BounceOff(null);
                             yield break;
                         }
@@ -965,8 +972,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         if (rb != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }   // kinematic 時設速度只會噴警告
             rb.isKinematic = true;
         }
 
@@ -1221,8 +1227,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         if (rb != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }   // kinematic 時設速度只會噴警告
             rb.isKinematic = true;
         }
 
@@ -1343,8 +1348,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         transform.localScale = originalScale;
         if (rb != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }   // kinematic 時設速度只會噴警告
             rb.position = originalPosition;
             rb.isKinematic = true;
         }

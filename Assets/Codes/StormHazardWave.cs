@@ -106,8 +106,8 @@ public class StormHazardWave : MonoBehaviour
 
     private void CheckAndApplyHazard(GameObject hitObj)
     {
-        // 1. 僅在當前確實處於吹風狀態時才生效
-        if (WindGustSystem.Instance != null && WindGustSystem.Instance.CurrentState != WindState.Blowing)
+        // 1. 僅在當前確實處於吹風狀態、且前搖已過時才生效（風痕先出現、推力晚 0.8 秒才來）
+        if (WindGustSystem.Instance != null && !WindGustSystem.Instance.IsPushActive)
         {
             return;
         }
@@ -140,7 +140,8 @@ public class StormHazardWave : MonoBehaviour
             if (pm == null) pm = hitObj.GetComponentInParent<PlayerMovement>();
             if (pm != null)
             {
-                float pushSpeed = Mathf.Sign(windDirectionX) * (windForce * 0.22f); // 約 -4.0 m/s 平滑逆風阻力
+                float strength = WindGustSystem.Instance != null ? WindGustSystem.Instance.PushStrength01 : 1f;
+                float pushSpeed = Mathf.Sign(windDirectionX) * (windForce * 0.22f) * strength; // 12.5 → 約 -2.75 m/s，前搖後 0.5 秒內漸強
                 pm.ApplyWindPush(pushSpeed);
             }
         }
