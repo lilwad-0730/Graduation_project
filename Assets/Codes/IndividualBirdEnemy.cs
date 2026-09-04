@@ -873,6 +873,32 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         return false;
     }
 
+    /// <summary>將鳥貼齊到目前卡入的最近表面上，避免插地判定觸發時位置已經穿入地面內部太深</summary>
+    private void SnapToNearestSurface()
+    {
+        Vector3 dir = diveDirection.sqrMagnitude > 0.0001f ? diveDirection.normalized : Vector3.down;
+
+        // 先沿著俯衝反方向找回目前卡住的那個表面
+        if (Physics.Raycast(transform.position - dir * 1.5f, dir, out RaycastHit hit, 3.0f, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.collider != null && hit.collider.transform != transform && !hit.collider.transform.IsChildOf(transform))
+            {
+                Vector3 snapped = hit.point - dir * 0.12f;
+                snapped.z = originalPosition.z;
+                transform.position = snapped;
+                return;
+            }
+        }
+
+        // 備援：直接往下找地面貼齊
+        if (Physics.Raycast(transform.position + Vector3.up * 1.0f, Vector3.down, out RaycastHit downHit, 3.0f, ~0, QueryTriggerInteraction.Ignore))
+        {
+            Vector3 snapped = downHit.point;
+            snapped.z = originalPosition.z;
+            transform.position = snapped;
+        }
+    }
+
     private Quaternion stuckRotation; // 快取俯衝到地面的精確 2D 插地角度
 
     private void LateUpdate()
@@ -929,6 +955,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         StopAllCoroutines(); // 立即停止俯衝攜程
 
+        // 校正插地深度：停滯/超時/直接碰撞等後備判定路徑觸發時，鳥當下位置可能已經穿入地面內部太深，
+        // 統一往回貼齊到剛好卡在碰撞表面上（SweepForSurface 命中的路徑已經精準貼齊，這裡再做一次是安全的校正，不會有副作用）
+        SnapToNearestSurface();
+
         // 記錄俯衝到地面的精確姿態，鎖死插地角度
         stuckRotation = transform.rotation;
         currentState = BirdState.Stuck;
@@ -952,14 +982,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private IEnumerator FadeAndDestroyCoroutine()
     {
-        // 撞擊後只停格一瞬（讓玩家看到牠釘在哪），接著就地縮小消失
-        yield return new WaitForSeconds(Mathf.Min(stuckDuration, 0.2f));
+        // 撞擊後停格一段時間（讓玩家看清楚牠釘在哪），才開始漸漸縮小消失
+        yield return new WaitForSeconds(Mathf.Max(stuckDuration, 0f));
 
         // 啟動淡出前將材質設定為透明渲染模式
         SetupMaterialsForFade();
 
         float elapsed = 0f;
-        float realFadeDuration = Mathf.Clamp(fadeDuration, 0.25f, 0.5f);   // 縮小消失要快，不拖
+        float realFadeDuration = Mathf.Max(fadeDuration, 0.3f);   // 依 Inspector 設定的時間漸漸縮小消失，不要瞬間消失
         while (elapsed < realFadeDuration)
         {
             elapsed += Time.deltaTime;

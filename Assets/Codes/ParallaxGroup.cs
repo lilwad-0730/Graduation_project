@@ -60,6 +60,13 @@ public class ParallaxGroup : MonoBehaviour, IResettable
     [Tooltip("每秒背景自主漂移的距離 (正值 = +X 方向, 負值 = -X 方向，預設 0.5)")]
     public float driftSpeedX = 0.5f;
 
+    [Header("背景邊界安全防護 (Anti-Gap Clamp)")]
+    [Tooltip("累積視差位移量的下限 (背景最多向右回彈到這裡，防止玩家往左走太久導致背景滑出邊界露出破圖空隙)")]
+    public float minOffsetX = -10f;
+
+    [Tooltip("累積視差位移量的上限 (背景最多向左位移到這裡，防止玩家往右走太久導致背景滑出邊界露出破圖空隙)")]
+    public float maxOffsetX = 10f;
+
     [Header("觀察用狀態 (唯讀)")]
     public bool isPlayerInRuinedZone = false;
     public bool isFollowActive = false;
@@ -234,9 +241,11 @@ public class ParallaxGroup : MonoBehaviour, IResettable
             driftDelta = driftSpeedX * Time.deltaTime;
         }
 
-        // 3. 總位移量疊加
-        float totalDeltaX = playerParallaxDelta + driftDelta;
-        currentTotalOffsetX += totalDeltaX;
+        // 3. 總位移量疊加，並夾在安全範圍內（防止背景無限累積位移，滑出攝影機邊界外露出破圖空隙）
+        float proposedOffsetX = currentTotalOffsetX + playerParallaxDelta + driftDelta;
+        float clampedOffsetX = Mathf.Clamp(proposedOffsetX, minOffsetX, maxOffsetX);
+        float totalDeltaX = clampedOffsetX - currentTotalOffsetX;
+        currentTotalOffsetX = clampedOffsetX;
 
         // 統一套用位移至受管物件（確保彼此相對位置 100% 剛性不變，只改動 X 座標，絕不改動 Y 與 Z 座標）
         if (Mathf.Abs(totalDeltaX) > 0.000001f)

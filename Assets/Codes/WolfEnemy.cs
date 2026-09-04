@@ -27,6 +27,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Header("貼地追擊")]
     [Tooltip("追擊時禁止任何向上的物理速度（撞到台階邊緣也不會被彈上天），狼永遠沿著地面前進")]
     public bool keepOnGroundWhileChasing = true;
+    [Tooltip("腳下地面偵測射線的額外長度 (超過碰撞體底部多遠內視為貼地)")]
+    public float groundCheckDistance = 0.4f;
+    [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
+    public float maxWalkableSlopeAngle = 55f;
 
     private Transform player;
     private PlayerMovement playerMovement; 
@@ -173,15 +177,50 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void FixedUpdate()
     {
-        // 沿著地面前進：追擊中只允許水平推進與下墜，任何向上的速度一律清掉（台階邊緣、碰撞彈跳都不會讓牠飛起來）
+        // 沿著地面前進：追擊中若腳下是可行走的斜坡，速度沿斜坡表面投影貼地爬升；
+        // 若不是斜坡（例如撞到台階邊緣被物理彈起），才清掉向上速度避免飛起來
         if (!keepOnGroundWhileChasing || rb == null || rb.isKinematic) return;
         if (!isChasing || isAttached || isStunned) return;
+
         Vector3 v = rb.linearVelocity;
-        if (v.y > 0f)
+
+        if (TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle) &&
+            slopeAngle > 0.5f && slopeAngle < maxWalkableSlopeAngle)
+        {
+            Vector3 horizontal = new Vector3(v.x, 0f, 0f);
+            Vector3 projected = Vector3.ProjectOnPlane(horizontal, groundHit.normal);
+            if (projected.sqrMagnitude > 0.0001f)
+            {
+                projected = projected.normalized * Mathf.Abs(v.x);
+                rb.linearVelocity = new Vector3(projected.x, projected.y, v.z);
+            }
+        }
+        else if (v.y > 0f)
         {
             v.y = 0f;
             rb.linearVelocity = v;
         }
+    }
+
+    // 從狼腳下往下打一條射線，取得地面碰撞資訊與斜坡角度 (與 PlayerMovement.CheckGrounded 邏輯一致)
+    private bool TryGetGroundSlope(out RaycastHit hit, out float slopeAngle)
+    {
+        hit = default;
+        slopeAngle = 0f;
+        if (col == null) return false;
+
+        Vector3 origin = col.bounds.center;
+        float rayLength = col.bounds.extents.y + groundCheckDistance;
+        int layerMask = ~LayerMask.GetMask("Ignore Raycast");
+
+        if (Physics.Raycast(origin, Vector3.down, out RaycastHit downHit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
+        {
+            if (downHit.collider == col || downHit.collider.transform.IsChildOf(transform)) return false;
+            hit = downHit;
+            slopeAngle = Vector3.Angle(Vector3.up, downHit.normal);
+            return true;
+        }
+        return false;
     }
 
     private void ChasePlayer()
