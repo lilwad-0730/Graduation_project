@@ -252,6 +252,8 @@ public class DesertWindDustFX : MonoBehaviour
     /// <summary>
     /// 自動生成並賦予柔邊圓形粒子材質，徹底杜絕無貼圖方形 Quad 穿幫
     /// </summary>
+    private Material _softMat;   // 只建一次。原本每個 LateUpdate 都 new Material＋rend.material（每幀漏兩個材質、Shader.Find 三次）
+
     private void EnsureSoftParticleMaterial(ParticleSystemRenderer rend)
     {
         if (rend == null) return;
@@ -261,17 +263,22 @@ public class DesertWindDustFX : MonoBehaviour
             _softParticleTex = CreateSoftCircleTexture(32);
         }
 
-        Shader s = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-        if (s == null) s = Shader.Find("Particles/Standard Unlit");
-        if (s == null) s = Shader.Find("Sprites/Default");
-        if (s != null)
+        if (_softMat == null)
         {
-            Material m = new Material(s);
-            m.name = "DesertWind_SoftMat";
-            if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", _softParticleTex);
-            if (m.HasProperty("_MainTex")) m.SetTexture("_MainTex", _softParticleTex);
-            rend.material = m;
+            Shader s = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (s == null) s = Shader.Find("Particles/Standard Unlit");
+            if (s == null) s = Shader.Find("Sprites/Default");
+            if (s == null) return;
+
+            _softMat = new Material(s);
+            _softMat.name = "DesertWind_SoftMat";
+            _softMat.hideFlags = HideFlags.HideAndDontSave;   // ExecuteAlways 在編輯器就會生，別讓它被序列化進 .unity（每存檔都換 fileID、diff 700 行）
+            if (_softMat.HasProperty("_BaseMap")) _softMat.SetTexture("_BaseMap", _softParticleTex);
+            if (_softMat.HasProperty("_MainTex")) _softMat.SetTexture("_MainTex", _softParticleTex);
         }
+
+        // sharedMaterial：不要用 .material（那會再複製一份，編輯器模式下還會噴 Instantiating material 警告）
+        if (rend.sharedMaterial != _softMat) rend.sharedMaterial = _softMat;
     }
 
     /// <summary>
@@ -281,6 +288,7 @@ public class DesertWindDustFX : MonoBehaviour
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.name = "Procedural_SoftCircle";
+        tex.hideFlags = HideFlags.HideAndDontSave;   // 同上，不進場景檔
         Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
         float radius = size * 0.5f;
 

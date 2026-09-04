@@ -73,6 +73,8 @@ public class EndCredits : MonoBehaviour
     public string sceneAfterCredits = "MainMenuScene";
     [Tooltip("名單結束後、切回主選單前，全黑停留幾秒")]
     public float endingTailHold = 1.2f;
+    [Tooltip("結局模式下，捲名單之前先播的文字卡（那是我的形狀 → 標題卡「我　你　他」）。留空＝不播")]
+    public string endingCardId = "E1";
 
     /// <summary>
     /// ★由玻璃館結局設 true：進 Book 場景後直接跳到結尾漫畫，
@@ -347,6 +349,17 @@ public class EndCredits : MonoBehaviour
 
         // 黑幕淡入
         yield return Fade(0f, 1f, curtainIn);
+
+        // ★結局黑幕卡（人稱階梯的收束）：「那是我的形狀」→ 標題卡「我　你　他」→ 才捲名單。
+        //   畫面此時已全黑，卡片不做黑幕進出；播完瞬間收掉它的層，底下就是我們的黑幕，接得無縫。
+        if (EndingMode && !string.IsNullOrEmpty(endingCardId)
+            && StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(endingCardId))
+        {
+            StoryCardPlayer.Instance.SetSortingOrder(10001);   // 名單 canvas 也是 10000，卡片要在它上面
+            yield return StoryCardPlayer.Instance.Play(endingCardId, false, false);
+            StoryCardPlayer.Instance.ReleaseCurtain();
+        }
+
         yield return Wait(leadIn);
 
         // 由下往上捲，停在最後一張標題卡置中

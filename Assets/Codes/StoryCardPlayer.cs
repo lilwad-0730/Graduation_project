@@ -43,6 +43,8 @@ public class StoryCardPlayer : MonoBehaviour
         [Tooltip("Curtain＝黑幕過場卡；Paper＝紙底日誌卡（水下 D1–D3）；Overlay＝字疊在演出上（幕只壓暗，不全黑）")]
         public CardStyle style = CardStyle.Curtain;
         [TextArea(2, 6)] public string[] pages = new string[0];
+        [Tooltip("每頁最短停留秒數（0＝照字數公式）。標題卡這種字少卻要停久的用這個")]
+        public float minHoldSeconds = 0f;
     }
 
     [Header("卡片內容（每一格＝一頁，頁內用換行分行）")]
@@ -312,7 +314,7 @@ public class StoryCardPlayer : MonoBehaviour
         _pendingPhoto = (_paper && diaryPhotoEnabled) ? FindDiaryPhoto(cardId) : null;
         // Overlay：幕只到 overlayAlpha，畫面在字後面繼續演；其他樣式照舊全遮
         float curtainMax = card.style == CardStyle.Overlay ? Mathf.Clamp01(overlayAlpha) : 1f;
-        yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut, curtainMax);
+        yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut, curtainMax, card.minHoldSeconds);
     }
 
     public IEnumerator Play(string cardId)
@@ -369,7 +371,7 @@ public class StoryCardPlayer : MonoBehaviour
         Time.timeScale = restoreTo > 0f ? restoreTo : 1f;
     }
 
-    public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut, float curtainMax = 1f)
+    public IEnumerator PlayPages(string[] pages, bool curtainFadeIn, bool curtainFadeOut, float curtainMax = 1f, float minHold = 0f)
     {
         curtainMax = Mathf.Clamp(curtainMax, 0.05f, 1f);
         if (pages == null || pages.Length == 0) yield break;
@@ -467,11 +469,11 @@ public class StoryCardPlayer : MonoBehaviour
             _driftToken++;
             if (pageDriftPixels > 0.01f && _labelRect != null)
             {
-                StartCoroutine(DriftLabel(_driftToken, fadeIn + HoldSecondsFor(page) + fadeOut));
+                StartCoroutine(DriftLabel(_driftToken, fadeIn + Mathf.Max(HoldSecondsFor(page), minHold) + fadeOut));
             }
 
             yield return FadeLabel(0f, 1f, fadeIn);
-            yield return Hold(HoldSecondsFor(page));
+            yield return Hold(Mathf.Max(HoldSecondsFor(page), minHold));
             yield return FadeLabel(1f, 0f, fadeOut);
 
             if (i < pages.Length - 1)
@@ -513,6 +515,20 @@ public class StoryCardPlayer : MonoBehaviour
         }
 
         _playing = false;
+    }
+
+    /// <summary>改層級（結局名單的 canvas 也是 10000，卡片要壓在它上面時先叫這個）。</summary>
+    public void SetSortingOrder(int order)
+    {
+        sortingOrder = order;
+        if (_canvas != null) _canvas.sortingOrder = order;
+    }
+
+    /// <summary>把維持中的黑幕「淡出」收掉（前導序列用；ReleaseCurtain 是瞬間版）。</summary>
+    public void ReleaseCurtainSmooth()
+    {
+        if (_canvas == null || !_canvas.enabled || _playing) return;
+        StartCoroutine(AutoReleaseRoutine());
     }
 
     /// <summary>呼叫端載入完場景後叫這個，把黑幕收掉。</summary>
@@ -989,6 +1005,11 @@ public class StoryCardPlayer : MonoBehaviour
         //   M5 維持黑幕，因為它接的是全黑的結局繪本。
         //   撰稿者 8/29 原稿（26 頁）留檔於專案文件《文字卡短句版_實裝與原稿留檔_0903》，git 歷史亦可查。
 
+        // ── M0　前導序列最後一張（主選單 → 棉花堡）：v1.0 TXT-01，唯一的開場字 ──
+        list.Add(NewCard("M0", new string[] {
+            "一直往前走\n雲一直都在"
+        }));
+
         // ── M1　棉花堡 → 廢墟 ──
         list.Add(NewCard("M1", new string[] {
             "一切都是好的。\n孩子，是愛的結晶。"
@@ -1016,6 +1037,15 @@ public class StoryCardPlayer : MonoBehaviour
         list.Add(NewCard("M5", new string[] {
             "原來\n我也可以求救"
         }));
+
+        // ── E1　結局：翻完結尾漫畫、捲名單之前（v1.0 TXT-07 ＋ 標題卡）──
+        //    人稱階梯收束：只剩「我」→ 三個字分開＝三個都是她。標題卡停 4 秒。
+        Card ending = NewCard("E1", new string[] {
+            "那是我的形狀",
+            "我　你　他"
+        });
+        ending.minHoldSeconds = 4.0f;
+        list.Add(ending);
 
         // ── D1–D3　水下日誌（紙底卡）＝日誌上真的寫的字，不是獨白 ──
         //    照片頁先出，再出這幾行。「內心破開」改由收齊三張後巨石碎裂的畫面承擔。
