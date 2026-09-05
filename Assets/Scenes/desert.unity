@@ -900,7 +900,7 @@ MonoBehaviour:
   windupSeconds: 0
   pushRampSeconds: 0.25
   globalPush: 1
-  enableStormPassivePetrify: 0
+  enableStormPassivePetrify: 1
   enableWindPush: 1
   windParticles: {fileID: 1187382265}
   windSoundClip: {fileID: 0}
@@ -27850,7 +27850,7 @@ MonoBehaviour:
   windForce: 12.5
   windDirectionX: -1
   enableWindPush: 1
-  enableStormPassivePetrify: 0
+  enableStormPassivePetrify: 1
 --- !u!1001 &1211434000
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35723,7 +35723,7 @@ MonoBehaviour:
   windupSeconds: 0
   pushRampSeconds: 0.25
   globalPush: 1
-  enableStormPassivePetrify: 0
+  enableStormPassivePetrify: 1
   enableWindPush: 1
   windParticles: {fileID: 1187382265}
   windSoundClip: {fileID: 0}
@@ -53671,7 +53671,7 @@ MonoBehaviour:
   windForce: 12.5
   windDirectionX: -1
   enableWindPush: 1
-  enableStormPassivePetrify: 0
+  enableStormPassivePetrify: 1
 --- !u!114 &2014794182
 MonoBehaviour:
   m_ObjectHideFlags: 0

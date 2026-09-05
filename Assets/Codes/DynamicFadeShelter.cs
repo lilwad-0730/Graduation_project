@@ -103,24 +103,13 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
                 // 當透明度低於 0.2 時，關閉物理 Collider，玩家失去防風保護
                 if (fadeOutPct < 0.2f && shelterCollider != null && shelterCollider.enabled)
                 {
-                    shelterCollider.enabled = false;
-                    // 若同時掛載了 WindShelter，安全重置其內部狀態
-                    WindShelter ws = GetComponent<WindShelter>();
-                    if (ws != null)
-                    {
-                        ws.ResetToInitialState();
-                    }
+                    SetShelterProtection(false);
                 }
 
                 if (cycleTimer >= fadeOutDuration)
                 {
                     SetAlpha(0.0f);
-                    if (shelterCollider != null) shelterCollider.enabled = false;
-                    WindShelter ws = GetComponent<WindShelter>();
-                    if (ws != null)
-                    {
-                        ws.ResetToInitialState();
-                    }
+                    SetShelterProtection(false);
                     currentState = ShelterFadeState.Inactive;
                     cycleTimer = 0f;
                 }
@@ -142,17 +131,44 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
                 // 當透明度高於 0.2 時，開啟 Collider 碰撞重新提供保護
                 if (fadeInPct > 0.2f && shelterCollider != null && !shelterCollider.enabled)
                 {
-                    shelterCollider.enabled = true;
+                    SetShelterProtection(true);
                 }
 
                 if (cycleTimer >= fadeInDuration)
                 {
                     SetAlpha(1.0f);
-                    if (shelterCollider != null) shelterCollider.enabled = true;
+                    SetShelterProtection(true);
                     currentState = ShelterFadeState.Active;
                     cycleTimer = 0f;
                 }
                 break;
+        }
+    }
+
+    /// <summary>
+    /// ★0905 修正：消失時要「先讓 WindShelter 把玩家登出保護、再關掉它和碰撞」——
+    /// 原本是先關 Collider 再呼叫 ws.ResetToInitialState()，而 ResetToInitialState 會把所有 Collider 重新打開，
+    /// 結果隱形的柱子還在擋風、還能踩。真掩體（沒有 Destructible）尤其如此。
+    /// </summary>
+    private void SetShelterProtection(bool on)
+    {
+        WindShelter ws = GetComponent<WindShelter>();
+        if (ws == null) ws = GetComponentInChildren<WindShelter>();
+
+        Collider[] cols = GetComponentsInChildren<Collider>(true);   // 柱子可能不只一個 Collider，一起開關
+        if (on)
+        {
+            if (ws != null) ws.enabled = true;
+            foreach (var c in cols) if (c != null) c.enabled = true;
+        }
+        else
+        {
+            if (ws != null)
+            {
+                if (ws.enabled) ws.ResetToInitialState();   // 玩家若在裡面 → 登出保護、清內部狀態（會順便把 Collider 打開，所以下面再關）
+                ws.enabled = false;                          // Update 停掉：消失期間不再判定背風面
+            }
+            foreach (var c in cols) if (c != null) c.enabled = false;
         }
     }
 
@@ -204,7 +220,7 @@ public class DynamicFadeShelter : MonoBehaviour, IResettable
     {
         currentState = ShelterFadeState.Active;
         cycleTimer = 0f;
-        if (shelterCollider != null) shelterCollider.enabled = true;
+        SetShelterProtection(true);
         SetAlpha(1.0f);
     }
 
