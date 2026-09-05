@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 68d59539aed38464ab78bbd5725301c8
-AssetOrigin:
-  serializedVersion: 1
-  productId: 287653
-  packageName: Book Head Monster
-  packageVersion: 1.0
-  assetPath: Assets/BookHeadMonster/Built-in/Meshes/BookHeadMonster.fbx
-  uploadId: 670856
+guid: ceb69b8ba38b6514d86ecd59d9e5d17c
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -15,17 +8,17 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: part_1
-    second: {fileID: 2100000, guid: f185d4eb2f5c19d44a223449da1bee07, type: 2}
+    second: {fileID: 2100000, guid: 84c2b078bf43e6a4497e4cc46e7798ff, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: part_2
-    second: {fileID: 2100000, guid: 4aa734e2ea0e73f4f8965dbd5f3b45fd, type: 2}
+    second: {fileID: 2100000, guid: ff5b48ae0e477b74486c76417215e93c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: part_3
-    second: {fileID: 2100000, guid: 7186876913b26a34bb12c6c8fbe325e6, type: 2}
+    second: {fileID: 2100000, guid: ff5b48ae0e477b74486c76417215e93c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -36,7 +29,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
-    removeConstantScaleCurves: 1
+    removeConstantScaleCurves: 0
     motionNodeName: 
     animationImportErrors: 
     animationImportWarnings: 
@@ -124,7 +117,7 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
-  importBlendShapeDeformPercent: 0
+  importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 
