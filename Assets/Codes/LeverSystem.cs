@@ -83,7 +83,9 @@ public class LeverSystem : MonoBehaviour, IResettable
         {
             if (Input.GetKeyDown(interactKey))
             {
-                PullLever();
+                // ★0905 廢墟光絮：沒收滿拉不動——只晃一下＋悶響（沒有 Collector／沒被鎖時照常）
+                if (LightMoteCollector.IsLeverLocked(this)) LightMoteCollector.NotifyLeverStuck(this);
+                else PullLever();
             }
         }
     }
@@ -95,7 +97,8 @@ public class LeverSystem : MonoBehaviour, IResettable
             isPlayerInZone = true;
             if (triggerOnEnter && !isPulled)
             {
-                PullLever();
+                if (LightMoteCollector.IsLeverLocked(this)) LightMoteCollector.NotifyLeverStuck(this);   // ★0905
+                else PullLever();
             }
         }
     }

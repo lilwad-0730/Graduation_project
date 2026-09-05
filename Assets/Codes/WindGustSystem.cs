@@ -52,9 +52,13 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     [Header("🪨 風暴石化與危害設定")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
-    public bool enableStormPassivePetrify = false;   // 依團隊決議：荒原石化改為玩家主動（按 ⬇/S）；風暴不再被動強制石化。保留開關供日後切換
+    public bool enableStormPassivePetrify = true;    // 0904 團隊定案：被動石化開回來（主動硬撐 ⬇/S 仍保留）。搭配 telegraphSeconds 的沙塵線前兆，玩家看得到風要來了
     [Tooltip("吹風時是否對未受掩體保護的玩家施加逆風推力？")]
     public bool enableWindPush = true;
+
+    [Header("🌫️ 起風前兆（遠處沙塵線）")]
+    [Tooltip("起風前幾秒開始出現遠處逼近的沙塵線。0 = 不預告。\n★這只是視覺預告，不會延後推力——風痕與推力仍然同時到（那個由 windupSeconds 管，預設 0）")]
+    public float telegraphSeconds = 1.0f;
 
     [Header("視覺與音效回饋")]
     [Tooltip("吹風時啟動的風力粒子系統 (可為空，系統自動搜尋)")]
@@ -68,6 +72,12 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     private float timer = 0f;
     private WindState currentState = WindState.Calm;
+
+    // ★0905 荒原四拍：外部控制——鳥影掠地＝世界屏息幾秒；綠洲前的風停區＝永久停風
+    private float _holdCalmUntil = -1f;
+    private bool _stoppedForever = false;
+    public bool IsStoppedForever => _stoppedForever;
+    public bool IsHoldingCalm => Time.time < _holdCalmUntil;
     private Rigidbody playerRb;
     private PlayerPetrification playerPetrify;
     private bool hasAppliedWindThisGust = false;
@@ -87,6 +97,48 @@ public class WindGustSystem : MonoBehaviour, IResettable
             if (t <= 0f) return 0f;
             return pushRampSeconds > 0.01f ? Mathf.Clamp01(t / pushRampSeconds) : 1f;
         }
+    }
+
+    /// <summary>風平期間、已進入預告視窗：遠處沙塵線該出現了。</summary>
+    public bool IsTelegraphing =>
+        currentState == WindState.Calm && telegraphSeconds > 0.01f && timer >= pauseDuration - telegraphSeconds;
+
+    /// <summary>預告進度 0→1。0＝沙塵線剛在遠處出現，1＝正好起風的那一瞬間。</summary>
+    public float TelegraphProgress01
+    {
+        get
+        {
+            if (!IsTelegraphing) return 0f;
+            float t = timer - (pauseDuration - telegraphSeconds);
+            return Mathf.Clamp01(t / Mathf.Max(0.01f, telegraphSeconds));
+        }
+    }
+
+    /// <summary>目前風向（-1＝向左，+1＝向右），與風沙特效 DesertWindDustFX.windDirectionX 同步。</summary>
+    public float WindDirectionX
+    {
+        get
+        {
+            DesertWindDustFX fx = windParticles != null ? windParticles.GetComponent<DesertWindDustFX>() : null;
+            if (fx != null && Mathf.Abs(fx.windDirectionX) > 0.01f) return Mathf.Sign(fx.windDirectionX);
+            return -1f;
+        }
+    }
+
+    /// <summary>讓風保持平靜 seconds 秒（正在吹就立刻停）。期間計時凍住：沒有前兆、沒有推力。鳥影掠地用。</summary>
+    public void HoldCalm(float seconds)
+    {
+        _holdCalmUntil = Mathf.Max(_holdCalmUntil, Time.time + Mathf.Max(0f, seconds));
+        if (currentState == WindState.Blowing) SwitchToState(WindState.Calm);
+        timer = 0f;
+    }
+
+    /// <summary>永久停風（綠洲前的「風停」）：之後不再起風、不再前兆、風聲與風沙停。重生時由 ResetToInitialState 解除。</summary>
+    public void StopForever()
+    {
+        _stoppedForever = true;
+        SwitchToState(WindState.Calm);
+        timer = 0f;
     }
 
     private void Awake()
@@ -220,6 +272,13 @@ public class WindGustSystem : MonoBehaviour, IResettable
         if (windAudioSource != null)
             windAudioSource.volume = AudioManager.SfxVolume;
 
+        // ★0905：永久停風／屏息中——計時凍在 0，沒有前兆、沒有推力
+        if (_stoppedForever || Time.time < _holdCalmUntil)
+        {
+            timer = 0f;
+            return;
+        }
+
         timer += Time.deltaTime;
 
         // ★全域推力：風痕在哪裡出現（跟著鏡頭鋪滿全屏），推力就在哪裡——兩者永遠同步。
@@ -232,9 +291,7 @@ public class WindGustSystem : MonoBehaviour, IResettable
                 PlayerMovement pm = playerRb.GetComponent<PlayerMovement>();
                 if (pm != null && !pm.isUnderwater)
                 {
-                    float dirX = -1f;
-                    DesertWindDustFX fx = windParticles != null ? windParticles.GetComponent<DesertWindDustFX>() : null;
-                    if (fx != null && Mathf.Abs(fx.windDirectionX) > 0.01f) dirX = Mathf.Sign(fx.windDirectionX);
+                    float dirX = WindDirectionX;
                     pm.ApplyWindPush(dirX * (windForce * 0.22f) * PushStrength01);
                 }
             }
@@ -308,6 +365,8 @@ public class WindGustSystem : MonoBehaviour, IResettable
     {
         IsPlayerSheltered = false;
         hasAppliedWindThisGust = false;
+        _holdCalmUntil = -1f;
+        _stoppedForever = false;
         SwitchToState(WindState.Calm); // 預設由風平浪靜開始
     }
 

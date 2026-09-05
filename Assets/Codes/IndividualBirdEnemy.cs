@@ -318,6 +318,46 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("模型旋轉偏移角度 (預設 0,0,0)")]
     public Vector3 modelRotationOffset = Vector3.zero;
 
+    // ── ★0905 荒原四拍 ─────────────────────────────────────────
+    [Header("★0905 起風反應（閒置鳥當風向標）")]
+    [Tooltip("前兆時全體抬高、吹風時往下風飄；鳥先動＝第二個起風前兆（Rain World：動物先知道）")]
+    public bool reactToWind = true;
+    [Tooltip("前兆時抬高多少（世界單位）")]
+    public float windLiftHeight = 0.6f;
+    [Tooltip("吹風時往下風飄多少（世界單位）")]
+    public float windDriftDistance = 1.2f;
+
+    [Header("★0905 示範俯衝（拍二第一隻：衝手套旁的地面、不打她）")]
+    [Tooltip("設了就衝這個點，不衝玩家")]
+    public Transform overrideTarget;
+    [Tooltip("示範用：命中玩家不觸發死亡，只彈開")]
+    public bool harmless = false;
+
+    /// <summary>全域壓制：Time.time 小於這個值時，所有鳥不偵測、不攻擊（鳥影掠地 6 秒／風停區永久）。換場景由 DesertBeatDirector 歸零。</summary>
+    public static float SuppressAllUntil = -1f;
+    public static bool IsAllSuppressed => Time.time < SuppressAllUntil;
+
+    private Vector3 GetWindReactionOffset()
+    {
+        if (!reactToWind) return Vector3.zero;
+        WindGustSystem w = WindGustSystem.Instance;
+        if (w == null) return Vector3.zero;
+        float lift = 0f, drift = 0f;
+        if (w.IsTelegraphing)
+        {
+            float p = w.TelegraphProgress01;
+            lift = windLiftHeight * Mathf.SmoothStep(0f, 1f, p);
+        }
+        else if (w.IsPushActive)
+        {
+            float p = w.PushStrength01;
+            lift = windLiftHeight * (1f - 0.5f * p);
+            drift = windDriftDistance * p * w.WindDirectionX;
+        }
+        return (_camUp * lift) + (_camRight * drift);
+    }
+    // ───────────────────────────────────────────────────────────
+
     private void Update()
     {
         // 核心功能 1：3D 有機空中漂浮與自然微盤旋 (多頻率波形 + Perlin 氣流雜訊)
@@ -335,6 +375,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         if (currentState == BirdState.Idle && autoDetectPlayer && triggerMode != BirdTriggerMode.TriggerZoneOrCollisionOnly)
         {
+            if (IsAllSuppressed) return;   // ★0905 鳥影掠地／風停區：全體壓制
             if (PlayerRespawnSystem.IsAnyRespawning || !PlayerRespawnSystem.IsPlayerMovingAfterRespawn || UmbrellaZone.IsPlayerUnderUmbrella)
             {
                 return; // 重生過場中、玩家尚未主動開始移動、或在遮陽傘下安全避難，均不觸發攻擊
@@ -413,6 +454,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             float noiseY = (Mathf.PerlinNoise(_noiseSeedY, Time.time * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (hoverAmplitudeY * 0.15f);
             rawTargetPos += (_camRight * noiseX) + (_camUp * noiseY);
         }
+
+        // ★0905 起風反應：前兆時抬高、吹風時往下風飄（沿用同一個 Lerp，動作自然）
+        rawTargetPos += GetWindReactionOffset();
 
         // 3. 平滑更新鳥的世界座標 (嚴格以 originalPosition 為中心，絕不越界漂移)
         _currentHoverOffset = rawTargetPos - originalPosition;
@@ -715,6 +759,13 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                             yield break;
                         }
 
+                        if (harmless)
+                        {
+                            // ★0905 示範俯衝：碰到她也只是彈開
+                            BounceOff(null);
+                            yield break;
+                        }
+
                         if (PlayerPetrification.IsGodMode)
                         {
                             Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
@@ -927,6 +978,13 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (playerTrans == null)
         {
             targetPosition = transform.position + Vector3.down * 15f;
+            return;
+        }
+
+        // ★0905 示範俯衝：指定了目標點就衝那裡（例如手套旁的地面）
+        if (overrideTarget != null)
+        {
+            targetPosition = new Vector3(overrideTarget.position.x, overrideTarget.position.y, originalPosition.z);
             return;
         }
 
@@ -1157,7 +1215,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 0. 當處於待機狀態且玩家直接接觸此鳥時，單獨觸發攻擊
         if (currentState == BirdState.Idle && (hitObj.CompareTag("Player") || hitObj.GetComponentInParent<PlayerMovement>() != null))
         {
-            if (postRespawnDelayTimer <= 0f && !PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
+            if (!IsAllSuppressed && postRespawnDelayTimer <= 0f && !PlayerRespawnSystem.IsAnyRespawning && PlayerRespawnSystem.IsPlayerMovingAfterRespawn && !UmbrellaZone.IsPlayerUnderUmbrella)
             {
                 Debug.Log($"【個別鳥觸發】玩家直接接觸 {gameObject.name}！該鳥單獨發起攻擊！");
                 StartAttackSequence();
@@ -1180,9 +1238,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             if (currentState == BirdState.Diving)
             {
-                if (PlayerPetrification.IsGodMode)
+                if (harmless || PlayerPetrification.IsGodMode)
                 {
-                    Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 碰撞無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
+                    if (!harmless) Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 碰撞無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
                 }
                 else
                 {
