@@ -1241,6 +1241,19 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // ── 風推卡住偵測 ───────────────────────────────────────────────
+    /// <summary>
+    /// 重置游泳體力。重生時必須呼叫：
+    /// 體力原本只在 Start() 設定一次，若玩家是在力竭狀態下溺斃，重生後仍然是力竭，
+    /// 一浮上來就掉下去，很容易直接進入「重生 → 沉底 → 再溺斃」的死亡迴圈。
+    /// </summary>
+    public void ResetSwimStamina()
+    {
+        currentSwimStamina = maxSwimStamina;
+        isSwimExhausted = false;
+        exhaustionTimer = 0f;
+        isSwimming = false;
+    }
+
     private float _windStuckLastX;
     private float _windStuckTimer;
     private bool _windStuckInitialized;

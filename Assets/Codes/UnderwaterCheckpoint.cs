@@ -32,7 +32,7 @@ public static class UnderwaterCheckpoint
         }
         if (_respawn == null) return;
 
-        _respawn.SetSafeGroundPosition(pm.transform.position);
-        Debug.Log("🚩【水下存檔點】" + reason + " → 重生點更新為 " + pm.transform.position);
+        // 帶前進保護：回頭撿漏掉的日誌不會讓重生點倒退回更前面的位置
+        _respawn.TrySetProgressCheckpoint(pm.transform.position, "水下存檔點：" + reason);
     }
 }

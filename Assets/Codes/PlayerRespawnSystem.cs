@@ -82,6 +82,33 @@ public class PlayerRespawnSystem : MonoBehaviour
         return p;
     }
 
+    /// <summary>
+    /// 是否為水下關卡。水下沒有「地面」可以貼，所有陸地專用的重生/死亡判定都要跳過：
+    /// 向下貼地射線會把玩家從水中的存檔點一路拉到海床上，落點可能比存檔高度低很多，
+    /// 深到一定程度後浮力與體力都追不回來，玩家就再也回不到原本的高度。
+    /// </summary>
+    private int _underwaterSceneHandle = 0;
+    private bool _isUnderwaterScene;
+    private PlayerMovement _cachedMovement;
+
+    private bool IsUnderwaterLevel()
+    {
+        // 場景名稱在同一個場景內不會變，只在換場景時重新判定一次 (Update 每幀都會呼叫到這裡)
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (_underwaterSceneHandle != scene.handle)
+        {
+            _underwaterSceneHandle = scene.handle;
+            _isUnderwaterScene = scene.name.ToLower().Contains("underwater");
+        }
+        if (_isUnderwaterScene) return true;
+
+        if (UnderwaterSuffocationEffect.Instance != null) return true;
+
+        // 其他場景可能有局部水體 Trigger，仍以玩家當下的水下狀態為準
+        if (_cachedMovement == null) _cachedMovement = GetMovement();
+        return _cachedMovement != null && _cachedMovement.isUnderwater;
+    }
+
     private PlayerMovement GetMovement()
     {
         PlayerMovement m = GetComponent<PlayerMovement>();
@@ -265,6 +292,28 @@ public class PlayerRespawnSystem : MonoBehaviour
         Debug.Log($"【存檔點系統】外部強制更新重生點至：{_activeRespawnPos}");
     }
 
+    /// <summary>
+    /// 帶前進保護的存檔點更新 (水下拾取物專用)。
+    /// 只有比目前存檔點「離起點更遠」才會採用，玩家回頭去撿漏掉的日誌不會讓重生點倒退。
+    /// 用離起點的距離判定而非單一軸向，下潛與橫移都適用。
+    /// 回傳是否真的採用。
+    /// </summary>
+    public bool TrySetProgressCheckpoint(Vector3 newPos, string reason)
+    {
+        float newProgress = Vector3.Distance(newPos, _initialPlayPos);
+        float currentProgress = Vector3.Distance(_activeRespawnPos, _initialPlayPos);
+
+        if (newProgress <= currentProgress - 1.0f)
+        {
+            Debug.Log($"【存檔點系統】略過倒退的存檔點 ({reason})：新點離起點 {newProgress:F1} < 目前 {currentProgress:F1}");
+            return false;
+        }
+
+        _activeRespawnPos = newPos;
+        Debug.Log($"🚩【存檔點系統】{reason} → 重生點更新為 {_activeRespawnPos}");
+        return true;
+    }
+
     void Update()
     {
 
@@ -281,7 +330,9 @@ public class PlayerRespawnSystem : MonoBehaviour
         // ===================================
         // 擊飛失敗偵測 (距離與速度法)
         // ===================================
-        if (_playerRb != null && !_isRespawning)
+        // ★ 水下跳過：這套判定是為荒原「被鳥往左撞飛」寫的 (向左速度 + 向左飛行距離)，
+        //   水中橫向游動或水流都可能達到門檻而誤觸發重生，而且水下本來就沒有擊飛機制。
+        if (_playerRb != null && !_isRespawning && !IsUnderwaterLevel())
         {
             // 1. 如果突然承受巨大的向左速度 (小於 -8 代表絕對是被鳥衝撞而不是走路，因走路最快才 -5)
             if (!_inKnockbackState && _playerRb.linearVelocity.x < knockbackVelocityThreshold)
@@ -476,20 +527,30 @@ public class PlayerRespawnSystem : MonoBehaviour
         PlayerMovement pmComponent = GetMovement();
         Vector3 targetPos = spawnPos;
 
+        bool isUnderwater = IsUnderwaterLevel();
+
         // 向下發射射線偵測地表，精確將玩家雙腳置於地面上，防止懸空掉落
-        RaycastHit hit;
-        int layerMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
-        if (Physics.Raycast(spawnPos + Vector3.up * 3.0f, Vector3.down, out hit, 30.0f, layerMask, QueryTriggerInteraction.Ignore))
+        // ★ 水下不做這件事：存檔點本來就在水中，貼地會把玩家拉到海床，落點遠低於存檔高度
+        if (!isUnderwater)
         {
-            float halfHeight = 1.0f;
-            CapsuleCollider cc = GetComponent<CapsuleCollider>();
-            if (cc != null) halfHeight = cc.height * 0.5f;
-            else
+            RaycastHit hit;
+            int layerMask = ~LayerMask.GetMask("Player", "Ignore Raycast", "UI");
+            if (Physics.Raycast(spawnPos + Vector3.up * 3.0f, Vector3.down, out hit, 30.0f, layerMask, QueryTriggerInteraction.Ignore))
             {
-                BoxCollider bc = GetComponent<BoxCollider>();
-                if (bc != null) halfHeight = bc.size.y * 0.5f;
+                float halfHeight = 1.0f;
+                CapsuleCollider cc = GetComponent<CapsuleCollider>();
+                if (cc != null) halfHeight = cc.height * 0.5f;
+                else
+                {
+                    BoxCollider bc = GetComponent<BoxCollider>();
+                    if (bc != null) halfHeight = bc.size.y * 0.5f;
+                }
+                targetPos = new Vector3(spawnPos.x, hit.point.y + halfHeight + 0.05f, spawnPos.z);
             }
-            targetPos = new Vector3(spawnPos.x, hit.point.y + halfHeight + 0.05f, spawnPos.z);
+        }
+        else
+        {
+            Debug.Log($"🌊【重生系統】水下關卡：跳過向下貼地，直接重生於存檔座標 {targetPos}");
         }
 
         transform.position = targetPos;
@@ -499,18 +560,24 @@ public class PlayerRespawnSystem : MonoBehaviour
             _playerRb.isKinematic = false;   // 先解 kinematic 再歸零速度，否則 Unity 噴「Setting linear velocity of a kinematic body」
             _playerRb.linearVelocity = Vector3.zero;
             _playerRb.angularVelocity = Vector3.zero;
-            _playerRb.useGravity = true;
+            // 水下的重力/浮力由 PlayerMovement 的浮力系統每 FixedUpdate 接管，這裡不要插手
+            if (!isUnderwater) _playerRb.useGravity = true;
         }
         if (pmComponent != null)
         {
             pmComponent.WarpTo(targetPos);
             pmComponent.isCutsceneFrozen = true;
+            pmComponent.ResetSwimStamina();   // 力竭狀態下溺斃 → 重生後仍力竭 → 浮不上來的死亡迴圈
         }
 
         // 在黑屏期間讓物理自然沉降數幀，確保玩家完全穩固著地
-        for (int i = 0; i < 8; i++)
+        // ★ 水下跳過：這裡等的是「落地」，水中沒有地面可落，多等這 8 幀只會讓玩家又往下沉一段
+        if (!isUnderwater)
         {
-            yield return new WaitForFixedUpdate();
+            for (int i = 0; i < 8; i++)
+            {
+                yield return new WaitForFixedUpdate();
+            }
         }
         if (_playerRb != null && !_playerRb.isKinematic)
         {
