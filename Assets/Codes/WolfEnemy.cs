@@ -305,6 +305,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         isAttached = true;
         isChasing = false;
 
+        LightMoteCollector.NotifyWolfAttached();   // ★0905 廢墟光絮：被咬住掉約 1/3（沒有 Collector 時什麼都不做）
+
         // 咬住主角時立即停止奔跑腳步聲音效！
         if (_runAudioSource != null && _runAudioSource.isPlaying)
         {
