@@ -16,6 +16,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
     [Tooltip("距離路徑點多近算抵達？")]
     public float waypointThreshold = 0.5f;
 
+    [Tooltip("光絮貼到路徑點的收斂精度：距離小於此值才算真正停在點上。\n" +
+             "waypointThreshold 只決定「可以開始互動了」，光絮仍會一路收斂到點上，\n" +
+             "避免停在離路徑點很遠的地方讓玩家碰不到")]
+    public float waypointSnapEpsilon = 0.05f;
+
     [Header("等待玩家設定 (預設追逐模式)")]
     [Tooltip("玩家距離超過多少時，精靈停下等待？")]
     public float stopDistance = 12f;
@@ -206,14 +211,24 @@ public class GuidanceLight : MonoBehaviour, IResettable
         float distToPlayer = Vector3.Distance(logicPosition, player.position);
         float distToWaypoint = Vector3.Distance(logicPosition, currentWP.position);
 
+        // ★ 光絮要真正停在路徑點「上」。
+        //   原本三種模式都是 distToWaypoint > waypointThreshold 才飛，一旦進入門檻內就完全不動，
+        //   而場景把 waypointThreshold 設成 5，等於光絮可能停在點外 5 單位就不走了；
+        //   玩家跑到路徑點上，卻還離光絮 5 單位，構不到 absorbTriggerDistance (1.5) 而觸發不了。
+        //   改成持續收斂到點上，waypointThreshold 只用來判斷「可以開始互動了」。
+        bool arrivedAtWaypoint = distToWaypoint <= waypointThreshold;
+        if (wpTag == "Waypoint_Absorb" || wpTag == "Waypoint_Touch" || wpTag == "Waypoint_WaitPlayer")
+        {
+            if (distToWaypoint > waypointSnapEpsilon)
+            {
+                FlyTowards(currentWP.position);
+            }
+        }
+
         // 新增規則：被玩家吸收模式 (Waypoint_Absorb)
         if (wpTag == "Waypoint_Absorb")
         {
-            if (distToWaypoint > waypointThreshold)
-            {
-                FlyTowards(currentWP.position); // 先飛到這個點
-            }
-            else if (distToPlayer <= absorbTriggerDistance) // 等玩家靠近觸發吸收
+            if (arrivedAtWaypoint && distToPlayer <= absorbTriggerDistance) // 等玩家靠近觸發吸收
             {
                 StartAbsorbSequence(pm);
             }
@@ -221,11 +236,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 規則 3：玩家必須真正碰到光絮 (極短距離)，且光絮不跑
         else if (wpTag == "Waypoint_Touch")
         {
-            if (distToWaypoint > waypointThreshold)
-            {
-                FlyTowards(currentWP.position); // 先飛到這個點
-            }
-            else if (distToPlayer <= 1.5f) // 等玩家真正碰到
+            if (arrivedAtWaypoint && distToPlayer <= 1.5f) // 等玩家真正碰到
             {
                 AdvanceWaypoint(pm, true);
             }
@@ -233,11 +244,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 規則 2：允許玩家靠近 (喘氣/敘事)，光絮停在此點不跑
         else if (wpTag == "Waypoint_WaitPlayer")
         {
-            if (distToWaypoint > waypointThreshold)
-            {
-                FlyTowards(currentWP.position); // 先飛到這個點
-            }
-            else if (distToPlayer <= waitPlayerTriggerDistance) // 使用專屬的等待距離！
+            if (arrivedAtWaypoint && distToPlayer <= waitPlayerTriggerDistance) // 使用專屬的等待距離！
             {
                 AdvanceWaypoint(pm, true);
             }

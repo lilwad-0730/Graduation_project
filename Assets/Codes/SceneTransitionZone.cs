@@ -286,12 +286,17 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         string targetScene = nextSceneName.Trim();
         Debug.Log($"【關卡轉場】淡出完成，正在載入新場景: [{targetScene}]...");
 
-        // 停掉本關 BGM。AudioManager 是 DontDestroyOnLoad，淡出協程會跨場景繼續跑完，
-        // 玩家聽到的是自然的淡出尾音，而不是硬切。
+        // 停掉本關 BGM。
+        // ★ 用「立即硬關」而不是 StopBGM() 的淡出：
+        //   淡出是協程且走 Time.deltaTime，新場景開場只要有任何演出把 timeScale 設成 0
+        //   (玻璃館開場就有)，淡出就會停在半路——音量沒歸零、音軌也沒 Stop，
+        //   上一關的音樂就這樣一路播下去關不掉。
+        //   此時畫面已經全黑，直接硬關聽感上沒有差別，但結果是確定的。
         if (stopBgmOnTransition && AudioManager.Instance != null)
         {
-            AudioManager.Instance.StopBGM();
-            Debug.Log("【關卡轉場】已淡出停止本關 BGM。");
+            AudioClip before = AudioManager.Instance.GetCurrentClip();
+            AudioManager.Instance.StopAllBgmSourcesImmediate();
+            Debug.Log($"【關卡轉場】已立即停止本關 BGM (原本播放：{(before != null ? before.name : "無")})。");
         }
 
         // 6. 載入場景

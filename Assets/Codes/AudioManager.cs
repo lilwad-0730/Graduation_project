@@ -222,6 +222,13 @@ public class AudioManager : MonoBehaviour
     /// <summary>立即硬關掉所有 BGM 音軌 (含被中斷的淡入淡出殘留音軌)</summary>
     public void StopAllBgmSourcesImmediate()
     {
+        // 先掐掉還在跑的淡入淡出，否則它下一幀又會把音量拉回來，等於白關
+        if (_fadeCoroutine != null)
+        {
+            StopCoroutine(_fadeCoroutine);
+            _fadeCoroutine = null;
+        }
+
         if (_bgmSource1 != null)
         {
             _bgmSource1.volume = 0f;

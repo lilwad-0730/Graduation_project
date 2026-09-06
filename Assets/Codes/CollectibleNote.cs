@@ -7,6 +7,13 @@ public class CollectibleNote : MonoBehaviour
     [Tooltip("塌縮消失的時間(秒)")]
     public float shrinkDuration = 0.35f;
 
+    [Tooltip("觸發碰撞箱相對於圖片尺寸的倍率。\n" +
+             "1 = 完全等於整張圖片的邊界 (含透明留白)；\n" +
+             "若圖片四周留白很多，觸發範圍會比看到的紙大一圈，玩家會覺得「還沒碰到就被撿走」，\n" +
+             "此時把這個值調小 (例如 0.6) 讓觸發框貼合實際看得到的紙")]
+    [Range(0.1f, 1f)]
+    public float colliderSizeMultiplier = 1f;
+
     private bool _isCollected = false;
 
     void Start()
@@ -42,8 +49,25 @@ public class CollectibleNote : MonoBehaviour
                 zThicknessInLocal = 1.2f / transform.lossyScale.z;
             }
 
-            box.size = new Vector3(spriteSize.x, spriteSize.y, zThicknessInLocal);
+            box.size = new Vector3(
+                spriteSize.x * colliderSizeMultiplier,
+                spriteSize.y * colliderSizeMultiplier,
+                zThicknessInLocal);
         }
+    }
+
+    /// <summary>
+    /// 在 Scene 視窗畫出實際的觸發範圍，方便直接目視比對「觸發框」與「看得到的紙」差多少。
+    /// 若框明顯比紙大一圈，就是圖片四周留白造成的，把 colliderSizeMultiplier 調小即可。
+    /// </summary>
+    private void OnDrawGizmosSelected()
+    {
+        BoxCollider box = GetComponent<BoxCollider>();
+        if (box == null) return;
+
+        Gizmos.color = new Color(1f, 0.85f, 0.2f, 0.9f);
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.DrawWireCube(box.center, box.size);
     }
 
     void OnTriggerEnter(Collider other)
