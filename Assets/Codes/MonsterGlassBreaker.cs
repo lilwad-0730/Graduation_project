@@ -31,6 +31,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         public Vector3 initialPosition;
         public Quaternion initialRotation;
         public bool broken;
+        public bool protectedFromBreak;
 
         // 內建消失表現用的原始狀態
         public SpriteRenderer[] renderers;
@@ -53,6 +54,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         monsterCollider.isTrigger = true;
 
         BuildTargetList();
+        ProtectGlassNearestToCandles();
 
         Debug.Log($"【玻璃摧毀】'{gameObject.name}' 初始化完成：納入 {_targets.Count} 片玻璃平台，" +
                   $"monsterController = {(monsterController != null ? monsterController.gameObject.name : "null")}");
@@ -134,6 +136,38 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         _targets.Add(t);
     }
 
+    private void ProtectGlassNearestToCandles()
+    {
+        if (monsterController == null || monsterController.candles == null) return;
+
+        foreach (var candle in monsterController.candles)
+        {
+            if (candle == null) continue;
+
+            GlassTarget nearest = null;
+            float nearestDistance = float.MaxValue;
+            foreach (var target in _targets)
+            {
+                if (target == null || target.tr == null) continue;
+
+                float distance = target.colliders.Length == 0
+                    ? (target.tr.position - candle.transform.position).sqrMagnitude
+                    : float.MaxValue;
+
+                foreach (var collider in target.colliders)
+                {
+                    if (collider == null) continue;
+                    distance = Mathf.Min(distance, collider.bounds.SqrDistance(candle.transform.position));
+                }
+
+                if (distance >= nearestDistance) continue;
+                nearestDistance = distance;
+                nearest = target;
+            }
+
+            if (nearest != null) nearest.protectedFromBreak = true;
+        }
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (!CanBreakGlass()) return;
@@ -150,7 +184,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
 
         foreach (var t in _targets)
         {
-            if (t.broken || t.tr == null) continue;
+            if (t.broken || t.protectedFromBreak || t.tr == null) continue;
             if (other.transform != t.tr && !other.transform.IsChildOf(t.tr)) continue;
 
             t.broken = true;
