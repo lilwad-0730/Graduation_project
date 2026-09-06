@@ -77,6 +77,12 @@ public class SceneTransitionController : MonoBehaviour
                 shardGo.transform.SetParent(_transitionContainer, false);
 
                 Image img = shardGo.AddComponent<Image>();
+                // 碎片純粹是轉場裝飾，永遠不該接收點擊。
+                // 這層 Canvas 是 DontDestroyOnLoad + sortingOrder 9999，
+                // 萬一轉場中途被打斷 (別的系統直接 LoadScene、或 timeScale 被設 0 卡住)，
+                // 碎片會留在畫面最上層，帶著 raycastTarget 把新場景的 UI 點擊全部吃掉——
+                // 症狀就是「按鈕看得到卻按不動」。關掉它就不可能發生。
+                img.raycastTarget = false;
                 // 深炭灰與暗紅邊界碎塊風格
                 img.color = ( (r + c) % 2 == 0 ) ? new Color(0.05f, 0.05f, 0.07f, 1f) : new Color(0.08f, 0.03f, 0.04f, 1f);
 
