@@ -64,6 +64,13 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
     public AudioClip transitionSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
+    [Tooltip("轉場時是否淡出並停止目前的 BGM。\n" +
+             "預設關閉，維持 BGMZone 原本「切換關卡音樂也不中斷」的設計。\n" +
+             "★ 目的地場景若沒有任何 BGMZone (例如玻璃館)，就沒有人會呼叫 PlayBGM/StopBGM，\n" +
+             "  而 AudioManager 是 DontDestroyOnLoad，上一關的音樂會一路播進新場景關不掉。\n" +
+             "  這種情況請把這個選項打開。")]
+    public bool stopBgmOnTransition = false;
+
     // ──────────────── 內部狀態 ────────────────
     private bool isTransitioning = false;
     private Transform playerTransform;
@@ -278,6 +285,14 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
 
         string targetScene = nextSceneName.Trim();
         Debug.Log($"【關卡轉場】淡出完成，正在載入新場景: [{targetScene}]...");
+
+        // 停掉本關 BGM。AudioManager 是 DontDestroyOnLoad，淡出協程會跨場景繼續跑完，
+        // 玩家聽到的是自然的淡出尾音，而不是硬切。
+        if (stopBgmOnTransition && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopBGM();
+            Debug.Log("【關卡轉場】已淡出停止本關 BGM。");
+        }
 
         // 6. 載入場景
         try
