@@ -21,6 +21,13 @@ public class GuidanceLight : MonoBehaviour, IResettable
              "避免停在離路徑點很遠的地方讓玩家碰不到")]
     public float waypointSnapEpsilon = 0.05f;
 
+    [Tooltip("【Waypoint_Touch】玩家要靠多近才算碰到光絮 (原本寫死 1.5，現在可調)")]
+    public float touchTriggerDistance = 1.5f;
+
+    [Header("🔍 Scene 視窗可視化")]
+    [Tooltip("是否在 Scene 視窗畫出每個路徑點的觸發範圍與行為標示")]
+    public bool drawWaypointGizmos = true;
+
     [Header("等待玩家設定 (預設追逐模式)")]
     [Tooltip("玩家距離超過多少時，精靈停下等待？")]
     public float stopDistance = 12f;
@@ -236,7 +243,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 規則 3：玩家必須真正碰到光絮 (極短距離)，且光絮不跑
         else if (wpTag == "Waypoint_Touch")
         {
-            if (arrivedAtWaypoint && distToPlayer <= 1.5f) // 等玩家真正碰到
+            if (arrivedAtWaypoint && distToPlayer <= touchTriggerDistance) // 等玩家真正碰到
             {
                 AdvanceWaypoint(pm, true);
             }
@@ -525,6 +532,79 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             if (ps != null && !ps.isPlaying) ps.Play();
         }
+    }
+
+    /// <summary>
+    /// Scene 視窗可視化：畫出每個路徑點的觸發範圍與它的行為模式。
+    /// 綠＝Waypoint_WaitPlayer(靠近就前進)、青＝Waypoint_Absorb(靠近吸收＋補氧)、
+    /// 黃＝Waypoint_Touch(要碰到才前進)、灰＝未標記(跑給玩家追)。
+    /// </summary>
+    private void OnDrawGizmos()
+    {
+        if (!drawWaypointGizmos || waypoints == null) return;
+
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            Transform wp = waypoints[i];
+            if (wp == null) continue;
+
+            string tag = "";
+            try { tag = wp.tag; } catch { tag = ""; }
+
+            Color color;
+            float radius;
+            string behaviour;
+
+            switch (tag)
+            {
+                case "Waypoint_Absorb":
+                    color = new Color(0.2f, 0.9f, 1f, 0.9f);
+                    radius = absorbTriggerDistance;
+                    behaviour = "吸收＋補氧";
+                    break;
+                case "Waypoint_Touch":
+                    color = new Color(1f, 0.85f, 0.2f, 0.9f);
+                    radius = touchTriggerDistance;
+                    behaviour = "碰到才前進";
+                    break;
+                case "Waypoint_WaitPlayer":
+                    color = new Color(0.3f, 1f, 0.4f, 0.9f);
+                    radius = waitPlayerTriggerDistance;
+                    behaviour = "靠近就前進";
+                    break;
+                default:
+                    color = new Color(0.6f, 0.6f, 0.6f, 0.7f);
+                    radius = stopDistance;
+                    behaviour = "跑給玩家追";
+                    break;
+            }
+
+            // 觸發範圍
+            Gizmos.color = color;
+            Gizmos.DrawWireSphere(wp.position, radius);
+
+            // 光絮「算抵達」的範圍 (waypointThreshold)：只決定可否開始互動
+            Gizmos.color = new Color(color.r, color.g, color.b, 0.25f);
+            Gizmos.DrawWireSphere(wp.position, waypointThreshold);
+
+            // 路徑連線
+            if (i + 1 < waypoints.Length && waypoints[i + 1] != null)
+            {
+                Gizmos.color = new Color(1f, 1f, 1f, 0.25f);
+                Gizmos.DrawLine(wp.position, waypoints[i + 1].position);
+            }
+
+#if UNITY_EDITOR
+            string tagLabel = string.IsNullOrEmpty(tag) || tag == "Untagged" ? "(未標記)" : tag;
+            UnityEditor.Handles.color = color;
+            UnityEditor.Handles.Label(wp.position + Vector3.up * (radius + 0.4f),
+                $"WP{i} {tagLabel}\n{behaviour}：{radius:F1}m");
+#endif
+        }
+
+        // 光絮自己目前的位置
+        Gizmos.color = new Color(1f, 1f, 0.6f, 0.9f);
+        Gizmos.DrawWireSphere(transform.position, 0.4f);
     }
 
     private void ApplyBobbing()

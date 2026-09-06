@@ -200,6 +200,13 @@ public class StoryCardZoneHook : MonoBehaviour
             yield break;
         }
 
+        // 停掉本關 BGM (若同物件的 SceneTransitionZone 啟用了 stopBgmOnTransition)
+        if (_zone != null && _zone.stopBgmOnTransition && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopBGM();
+            Debug.Log("[StoryCardZoneHook] 已淡出停止本關 BGM。");
+        }
+
         // 5　卡片之後的轉場漫畫：M3（荒原→水下）自動接「掉落」段——池畔伸手、水面合上、一路下沉
         int comicFrom = comicStartPage;
         int comicTo = comicEndPage;

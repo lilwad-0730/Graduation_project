@@ -106,6 +106,70 @@ public class MainMenuController : MonoBehaviour
                   $"StartButton.activeInHierarchy = {startActive}\n" +
                   $"UI Input Module enabled = {inputModuleEnabled} ({(inputModule != null ? inputModule.GetType().Name : "None")})\n" +
                   "==============================");
+
+        ReportRaycastBlockers();
+    }
+
+    /// <summary>
+    /// 診斷「按鈕看得到卻按不動」：
+    /// 對第一顆按鈕的位置做一次 UI Raycast，列出擋在最上層的是誰。
+    /// 若最上層不是按鈕本身，那個東西就是把點擊吃掉的兇手
+    /// (常見是上一個場景留下來的 DontDestroyOnLoad 全螢幕 Canvas，
+    ///  例如轉場碎片、黑幕、演出用的遮罩，raycastTarget 沒關掉)。
+    /// </summary>
+    private void ReportRaycastBlockers()
+    {
+        if (EventSystem.current == null)
+        {
+            Debug.LogError("【選單診斷】場景中沒有 EventSystem，所有 UI 點擊都不會生效！");
+            return;
+        }
+
+        if (menuButtons == null || menuButtons.Length == 0 || menuButtons[0] == null)
+        {
+            Debug.LogError("【選單診斷】menuButtons 陣列是空的或第 0 顆沒指定！請在 Inspector 補上按鈕。");
+            return;
+        }
+
+        RectTransform rt = menuButtons[0].GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        // 取按鈕中心的螢幕座標
+        Canvas canvas = menuButtons[0].GetComponentInParent<Canvas>();
+        Camera uiCam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? canvas.worldCamera : null;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCam, rt.position);
+
+        PointerEventData ped = new PointerEventData(EventSystem.current) { position = screenPoint };
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(ped, results);
+
+        if (results.Count == 0)
+        {
+            Debug.LogError($"【選單診斷】在「{menuButtons[0].name}」的位置完全打不到任何 UI！\n" +
+                           "可能原因：該按鈕的 Canvas 沒有 GraphicRaycaster、按鈕 raycastTarget 被關掉，或按鈕不在畫面上。");
+            return;
+        }
+
+        string list = "";
+        for (int i = 0; i < results.Count; i++)
+        {
+            Canvas c = results[i].gameObject.GetComponentInParent<Canvas>();
+            list += $"  {i + 1}. {results[i].gameObject.name}" +
+                    $"  (Canvas: {(c != null ? c.name + " / sortingOrder " + c.sortingOrder : "無")})\n";
+        }
+
+        bool topIsButton = results[0].gameObject == menuButtons[0].gameObject ||
+                           results[0].gameObject.transform.IsChildOf(menuButtons[0].transform);
+
+        if (topIsButton)
+        {
+            Debug.Log($"【選單診斷】✅「{menuButtons[0].name}」位置最上層就是按鈕本身，點擊路徑正常。\n{list}");
+        }
+        else
+        {
+            Debug.LogError($"【選單診斷】❌ 點擊被擋住了！最上層是「{results[0].gameObject.name}」，不是按鈕。\n" +
+                           $"請找到這個物件把它關掉或把 raycastTarget 取消。完整堆疊：\n{list}");
+        }
     }
 
     private void Update()

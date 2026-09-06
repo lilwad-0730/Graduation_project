@@ -95,6 +95,52 @@ public class AudioManager : MonoBehaviour
         _sfxSource.volume = 1f;
     }
 
+    private void OnEnable()
+    {
+        if (Instance == this)
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    /// <summary>
+    /// 場景切換自動重置與防漏檢測：
+    /// 當載入新場景時，自動檢查新場景是否有任何啟用且開局播放的 BGMZone。
+    /// 若新場景完全沒有任何開局 BGM (例如「dark glasses 玻璃館」)，上一關的音樂絕不該繼續殘留，自動淡出停止！
+    /// </summary>
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (mode != UnityEngine.SceneManagement.LoadSceneMode.Single) return;
+
+        // 檢查新載入的場景中是否有任何已啟用的 BGMZone 且設定為開局播放音樂
+        bool hasActiveSceneBGM = false;
+        BGMZone[] zones = Object.FindObjectsByType<BGMZone>(FindObjectsSortMode.None);
+        foreach (var zone in zones)
+        {
+            if (zone != null && zone.enabled && zone.playOnStart && zone.levelMusic != null)
+            {
+                hasActiveSceneBGM = true;
+                break;
+            }
+        }
+
+        // 如果新場景完全沒有任何開局 BGMZone (例如玻璃館)，且非主選單，上一關的音樂立刻停止
+        if (!hasActiveSceneBGM && scene.name != "MainMenuScene")
+        {
+            if (GetCurrentClip() != null)
+            {
+                Debug.Log($"🎵【AudioManager】新場景 [{scene.name}] 無開局 BGMZone，自動停止前一場景之背景音樂 ({GetCurrentClip().name})。");
+                StopBGM();
+            }
+        }
+    }
+
     /// <summary>
     /// 播放指定的關卡背景音樂，並自動執行淡入淡出
     /// </summary>
