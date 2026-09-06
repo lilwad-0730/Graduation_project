@@ -902,6 +902,7 @@ MonoBehaviour:
   globalPush: 1
   enableStormPassivePetrify: 1
   enableWindPush: 1
+  telegraphSeconds: 1
   windParticles: {fileID: 1187382265}
   windSoundClip: {fileID: 0}
   windAudioSource: {fileID: 94837028}
@@ -1512,6 +1513,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &198497820
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1798,6 +1804,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &198497827
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1970,6 +1981,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &209746466 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -2152,6 +2168,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &224980042 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -2334,6 +2355,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &239759718
 GameObject:
   m_ObjectHideFlags: 0
@@ -7563,6 +7589,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &295856593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8039,6 +8070,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &308089449
 GameObject:
   m_ObjectHideFlags: 0
@@ -8173,7 +8209,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.55312, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.507669, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8668,6 +8704,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &327007296 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -8845,6 +8886,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &340062527 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -9022,6 +9068,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &341364196
 GameObject:
   m_ObjectHideFlags: 0
@@ -9572,6 +9623,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &372427844
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9744,6 +9800,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &376656439
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10693,6 +10754,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &446626816 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -10870,6 +10936,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &452239496 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -10923,6 +10994,7 @@ MonoBehaviour:
   targetSinkDepth: 2.5
   transitionSFX: {fileID: 0}
   sfxVolume: 0.9
+  stopBgmOnTransition: 0
 --- !u!65 &468753311
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11411,6 +11483,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &480514349
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11583,6 +11660,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &492759901 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -11903,6 +11985,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &508028242 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -12080,6 +12167,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &530181473
 GameObject:
   m_ObjectHideFlags: 0
@@ -13008,6 +13100,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &596971190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13286,6 +13383,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &636829700
 GameObject:
   m_ObjectHideFlags: 0
@@ -14475,6 +14577,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &738394998
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14647,6 +14754,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &747122038
 GameObject:
   m_ObjectHideFlags: 0
@@ -14673,7 +14785,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.55312, y: 5.29, z: 0}
+  m_LocalPosition: {x: 16.50767, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15008,6 +15120,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &748939896 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -15185,6 +15302,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &754483469 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -15362,6 +15484,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &778340339
 GameObject:
   m_ObjectHideFlags: 0
@@ -15765,6 +15892,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &797557924 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -15942,6 +16074,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &799729485
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16814,6 +16951,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &837637432
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16986,6 +17128,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &840317286 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17163,6 +17310,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &848223933 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17441,6 +17593,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &852823267 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17618,6 +17775,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &859091808
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18008,6 +18170,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &862704299
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18180,6 +18347,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &863241826 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -18357,6 +18529,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &867742666
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18643,6 +18820,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &867742673
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18815,6 +18997,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &879180877
 GameObject:
   m_ObjectHideFlags: 0
@@ -19149,6 +19336,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &909063426
 GameObject:
   m_ObjectHideFlags: 0
@@ -19637,6 +19829,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &937310458
 GameObject:
   m_ObjectHideFlags: 0
@@ -20055,6 +20252,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &950837339
 GameObject:
   m_ObjectHideFlags: 0
@@ -20460,6 +20662,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &994402413 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -20749,6 +20956,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1046791338
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21035,6 +21247,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1054951023
 GameObject:
   m_ObjectHideFlags: 0
@@ -21578,6 +21795,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1069608645 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -21755,6 +21977,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1076271210
 GameObject:
   m_ObjectHideFlags: 0
@@ -21985,6 +22212,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1083144185
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22650,6 +22882,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1147295696
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -22822,6 +23059,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1166126468
 GameObject:
   m_ObjectHideFlags: 0
@@ -28119,6 +28361,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1229319572
 GameObject:
   m_ObjectHideFlags: 0
@@ -28518,6 +28765,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1235777195
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -28690,6 +28942,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1259780287
 GameObject:
   m_ObjectHideFlags: 0
@@ -28958,6 +29215,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1264987126
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29244,6 +29506,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1264987133
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -29416,6 +29683,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1279824611
 GameObject:
   m_ObjectHideFlags: 0
@@ -29907,6 +30179,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1326084089
 GameObject:
   m_ObjectHideFlags: 0
@@ -35168,6 +35445,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1362677365 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -35345,6 +35627,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1376206461
 GameObject:
   m_ObjectHideFlags: 0
@@ -35725,6 +36012,7 @@ MonoBehaviour:
   globalPush: 1
   enableStormPassivePetrify: 1
   enableWindPush: 1
+  telegraphSeconds: 1
   windParticles: {fileID: 1187382265}
   windSoundClip: {fileID: 0}
   windAudioSource: {fileID: 1379682354}
@@ -36017,6 +36305,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1389233650
 GameObject:
   m_ObjectHideFlags: 0
@@ -36307,6 +36600,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1399529194
 GameObject:
   m_ObjectHideFlags: 0
@@ -36597,6 +36895,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1420397823
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36865,6 +37168,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1440046342 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -37042,6 +37350,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1444385478 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -37219,6 +37532,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1453928884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37505,6 +37823,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1453928891
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -37677,6 +38000,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1460206123 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -37854,6 +38182,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!43 &1463530621
 Mesh:
   m_ObjectHideFlags: 0
@@ -38209,6 +38542,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1494404774
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38490,6 +38828,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1525900690 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -38667,6 +39010,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1534076190
 GameObject:
   m_ObjectHideFlags: 0
@@ -39084,6 +39432,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1545679102 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -39365,6 +39718,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1594557421
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -39641,6 +39999,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1607187551 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -39818,6 +40181,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1625430969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40094,6 +40462,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1628159571
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40370,6 +40743,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1639217559 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -40547,6 +40925,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1657044647
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40823,6 +41206,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1657807653
 GameObject:
   m_ObjectHideFlags: 0
@@ -41190,6 +41578,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1675996994
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41466,6 +41859,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1688040281
 GameObject:
   m_ObjectHideFlags: 0
@@ -41734,6 +42132,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1712628209 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -41911,6 +42314,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1715981104
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42197,6 +42605,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1715981111
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -42369,6 +42782,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1719821682
 GameObject:
   m_ObjectHideFlags: 0
@@ -42659,6 +43077,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1744740335
 GameObject:
   m_ObjectHideFlags: 0
@@ -42932,6 +43355,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1770549944
 GameObject:
   m_ObjectHideFlags: 0
@@ -43387,6 +43815,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1790475359
 GameObject:
   m_ObjectHideFlags: 0
@@ -48400,6 +48833,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1792429549 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -48577,6 +49015,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1794822145 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -48754,6 +49197,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1812729720
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49022,6 +49470,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1820716505
 GameObject:
   m_ObjectHideFlags: 0
@@ -49252,6 +49705,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1823686047 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -49429,6 +49887,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1825610762
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49715,6 +50178,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &1825610769
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -49887,6 +50355,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1835300432
 GameObject:
   m_ObjectHideFlags: 0
@@ -50191,6 +50664,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1855975710
 GameObject:
   m_ObjectHideFlags: 0
@@ -50459,6 +50937,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1858188625 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -50636,6 +51119,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1860318834 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -50818,6 +51306,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1868895076 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -50995,6 +51488,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1882475287 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -51172,6 +51670,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1893617914
 GameObject:
   m_ObjectHideFlags: 0
@@ -51539,6 +52042,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1918916555
 GameObject:
   m_ObjectHideFlags: 0
@@ -51874,6 +52382,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1923538536
 GameObject:
   m_ObjectHideFlags: 0
@@ -52195,6 +52708,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &1960167367
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52463,6 +52981,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1970097111
 GameObject:
   m_ObjectHideFlags: 0
@@ -52731,6 +53254,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &1978253942
 GameObject:
   m_ObjectHideFlags: 0
@@ -52801,7 +53329,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.55312, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.507669, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -53338,6 +53866,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &2011832821
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53614,6 +54147,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &2014794179
 GameObject:
   m_ObjectHideFlags: 0
@@ -58787,6 +59325,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &2051816438 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
@@ -59090,6 +59633,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &2058465744 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -59267,6 +59815,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &2067308743
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59543,6 +60096,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1 &2071087495
 GameObject:
   m_ObjectHideFlags: 0
@@ -59886,6 +60444,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &2105805957
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60172,6 +60735,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!54 &2105805964
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -60344,6 +60912,11 @@ MonoBehaviour:
   telegraphWidth: 0.18
   telegraphOvershoot: 12
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  reactToWind: 1
+  windLiftHeight: 0.6
+  windDriftDistance: 1.2
+  overrideTarget: {fileID: 0}
+  harmless: 0
 --- !u!1001 &355908065880826960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60398,7 +60971,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 40.78431
+      value: 40.697952
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
