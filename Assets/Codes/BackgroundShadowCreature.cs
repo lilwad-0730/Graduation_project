@@ -391,6 +391,7 @@ public class BackgroundShadowCreature : MonoBehaviour
         mesh.vertices = verts;
         mesh.triangles = tris;
         mesh.RecalculateNormals();
+        mesh.MarkDynamic();   // UpdateEelUndulation 每幀改頂點，提示驅動用動態頂點緩衝區
         mesh.bounds = new Bounds(Vector3.zero, new Vector3(4f, maxHalfHeight * 8f + 4f, _eelLength + 4f)); // 撐大避免擺動時被視錐剔除
 
         _eelMeshFilter = standinObj.AddComponent<MeshFilter>();

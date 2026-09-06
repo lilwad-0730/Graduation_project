@@ -72,6 +72,72 @@ public class QuestClearBarrierRock : MonoBehaviour
         _initialPosition = transform.position;
     }
 
+    // ── 演出期間定住玩家 (作法與 GuidanceLight.BeginPlayerHold 一致) ──
+    private PlayerMovement _heldPm;
+    private Rigidbody _heldRb;
+    private RigidbodyConstraints _heldConstraints;
+    private bool _heldUseGravity;
+    private bool _breathHeld;
+
+    /// <summary>
+    /// 演出期間定住玩家。
+    /// ★ 只設 isCutsceneFrozen 是不夠的：那只擋住鍵盤輸入，
+    ///   PlayerMovement 的水下浮力 FixedUpdate 進入條件只有
+    ///   「isUnderwater && rb != null && !rb.isKinematic」，完全不看演出狀態，
+    ///   所以玩家會在鏡頭飛去看巨石的這幾秒內於畫面外持續下沉，
+    ///   而這顆巨石在 Y≈-117，該深度自然沉降約 13 單位/秒，
+    ///   演出全長約 3.7 秒等於沉掉近 50 單位，底下就是 DeathZone。
+    ///   窒息計時同時也還在跑，殘氧不多時會直接在演出中溺斃。
+    /// </summary>
+    private void HoldPlayer(PlayerMovement pm)
+    {
+        if (pm == null || _heldPm != null) return;
+        _heldPm = pm;
+        pm.isCutsceneFrozen = true;
+
+        _heldRb = pm.GetComponent<Rigidbody>();
+        if (_heldRb == null) _heldRb = pm.GetComponentInParent<Rigidbody>();
+        if (_heldRb != null)
+        {
+            _heldConstraints = _heldRb.constraints;
+            _heldUseGravity = _heldRb.useGravity;
+            _heldRb.linearVelocity = Vector3.zero;
+            _heldRb.angularVelocity = Vector3.zero;
+            _heldRb.useGravity = false;
+            // 用約束而不是 kinematic：別的腳本照樣寫速度也不會噴警告
+            _heldRb.constraints = RigidbodyConstraints.FreezeAll;
+        }
+
+        if (UnderwaterSuffocationEffect.Instance != null && !_breathHeld)
+        {
+            UnderwaterSuffocationEffect.Instance.SetHold(true);
+            _breathHeld = true;
+        }
+    }
+
+    /// <summary>還原玩家。演出結束或中途被停用都會走到這裡。</summary>
+    private void ReleasePlayer()
+    {
+        if (_breathHeld && UnderwaterSuffocationEffect.Instance != null)
+        {
+            UnderwaterSuffocationEffect.Instance.SetHold(false);
+        }
+        _breathHeld = false;
+
+        if (_heldRb != null)
+        {
+            _heldRb.constraints = _heldConstraints;
+            _heldRb.useGravity = _heldUseGravity;
+            _heldRb = null;
+        }
+
+        if (_heldPm != null)
+        {
+            _heldPm.isCutsceneFrozen = false;
+            _heldPm = null;
+        }
+    }
+
     private Transform _cachedPlayer;
 
     /// <summary>玩家是否已經靠近到看得見這顆巨石的距離</summary>
@@ -104,8 +170,9 @@ public class QuestClearBarrierRock : MonoBehaviour
 
     private void OnDisable()
     {
-        // 演出最後會 SetActive(false)，那時已經還原過了 (_cameraBypassHeld = false)，這裡只處理被中斷的情況
+        // 演出最後會 SetActive(false)，那時已經還原過了，這裡只處理被中斷的情況
         RestoreCameraBypass();
+        ReleasePlayer();   // 絕不能讓玩家永遠停在 FreezeAll / 窒息暫停狀態
     }
 
     private void Update()
@@ -186,9 +253,7 @@ public class QuestClearBarrierRock : MonoBehaviour
 
         if (freezePlayerDuringCutscene && pm != null)
         {
-            pm.isCutsceneFrozen = true;
-            Rigidbody rb = pm.GetComponent<Rigidbody>();
-            if (rb != null) rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            HoldPlayer(pm);
         }
 
         Vector3 rockTargetPos = transform.position;
@@ -285,11 +350,8 @@ public class QuestClearBarrierRock : MonoBehaviour
         // 還原鏡頭邊界系統 (借用結束)
         RestoreCameraBypass();
 
-        // 8. 解除主角操作鎖定
-        if (freezePlayerDuringCutscene && pm != null)
-        {
-            pm.isCutsceneFrozen = false;
-        }
+        // 8. 解除主角操作鎖定 (還原剛體約束、重力與窒息計時)
+        ReleasePlayer();
 
         // 徹底將此封鎖巨石停用，保證通道 100% 暢通無阻
         gameObject.SetActive(false);

@@ -247,6 +247,17 @@ public class UnderwaterNurseryItem : MonoBehaviour, IResettable
     public void ResetToInitialState()
     {
         StopAllCoroutines();
+
+        // ★ 已經撿過的就維持消失。
+        //   原本無條件 SetActive(true)，但 isCollected 不會被重置，
+        //   於是撿過的物品重生後會復活成「看得到、撿不到、也不會再消失」的幽靈道具
+        //   (所有靠近偵測與碰撞都會因為 isCollected == true 直接 return)。
+        if (isCollected)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         gameObject.SetActive(true);
 
         transform.position = originalPosition;

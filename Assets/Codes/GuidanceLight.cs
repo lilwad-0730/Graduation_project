@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using Unity.Cinemachine;
 
-public class GuidanceLight : MonoBehaviour
+public class GuidanceLight : MonoBehaviour, IResettable
 {
     [Header("目標設定")]
     [Tooltip("玩家物件 (程式會自動透過 Tag 尋找)")]
@@ -531,6 +531,57 @@ public class GuidanceLight : MonoBehaviour
     /// </summary>
     /// <param name="targetPosition">光絮要傳送到的 3D 位置</param>
     /// <param name="newWaypointIndex">下一個路徑點的索引值，-1 代表自動尋找最近點</param>
+    /// <summary>
+    /// IResettable：玩家死亡重生時把光絮拉回身邊。
+    /// 原本沒有實作這個介面 (但 PlayerRespawnSystem 的註解卻寫著會「重置光球」)，
+    /// 玩家重生回上一個存檔點後，光絮仍留在前方很遠的路徑點上，
+    /// 距離超過 stopDistance 就會停在遠處不動，玩家身邊完全沒有指引與照明。
+    /// 這裡把光絮傳送到「離玩家最近的路徑點」，並從那一點繼續帶路。
+    /// </summary>
+    public void ResetToInitialState()
+    {
+        if (waypoints == null || waypoints.Length == 0) return;
+
+        // ★ 要用「重生點」而不是玩家當下的位置：
+        //   PlayerRespawnSystem 是先跑完所有 IResettable，之後才把玩家傳送到存檔點，
+        //   此刻讀 player.position 拿到的還是死亡當下的位置。
+        Vector3 referencePos;
+        Vector3 respawnPos = PlayerRespawnSystem.ActiveRespawnPosition;
+        if (respawnPos != Vector3.zero)
+        {
+            referencePos = respawnPos;
+        }
+        else
+        {
+            Transform target = player;
+            if (target == null)
+            {
+                PlayerMovement pm = Object.FindFirstObjectByType<PlayerMovement>();
+                if (pm != null) target = pm.transform;
+            }
+            if (target == null) return;
+            referencePos = target.position;
+        }
+
+        // 找離重生點最近的路徑點
+        int nearestIndex = 0;
+        float nearestDist = float.MaxValue;
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] == null) continue;
+            float d = Vector3.Distance(waypoints[i].position, referencePos);
+            if (d < nearestDist)
+            {
+                nearestDist = d;
+                nearestIndex = i;
+            }
+        }
+
+        if (waypoints[nearestIndex] == null) return;
+        TeleportLight(waypoints[nearestIndex].position, nearestIndex);
+        Debug.Log($"💡【光絮重置】玩家重生，光絮已回到最近的路徑點 {nearestIndex} ({waypoints[nearestIndex].name})");
+    }
+
     public void TeleportLight(Vector3 targetPosition, int newWaypointIndex)
     {
         // 傳送時，如果正在進行吸收協程則將其停止並恢復顯示
