@@ -53,10 +53,59 @@ public class QuestClearBarrierRock : MonoBehaviour
     private Vector3 _initialLocalScale;
     private Vector3 _initialPosition;
 
+    [Header("👀 演出時機（避免在玩家看不到的地方偷偷消失）")]
+    [Tooltip("開啟後，條件達成還要等玩家靠近到下面的距離才播消散演出。\n" +
+             "關閉則回到舊行為：條件一達成立刻演，不管玩家在不在附近")]
+    public bool requireNearbyToPlay = true;
+
+    [Tooltip("玩家距離這顆巨石多近才播演出 (世界單位)")]
+    public float playNearbyDistance = 28f;
+
+    // 演出期間暫時旁路鏡頭邊界系統的狀態
+    private bool _cameraBypassHeld = false;
+    private bool _prevSimpleBypass = false;
+    private bool _prevConfinerBypass = false;
+
     private void Awake()
     {
         _initialLocalScale = transform.localScale;
         _initialPosition = transform.position;
+    }
+
+    private Transform _cachedPlayer;
+
+    /// <summary>玩家是否已經靠近到看得見這顆巨石的距離</summary>
+    private bool IsPlayerNearby()
+    {
+        if (_cachedPlayer == null)
+        {
+            PlayerMovement pm = Object.FindFirstObjectByType<PlayerMovement>();
+            if (pm != null) _cachedPlayer = pm.transform;
+            else
+            {
+                GameObject p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) _cachedPlayer = p.transform;
+            }
+        }
+
+        if (_cachedPlayer == null) return true;   // 找不到玩家就別擋著，照舊演出
+
+        return Vector3.Distance(_cachedPlayer.position, transform.position) <= playNearbyDistance;
+    }
+
+    /// <summary>還原鏡頭邊界系統。演出正常結束或中途被停用都會走到這裡，避免邊界永久停在旁路狀態。</summary>
+    private void RestoreCameraBypass()
+    {
+        if (!_cameraBypassHeld) return;
+        _cameraBypassHeld = false;
+        SimpleCameraBounds.isBypassed = _prevSimpleBypass;
+        CinemachineCameraConfiner3D.isBypassed = _prevConfinerBypass;
+    }
+
+    private void OnDisable()
+    {
+        // 演出最後會 SetActive(false)，那時已經還原過了 (_cameraBypassHeld = false)，這裡只處理被中斷的情況
+        RestoreCameraBypass();
     }
 
     private void Update()
@@ -67,6 +116,12 @@ public class QuestClearBarrierRock : MonoBehaviour
         bool byItems = !clearByDiaryCount && CheckAllItemsCollected();
         if (byDiary || byItems)
         {
+            // ★ 條件達成不代表現在該演。日誌散落全關卡，玩家很可能是在離這顆巨石很遠的地方
+            //   撿到最後一張，這時演出會「特寫」一顆在畫面外的石頭，玩家什麼都看不到，
+            //   石頭卻已經默默消失了——看起來就像這顆巨石根本沒有機制。
+            //   改成等玩家真的靠近、看得到它的時候才演。
+            if (requireNearbyToPlay && !IsPlayerNearby()) return;
+
             _hasTriggered = true;
             if (byDiary)
                 Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{requiredDiaryCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
@@ -97,6 +152,34 @@ public class QuestClearBarrierRock : MonoBehaviour
 
     private IEnumerator ClearCutsceneRoutine()
     {
+        // ★ 0. 先等文字卡播完再開始演出。
+        //   收齊最後一張日誌的「同一瞬間」，StoryCardNoteHook 會播該張日誌的文字卡，
+        //   而 StoryCardPlayer.PlayFrozen 會把 Time.timeScale 設為 0。
+        //   本演出全程使用 Time.deltaTime 與 WaitForSeconds，timeScale = 0 時會整個停住，
+        //   等於鏡頭已經被本演出接管、卻卡在原地不動，玩家在卡片後面什麼都看不到，
+        //   看起來就像「這顆巨石根本沒有機制」。改成等卡片播完再開始，兩段演出依序播放。
+        if (StoryCardPlayer.Instance != null)
+        {
+            while (StoryCardPlayer.Instance.IsPlaying)
+            {
+                yield return null;
+            }
+            // 卡片收尾 (解凍、timeScale 還原) 需要一點時間，讓它先落定再接手鏡頭
+            yield return new WaitForSecondsRealtime(0.15f);
+        }
+
+        // ★ 演出期間旁路鏡頭邊界系統。
+        //   水下場景的 SimpleCameraBounds 開著 autoFitSceneHeightAndLockY (橫向捲軸鎖定)，
+        //   會在 LateUpdate 每幀把相機 Y 鎖回區域中心、X 夾在邊界內，
+        //   本演出移動 Cinemachine 目標的效果會被它整個蓋掉，鏡頭實際上飛不到巨石身上。
+        //   這兩個 isBypassed 是那兩支腳本本來就為過場演出開放的公開開關，
+        //   只是暫時借用，不更動它們的任何邏輯。
+        _prevSimpleBypass = SimpleCameraBounds.isBypassed;
+        _prevConfinerBypass = CinemachineCameraConfiner3D.isBypassed;
+        _cameraBypassHeld = true;
+        SimpleCameraBounds.isBypassed = true;
+        CinemachineCameraConfiner3D.isBypassed = true;
+
         // 1. 尋找主角
         PlayerMovement pm = Object.FindFirstObjectByType<PlayerMovement>();
         Transform playerTrans = pm != null ? pm.transform : GameObject.FindGameObjectWithTag("Player")?.transform;
@@ -198,6 +281,9 @@ public class QuestClearBarrierRock : MonoBehaviour
         // 7. 還原鏡頭追蹤目標給主角，並銷毀 Dummy Target
         SetCinemachineTarget(playerTrans);
         Destroy(dummyCameraTarget);
+
+        // 還原鏡頭邊界系統 (借用結束)
+        RestoreCameraBypass();
 
         // 8. 解除主角操作鎖定
         if (freezePlayerDuringCutscene && pm != null)
