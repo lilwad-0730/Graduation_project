@@ -62,6 +62,10 @@ public class MainMenuController : MonoBehaviour
             sfxAudioSource = gameObject.AddComponent<AudioSource>();
         }
 
+        // ★ Inspector 沒指派時自動補齊：美術做的四個選單項目身上原本沒有 Button 元件，
+        //   menuButtons 也是四格全空，等於畫面上沒有任何可點擊的東西
+        AutoWireMenuButtonsIfMissing();
+
         // 為所有按鈕綁定點擊事件 (加入防呆，防止 Inspector 欄位為空時拋出 NullReferenceException)
         if (menuButtons != null)
         {
@@ -79,6 +83,76 @@ public class MainMenuController : MonoBehaviour
 
         // 列印除錯報告
         PrintDebugStatus();
+    }
+
+    /// <summary>
+    /// 若 Inspector 的 menuButtons 沒有指派，就依物件名稱自動補齊。
+    ///
+    /// 美術做的四個選單項目 (menu_slection_start / _setting / _credits / _quiting)
+    /// 身上只有圖片、沒有 Button 元件，menuButtons 也是四格全空，
+    /// 所以按下去完全沒有任何反應。這裡自動幫它們補上 Button 並綁定。
+    ///
+    /// ★ 用「名稱」對應功能而不是靠陣列順序：
+    ///   下面 Start() 的綁定順序是 0=開始 1=設定 2=離開 3=製作名單，
+    ///   但畫面上的排列是 開始/設定/製作名單/離開，
+    ///   若照畫面順序拖進 Inspector，後兩顆的功能會對調 (按「製作名單」會關掉遊戲)。
+    ///   依名稱配對就不會有這個問題。
+    /// </summary>
+    private void AutoWireMenuButtonsIfMissing()
+    {
+        if (menuButtons != null)
+        {
+            foreach (var b in menuButtons)
+            {
+                if (b != null) return;   // Inspector 已經指派過，尊重原設定
+            }
+        }
+
+        // 索引順序必須對應 Start() 的綁定：0=開始 1=設定 2=離開 3=製作名單
+        string[] suffixes = { "start", "setting", "quiting", "credits" };
+        Button[] wired = new Button[suffixes.Length];
+
+        Transform[] all = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var t in all)
+        {
+            string n = t.gameObject.name.ToLower();
+            if (!n.StartsWith("menu_slection_")) continue;   // 只認選單項目，不會抓到面板裡的 BtnBack
+
+            for (int i = 0; i < suffixes.Length; i++)
+            {
+                if (wired[i] != null) continue;
+                if (!n.Contains(suffixes[i])) continue;
+
+                Button btn = t.GetComponent<Button>();
+                if (btn == null) btn = t.gameObject.AddComponent<Button>();
+
+                // Button 需要一個能接收射線的 Graphic 才點得到
+                Graphic g = t.GetComponent<Graphic>();
+                if (g != null)
+                {
+                    g.raycastTarget = true;
+                    btn.targetGraphic = g;
+                }
+
+                btn.interactable = true;
+                wired[i] = btn;
+                break;
+            }
+        }
+
+        menuButtons = wired;
+
+        for (int i = 0; i < wired.Length; i++)
+        {
+            if (wired[i] == null)
+            {
+                Debug.LogWarning($"【主選單】找不到名稱含「menu_slection_{suffixes[i]}」的選單項目，該功能不會有作用。");
+            }
+            else
+            {
+                Debug.Log($"【主選單】已自動綁定：{wired[i].name} → {suffixes[i]}");
+            }
+        }
     }
 
     private void PrintDebugStatus()
