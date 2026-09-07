@@ -201,10 +201,16 @@ public class StoryCardZoneHook : MonoBehaviour
         }
 
         // 停掉本關 BGM (若同物件的 SceneTransitionZone 啟用了 stopBgmOnTransition)
+        // ★ 必須用立即硬關，不能用 StopBGM() 的淡出：
+        //   淡出是協程且走 Time.deltaTime，而這支 Hook 本身就會播文字卡
+        //   (StoryCardPlayer 播卡時會把 timeScale 設為 0)，新場景開場也可能有演出把時間停住。
+        //   一旦時間停住，淡出就卡在半路——音量沒歸零、音軌也沒 Stop，
+        //   上一關的音樂就一路播進下一關關不掉。此時畫面已全黑，硬關聽感無差別。
         if (_zone != null && _zone.stopBgmOnTransition && AudioManager.Instance != null)
         {
-            AudioManager.Instance.StopBGM();
-            Debug.Log("[StoryCardZoneHook] 已淡出停止本關 BGM。");
+            AudioClip before = AudioManager.Instance.GetCurrentClip();
+            AudioManager.Instance.StopAllBgmSourcesImmediate();
+            Debug.Log($"[StoryCardZoneHook] 已立即停止本關 BGM (原本播放：{(before != null ? before.name : "無")})。");
         }
 
         // 5　卡片之後的轉場漫畫：M3（荒原→水下）自動接「掉落」段——池畔伸手、水面合上、一路下沉
