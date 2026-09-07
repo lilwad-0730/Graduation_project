@@ -42,6 +42,7 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
         int solidified = 0;
         int noColliderMesh = 0;
         int noColliderAtAll = 0;
+        int matchedRocks = 0;   // 名稱篩選實際抓到幾顆石頭 (0 代表關鍵字對不上，整支腳本等於沒作用)
 
         // 搜尋全場景中所有的岩石
         MeshRenderer[] renderers = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
@@ -52,6 +53,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             string n = mr.name;
             if (!n.Contains("Rocks") && !n.Contains("Rock") && !n.Contains("rock") && !n.Contains("Stone")) continue;
             if (n.Contains("[EdgeSolidify]")) continue;
+
+            matchedRocks++;
 
             // 1. 先把精準貼合網格的 MeshCollider 準備好
             MeshCollider mc = mr.GetComponent<MeshCollider>();
@@ -152,8 +155,17 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             }
         }
 
-        Debug.Log("[UnderwaterRockColliderHelper] 已全面將水下岩石切換為精準 MeshCollider，完美貼合石頭表面，暢通狹窄通道！"
-                  + (solidifyForeground ? $"（另將 {solidified} 顆前景石頭邊緣實體化，玩家不會再被石頭蓋住）" : "")
-                  + $"　保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆");
+        Debug.Log($"[UnderwaterRockColliderHelper] 掃描 {renderers.Length} 個 MeshRenderer，" +
+                  $"名稱符合石頭關鍵字的有 {matchedRocks} 顆。"
+                  + (solidifyForeground ? $"　前景石頭邊緣實體化：{solidified} 顆；" : "　")
+                  + $"保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆");
+
+        if (matchedRocks == 0)
+        {
+            Debug.LogWarning("[UnderwaterRockColliderHelper] ⚠️ 一顆石頭都沒抓到！" +
+                             "這支腳本是用名稱關鍵字 (Rocks / Rock / rock / Stone) 篩選的，" +
+                             "如果場景裡的石頭不是這樣命名，整支腳本等於完全沒有作用，" +
+                             "所有碰撞修正與前景實體化都不會發生。");
+        }
     }
 }
