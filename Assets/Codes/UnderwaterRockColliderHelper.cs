@@ -160,6 +160,48 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
                   + (solidifyForeground ? $"　前景石頭邊緣實體化：{solidified} 顆；" : "　")
                   + $"保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆");
 
+        // ★ 2.5D 深度對不上的診斷：
+        //   石頭是 3D 網格，玩家被鎖在單一 Z 平面上。
+        //   如果某顆石頭的網格所在的 Z 範圍跟玩家的 Z 範圍完全沒有交集，
+        //   畫面上看起來擋在路中間，物理上卻在不同深度——玩家會直接穿過去墜落。
+        //   既有的前景實體化只處理「整顆在玩家前方」，不處理「整顆在玩家後方」。
+        float playerHalfZ = 0.5f;
+        if (playerObj != null)
+        {
+            Collider pc = playerObj.GetComponent<Collider>();
+            if (pc == null) pc = playerObj.GetComponentInChildren<Collider>();
+            if (pc != null) playerHalfZ = Mathf.Max(0.05f, pc.bounds.extents.z);
+        }
+        float bandMin = playerZ - playerHalfZ;
+        float bandMax = playerZ + playerHalfZ;
+
+        int offPlane = 0;
+        string offPlaneNames = "";
+        foreach (var mr in renderers)
+        {
+            if (mr == null) continue;
+            string nm = mr.name;
+            if (!nm.Contains("Rocks") && !nm.Contains("Rock") && !nm.Contains("rock") && !nm.Contains("Stone")) continue;
+            if (nm.Contains("[EdgeSolidify]")) continue;
+
+            Bounds b = mr.bounds;
+            if (b.max.z < bandMin || b.min.z > bandMax)
+            {
+                offPlane++;
+                if (offPlane <= 10)
+                {
+                    offPlaneNames += $"\n  ・{nm}　(石頭 Z: {b.min.z:F2}~{b.max.z:F2})";
+                }
+            }
+        }
+
+        Debug.Log($"[UnderwaterRockColliderHelper] 玩家碰撞的 Z 範圍：{bandMin:F2} ~ {bandMax:F2}。" +
+                  $"與此範圍完全沒有交集的石頭：{offPlane} / {matchedRocks} 顆。" +
+                  (offPlane > 0
+                      ? "　這些石頭畫面上看得到、但物理上不在玩家的深度，玩家會直接穿過去："
+                        + offPlaneNames + (offPlane > 10 ? $"\n  ...(還有 {offPlane - 10} 顆)" : "")
+                      : "　所有石頭的深度都涵蓋到玩家平面，不是深度對不上的問題。"));
+
         if (matchedRocks == 0)
         {
             Debug.LogWarning("[UnderwaterRockColliderHelper] ⚠️ 一顆石頭都沒抓到！" +
