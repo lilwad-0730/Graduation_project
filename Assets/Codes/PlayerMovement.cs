@@ -227,6 +227,14 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("連續向上游泳的推進速度 (預設 4.0f)")]
     public float underwaterSwimUpSpeed = 4.0f;
 
+    [Header("穿模防護 (Depenetration)")]
+    [Tooltip("陸地用的推出速度。壓低是為了消除斜坡夾角的抖動，不要隨意調高")]
+    public float landDepenetrationVelocity = 2.0f;
+
+    [Tooltip("水下推出速度 = 當下沉降速度 x 這個倍率。\n" +
+             "必須大於 1，否則物理推玩家出石頭的速度會輸給下沉速度，玩家會陷進石頭裡穿出去")]
+    public float underwaterDepenetrationFactor = 2.0f;
+
     [HideInInspector] public float currentSwimStamina;
     [HideInInspector] public bool isSwimExhausted = false;
     private float exhaustionTimer = 0f;
@@ -288,7 +296,7 @@ public class PlayerMovement : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ; 
         rb.mass = 10f; // 增加玩家質量，才不會被輕易推動
-        rb.maxDepenetrationVelocity = 2.0f; // ★ 消除斜坡/平地夾角被強力彈開反彈引發的劇烈抖動
+        rb.maxDepenetrationVelocity = landDepenetrationVelocity; // ★ 消除斜坡/平地夾角被強力彈開反彈引發的劇烈抖動
         rb.solverIterations = 16;
         rb.solverVelocityIterations = 16;
 
@@ -1538,9 +1546,27 @@ public class PlayerMovement : MonoBehaviour
                 {
                     vel.y = effectiveMaxFallSpeed;
                 }
+
+                // ★ 水下穿模修正：
+                //   maxDepenetrationVelocity 是「物理每秒最多能把玩家推出碰撞體多快」，
+                //   陸地為了消除斜坡抖動把它壓到 2.0。但水下越深沉得越快
+                //   (Y=-100 約 11.5/秒、Y=-134 約 14.9/秒)，是推出速度的 5~7 倍。
+                //   只要有一幀身體稍微陷進石頭，物理就來不及把她推出來，
+                //   於是越陷越深、直接穿過石頭掉出地圖 —— 而且越深越容易發生。
+                //   這裡讓推出速度跟著沉降速度走，永遠贏得過下沉。
+                rb.maxDepenetrationVelocity = Mathf.Max(landDepenetrationVelocity,
+                                                        Mathf.Abs(effectiveMaxFallSpeed) * underwaterDepenetrationFactor);
             }
 
             rb.linearVelocity = vel;
+        }
+        else if (rb != null && !rb.isKinematic)
+        {
+            // 離開水面：還原陸地用的低值，維持原本的斜坡防抖行為
+            if (!Mathf.Approximately(rb.maxDepenetrationVelocity, landDepenetrationVelocity))
+            {
+                rb.maxDepenetrationVelocity = landDepenetrationVelocity;
+            }
         }
     }
 
