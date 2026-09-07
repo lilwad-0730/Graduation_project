@@ -202,6 +202,12 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
                         + offPlaneNames + (offPlane > 10 ? $"\n  ...(還有 {offPlane - 10} 顆)" : "")
                       : "　所有石頭的深度都涵蓋到玩家平面，不是深度對不上的問題。"));
 
+        // 掛上穿模探針：玩家一旦插進石頭裡就回報是哪一顆
+        if (playerObj != null && playerObj.GetComponent<UnderwaterPenetrationProbe>() == null)
+        {
+            playerObj.AddComponent<UnderwaterPenetrationProbe>();
+        }
+
         if (matchedRocks == 0)
         {
             Debug.LogWarning("[UnderwaterRockColliderHelper] ⚠️ 一顆石頭都沒抓到！" +
