@@ -40,6 +40,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
         if (playerObj != null) playerZ = playerObj.transform.position.z;
 
         int solidified = 0;
+        int noColliderMesh = 0;
+        int noColliderAtAll = 0;
 
         // 搜尋全場景中所有的岩石
         MeshRenderer[] renderers = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
@@ -51,25 +53,7 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             if (!n.Contains("Rocks") && !n.Contains("Rock") && !n.Contains("rock") && !n.Contains("Stone")) continue;
             if (n.Contains("[EdgeSolidify]")) continue;
 
-            // 1. 如果身上有過去自動新增的多餘 BoxCollider，將其移除，防止方塊尖角凸出堵死通道
-            BoxCollider[] boxes = mr.GetComponents<BoxCollider>();
-            foreach (var b in boxes)
-            {
-                // 若非自定義 Trigger，安全移除
-                if (!b.isTrigger)
-                {
-                    if (Application.isPlaying)
-                    {
-                        Destroy(b);
-                    }
-                    else
-                    {
-                        DestroyImmediate(b);
-                    }
-                }
-            }
-
-            // 2. 確保擁有精準貼合網格的 MeshCollider
+            // 1. 先把精準貼合網格的 MeshCollider 準備好
             MeshCollider mc = mr.GetComponent<MeshCollider>();
             if (mc == null)
             {
@@ -86,6 +70,41 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             {
                 mc.material = noFriction;
                 mc.enabled = true;
+            }
+
+            bool meshColliderUsable = mc != null && mc.sharedMesh != null;
+
+            // 2. 確認 MeshCollider 真的可用之後，才移除多餘的 BoxCollider
+            //    ★ 原本是「先刪 BoxCollider、再補 MeshCollider」，
+            //      若這顆石頭補不到 mesh (例如網格不在同一層)，就會變成
+            //      「BoxCollider 已經刪掉、MeshCollider 卻是空的」＝完全沒有碰撞，
+            //      玩家會直接穿過石頭墜落。
+            if (meshColliderUsable)
+            {
+                BoxCollider[] boxes = mr.GetComponents<BoxCollider>();
+                foreach (var b in boxes)
+                {
+                    // 若非自定義 Trigger，安全移除
+                    if (!b.isTrigger)
+                    {
+                        if (Application.isPlaying)
+                        {
+                            Destroy(b);
+                        }
+                        else
+                        {
+                            DestroyImmediate(b);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // 補不到 mesh：保留原本的 BoxCollider 當作實體，並把空的 MeshCollider 關掉
+                if (mc != null) mc.enabled = false;
+                noColliderMesh++;
+                Debug.LogWarning($"[UnderwaterRockColliderHelper] 石頭「{n}」找不到可用的網格，" +
+                                 "保留原本的 BoxCollider 避免變成沒有碰撞的空殼。");
             }
 
             // 3. 前景石頭邊緣實體化：整顆石頭都在玩家平面前方（更靠近鏡頭）時，
@@ -107,7 +126,34 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             }
         }
 
+        // 最後掃一遍：列出「完全沒有有效實體碰撞」的石頭。
+        // 玩家穿過石頭墜落，最直接的原因就是那顆石頭根本沒有能擋住她的碰撞體。
+        foreach (var mr in renderers)
+        {
+            if (mr == null) continue;
+            string nm = mr.name;
+            if (!nm.Contains("Rocks") && !nm.Contains("Rock") && !nm.Contains("rock") && !nm.Contains("Stone")) continue;
+            if (nm.Contains("[EdgeSolidify]")) continue;
+
+            bool hasSolid = false;
+            foreach (var c in mr.GetComponentsInChildren<Collider>(true))
+            {
+                if (c == null || !c.enabled || c.isTrigger) continue;
+                if (c is MeshCollider meshCol && meshCol.sharedMesh == null) continue;
+                hasSolid = true;
+                break;
+            }
+
+            if (!hasSolid)
+            {
+                noColliderAtAll++;
+                Debug.LogError($"[UnderwaterRockColliderHelper] ⚠️ 石頭「{nm}」沒有任何有效的實體碰撞體，" +
+                               "玩家會直接穿過去墜落！請在 Inspector 補上碰撞體。");
+            }
+        }
+
         Debug.Log("[UnderwaterRockColliderHelper] 已全面將水下岩石切換為精準 MeshCollider，完美貼合石頭表面，暢通狹窄通道！"
-                  + (solidifyForeground ? $"（另將 {solidified} 顆前景石頭邊緣實體化，玩家不會再被石頭蓋住）" : ""));
+                  + (solidifyForeground ? $"（另將 {solidified} 顆前景石頭邊緣實體化，玩家不會再被石頭蓋住）" : "")
+                  + $"　保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆");
     }
 }

@@ -32,6 +32,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("身體貼合斜坡角度")]
+    [Tooltip("狼在斜坡上時，身體是否跟著斜坡傾斜 (跑上坡時與地面平行，而不是直挺挺地站著)")]
+    public bool alignVisualToSlope = true;
+
+    [Tooltip("要傾斜的視覺物件 (留空自動抓子物件的 SpriteRenderer)。\n" +
+             "只轉視覺、不轉根物件，避免膠囊碰撞體在斜坡上卡住")]
+    public Transform visualToAlign;
+
+    [Tooltip("身體轉向斜坡的平滑速度 (越大轉越快)")]
+    public float slopeAlignSpeed = 8f;
+
+    [Tooltip("身體最多傾斜幾度 (避免極陡的坡讓狼看起來翻過去)")]
+    public float maxVisualAlignAngle = 40f;
+
     private Transform player;
     private PlayerMovement playerMovement; 
     private Rigidbody rb;
@@ -179,10 +193,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void FixedUpdate()
     {
-        // 沿著地面前進：追擊中若腳下是可行走的斜坡，速度沿斜坡表面投影貼地爬升；
+        // 沿著地面前進：若腳下是可行走的斜坡，速度沿斜坡表面投影貼地移動；
         // 若不是斜坡（例如撞到台階邊緣被物理彈起），才清掉向上速度避免飛起來
+        // ★ 原本限定 isChasing 才處理，導致「玩家回頭、狼往後退」那段沒有貼合地面。
+        //   退後同樣是沿地面移動，這裡不再限制追擊狀態。
         if (!keepOnGroundWhileChasing || rb == null || rb.isKinematic) return;
-        if (!isChasing || isAttached || isStunned) return;
+        if (isAttached || isStunned) return;
 
         Vector3 v = rb.linearVelocity;
 
@@ -202,6 +218,46 @@ public class WolfEnemy : MonoBehaviour, IResettable
             v.y = 0f;
             rb.linearVelocity = v;
         }
+    }
+
+    /// <summary>
+    /// 讓狼的身體跟著斜坡傾斜，跑上坡時與地面平行，而不是直挺挺地站著。
+    /// 只轉視覺子物件，不轉根物件——根物件上有膠囊碰撞體，轉了會在斜坡上卡住。
+    /// 左右翻面是 WolfSpriteAnimator 用 localScale / flipX 做的，跟這裡的 Z 軸旋轉不衝突。
+    /// </summary>
+    private void UpdateSlopeAlignment()
+    {
+        if (!alignVisualToSlope) return;
+
+        if (visualToAlign == null)
+        {
+            SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+            if (sr != null && sr.transform != transform) visualToAlign = sr.transform;
+            if (visualToAlign == null && transform.childCount > 0) visualToAlign = transform.GetChild(0);
+            if (visualToAlign == null) return;
+        }
+
+        float targetAngle = 0f;
+
+        if (!isAttached && !isStunned &&
+            TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle) &&
+            slopeAngle < maxWalkableSlopeAngle)
+        {
+            // 地面法線換算成 Z 軸傾角：平地法線是 (0,1,0) → 0 度；坡往右上升 → 正角度
+            targetAngle = Mathf.Atan2(-groundHit.normal.x, groundHit.normal.y) * Mathf.Rad2Deg;
+            targetAngle = Mathf.Clamp(targetAngle, -maxVisualAlignAngle, maxVisualAlignAngle);
+        }
+        // 離地或被咬住/硬直時 targetAngle 維持 0，身體平滑轉回直立
+
+        Vector3 e = visualToAlign.localEulerAngles;
+        float current = e.z > 180f ? e.z - 360f : e.z;
+        float next = Mathf.LerpAngle(current, targetAngle, Time.deltaTime * slopeAlignSpeed);
+        visualToAlign.localEulerAngles = new Vector3(e.x, e.y, next);
+    }
+
+    private void LateUpdate()
+    {
+        UpdateSlopeAlignment();
     }
 
     // 從狼腳下往下打一條射線，取得地面碰撞資訊與斜坡角度 (與 PlayerMovement.CheckGrounded 邏輯一致)
@@ -380,6 +436,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         transform.position = _initialPosition;
         transform.rotation = _initialRotation;
+
+        // 斜坡傾斜也要歸零，不然重生後身體會維持上一次的傾角
+        if (visualToAlign != null)
+        {
+            Vector3 e = visualToAlign.localEulerAngles;
+            visualToAlign.localEulerAngles = new Vector3(e.x, e.y, 0f);
+        }
 
         if (rb != null)
         {
