@@ -5,7 +5,10 @@ using UnityEngine;
 /// 掛載於風暴/風沙物件 (WindParticles / DesertWindDustFX) 上。
 /// 只有當玩家物理碰撞體真正進入風暴沙塵的 Trigger 範圍內，且【未處於掩體背風面】時，
 /// 才會受到逆風推力，徹底擺脫全場景隔空必中的問題！
-/// ※ 石化已改制：不再由風暴強制觸發，而是玩家按住 ⬇/S 的主動自保（見 PlayerPetrification）。
+/// ※ 石化目前有兩條路，兩條並存：
+///   (1) 風暴被動石化——就在本檔 OnTriggerStay 觸發，可用下面的 enableStormPassivePetrify 關掉（0904 加回來的）
+///   (2) 玩家主動硬撐——按住 ⬇/S 自己變石頭，在 PlayerPetrification 裡處理，跟本檔無關
+/// ※ 兩條都只在荒原成立：PlayerPetrification.allowedSceneKeywords 會擋掉非荒原關卡，本檔不必自己判斷場景。
 /// </summary>
 public class StormHazardWave : MonoBehaviour
 {
@@ -21,7 +24,7 @@ public class StormHazardWave : MonoBehaviour
 
     [Header("🪨 風暴強制石化開關")]
     [Tooltip("【風暴被動石化開關】：吹風時若玩家未在掩體內（且未主動按住 S/↓ 石化硬撐），是否自動對玩家觸發強制石化？(預設開啟)")]
-    public bool enableStormPassivePetrify = true;    // 0904 團隊定案：被動石化開回來（值仍由 WindGustSystem 統一下發，見 WindGustSystem:144）
+    public bool enableStormPassivePetrify = true;    // 0904 團隊定案：被動石化開回來。實際值由 WindGustSystem 統一下發覆蓋（見 WindGustSystem.enableStormPassivePetrify），所以要改請改那邊
 
     private Collider hazardCollider;
     private bool hasAppliedPetrifyThisGust = false;

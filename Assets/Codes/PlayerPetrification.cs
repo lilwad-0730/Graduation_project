@@ -63,6 +63,10 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Range(0f, 10f)]
     public float unpetrifyGraceDuration = 5.0f;
 
+    [Header("🏜️ 關卡限制 (Allowed Scenes)")]
+    [Tooltip("允許石化的關卡名稱關鍵字 (預設只有荒原；廢墟／玻璃管／水下等其他關卡按 ⬇/S 不會石化，風暴也石化不了)")]
+    public string[] allowedSceneKeywords = { "desert", "荒漠", "荒原" };
+
     [Header("🧎 主動石化（企劃定案：按住不放＝抗風抗鳥，但不能動）")]
     [Tooltip("按住 ⬇ 或 S 主動石化硬撐：風暴吹不動、鳥啄不死，但完全不能動；放開立刻解除")]
     public bool holdToPetrify = true;
@@ -85,6 +89,10 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     private bool _bracing = false;   // 目前的石化是玩家主動按出來的
     /// <summary>目前的石化是玩家自己按住 ⬇/S 硬撐出來的（重生守護不該把它清掉）。</summary>
     public bool IsBracing => _bracing;
+
+    // 關卡把關的快取（記住上次判斷過的場景名字，換場景自動重算，免得每幀跑整串關鍵字比對）
+    private string _allowedSceneCheckedName = null;
+    private bool _allowedSceneCached = false;
 
     private PlayerMovement playerMovement;
     private PlayerRespawnSystem respawnSystem;
@@ -111,6 +119,37 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         if (_instance == this) _instance = null;
     }
 
+    /// <summary>
+    /// 【關卡把關】這一關能不能石化？只有場景名稱對得上 allowedSceneKeywords 的關卡才算（＝荒原）。
+    /// 玩家 prefab 是全關卡共用的，這個元件在哪一關都會跟著上場；
+    /// 靠「在場景檔裡手動把元件刪掉」擋不住（WindGustSystem 找不到還會自動補掛回去），
+    /// 所以改由這裡統一判斷：非荒原 → 主動石化與被動石化一律不成立。
+    /// 結果依場景快取，換場景自動重算。
+    /// </summary>
+    public bool IsPetrifyAllowedInCurrentScene()
+    {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (sceneName == _allowedSceneCheckedName) return _allowedSceneCached;
+
+        _allowedSceneCheckedName = sceneName;
+        _allowedSceneCached = false;
+
+        if (allowedSceneKeywords != null)
+        {
+            string lower = sceneName.ToLower();
+            foreach (var keyword in allowedSceneKeywords)
+            {
+                if (string.IsNullOrEmpty(keyword)) continue;
+                if (lower.Contains(keyword.ToLower()))
+                {
+                    _allowedSceneCached = true;
+                    break;
+                }
+            }
+        }
+        return _allowedSceneCached;
+    }
+
     private void Start()
     {
         EnsureComponents();
@@ -118,6 +157,11 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
         // 開局強制完全清除任何殘留的石化、動作停用與動畫凍結，並給予 5 秒開局免疫保護
         ClearAllNegativeEffects();
+
+        if (!IsPetrifyAllowedInCurrentScene())
+        {
+            Debug.Log($"🪨【石化系統】目前關卡 [{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}] 不在允許清單內，石化（主動與被動）全程停用。");
+        }
     }
 
     /// <summary>
@@ -190,7 +234,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         }
 
         // 3. 主動石化：按住 ⬇/S 變成石頭（抗風抗鳥、不能動）；放開立刻解除
-        if (holdToPetrify)
+        //    ★只有荒原吃這套；其他關卡的 ⬇/S 交還給移動系統（水下下潛等），這裡完全不攔。
+        if (holdToPetrify && IsPetrifyAllowedInCurrentScene())
         {
             bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow);
             if (holding && !isPetrified)
@@ -209,6 +254,12 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             {
                 EndBrace();
             }
+        }
+        else if (_bracing)
+        {
+            // 保險絲：硬撐到一半 holdToPetrify 被關掉、或關卡清單被改掉時，
+            // 立刻放人，不能讓玩家永遠卡在石頭裡。
+            EndBrace();
         }
     }
 
@@ -301,6 +352,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     /// </summary>
     public void Petrify()
     {
+        // ★【關卡把關】非荒原一律不石化。擋在最前面，連音效與計次都不會發生。
+        if (!IsPetrifyAllowedInCurrentScene()) return;
+
         EnsureComponents();
 
         // ★【無敵模式】：免疫石化與倒數死亡，機制正常運行
