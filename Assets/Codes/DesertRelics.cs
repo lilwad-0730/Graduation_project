@@ -89,8 +89,13 @@ public class DesertRelics : MonoBehaviour
             placed.Add(r.resource + "@" + x.ToString("F1"));
         }
 
-        Debug.Log("[DesertRelics] 散落物已放 " + placed.Count + " 件" + (placed.Count > 0 ? "（" + string.Join("、", placed.ToArray()) + "）" : "")
-                  + (missing.Count > 0 ? "；缺圖 " + string.Join("、", missing.ToArray()) + " → 放到 Assets/Resources/" + resourceFolder + "<名稱>.png 即出現" : ""));
+        string msg = "[DesertRelics] 散落物已放 " + placed.Count + " 件" + (placed.Count > 0 ? "（" + string.Join("、", placed.ToArray()) + "）" : "")
+                   + (missing.Count > 0 ? "；缺圖 " + string.Join("、", missing.ToArray()) + " → 放到 Assets/Resources/" + resourceFolder + "<名稱>.png 即出現" : "");
+
+        // 缺圖時用 Warning：拍四的散落物是敘事的一部分，圖沒進來就整段是空的，
+        // 用普通 Log 會被其他訊息淹掉，沒人會發現。
+        if (missing.Count > 0) Debug.LogWarning(msg);
+        else Debug.Log(msg);
     }
 
     private static Sprite LoadSprite(string path)

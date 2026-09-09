@@ -46,6 +46,16 @@ public class DesertBeatDirector : MonoBehaviour
     //   4. 真／假／風堆三種外觀一樣，超過玩家能分辨的上限，只剩純試錯。
     //   5. 第一次進關卡時兩個碼表的相位是隨機的（看元件哪一幀初始化），
     //      運氣壞的話那座掩體每次風來都剛好不在，等於白放。
+    //
+    //   ※ 補充一件重要的事：0904 定案寫的是「三座掩體掛 DynamicFadeShelter 變風堆掩體（對齊 6 秒風週期）」。
+    //     「對齊」從來沒有被實作出來——DynamicFadeShelter 對 WindGustSystem 一次引用都沒有，
+    //     實際只是把 driftActiveSeconds 設成 6（數字上等於一輪風 2.5+3.5），但兩個計時器各跑各的。
+    //     週期長度一樣不等於相位對齊。所以上面 1、2、5 點其實是「沒對齊」造成的，不是這個設計本身爛。
+    //     要重做的話，正確做法是讓 DynamicFadeShelter 跟著 WindGustSystem.CurrentState 走，不要自己算時間。
+    //     但即使對齊了，它還是會「玩家沒碰它也自己消失」而且「會長回來」，
+    //     跟本關卡定下的掩體規則（外觀一樣→躲進去被風吹才知道真假→假的垮了永遠不回來）衝突，
+    //     所以 0909 決定維持關閉。要改回來請先跟企劃確認規則要幾條。
+    //
     //   下面的參數全部留著，改回 true 就會恢復原本行為。
     public bool enableDriftShelters = false;
     public float[] driftShelterXs = new float[] { 70.8f, 98.1f, 114.3f };
