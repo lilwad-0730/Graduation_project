@@ -1,10 +1,10 @@
 using UnityEngine;
 
-public sealed class EnableAnimatorOnPlayerStep : MonoBehaviour
+public sealed class EnableAnimatorOnPlayerStep : MonoBehaviour, IResettable
 {
-    
     private bool activationScheduled;
-[SerializeField] private Animator targetAnimator;
+
+    [SerializeField] private Animator targetAnimator;
 
     private void Awake()
     {
@@ -12,7 +12,7 @@ public sealed class EnableAnimatorOnPlayerStep : MonoBehaviour
             targetAnimator.enabled = false;
     }
 
-private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         if (activationScheduled || targetAnimator == null)
             return;
@@ -27,7 +27,7 @@ private void OnCollisionEnter(Collision collision)
         Invoke(nameof(EnableTargetAnimator), 1f);
     }
 
-private void EnableTargetAnimator()
+    private void EnableTargetAnimator()
     {
         if (targetAnimator != null)
             targetAnimator.enabled = true;
@@ -35,4 +35,16 @@ private void EnableTargetAnimator()
         enabled = false;
     }
 
+    public void ResetToInitialState()
+    {
+        CancelInvoke(nameof(EnableTargetAnimator));
+        activationScheduled = false;
+        enabled = true;
+
+        if (targetAnimator != null)
+        {
+            targetAnimator.enabled = false;
+            targetAnimator.Rebind();
+        }
+    }
 }

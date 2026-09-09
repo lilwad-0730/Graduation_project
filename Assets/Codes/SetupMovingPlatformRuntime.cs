@@ -46,11 +46,6 @@ public class SetupMovingPlatformRuntime : MonoBehaviour
                 comp = go.AddComponent<HorizontalMovingPlatform>();
             }
 
-            comp.minX = 22.36f;
-            comp.maxX = 46.0f;
-            comp.cycleDuration = 6.0f;
-            comp.fixedY = go.transform.position.y;
-            comp.smoothMovement = true;
             comp.parentPlayerOnRide = true;
 
             Rigidbody rb = go.GetComponent<Rigidbody>();
@@ -59,7 +54,7 @@ public class SetupMovingPlatformRuntime : MonoBehaviour
             rb.useGravity = false;
 
             configured = true;
-            Debug.Log($"[SetupMovingPlatformRuntime] 成功設定 '{go.name}' (minX=22.36, maxX=46.0, duration=6.0s)！");
+            Debug.Log($"[SetupMovingPlatformRuntime] 已設定 '{go.name}' 的玩家搭乘支援。");
         }
     }
 }
