@@ -674,7 +674,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         PlayerPetrification petrifyFinal = GetPetrification();
         if (petrifyFinal != null)
         {
-            petrifyFinal.ClearAllNegativeEffects(); // graceTimer 刷新為 5 秒
+            petrifyFinal.ClearAllNegativeEffects(); // graceTimer 刷新為 respawnGraceDuration（預設 0.5 秒，不是 5 秒；真正的 5 秒保護是下面的 PostRespawnGuard）
         }
 
         // 確保 Rigidbody 和 PlayerMovement 正常

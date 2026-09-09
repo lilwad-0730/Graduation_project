@@ -63,6 +63,10 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Range(0f, 10f)]
     public float unpetrifyGraceDuration = 5.0f;
 
+    [Tooltip("開局／重生／場景重置後的免疫時間 (秒，預設 0.5)。\n只夠遮掉切畫面的穿幫，不是讓玩家無敵衝過風區——重生後 5 秒還有 PostRespawnGuard 在守。\n0830 的 c7cdcdd 從 5 秒改成 0.5 秒，是刻意的，別再改回去除非企劃重新定案")]
+    [Range(0f, 10f)]
+    public float respawnGraceDuration = 0.5f;
+
     [Header("🏜️ 關卡限制 (Allowed Scenes)")]
     [Tooltip("允許石化的關卡名稱關鍵字 (預設只有荒原；廢墟／玻璃管／水下等其他關卡按 ⬇/S 不會石化，風暴也石化不了)")]
     public string[] allowedSceneKeywords = { "desert", "荒漠", "荒原" };
@@ -155,7 +159,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         EnsureComponents();
         CacheOriginalRenderers();
 
-        // 開局強制完全清除任何殘留的石化、動作停用與動畫凍結，並給予 5 秒開局免疫保護
+        // 開局強制完全清除任何殘留的石化、動作停用與動畫凍結，並給予短暫開局免疫（respawnGraceDuration，預設 0.5 秒）
         ClearAllNegativeEffects();
 
         if (!IsPetrifyAllowedInCurrentScene())
@@ -302,6 +306,11 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
+        // ★這裡無條件解鎖是安全的，別加「演出中就不要解鎖」的保護，會把玩家鎖死在石頭裡。
+        //   理由：playerMovement.enabled 與 rb.isKinematic 全專案只有 BeginBrace/Petrify 會關，
+        //   演出與重生鎖玩家一律是用 playerMovement.isCutsceneFrozen（文字卡、鏡牆、怪物特寫、
+        //   PlayerRespawnSystem 都查過了，沒有人動 enabled/isKinematic）。
+        //   所以這三行只是還原自己剛剛關掉的東西，isCutsceneFrozen 還立著，演出照樣鎖得住玩家。
         if (rb != null) rb.isKinematic = false;
         if (playerMovement != null) playerMovement.enabled = true;
         if (animator != null) animator.speed = 1f;
@@ -323,6 +332,18 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         }
     }
 
+    /// <summary>
+    /// 快取角色原本的顏色，解除石化時刷回去。
+    ///
+    /// ⚠️【要加第二個材質之前先讀這裡】
+    /// 這個字典是「一個 Renderer 記一個顏色」，但 ApplyPetrifyVisual 是「一個 Renderer 底下每個材質都塗」。
+    /// 現在剛好沒事，因為角色的兩個 Renderer 各只有 1 個材質（Assets/Models/momo_Mat.mat）。
+    /// 哪天美術把眼睛／衣服拆成第二個材質，石化解除後所有材質會被刷成同一個顏色——
+    /// 而且只有石化過才會錯、重開遊戲又好了，這種 bug 超難查。
+    /// 真的要加材質的話，這裡要先改成「Renderer → 每個材質各自的原始狀態」：
+    ///     private struct MatState { public Color baseColor; public Color emission; public bool hadEmissionKeyword; }
+    ///     private Dictionary&lt;Renderer, MatState[]&gt; originalStates;
+    /// </summary>
     private void CacheOriginalRenderers()
     {
         originalColors.Clear();
@@ -422,7 +443,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// 解除石化 (嚴格單次觸發，並給予 5 秒充足的移動避難緩衝期)
+    /// 解除石化 (嚴格單次觸發，並給予 unpetrifyGraceDuration 秒的移動避難緩衝期，預設 5)
     /// </summary>
     public void Unpetrify()
     {
@@ -430,7 +451,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         
         EnsureComponents();
         isPetrified = false;
-        Debug.Log("🔊【石化系統】石化解除！播放解除石化音效，並給予 5 秒避難免疫期。");
+        Debug.Log($"🔊【石化系統】石化解除！播放解除石化音效，並給予 {unpetrifyGraceDuration} 秒避難免疫期。");
 
         // 僅在解除石化瞬間播放一次音效
         if (unpetrifySFX != null)
@@ -439,8 +460,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             else AudioSource.PlayClipAtPoint(unpetrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
-        // 給予 5 秒免疫緩衝期，讓玩家有充裕時間跑進掩體
-        graceTimer = 5.0f;
+        // 給予免疫緩衝期，讓玩家有充裕時間跑進掩體（秒數看 unpetrifyGraceDuration，預設 5）
+        graceTimer = unpetrifyGraceDuration;
 
         if (rb != null)
         {
@@ -519,6 +540,11 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
                         if (mat.HasProperty("_Color")) mat.color = orig;
                         if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", orig);
+                        // ⚠️ 這裡是寫死刷成黑色，不是還原成原本的值。
+                        //    現在沒事，因為 momo_Mat 的 _EmissionColor 本來就是純黑、也沒開 _EMISSION。
+                        //    哪天角色materials加了自發光（眼睛會亮、身上有發光紋路），
+                        //    石化解除一次之後就永遠不亮了——要連同 CacheOriginalRenderers 一起改成記錄原值再放回去。
+                        //    另外 EnableKeyword("_EMISSION") 開了之後這裡沒有 DisableKeyword，是單向的。
                         if (mat.HasProperty("_EmissionColor"))
                         {
                             mat.SetColor("_EmissionColor", Color.black);
@@ -590,7 +616,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     /// <summary>
     /// 【重生專用寫死規則】完全清除玩家身上的所有負面狀態與石化效果。
     /// 包含：物理解鎖 (isKinematic=false)、動作恢復 (PlayerMovement=true)、
-    /// 動畫恢復 (animator.speed=1.0)、顏色刷回原本貼圖、給予 5 秒免疫。
+    /// 動畫恢復 (animator.speed=1.0)、顏色刷回原本貼圖、給予 respawnGraceDuration 秒免疫（預設 0.5）。
+    /// ※ 這裡是短免疫，重生後真正的 5 秒保護是 PlayerRespawnSystem.PostRespawnGuard 在守。
     /// </summary>
     public void ClearAllNegativeEffects()
     {
@@ -601,8 +628,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         currentPetrifyCount = 0;
         _bracing = false;
 
-        // 給予短暫 0.5 秒保護，避免重生瞬間與畫面切換穿幫
-        graceTimer = 0.5f;
+        // 給予短暫保護，避免重生瞬間與畫面切換穿幫（秒數看 respawnGraceDuration，預設 0.5）
+        graceTimer = respawnGraceDuration;
 
         // 1. 物理強制解鎖
         if (rb != null)
