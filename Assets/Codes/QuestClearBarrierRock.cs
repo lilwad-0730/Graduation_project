@@ -15,8 +15,14 @@ public class QuestClearBarrierRock : MonoBehaviour
     [Tooltip("開啟後，撿到指定張數的日誌卡（StoryCardNoteHook D1~Dn）巨石就消散；下面的 requiredItems 清單只在關閉時作為備用條件")]
     public bool clearByDiaryCount = true;
 
-    [Tooltip("需要收齊幾張日誌卡")]
+    [Tooltip("★建議開著：開場自動數一次場景裡有幾張日誌（CollectibleNote），要全部撿完巨石才開。\n關掉的話才會用下面手填的 requiredDiaryCount。\n手填最容易出包——場景加了日誌但數字忘了改，玩家沒撿到最後幾張石頭就自己開了")]
+    public bool requireAllNotesInScene = true;
+
+    [Tooltip("需要收齊幾張日誌卡（requireAllNotesInScene 關閉時才看這個）")]
     public int requiredDiaryCount = 3;
+
+    // 開場數出來的實際張數；requireAllNotesInScene 關掉時就是 requiredDiaryCount
+    private int _resolvedRequiredCount = -1;
 
     [Header("📋 備用：通關所需收集品清單（clearByDiaryCount 關閉時才看這個）")]
     [Tooltip("請將場景中所有需收集的物件 (如 Note Paper、日記等) 拖入此清單")]
@@ -72,11 +78,46 @@ public class QuestClearBarrierRock : MonoBehaviour
         _initialPosition = transform.position;
     }
 
+    private void Start()
+    {
+        ResolveRequiredCount();
+    }
+
+    /// <summary>
+    /// 決定「要收幾張」。開著 requireAllNotesInScene 就開場數一次場景裡的 CollectibleNote，
+    /// 這樣關卡加減日誌都不用回來改數字。
+    /// </summary>
+    private void ResolveRequiredCount()
+    {
+        if (!requireAllNotesInScene)
+        {
+            _resolvedRequiredCount = Mathf.Max(1, requiredDiaryCount);
+            return;
+        }
+
+        int found = 0;
+        foreach (CollectibleNote n in Object.FindObjectsByType<CollectibleNote>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (n != null) found++;
+        }
+
+        if (found <= 0)
+        {
+            _resolvedRequiredCount = Mathf.Max(1, requiredDiaryCount);
+            Debug.LogWarning($"[{name}] 場景裡找不到任何 CollectibleNote，改用手填的 requiredDiaryCount = {_resolvedRequiredCount}。");
+            return;
+        }
+
+        _resolvedRequiredCount = found;
+        if (found != requiredDiaryCount)
+        {
+            Debug.Log($"[{name}] 日誌通關條件：場景實際有 {found} 張日誌，Inspector 手填的是 {requiredDiaryCount} 張。" +
+                      $"requireAllNotesInScene 開著，所以用 {found} 張——要全部撿完巨石才會開。");
+        }
+    }
+
     // ── 演出期間定住玩家 (作法與 GuidanceLight.BeginPlayerHold 一致) ──
-    private PlayerMovement _heldPm;
-    private Rigidbody _heldRb;
-    private RigidbodyConstraints _heldConstraints;
-    private bool _heldUseGravity;
+    private bool _holdingPlayer;
     private bool _breathHeld;
 
     /// <summary>
@@ -89,24 +130,15 @@ public class QuestClearBarrierRock : MonoBehaviour
     ///   演出全長約 3.7 秒等於沉掉近 50 單位，底下就是 DeathZone。
     ///   窒息計時同時也還在跑，殘氧不多時會直接在演出中溺斃。
     /// </summary>
+    /// ★0909：剛體約束的存檔／還原改由 PlayerCutsceneHold 統一管。
+    ///   原本這裡跟 GuidanceLight 各存各的，收完最後一張日誌時
+    ///   光絮演出跟這段巨石演出會前後腳發生，後放手的那個會把「FreezeAll」
+    ///   當成正常狀態還原回去，玩家從此定住不能動。
     private void HoldPlayer(PlayerMovement pm)
     {
-        if (pm == null || _heldPm != null) return;
-        _heldPm = pm;
-        pm.isCutsceneFrozen = true;
-
-        _heldRb = pm.GetComponent<Rigidbody>();
-        if (_heldRb == null) _heldRb = pm.GetComponentInParent<Rigidbody>();
-        if (_heldRb != null)
-        {
-            _heldConstraints = _heldRb.constraints;
-            _heldUseGravity = _heldRb.useGravity;
-            _heldRb.linearVelocity = Vector3.zero;
-            _heldRb.angularVelocity = Vector3.zero;
-            _heldRb.useGravity = false;
-            // 用約束而不是 kinematic：別的腳本照樣寫速度也不會噴警告
-            _heldRb.constraints = RigidbodyConstraints.FreezeAll;
-        }
+        if (pm == null || _holdingPlayer) return;
+        _holdingPlayer = true;
+        PlayerCutsceneHold.Acquire(pm, freezeAnimator: false);
 
         if (UnderwaterSuffocationEffect.Instance != null && !_breathHeld)
         {
@@ -124,17 +156,10 @@ public class QuestClearBarrierRock : MonoBehaviour
         }
         _breathHeld = false;
 
-        if (_heldRb != null)
+        if (_holdingPlayer)
         {
-            _heldRb.constraints = _heldConstraints;
-            _heldRb.useGravity = _heldUseGravity;
-            _heldRb = null;
-        }
-
-        if (_heldPm != null)
-        {
-            _heldPm.isCutsceneFrozen = false;
-            _heldPm = null;
+            _holdingPlayer = false;
+            PlayerCutsceneHold.Release();
         }
     }
 
@@ -179,7 +204,8 @@ public class QuestClearBarrierRock : MonoBehaviour
     {
         if (_hasTriggered) return;
 
-        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= Mathf.Max(1, requiredDiaryCount);
+        if (_resolvedRequiredCount < 0) ResolveRequiredCount();
+        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= _resolvedRequiredCount;
         bool byItems = !clearByDiaryCount && CheckAllItemsCollected();
         if (byDiary || byItems)
         {
@@ -191,7 +217,7 @@ public class QuestClearBarrierRock : MonoBehaviour
 
             _hasTriggered = true;
             if (byDiary)
-                Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{requiredDiaryCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
+                Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{_resolvedRequiredCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
             else
                 Debug.Log($"🎉【通關條件達成】所有收集品已收集完畢！啟動封鎖巨石 '{name}' 消散特寫演出！");
             StartCoroutine(ClearCutsceneRoutine());

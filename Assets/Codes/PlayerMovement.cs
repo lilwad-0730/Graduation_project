@@ -1556,6 +1556,18 @@ public class PlayerMovement : MonoBehaviour
                 //   這裡讓推出速度跟著沉降速度走，永遠贏得過下沉。
                 rb.maxDepenetrationVelocity = Mathf.Max(landDepenetrationVelocity,
                                                         Mathf.Abs(effectiveMaxFallSpeed) * underwaterDepenetrationFactor);
+
+                // ★ 水下穿模修正之二：碰撞偵測改成 ContinuousSpeculative。
+                //   水下石頭全部是 MeshCollider，非凸面的 MeshCollider 是「沒有厚度的面」。
+                //   一般的 Continuous 是掃描式，玩家在深處一個物理幀就移動 0.3 單位，
+                //   掃描漏掉一次就整個人穿到面的另一邊，而且穿過去之後就再也推不回來。
+                //   Speculative 是「先預測會撞到什麼再限制這一步的位移」，
+                //   對這種無厚度的面比掃描式可靠得多。陸地維持 Continuous（Speculative
+                //   在平地接縫容易產生假碰撞、走路會頓）。
+                if (rb.collisionDetectionMode != CollisionDetectionMode.ContinuousSpeculative)
+                {
+                    rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                }
             }
 
             rb.linearVelocity = vel;
@@ -1566,6 +1578,11 @@ public class PlayerMovement : MonoBehaviour
             if (!Mathf.Approximately(rb.maxDepenetrationVelocity, landDepenetrationVelocity))
             {
                 rb.maxDepenetrationVelocity = landDepenetrationVelocity;
+            }
+            // 碰撞偵測也還原成 Continuous：Speculative 在平地接縫會產生假碰撞，走路會頓
+            if (rb.collisionDetectionMode != CollisionDetectionMode.Continuous)
+            {
+                rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             }
         }
     }

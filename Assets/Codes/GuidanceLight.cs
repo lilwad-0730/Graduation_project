@@ -84,40 +84,19 @@ public class GuidanceLight : MonoBehaviour, IResettable
     private Transform _cutsceneOriginalFollow;    // 借走前的 Follow，結束時還回去
 
     // ── 演出期間的玩家鎖定（剛體、動畫、呼吸）──
-    private PlayerMovement _heldPm;
-    private Rigidbody _heldRb;
-    private RigidbodyConstraints _heldConstraints;
-    private bool _heldUseGravity;
-    private Animator _heldAnim;
-    private float _heldAnimSpeed = 1f;
+    // ★0909：剛體約束與動畫速度的存檔／還原改由 PlayerCutsceneHold 統一管。
+    //   原本這裡自己存自己還原，跟 QuestClearBarrierRock 那套一模一樣，
+    //   兩段演出一重疊（收完最後一張日誌時光絮演出跟巨石消散前後腳發生）
+    //   後放手的那個會把「FreezeAll」當成正常狀態還原回去，玩家從此不能動。
+    private bool _holdingPlayer;
     private bool _breathHeld;
 
     /// <summary>演出開始：她不能動、不會沉、動畫定格、氧氣暫停——不然鏡頭跟著光絮飛，她在畫面外沉下去溺斃。</summary>
     private void BeginPlayerHold(PlayerMovement pm)
     {
-        if (pm == null || _heldPm != null) return;
-        _heldPm = pm;
-        pm.isCutsceneFrozen = true;
-
-        _heldRb = pm.GetComponent<Rigidbody>();
-        if (_heldRb == null) _heldRb = pm.GetComponentInParent<Rigidbody>();
-        if (_heldRb != null)
-        {
-            _heldConstraints = _heldRb.constraints;
-            _heldUseGravity = _heldRb.useGravity;
-            _heldRb.linearVelocity = Vector3.zero;
-            _heldRb.angularVelocity = Vector3.zero;
-            _heldRb.useGravity = false;
-            _heldRb.constraints = RigidbodyConstraints.FreezeAll;   // 用約束而不是 kinematic：別的腳本寫速度也不會噴警告
-        }
-
-        _heldAnim = pm.animator;
-        if (_heldAnim == null) _heldAnim = pm.GetComponentInChildren<Animator>();
-        if (_heldAnim != null)
-        {
-            _heldAnimSpeed = _heldAnim.speed;
-            _heldAnim.speed = 0f;
-        }
+        if (pm == null || _holdingPlayer) return;
+        _holdingPlayer = true;
+        PlayerCutsceneHold.Acquire(pm, freezeAnimator: true);
 
         if (UnderwaterSuffocationEffect.Instance != null && !_breathHeld)
         {
@@ -129,26 +108,15 @@ public class GuidanceLight : MonoBehaviour, IResettable
     /// <summary>演出結束：全部還原。</summary>
     private void EndPlayerHold()
     {
-        if (_heldRb != null)
+        if (_holdingPlayer)
         {
-            _heldRb.constraints = _heldConstraints;
-            _heldRb.useGravity = _heldUseGravity;
-            _heldRb = null;
-        }
-        if (_heldAnim != null)
-        {
-            _heldAnim.speed = _heldAnimSpeed;
-            _heldAnim = null;
+            _holdingPlayer = false;
+            PlayerCutsceneHold.Release();
         }
         if (_breathHeld)
         {
             if (UnderwaterSuffocationEffect.Instance != null) UnderwaterSuffocationEffect.Instance.SetHold(false);
             _breathHeld = false;
-        }
-        if (_heldPm != null)
-        {
-            _heldPm.isCutsceneFrozen = false;
-            _heldPm = null;
         }
     }
 

@@ -6162,7 +6162,7 @@ MonoBehaviour:
   underwaterHorizontalSpeedMultiplier: 0.45
   allowContinuousSwimming: 1
   swimCooldown: 0.25
-  underwaterSwimUpTiltAngle: 45
+  underwaterSwimUpTiltAngle: 18
   enableDepthBuoyancyPhysics: 1
   neutralBuoyancyY: -5
   depthCompressionRate: 0.2
@@ -21119,16 +21119,16 @@ MonoBehaviour:
   moveSpeed: 9
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
-  touchTriggerDistance: 1.5
+  touchTriggerDistance: 2.6
   drawWaypointGizmos: 1
   stopDistance: 13
   resumeDistance: 6
-  waitPlayerTriggerDistance: 2
+  waitPlayerTriggerDistance: 3.6
   flyDelay: 0.5
   unlockDelay: 0.5
   bobHeight: 0.3
   bobSpeed: 3
-  absorbTriggerDistance: 1.5
+  absorbTriggerDistance: 2.6
   fadeOutDuration: 1
   fadeInDuration: 1
   absorbSFX: {fileID: 8300000, guid: a713f28395c464f4f82be46d25c65a8e, type: 3}

@@ -732,6 +732,16 @@ public class PlayerRespawnSystem : MonoBehaviour
                 Debug.LogWarning("[PostRespawnGuard] 偵測到 isKinematic = true，已強制解除！");
             }
 
+            // ★0909：constraints 被鎖成 FreezeAll 也一樣是「不能動」，而且原本這裡不管它，
+            //   所以演出鎖沒放乾淨的話連重生都救不回來，玩家只能重開遊戲。
+            //   重生的規則是「重生＝玩家一定能動」，這裡補上。
+            if (_playerRb != null && _playerRb.constraints == RigidbodyConstraints.FreezeAll)
+            {
+                PlayerCutsceneHold.ForceReleaseAll();
+                _playerRb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+                Debug.LogWarning("[PostRespawnGuard] 偵測到 Rigidbody 被鎖成 FreezeAll（演出鎖沒放乾淨），已強制還原成標準約束！");
+            }
+
             // 確保 PlayerMovement 是啟用的
             PlayerMovement pm = GetComponent<PlayerMovement>();
             if (pm != null)
