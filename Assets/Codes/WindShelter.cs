@@ -18,6 +18,10 @@ public class WindShelter : MonoBehaviour, IResettable
     [Tooltip("【假掩體限定】開始崩解碎裂的延遲時間 (秒，預設 0.8)")]
     public float collapseDelay = 0.8f;
 
+    [Tooltip("【假掩體限定】碎裂瞬間給玩家的逃跑免疫時間 (秒，預設 1.5)。\n碎裂跟失去掩體保護是同一幀，設 0 的話玩家會在石柱爆開的當下直接被石化、反應時間是 0。\n給一段時間讓她跑向下一座掩體；跑不到還是會被石化，懲罰照舊")]
+    [Range(0f, 5f)]
+    public float collapseEscapeGrace = 1.5f;
+
     [Header("防風保護區域設定 (背風面躲避範圍)")]
     [Tooltip("【背風面/後面】保護延伸寬度 (公尺，預設 2.0，向左側/背風面延伸)")]
     public float protectBehindDistance = 2.0f;
@@ -199,8 +203,31 @@ public class WindShelter : MonoBehaviour, IResettable
         if (isPlayerInside)
         {
             WindGustSystem.UnregisterPlayerShelter();
+
+            // 3. ★碎裂跟失去保護是同一幀，中間那 0.8 秒她還在保護中、畫面上也沒有任何預兆
+            //    （Destructible.Shatter() 是被呼叫的當下直接爆，沒有碎裂前的搖晃）。
+            //    不補這段免疫的話，玩家的體驗是「躲得好好的 → 石柱突然爆炸 → 自己同時變石頭」，
+            //    她沒有任何資訊可以做出不同的選擇。給時間讓她跑，跑不掉還是會石化。
+            GrantEscapeGrace();
         }
         collapseCoroutine = null;
+    }
+
+    /// <summary>假掩體碎在玩家頭上時，補一段免疫讓她跑得掉。</summary>
+    private void GrantEscapeGrace()
+    {
+        if (collapseEscapeGrace <= 0f) return;
+
+        EnsurePlayer();
+        if (playerTrans == null) return;
+
+        PlayerPetrification petr = playerTrans.GetComponent<PlayerPetrification>();
+        if (petr == null) petr = playerTrans.GetComponentInParent<PlayerPetrification>();
+        if (petr == null) petr = playerTrans.GetComponentInChildren<PlayerPetrification>();
+        if (petr == null) return;
+
+        petr.GrantGrace(collapseEscapeGrace);
+        Debug.Log($"🏃【假掩體】'{gameObject.name}' 碎了，給玩家 {collapseEscapeGrace} 秒逃跑免疫，快找下一座掩體。");
     }
 
     // 在 Scene 視窗繪製綠色防風保護範圍，便於關卡編輯檢視 (與代碼計算 100% 嚴格一致)

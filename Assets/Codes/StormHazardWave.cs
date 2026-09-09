@@ -151,6 +151,9 @@ public class StormHazardWave : MonoBehaviour
         }
 
         // 5. 風暴強制被動石化（可由 enableStormPassivePetrify 開關自由切換）
+        //    ※ 這支旗標是「這波風試過石化了」不是「這波風石化成功了」——
+        //      玩家有免疫（剛重生、假掩體剛碎）時 Petrify() 會內部 return，但旗標一樣燒掉，
+        //      所以免疫期一過也不會在同一波風裡補刀，要等下一波。這是刻意留的寬容，別改成只在成功時才設。
         if (enableStormPassivePetrify && !hasAppliedPetrifyThisGust)
         {
             if (petr != null)

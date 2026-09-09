@@ -63,9 +63,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Range(0f, 10f)]
     public float unpetrifyGraceDuration = 5.0f;
 
-    [Tooltip("開局／重生／場景重置後的免疫時間 (秒，預設 0.5)。\n只夠遮掉切畫面的穿幫，不是讓玩家無敵衝過風區——重生後 5 秒還有 PostRespawnGuard 在守。\n0830 的 c7cdcdd 從 5 秒改成 0.5 秒，是刻意的，別再改回去除非企劃重新定案")]
+    [Tooltip("開局／重生／場景重置後的免疫時間 (秒，預設 5)。\n重生完剛好遇到吹風的話，沒有這段保護會一重生就直接被石化。\n風一波最多吹 2.5 秒，5 秒蓋得過去；重生時剛好在停風期的話會花掉一部分，不夠再往上加")]
     [Range(0f, 10f)]
-    public float respawnGraceDuration = 0.5f;
+    public float respawnGraceDuration = 5.0f;
 
     [Header("🏜️ 關卡限制 (Allowed Scenes)")]
     [Tooltip("允許石化的關卡名稱關鍵字 (預設只有荒原；廢墟／玻璃管／水下等其他關卡按 ⬇/S 不會石化，風暴也石化不了)")]
@@ -152,6 +152,17 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             }
         }
         return _allowedSceneCached;
+    }
+
+    /// <summary>
+    /// 【給外部用】補一段石化免疫時間。目前用在假掩體碎在玩家頭上的時候——
+    /// 碎裂跟失去掩體保護是同一幀，不給緩衝的話她會在石柱爆開的當下直接變石頭、反應時間 0。
+    /// 只會延長不會縮短：已經有更長的免疫時間就不動它（例如剛重生完的 5 秒）。
+    /// </summary>
+    public void GrantGrace(float seconds)
+    {
+        if (seconds <= 0f) return;
+        if (seconds > graceTimer) graceTimer = seconds;
     }
 
     private void Start()
