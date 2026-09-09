@@ -29168,7 +29168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dde310727f6cf544a15ef98380bdeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestClearBarrierRock
-  clearByDiaryCount: 1
+  clearByDiaryCount: 0
   requiredDiaryCount: 3
   requiredItems:
   - {fileID: 956479044}

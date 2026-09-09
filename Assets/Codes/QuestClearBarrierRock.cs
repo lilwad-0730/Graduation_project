@@ -15,14 +15,8 @@ public class QuestClearBarrierRock : MonoBehaviour
     [Tooltip("開啟後，撿到指定張數的日誌卡（StoryCardNoteHook D1~Dn）巨石就消散；下面的 requiredItems 清單只在關閉時作為備用條件")]
     public bool clearByDiaryCount = true;
 
-    [Tooltip("★建議開著：開場自動數一次場景裡有幾張日誌（CollectibleNote），要全部撿完巨石才開。\n關掉的話才會用下面手填的 requiredDiaryCount。\n手填最容易出包——場景加了日誌但數字忘了改，玩家沒撿到最後幾張石頭就自己開了")]
-    public bool requireAllNotesInScene = true;
-
-    [Tooltip("需要收齊幾張日誌卡（requireAllNotesInScene 關閉時才看這個）")]
+    [Tooltip("需要收齊幾張日誌卡。\n★這是「全場景撿了幾張」的總數，不管撿的是哪幾張。\n數字跟場景實際張數對不上很容易出包，建議改用下面的 requiredItems 清單（把 clearByDiaryCount 關掉）")]
     public int requiredDiaryCount = 3;
-
-    // 開場數出來的實際張數；requireAllNotesInScene 關掉時就是 requiredDiaryCount
-    private int _resolvedRequiredCount = -1;
 
     [Header("📋 備用：通關所需收集品清單（clearByDiaryCount 關閉時才看這個）")]
     [Tooltip("請將場景中所有需收集的物件 (如 Note Paper、日記等) 拖入此清單")]
@@ -78,41 +72,39 @@ public class QuestClearBarrierRock : MonoBehaviour
         _initialPosition = transform.position;
     }
 
+    /// <summary>
+    /// 開場檢查設定會不會讓玩家永遠過不了關。
+    /// ★0910 加這個的原因：曾經把條件改成「場景裡所有 CollectibleNote 都要撿」，
+    ///   但水下有 14 張日誌、其中好幾張是玩家拿不到的裝飾／測試物件，
+    ///   結果巨石永遠不開，整關直接卡死不能通關。
+    ///   這種錯不會噴任何錯誤訊息，只會讓人以為「這顆石頭壞了」，所以一定要開場就吼出來。
+    /// </summary>
     private void Start()
     {
-        ResolveRequiredCount();
-    }
-
-    /// <summary>
-    /// 決定「要收幾張」。開著 requireAllNotesInScene 就開場數一次場景裡的 CollectibleNote，
-    /// 這樣關卡加減日誌都不用回來改數字。
-    /// </summary>
-    private void ResolveRequiredCount()
-    {
-        if (!requireAllNotesInScene)
+        if (!clearByDiaryCount)
         {
-            _resolvedRequiredCount = Mathf.Max(1, requiredDiaryCount);
-            return;
+            if (requiredItems == null || requiredItems.Length == 0)
+            {
+                Debug.LogError($"[{name}] 設定有問題：clearByDiaryCount 關著，但 requiredItems 清單是空的 → " +
+                               "這顆巨石永遠不會消失，玩家過不了關！請把要收集的日誌拖進 requiredItems。");
+            }
+            else
+            {
+                int nulls = 0;
+                foreach (var it in requiredItems) if (it == null) nulls++;
+                if (nulls > 0)
+                {
+                    Debug.LogWarning($"[{name}] requiredItems 有 {nulls}/{requiredItems.Length} 個是空的（物件被刪掉或沒拖好），" +
+                                     "空的會被當成已收集。確認一下清單是不是漏拖了。");
+                }
+                Debug.Log($"[{name}] 通關條件：requiredItems 清單裡的 {requiredItems.Length} 個物件全部收集完，巨石才會消散。");
+            }
         }
-
-        int found = 0;
-        foreach (CollectibleNote n in Object.FindObjectsByType<CollectibleNote>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        else
         {
-            if (n != null) found++;
-        }
-
-        if (found <= 0)
-        {
-            _resolvedRequiredCount = Mathf.Max(1, requiredDiaryCount);
-            Debug.LogWarning($"[{name}] 場景裡找不到任何 CollectibleNote，改用手填的 requiredDiaryCount = {_resolvedRequiredCount}。");
-            return;
-        }
-
-        _resolvedRequiredCount = found;
-        if (found != requiredDiaryCount)
-        {
-            Debug.Log($"[{name}] 日誌通關條件：場景實際有 {found} 張日誌，Inspector 手填的是 {requiredDiaryCount} 張。" +
-                      $"requireAllNotesInScene 開著，所以用 {found} 張——要全部撿完巨石才會開。");
+            Debug.LogWarning($"[{name}] 目前用「日誌總張數」判定（收滿 {requiredDiaryCount} 張就開），" +
+                             "這個數字跟場景實際張數對不上就會太早開或永遠不開。" +
+                             "建議關掉 clearByDiaryCount，改用 requiredItems 清單指定要收哪幾個——那個不會算錯。");
         }
     }
 
@@ -204,8 +196,8 @@ public class QuestClearBarrierRock : MonoBehaviour
     {
         if (_hasTriggered) return;
 
-        if (_resolvedRequiredCount < 0) ResolveRequiredCount();
-        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= _resolvedRequiredCount;
+
+        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= Mathf.Max(1, requiredDiaryCount);
         bool byItems = !clearByDiaryCount && CheckAllItemsCollected();
         if (byDiary || byItems)
         {
@@ -217,7 +209,7 @@ public class QuestClearBarrierRock : MonoBehaviour
 
             _hasTriggered = true;
             if (byDiary)
-                Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{_resolvedRequiredCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
+                Debug.Log($"🎉【通關條件達成】日誌已收齊 {StoryCardNoteHook.PickedCount}/{requiredDiaryCount} 張！啟動封鎖巨石 '{name}' 消散特寫演出！");
             else
                 Debug.Log($"🎉【通關條件達成】所有收集品已收集完畢！啟動封鎖巨石 '{name}' 消散特寫演出！");
             StartCoroutine(ClearCutsceneRoutine());

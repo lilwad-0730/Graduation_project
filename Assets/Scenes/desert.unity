@@ -9121,6 +9121,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -9333,6 +9334,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -10128,6 +10130,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -10441,6 +10444,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -12839,6 +12843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -13461,6 +13466,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -13593,6 +13599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -13750,6 +13757,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -19075,6 +19083,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -19619,6 +19628,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -19882,6 +19892,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -20305,6 +20316,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -21335,6 +21347,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -23112,6 +23125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -29761,6 +29775,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -29918,6 +29933,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -30257,6 +30273,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
@@ -35680,6 +35697,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 1
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2.5
   protectFrontDistance: 0
   protectHeight: 5.5
@@ -35890,6 +35908,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WindShelter
   isTrueShelter: 0
   collapseDelay: 0.8
+  collapseEscapeGrace: 1.5
   protectBehindDistance: 2
   protectFrontDistance: 0
   protectHeight: 4.5
