@@ -4,6 +4,14 @@ using System.Collections;
 /// <summary>
 /// 控制掩體（如真/假掩體）週期性「漸顯、存在、漸暗、消失」的規律循環，並自動在消失時停用碰撞偵測。
 /// 支援：Built-in Shader (_Color)、URP Shader (_BaseColor)、以及純 MeshRenderer 開關（無透明材質備用方案）。
+///
+/// ⚠️【0909 起沒有任何地方在用它】場景檔沒掛，唯一會掛它的 DesertBeatDirector.enableDriftShelters 已關掉。
+///    要重新啟用之前，先修這兩個已知問題：
+///    (1) 保護在 alpha 0.2 就切掉，但柱子要到 alpha 0 才看不見 —— 中間那段玩家看得到柱子、躲進去卻沒用。
+///        （下面 FadingOut／FadingIn 兩段的 0.2 判斷）要嘛保護跟著撐到 alpha 0，要嘛讓柱子在 0.2 就整根消失。
+///    (2) 這裡的循環碼表跟 WindGustSystem 的風循環是兩個獨立計時器，沒有同步。
+///        重生後兩邊都會歸零（都是 IResettable）所以相位固定，但第一次進關卡的相位看元件哪一幀初始化，
+///        是隨機的 —— 運氣壞的話那座掩體每次風來都剛好不在。要用的話得讓它跟著 WindGustSystem 的狀態走。
 /// </summary>
 public class DynamicFadeShelter : MonoBehaviour, IResettable
 {

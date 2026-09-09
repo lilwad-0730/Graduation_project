@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 ///
 /// 進到有 WindGustSystem 的場景（＝荒原）自動生成，**不動場景檔**；只把場景裡已經存在的東西依 x 座標排成四拍：
 ///   拍一  0～45    掩體全部改真、會攻擊的鳥全部拿掉（背景鳥群 ScatteredFlock 照飛）
-///   拍二  45～135  真假掩體照舊，另挑三座掛 DynamicFadeShelter 變「風堆掩體」（會消失又長回來）；
+///   拍二  45～135  真假掩體照舊（★0909：風堆掩體已關掉，見 enableDriftShelters 的說明）；
 ///                  鳥減半、前搖拉到 1.5 秒；第一隻鳥示範俯衝——衝手套旁的地面、不打她
 ///   拍三  135～225 沒有掩體（現況）；開場一道巨鳥影子掠地（GiantShadowPass）；鳥前搖三隻一組錯開
 ///   拍四  225～    風永久停（WindStopZone）、鳥不再出現；散落物與門框（DesertRelics）
@@ -35,7 +35,19 @@ public class DesertBeatDirector : MonoBehaviour
     public bool beat1RemoveBirds = true;
 
     [Header("拍二：風堆掩體（在這些 x 附近找掩體掛 DynamicFadeShelter）")]
-    public bool enableDriftShelters = true;
+    [Tooltip("★0909 關掉：循環消失的掩體跟關卡其他規則打架，詳見下面的說明。\n想開回來的話，先修好 DynamicFadeShelter 的 alpha 0.2 保護斷點（看得到柱子卻躲不到）")]
+    // ★0909 關掉。原因（三座在 x≈70.8／98.2／114.3，本來就是真掩體，被這個功能改成會循環消失）：
+    //   1. 消失跟玩家無關：假掩體是「玩家躲進去＋正在吹風」才垮，是玩家自己選擇的後果，看得懂；
+    //      風堆掩體是自己的 12 秒碼表在跑，玩家在不在都一樣消失，學不到規則只能背時間。
+    //   2. 跟關卡的信號語言矛盾：風要來有 1 秒沙塵線前兆（教玩家看信號），掩體消失卻沒有前兆；
+    //      而且 DynamicFadeShelter 在 alpha 0.2 就切掉保護，柱子還看得見卻躲不到。
+    //   3. 會長回來，把「掩體垮了」的重量洗掉：假掩體垮掉不可逆（hasCollapsed 擋死），
+    //      那個不可逆才是它有分量的原因。同一個視覺事件在同一關有兩種相反意義，玩家沒辦法解讀。
+    //   4. 真／假／風堆三種外觀一樣，超過玩家能分辨的上限，只剩純試錯。
+    //   5. 第一次進關卡時兩個碼表的相位是隨機的（看元件哪一幀初始化），
+    //      運氣壞的話那座掩體每次風來都剛好不在，等於白放。
+    //   下面的參數全部留著，改回 true 就會恢復原本行為。
+    public bool enableDriftShelters = false;
     public float[] driftShelterXs = new float[] { 70.8f, 98.1f, 114.3f };
     public float driftShelterSearchRadius = 2.5f;
     [Tooltip("亮著（可躲）秒數。6＝正好一輪風（吹 2.5＋停 3.5）；整個週期 12 秒＝每隔一陣風消失一次：「下一陣風可能就帶走它」")]
