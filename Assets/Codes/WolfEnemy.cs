@@ -37,6 +37,23 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "每次 OnEnable 重新配對，所以 spawner 生出來的新狼也吃得到")]
     public bool ignoreWolfToWolfCollision = true;
 
+    [Tooltip("前方太靠近同伴就放慢，讓狼群排成一列而不是疊成一團。\n" +
+             "★只縮小速度，不改變追擊方向——玩家在右邊狼就永遠往右，不會為了閃同伴往左跑")]
+    public bool useSoftSeparation = true;
+
+    [Tooltip("開始注意前方同伴的距離。超過這個距離完全不減速")]
+    [Range(0.5f, 6f)]
+    public float separationRadius = 2.0f;
+
+    [Tooltip("希望維持的最小間距。逼近到這個距離時減速到最大幅度")]
+    [Range(0.2f, 4f)]
+    public float minimumWolfDistance = 1.2f;
+
+    [Tooltip("最大減速幅度。0.5 = 最慢也還有半速（不會停下來等同伴）。\n" +
+             "設 1.0 會讓後面的狼完全停住，不建議——那會變成排隊卡死")]
+    [Range(0f, 0.95f)]
+    public float separationStrength = 0.5f;
+
     [Tooltip("依出生順序給每隻狼固定的 Z 深度層（第 0 隻 Z=0、第 1 隻 Z=1…）。\n" +
              "相機是正交投影，所以 Z 只影響繪製前後順序，不會讓狼變大變小或位移。\n" +
              "Rigidbody 已鎖 FreezePositionZ，物理不會讓狼在 Z 軸漂移")]
@@ -171,6 +188,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private Vector3 _smoothMoveDir = Vector3.zero;   // 平滑後的實際前進方向
     private Vector3 _lastGoodNormal = Vector3.up;    // 最後一次有效的地面法線（射空時暫時沿用）
 
+    // ── Aggro Lock（每隻狼自己一份，不是 static）──
+    private bool _aggroLocked = false;      // 一旦鎖定就永遠記得玩家，只有 Reset 會清掉
+    private Transform _targetPlayer = null; // 鎖定當下記住的目標
+
     // 狀態鎖
     private bool isChasing = false;
     private bool isAttached = false;
@@ -229,6 +250,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _allWolves.Remove(this);
     }
 
+    /// <summary>
+    /// 進入追擊。WolfSpawner 生成後會直接呼叫這支，Update 靠距離觸發時也走這支。
+    /// ★兩個入口都會鎖定 Aggro，之後就永遠記得玩家。
+    /// </summary>
     public void StartChase()
     {
         if (!isChasing && aggroHowlSFX != null && AudioManager.Instance != null)
@@ -236,6 +261,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
             AudioManager.Instance.PlaySFXAt(aggroHowlSFX, transform.position, soundVolume);
         }
         isChasing = true;
+
+        // Spawner 直接呼叫進來的也要鎖，不然只有靠距離觸發的那些才有記憶
+        _aggroLocked = true;
+        if (_targetPlayer == null) _targetPlayer = player;
     }
 
     void Start()
@@ -301,35 +330,29 @@ public class WolfEnemy : MonoBehaviour, IResettable
         // 計算與玩家在 X 軸的絕對距離
         float distanceX = Mathf.Abs(player.position.x - transform.position.x);
 
-        // 【新增】：高度限制偵測
-        // 如果玩家高度大於狼，且玩家不在地面上（正在跳躍/墜落中），且高度差大於閾值，則狼會跟丟主角
-        bool isPlayerTooHigh = playerMovement != null && 
-                               !playerMovement.isGrounded && 
-                               (player.position.y - transform.position.y) > stopChaseHeightDifference;
-
-        if (isPlayerTooHigh)
+        // ★0911 Aggro Lock：第一次進入追擊之後就記住玩家，之後不再每幀重新判斷「還要不要追」。
+        //   原本這裡有兩條解除追蹤的路徑，兩條都會造成「追到一半突然放棄」：
+        //     1. 玩家跳得比狼高 stopChaseHeightDifference 以上 → 直接 isChasing = false
+        //        玩家一往上坡跑、或跳一下，狼就跟丟。坡地追擊根本追不動。
+        //     2. distanceX > giveUpDistanceX → 放棄
+        //        場景值 giveUpDistanceX 24 只比 aggroDistanceX 22 多 2，
+        //        玩家在邊界來回走會讓狼反覆進出追擊狀態，狼嚎也一直重播。
+        //   偵測跟記憶要分開：Player Detection 只負責「第一次觸發」，
+        //   Ground Detection 只負責「怎麼沿地面走」，兩者都不該決定「還記不記得玩家」。
+        if (!_aggroLocked)
         {
-            if (isChasing)
+            if (distanceX <= aggroDistanceX)
             {
-                isChasing = false; // 停止追蹤
-                _targetSpeedX = 0f; _hasTargetSpeed = false;   // 交給 FixedUpdate 用 braking 減速，不在 Update 硬設速度
-                Debug.Log($"【狼追蹤】玩家跳得太高 (高度差：{(player.position.y - transform.position.y):F2} > {stopChaseHeightDifference})，狼停止追蹤！");
+                _aggroLocked = true;
+                _targetPlayer = player;
+                StartChase();   // 走 StartChase() 才會發出狼嚎
             }
         }
         else
         {
-            // 只有當玩家觸地，或是高度沒有那麼高時，才執行正常的距離追逐判定
-            if (distanceX <= aggroDistanceX && !isChasing)
-            {
-                // 統一走 StartChase()：靠距離自動進入追擊時也要發出狼嚎
-                // (原本這裡直接設 isChasing = true，導致只有 WolfSpawner 生成的狼才會嚎叫)
-                StartChase();
-            }
-            else if (distanceX > giveUpDistanceX && isChasing)
-            {
-                isChasing = false; // 逃太遠了，放棄追蹤
-                _targetSpeedX = 0f; _hasTargetSpeed = false;   // 交給 FixedUpdate 用 braking 減速，不在 Update 硬設速度
-            }
+            // 鎖定之後：目標永遠是當初記住的那個玩家，不再重新尋找
+            if (_targetPlayer != null) player = _targetPlayer;
+            if (!isChasing) isChasing = true;   // 任何原因被關掉都自動接回來
         }
 
         // 執行追蹤
@@ -388,9 +411,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
         //   所以這一版：先決定前進方向（平地或坡面），沿「同一個方向」量目前速度，
         //   沿同一個方向加速，最後只寫一次。量測方向跟寫入方向一致，就不會有落差。
         Vector3 v = rb.linearVelocity;
-        float wanted = _hasTargetSpeed ? _targetSpeedX : 0f;
 
-        _hasTargetSpeed = false;   // 這一步用掉了，等下一個 Update 再給新的
+        // ★0911：原本是「用掉就清掉」（_hasTargetSpeed = false）。
+        //   那是錯的——Update 一幀跑一次，FixedUpdate 一幀可能跑 0~2 次。
+        //   跑兩次的時候第二次會讀到「沒有目標」→ wanted = 0 → 狼開始煞車，
+        //   幀率一低就變成「衝一下、頓一下」，而且看起來像追到一半放棄。
+        //   改成目標值一直有效，直到下一個 Update 覆寫它。
+        float wanted = _hasTargetSpeed ? _targetSpeedX : 0f;
         if (Mathf.Abs(wanted) > 0.01f) _lastFacingX = Mathf.Sign(wanted);
         else if (Mathf.Abs(v.x) > 0.01f) _lastFacingX = Mathf.Sign(v.x);
 
@@ -644,20 +671,39 @@ public class WolfEnemy : MonoBehaviour, IResettable
         {
             Vector3 start = origin + Vector3.up * 0.05f + new Vector3(i * halfLen, 0f, 0f);
 
-            if (!Physics.SphereCast(start, radius, Vector3.down, out RaycastHit h,
-                                    rayLength, layerMask, QueryTriggerInteraction.Ignore)) continue;
-            if (h.collider == col || h.collider.transform.IsChildOf(transform)) continue;
+            // ★0911 重要修正：原本用 SphereCast 只拿「最近的那一個」hit，
+            //   打到別隻狼就整個採樣點作廢。但狼群疊在一起時，最近的那個常常就是別隻狼，
+            //   等於三個採樣點全滅 → 沒有地面 → 走平地分支，而且更糟的是
+            //   如果沒排除，別隻狼的背會被當成地面：坡度、坡面方向、Ground Snap
+            //   全部拿狼的身體去算，狼就會被吸附騎到另一隻狼背上。
+            //   改用 SphereCastAll 拿到路徑上「所有」的 hit，跳過狼跟玩家，
+            //   繼續往下找真正的地面。
+            int n = Physics.SphereCastNonAlloc(start, radius, Vector3.down, _groundHitBuf,
+                                               rayLength, layerMask, QueryTriggerInteraction.Ignore);
+            RaycastHit? picked = null;
+            float pickedDist = float.MaxValue;
 
-            // 濾掉明顯異常的面：垂直牆壁、天花板不是「腳下的地」，混進平均只會把坡度算歪
-            float a = Vector3.Angle(Vector3.up, h.normal);
-            if (a >= 89f) continue;
+            for (int k = 0; k < n; k++)
+            {
+                RaycastHit h = _groundHitBuf[k];
+                if (h.collider == null) continue;
+                if (!IsRealGround(h.collider)) continue;
 
-            sum += h.normal;
+                // 濾掉明顯異常的面：垂直牆壁、天花板不是「腳下的地」，混進平均只會把坡度算歪
+                if (Vector3.Angle(Vector3.up, h.normal) >= 89f) continue;
+
+                if (h.distance < pickedDist) { pickedDist = h.distance; picked = h; }
+            }
+
+            if (picked == null) continue;
+            RaycastHit g = picked.Value;
+
+            sum += g.normal;
             valid++;
 
             // 中心點優先當代表 hit（貼地距離要用最接近身體中線的那個才準）
-            float d = (i == 0) ? h.distance - 1000f : h.distance;
-            if (d < bestDist) { bestDist = d; best = h; }
+            float d = (i == 0) ? g.distance - 1000f : g.distance;
+            if (d < bestDist) { bestDist = d; best = g; }
         }
 
         if (valid > 0)
@@ -683,6 +729,22 @@ public class WolfEnemy : MonoBehaviour, IResettable
     }
 
     private float _lastGoodGroundTime = -999f;
+    private readonly RaycastHit[] _groundHitBuf = new RaycastHit[12];
+
+    /// <summary>
+    /// 這個 Collider 算不算「真正的地面」。
+    /// 狼的身體、腳、背，還有玩家，全部不算——被當成地面的話，
+    /// 坡度、坡面方向、Ground Snap 會拿別人的身體去算，狼就會被吸附騎上去。
+    /// 用 GetComponentInParent 判斷而不是靠 Tag：Collider 常常掛在子物件上，Tag 不一定有設。
+    /// </summary>
+    private bool IsRealGround(Collider c)
+    {
+        if (c == col) return false;
+        if (c.transform.IsChildOf(transform)) return false;
+        if (c.GetComponentInParent<WolfEnemy>() != null) return false;      // 任何一隻狼（含自己）
+        if (c.GetComponentInParent<PlayerMovement>() != null) return false; // 玩家
+        return true;
+    }
 
     /// <summary>腳底離地面還有多少（正值＝浮在空中）。給 Ground Snap 判斷用。</summary>
     private float best_GapToGround(RaycastHit groundHit)
@@ -736,6 +798,40 @@ public class WolfEnemy : MonoBehaviour, IResettable
         return Mathf.Min(speed, maxCatchUpSpeed);   // 硬上限，任何情況都不會超過
     }
 
+    /// <summary>
+    /// 算出「因為前面有同伴，這一步該打幾折」。回傳 0~1，永遠不會是負數。
+    ///
+    /// 設計上刻意只做「前後避讓」不做側向：這是 2D 橫向捲軸，
+    /// 側向只有 Y（會跟重力打架）跟 Z（是畫面深度層、已經鎖住），兩個都不能拿來閃避。
+    /// 所以擠在一起時的解法是「後面的放慢」，狼群會自然排成一列跟上，
+    /// 而不是全部黏在同一個 X 上。沒有任何一隻會停下來等別人——
+    /// 最慢也只到 (1 − separationStrength) 倍，預設還有半速。
+    /// </summary>
+    private float ComputeSeparationFactor(float directionX)
+    {
+        if (!useSoftSeparation || Mathf.Abs(directionX) < 0.01f) return 1f;
+
+        float factor = 1f;
+        for (int i = 0; i < _allWolves.Count; i++)
+        {
+            WolfEnemy other = _allWolves[i];
+            if (other == null || other == this) continue;
+            if (other.isAttached || other.isStunned) continue;   // 咬住／硬直中的狼不算障礙
+
+            float dx = other.transform.position.x - transform.position.x;
+            if (dx * directionX <= 0f) continue;                 // 只看前進方向前方的
+
+            float dist = Mathf.Abs(dx);
+            if (dist > separationRadius) continue;
+
+            // separationRadius 處不減速，逼近到 minimumWolfDistance 時減到 (1 − strength)
+            float t = Mathf.InverseLerp(separationRadius, Mathf.Min(minimumWolfDistance, separationRadius - 0.01f), dist);
+            float f = 1f - t * Mathf.Clamp01(separationStrength);
+            if (f < factor) factor = f;
+        }
+        return Mathf.Clamp01(factor);
+    }
+
     private void ChasePlayer()
     {
         // 算出狼到玩家的 X 軸方向與正負號值 (1 或 -1)
@@ -765,6 +861,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
             currentSpeed = useCatchUpCurve ? EvaluateChaseSpeed(distanceX)
                                            : (distanceX > runDistanceThreshold ? slowChaseSpeed : fastChaseSpeed);
         }
+
+        // ★0911 Soft Separation：前方太靠近別隻狼就放慢，讓狼群自然排成一列而不是疊成一團。
+        //   ★只縮小速度大小，絕對不改變 directionX——玩家在右邊，狼就永遠往右，
+        //     不會因為要閃開同伴而往左跑。倍率夾在 0~1，乘完不可能變負數。
+        //   ★只看「我前進方向的前方」那些狼。後面的狼不關我的事，不然會互相拉住誰都跑不動。
+        currentSpeed *= ComputeSeparationFactor(directionX);
 
         // ★0910：這裡只「決定要跑多快」，真正推動身體交給 FixedUpdate。
         //   原本是在這裡直接寫 rb.linearVelocity，而 ChasePlayer() 是 Update() 呼叫的——
@@ -902,6 +1004,14 @@ public class WolfEnemy : MonoBehaviour, IResettable
         isAttached = false;
         isChasing = false;
         isStunned = false;
+
+        // Aggro Lock 只在重生／場景重置時解除，這是唯一的解鎖點。
+        // 遊玩中不管高度差、距離、射線射空、Trigger 離開，都不會讓狼忘記玩家。
+        _aggroLocked = false;
+        _targetPlayer = null;
+        _hasTargetSpeed = false;
+        _targetSpeedX = 0f;
+        _smoothMoveDir = Vector3.zero;
 
         transform.position = _initialPosition;
         transform.rotation = _initialRotation;
