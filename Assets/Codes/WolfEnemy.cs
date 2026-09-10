@@ -32,6 +32,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("🔍 斜坡診斷（驗完請關掉）")]
+    [Tooltip("開啟後每隔一段時間在 Console 印出狼的完整移動狀態，包含「實際每秒位移」——\n" +
+             "那個數字才能證明狼真的跑多快，設定值不算數。上坡跟平地各跑一次比較就知道問題在哪一層")]
+    public bool debugSlopeLog = false;
+    [Tooltip("診斷訊息的間隔（秒）。0.5 大約每秒兩行，不會洗版")]
+    public float debugSlopeLogInterval = 0.5f;
+
     [Header("追擊節奏曲線（Catch-up AI，0910）")]
     [Tooltip("開啟後用「距離 → 速度」的平滑曲線，取代原本 runDistanceThreshold 的兩段式切換。\n" +
              "關掉就回到舊行為（slowChaseSpeed / fastChaseSpeed 兩段切換）")]
@@ -106,7 +113,6 @@ public class WolfEnemy : MonoBehaviour, IResettable
     // Update 決定「這一幀想跑多快」，FixedUpdate 才真的推動身體
     private float _targetSpeedX = 0f;
     private bool _hasTargetSpeed = false;
-    private bool _hadTargetThisStep = false;
     private float _lastFacingX = 1f;   // 停下來時沒有目標方向，用最後一次的朝向來算坡面方向
 
     // 狀態鎖
@@ -261,67 +267,113 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (rb == null || rb.isKinematic) return;
         if (isAttached || isStunned) { _hasTargetSpeed = false; return; }
 
-        // ── 1. 先用加速度往目標速度靠，而不是硬把速度設成目標值 ──
-        //   硬設速度＝無限大的加速度：狼沒有體重感、起步瞬間全速、
-        //   而且撞到任何東西的當下速度都會被抹掉，所以碰撞看起來完全沒有作用。
-        Vector3 vel = rb.linearVelocity;
+        // ★★ 0910 第二版：整個 FixedUpdate 只寫一次 linearVelocity。
+        //
+        //   上一版分成兩段（先對 x 軸加速、再沿坡面重算），那是錯的，有兩個問題：
+        //
+        //   問題 A：一個物理步做了兩次加速，而且第一次會污染第二次的量測。
+        //     第一段把 vx 加上 a·dt，第二段再沿坡面量：
+        //       currentAlong = (s·cosθ + a·dt)·cosθ + s·sinθ·sinθ = s + a·dt·cosθ
+        //     量出來永遠比真實速度多 a·dt·cosθ，於是速度接近目標時會被誤判成「太快了」，
+        //     跑去走 braking 分支（60）而不是 acceleration（40）。上坡等於永遠在踩煞車。
+        //
+        //   問題 B（上坡專屬，這個才是主因）：只要斜坡分支沒跑到，
+        //     就會掉進下面的 else 把向上速度清成 0。而上坡需要正的 y 速度、下坡不需要，
+        //     所以這個 else 對上坡是致命的、對下坡完全無感——剛好就是「上坡慢、下坡正常」。
+        //     斜坡分支沒跑到的情況比想像多：地面偵測是一條細射線，
+        //     打在石頭這種凹凸不平的 MeshCollider 上很容易射空或打到奇怪的面。
+        //     每射空一幀，爬坡速度就被歸零一次。
+        //
+        //   所以這一版：先決定前進方向（平地或坡面），沿「同一個方向」量目前速度，
+        //   沿同一個方向加速，最後只寫一次。量測方向跟寫入方向一致，就不會有落差。
+        Vector3 v = rb.linearVelocity;
         float wanted = _hasTargetSpeed ? _targetSpeedX : 0f;
 
-        _hadTargetThisStep = _hasTargetSpeed;
         _hasTargetSpeed = false;   // 這一步用掉了，等下一個 Update 再給新的
         if (Mathf.Abs(wanted) > 0.01f) _lastFacingX = Mathf.Sign(wanted);
-        else if (Mathf.Abs(vel.x) > 0.01f) _lastFacingX = Mathf.Sign(vel.x);
+        else if (Mathf.Abs(v.x) > 0.01f) _lastFacingX = Mathf.Sign(v.x);
 
-        // 平地：直接對 x 軸加速。斜坡的處理在下面第 2 段，會用沿坡面的量重算一次。
-        bool speedingUp = Mathf.Abs(wanted) > Mathf.Abs(vel.x) && Mathf.Sign(wanted) == Mathf.Sign(vel.x);
+        // ── 決定這一步要沿哪個方向前進 ──
+        bool groundFound = TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle);
+        bool onWalkableSlope = keepOnGroundWhileChasing && groundFound
+                            && slopeAngle > 0.5f && slopeAngle < maxWalkableSlopeAngle;
+
+        Vector3 moveDir = new Vector3(_lastFacingX, 0f, 0f);
+        if (onWalkableSlope)
+        {
+            Vector3 d = Vector3.ProjectOnPlane(moveDir, groundHit.normal);
+            if (d.sqrMagnitude > 0.0001f) moveDir = d.normalized;
+            else onWalkableSlope = false;
+        }
+
+        // ── 沿著同一個方向量目前速度、加速、寫回 ──
+        //   平地時 moveDir=(±1,0,0)，Dot 就等於 ±v.x，跟以前完全一樣。
+        //   斜坡時把 y 也算進去，因為爬坡的速度有一部分在 y 上——
+        //   只量 x 的話每次都會少掉一個 cos，那正是上一版的坑。
+        Vector3 measured = onWalkableSlope ? new Vector3(v.x, v.y, 0f) : new Vector3(v.x, 0f, 0f);
+        float current = Vector3.Dot(measured, moveDir);
+        float target = Mathf.Abs(wanted);   // moveDir 已經帶了方向，這裡只要大小
+
+        bool speedingUp = target > current;
         float rate = speedingUp ? acceleration : braking;
         if (rate <= 0f) rate = 40f;
 
-        vel.x = Mathf.MoveTowards(vel.x, wanted, rate * Time.fixedDeltaTime);
-        rb.linearVelocity = vel;
+        float next = Mathf.MoveTowards(current, target, rate * Time.fixedDeltaTime);
+        Vector3 nv = moveDir * next;
 
-        // ── 2. 貼地處理 ──
-        if (!keepOnGroundWhileChasing) return;
+        if (onWalkableSlope)
+        {
+            rb.linearVelocity = new Vector3(nv.x, nv.y, v.z);
+        }
+        else
+        {
+            // 不在可行走坡面上：水平照算，垂直交還給重力。
+            // 只有「確定踩在地上而且是平地」才壓掉向上速度（防止撞台階邊緣被彈飛）。
+            // ★ 不能因為地面偵測射空就壓——那會把爬坡速度殺掉，就是上一版的問題 B。
+            float y = v.y;
+            if (groundFound && slopeAngle <= 0.5f && y > 0f) y = 0f;
+            rb.linearVelocity = new Vector3(nv.x, y, v.z);
+        }
+
+        if (debugSlopeLog) LogSlopeDiagnostics(groundFound, onWalkableSlope, slopeAngle, groundHit, moveDir, current, target, next);
+    }
+
+    private float _dbgNextLog = 0f;
+    private Vector3 _dbgLastPos;
+    private float _dbgLastTime = -1f;
+
+    /// <summary>
+    /// 【暫時性診斷】把上坡變慢會用到的每一個數字都印出來，包含「實際每秒移動了多少距離」。
+    /// 驗完就把 debugSlopeLog 關掉（或整段刪掉）。
+    /// </summary>
+    private void LogSlopeDiagnostics(bool groundFound, bool onSlope, float slopeAngle, RaycastHit hit,
+                                     Vector3 moveDir, float current, float target, float next)
+    {
+        if (Time.time < _dbgNextLog) return;
+
+        // 實際位移：這是唯一能證明「狼真的跑多快」的數字，不看設定值
+        float measuredSpeed = -1f;
+        if (_dbgLastTime > 0f)
+        {
+            float dt = Time.time - _dbgLastTime;
+            if (dt > 0.0001f) measuredSpeed = Vector3.Distance(transform.position, _dbgLastPos) / dt;
+        }
+        _dbgLastPos = transform.position;
+        _dbgLastTime = Time.time;
+        _dbgNextLog = Time.time + debugSlopeLogInterval;
 
         Vector3 v = rb.linearVelocity;
+        float distX = player != null ? Mathf.Abs(player.position.x - transform.position.x) : -1f;
 
-        if (TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle) &&
-            slopeAngle > 0.5f && slopeAngle < maxWalkableSlopeAngle)
-        {
-            // ★ 這裡原本的寫法會讓狼在斜坡上越跑越慢，慢到剩下設定速度的三分之一。
-            //   舊寫法：把「目前的 x 速度」投影到坡面、再把長度設成 |v.x|，
-            //           結果新的 v.x = |v.x| × cos(坡度)。
-            //   單獨看一次沒問題，但這是每個物理步都跑一次，所以 cos 會一直乘上去：
-            //           x(n+1) = (x(n) + 加速度×dt) × cos θ
-            //   平衡點 x* = 加速度×dt×cosθ ÷ (1 − cosθ)。加速度 40、dt 0.02 時：
-            //           30° → 5.2   40° → 2.6   45° → 1.9  （目標是 6）
-            //   坡越陡掉得越兇，這就是「斜坡超級慢」的真正原因，不是速度值設太小。
-            //
-            //   正確做法跟 PlayerMovement 的斜坡處理一致：速度是「沿著坡面」的量，
-            //   所以要用 Dot 沿坡面量目前速度，而不是量 x 軸分量——量 x 軸才會每次都少掉 cos。
-            //   平地時 slopeDir = (±1,0,0)，Dot 就等於 ±v.x，行為跟以前完全一樣。
-            Vector3 slopeDir = Vector3.ProjectOnPlane(new Vector3(_lastFacingX, 0f, 0f), groundHit.normal);
-            if (slopeDir.sqrMagnitude > 0.0001f)
-            {
-                slopeDir.Normalize();
-
-                float currentAlong = Vector3.Dot(new Vector3(v.x, v.y, 0f), slopeDir);
-                float wantedAlong = _hadTargetThisStep ? Mathf.Abs(_targetSpeedX) * Mathf.Sign(_targetSpeedX * _lastFacingX) : 0f;
-
-                bool up = Mathf.Abs(wantedAlong) > Mathf.Abs(currentAlong) && Mathf.Sign(wantedAlong) == Mathf.Sign(currentAlong);
-                float r = up ? acceleration : braking;
-                if (r <= 0f) r = 40f;
-
-                float newAlong = Mathf.MoveTowards(currentAlong, wantedAlong, r * Time.fixedDeltaTime);
-                Vector3 alongVel = slopeDir * newAlong;
-                rb.linearVelocity = new Vector3(alongVel.x, alongVel.y, v.z);
-            }
-        }
-        else if (v.y > 0f)
-        {
-            v.y = 0f;
-            rb.linearVelocity = v;
-        }
+        Debug.Log($"🐺【狼斜坡診斷】{gameObject.name}\n" +
+                  $"  地面: {(groundFound ? $"有 (法線 {hit.normal}, 坡度 {slopeAngle:F1}°)" : "★射空★")}" +
+                  $"  可行走坡面: {(onSlope ? "是" : "否（走平地分支）")}\n" +
+                  $"  前進方向 moveDir: {moveDir}  (長度 {moveDir.magnitude:F3})\n" +
+                  $"  沿方向速度  current: {current:F2}  →  target: {target:F2}  →  寫入 next: {next:F2}\n" +
+                  $"  _targetSpeedX: {_targetSpeedX:F2}   距離玩家 X: {distX:F1}   曲線算出: {(useCatchUpCurve && distX >= 0 ? EvaluateChaseSpeed(distX).ToString("F2") : "n/a")}\n" +
+                  $"  剛體速度: x={v.x:F2}  y={v.y:F2}  合速度={new Vector2(v.x, v.y).magnitude:F2}\n" +
+                  $"  ★實際每秒位移: {(measuredSpeed >= 0 ? measuredSpeed.ToString("F2") : "首次取樣")}  ← 這個才是真的跑多快\n" +
+                  $"  acceleration={acceleration} braking={braking} 這步用的={(target > current ? "加速" : "煞車")}");
     }
 
     /// <summary>
@@ -375,15 +427,41 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float rayLength = col.bounds.extents.y + groundCheckDistance;
         int layerMask = ~LayerMask.GetMask("Ignore Raycast");
 
+        // ★0910：原本只有一條從碰撞體中心往下的細射線。
+        //   廢墟的地面是石頭的 MeshCollider，表面凹凸不平，一條細射線很容易射空、
+        //   或剛好打在某個角度很怪的三角面上（讀出來的坡度超過 maxWalkableSlopeAngle）。
+        //   而射空的那一幀，上面的 FixedUpdate 會走平地分支——舊版還會順手把向上速度清成 0，
+        //   等於每射空一次就把爬坡速度殺掉一次。這是「上坡慢、下坡正常」的直接來源。
+        //
+        //   改用球形掃描（SphereCast）：用碰撞體本身的寬度去掃，會自動跨過小凹凸，
+        //   讀到的是整體坡面而不是單一三角面，穩定非常多。掃不到才退回細射線。
+        float radius = Mathf.Max(0.05f, Mathf.Min(col.bounds.extents.x, col.bounds.extents.z));
+        Vector3 sphereStart = origin + Vector3.up * 0.05f;
+
+        if (Physics.SphereCast(sphereStart, radius, Vector3.down, out RaycastHit sphereHit,
+                               rayLength, layerMask, QueryTriggerInteraction.Ignore))
+        {
+            if (!(sphereHit.collider == col || sphereHit.collider.transform.IsChildOf(transform)))
+            {
+                hit = sphereHit;
+                slopeAngle = Vector3.Angle(Vector3.up, sphereHit.normal);
+                _lastGoodGroundTime = Time.time;
+                return true;
+            }
+        }
+
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit downHit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
         {
             if (downHit.collider == col || downHit.collider.transform.IsChildOf(transform)) return false;
             hit = downHit;
             slopeAngle = Vector3.Angle(Vector3.up, downHit.normal);
+            _lastGoodGroundTime = Time.time;
             return true;
         }
         return false;
     }
+
+    private float _lastGoodGroundTime = -999f;
 
     /// <summary>
     /// 距離 → 追擊速度的平滑曲線（Catch-up / Rubber Band，不是作弊 AI）。
