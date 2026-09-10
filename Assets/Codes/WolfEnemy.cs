@@ -32,6 +32,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("斜坡方向平滑（0910 A：解決平地↔斜坡的頓挫感）")]
+    [Tooltip("移動方向每秒最多能轉幾度。★注意這只平滑「移動方向」，地面偵測本身還是即時的。\n" +
+             "太小 → 進坡出坡會有延遲感、方向追不上地形\n" +
+             "太大 → 等於沒平滑，石頭碎面的法線抖動會直接傳到速度上\n" +
+             "360 大約 0.11 秒轉完一個 40 度的坡，抖動濾得掉、轉場也跟得上")]
+    [Range(60f, 1440f)]
+    public float slopeDirectionSmoothSpeed = 360f;
+
+    [Tooltip("地面偵測短暫射空時，沿用上一個有效法線多久（秒）。\n" +
+             "★只拿來算移動方向，不會讓狼被假地面黏住。\n" +
+             "石頭 MeshCollider 偶爾漏接一兩幀是常態，讓方向整個彈回水平才是頓挫來源。\n" +
+             "0.12 秒約等於 6 個物理步，夠蓋掉漏接，又短到狼真的跳離地面時不會被黏著")]
+    [Range(0f, 0.5f)]
+    public float groundMemoryTime = 0.12f;
+
     [Header("🔍 斜坡診斷（驗完請關掉）")]
     [Tooltip("開啟後每隔一段時間在 Console 印出狼的完整移動狀態，包含「實際每秒位移」——\n" +
              "那個數字才能證明狼真的跑多快，設定值不算數。上坡跟平地各跑一次比較就知道問題在哪一層")]
@@ -114,6 +129,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private float _targetSpeedX = 0f;
     private bool _hasTargetSpeed = false;
     private float _lastFacingX = 1f;   // 停下來時沒有目標方向，用最後一次的朝向來算坡面方向
+    private Vector3 _smoothMoveDir = Vector3.zero;   // 平滑後的實際前進方向
+    private Vector3 _lastGoodNormal = Vector3.up;    // 最後一次有效的地面法線（射空時暫時沿用）
 
     // 狀態鎖
     private bool isChasing = false;
@@ -298,13 +315,49 @@ public class WolfEnemy : MonoBehaviour, IResettable
         bool onWalkableSlope = keepOnGroundWhileChasing && groundFound
                             && slopeAngle > 0.5f && slopeAngle < maxWalkableSlopeAngle;
 
-        Vector3 moveDir = new Vector3(_lastFacingX, 0f, 0f);
+        // 短暫射空時沿用上一個有效法線「只拿來算方向」，不當成「還踩在地上」。
+        // 石頭 MeshCollider 偶爾漏接一兩幀是常態，讓方向整個彈回水平才是頓挫的來源。
+        // 超過 groundMemoryTime 就放掉，避免狼真的離地之後還被假地面黏住。
+        Vector3 usedNormal = Vector3.up;
+        bool haveNormal = false;
         if (onWalkableSlope)
         {
-            Vector3 d = Vector3.ProjectOnPlane(moveDir, groundHit.normal);
-            if (d.sqrMagnitude > 0.0001f) moveDir = d.normalized;
-            else onWalkableSlope = false;
+            usedNormal = groundHit.normal;
+            haveNormal = true;
+            _lastGoodNormal = groundHit.normal;
+            _lastGoodGroundTime = Time.time;
         }
+        else if (!groundFound && Time.time - _lastGoodGroundTime <= groundMemoryTime)
+        {
+            usedNormal = _lastGoodNormal;
+            haveNormal = true;
+        }
+
+        // ── 目標方向：即時算，不平滑（偵測要即時）──
+        Vector3 targetMoveDir = new Vector3(_lastFacingX, 0f, 0f);
+        if (haveNormal)
+        {
+            Vector3 d = Vector3.ProjectOnPlane(targetMoveDir, usedNormal);
+            if (d.sqrMagnitude > 0.0001f) targetMoveDir = d.normalized;
+            else if (onWalkableSlope) onWalkableSlope = false;
+        }
+
+        // ── 實際用的方向：平滑轉過去（移動方向才平滑）──
+        //   ★0910 A：原本每個物理步直接把 moveDir 跳到新的坡面方向。
+        //     石頭地面是 MeshCollider，相鄰的三角面法線差很多，
+        //     於是 slopeDir 一幀一個樣，速度方向跟著抖，就是那個「頓一下」的感覺。
+        //   用 RotateTowards 限制「每秒最多轉幾度」：
+        //     - 跟 fixedDeltaTime 綁一起，換 FPS 或改物理步長行為都一致
+        //     - 是角度上限不是比例衰減，所以不會有「永遠追不到」的殘留誤差
+        //     - 小碎面造成的高頻抖動會被濾掉，真正的坡度變化照樣跟得上
+        if (_smoothMoveDir.sqrMagnitude < 0.0001f) _smoothMoveDir = targetMoveDir;   // 第一幀直接對齊，不要從 (0,0,0) 轉
+        if (Mathf.Sign(_smoothMoveDir.x) != Mathf.Sign(targetMoveDir.x) && Mathf.Abs(targetMoveDir.x) > 0.01f)
+            _smoothMoveDir = targetMoveDir;   // 左右轉向是「換方向」不是「換坡度」，不要慢慢繞過去
+
+        float maxRad = Mathf.Max(1f, slopeDirectionSmoothSpeed) * Mathf.Deg2Rad * Time.fixedDeltaTime;
+        _smoothMoveDir = Vector3.RotateTowards(_smoothMoveDir, targetMoveDir, maxRad, 0f).normalized;
+
+        Vector3 moveDir = _smoothMoveDir;
 
         // ── 沿著同一個方向量目前速度、加速、寫回 ──
         //   平地時 moveDir=(±1,0,0)，Dot 就等於 ±v.x，跟以前完全一樣。
@@ -320,6 +373,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         float next = Mathf.MoveTowards(current, target, rate * Time.fixedDeltaTime);
         Vector3 nv = moveDir * next;
+
+        // ★防彈飛鉗制：平滑方向會落後真實坡面，上坡跑到坡頂／坡度變緩的瞬間，
+        //   舊的（比較陡的）方向還帶著向上分量，狼會被自己的速度甩上天。
+        //   所以向上分量永遠不准超過「真實坡面此刻允許的量」。
+        //   反過來（地面變陡）不鉗制——那個方向是往下壓，不會飛起來。
+        float maxUpY = targetMoveDir.y * next;
+        if (nv.y > maxUpY) nv.y = maxUpY;
 
         if (onWalkableSlope)
         {

@@ -39,8 +39,16 @@ public class PlayerMovement : MonoBehaviour
 
 
     [Header("狼群減速狀態 (可調整)")]
-    [Tooltip("幾隻狼能讓玩家完全停下？(建議設低一點才明顯)")]
-    public float maxWolvesToStop = 3f; 
+    [Tooltip("幾隻狼能讓玩家完全停下（同時也是死亡門檻）。0910 企劃定案：6。\n" +
+             "減速是自動按比例算的：速度 = baseSpeed × (1 − 咬住數 / maxWolvesToStop)\n" +
+             "  設 6 → 1隻 83%、2隻 67%、3隻 50%、4隻 33%、5隻 17%、6隻 0%\n" +
+             "  設 4 → 1隻 75%、2隻 50%、3隻 25%、4隻 0%\n" +
+             "改這一個數字就好，不用改程式，也沒有第二個要同步的參數")]
+    [Range(1f, 12f)]
+    public float maxWolvesToStop = 6f;
+
+    [Tooltip("咬住數達到 maxWolvesToStop 時是否觸發重生。關掉的話玩家會被咬到速度 0 但不會死")]
+    public bool respawnWhenMaxWolves = true;
     
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
@@ -766,8 +774,13 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
 
-        // 防呆校正：若未被狼咬或速度異常為0，強制重置為 baseSpeed
-        if (attachedWolvesCount == 0 || currentSpeed <= 0f)
+        // 防呆校正：沒被狼咬的時候，速度一律回到 baseSpeed
+        // ★0910：原本的條件是「attachedWolvesCount == 0 || currentSpeed <= 0f」。
+        //   那個 currentSpeed <= 0f 會把「被咬滿速度歸零」也當成異常救回來——
+        //   第 6 隻狼咬住讓速度變 0，下一幀就被這行重設成 baseSpeed，
+        //   玩家身上掛著 6 隻狼卻用全速跑，減速機制等於整個失效。
+        //   速度 0 在滿狼時是正確狀態，不是壞掉，所以只留「沒狼才重置」。
+        if (attachedWolvesCount == 0)
         {
             currentSpeed = baseSpeed;
         }
@@ -1110,10 +1123,13 @@ public class PlayerMovement : MonoBehaviour
     {
         attachedWolvesCount++;
         CalculateSpeed();
-        Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼，玩家速度降為：{currentSpeed}");
 
-        // 【新增】：當累積狼咬達到上限（預設 3 隻），觸發主角死亡重生機制
-        if (attachedWolvesCount >= (int)maxWolvesToStop)
+        int maxW = Mathf.Max(1, Mathf.RoundToInt(maxWolvesToStop));
+        float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
+        Debug.Log($"狼咬！目前身上有 {attachedWolvesCount}/{maxW} 隻狼，玩家速度：{currentSpeed:F2} ({pct:F0}%)");
+
+        // 咬滿就死。TriggerRespawn 內部有 _isRespawning 防重入，不會重複觸發，這裡不另外做旗標。
+        if (respawnWhenMaxWolves && attachedWolvesCount >= maxW)
         {
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
@@ -1139,16 +1155,24 @@ public class PlayerMovement : MonoBehaviour
     public void RemoveWolf()
     {
         attachedWolvesCount--;
-        if (attachedWolvesCount < 0) attachedWolvesCount = 0; 
+        if (attachedWolvesCount < 0) attachedWolvesCount = 0;   // 夾在 0：重複呼叫不會扣成負的
         CalculateSpeed();
-        Debug.Log($"狼鬆口！目前身上有 {attachedWolvesCount} 隻狼，玩家速度恢復為：{currentSpeed}");
+
+        float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
+        Debug.Log($"狼鬆口！目前身上有 {attachedWolvesCount} 隻狼，玩家速度恢復為：{currentSpeed:F2} ({pct:F0}%)");
     }
 
+    /// <summary>
+    /// 依「咬住幾隻狼」等比例算出玩家速度。這是唯一的速度懲罰來源，
+    /// 也是唯一的死亡門檻依據，沒有第二套計數。
+    ///     速度 = baseSpeed × (1 − attachedWolvesCount / maxWolvesToStop)
+    /// 所以 maxWolvesToStop 改成幾，比例就自動跟著換，不用改程式。
+    /// </summary>
     private void CalculateSpeed()
     {
-        float speedPenaltyPerWolf = baseSpeed / maxWolvesToStop;
-        float newSpeed = baseSpeed - (speedPenaltyPerWolf * attachedWolvesCount);
-        currentSpeed = Mathf.Max(0f, newSpeed); // 最低就是 0，不會倒退
+        float maxWolves = Mathf.Max(1f, maxWolvesToStop);   // 防除以 0：Inspector 被填成 0 會炸
+        float ratio = 1f - (attachedWolvesCount / maxWolves);
+        currentSpeed = Mathf.Max(0f, baseSpeed * ratio);    // 最低就是 0，不會倒退
     }
 
     // ==========================================
