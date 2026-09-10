@@ -32,6 +32,23 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("物理手感（0910 大升級：改成有加速度的真實移動）")]
+    [Tooltip("起步／變速的加速度 (單位/秒²)。\n" +
+             "越大越接近舊版的「瞬間到達目標速度」，越小越有體重感、起步越慢。\n" +
+             "40 大約 0.15 秒從靜止加速到跑速 6，跟舊版感覺接近但撞到東西會有反應")]
+    public float acceleration = 40f;
+
+    [Tooltip("煞車／減速的加速度 (單位/秒²)。通常設得比 acceleration 大，停下來比較俐落")]
+    public float braking = 60f;
+
+    [Tooltip("狼的體重。★玩家是 10，狼原本只有 1——輕了 10 倍，撞在一起時狼會被玩家撞飛，看起來很假。\n" +
+             "設成跟玩家相當或更重，撞擊才合理。0 或負數＝不覆寫，沿用 Inspector 上 Rigidbody 的值")]
+    public float bodyMass = 12f;
+
+    [Tooltip("開啟後自動把 Rigidbody 設成 Interpolate（消除畫面抖動）與 Continuous Speculative（防止高速穿模）。\n" +
+             "場景裡狼的 Rigidbody 現在是 None + Discrete，兩個都會讓移動看起來怪")]
+    public bool autoFixRigidbodySettings = true;
+
     [Header("身體貼合斜坡角度")]
     [Tooltip("狼在斜坡上時，身體是否跟著斜坡傾斜 (跑上坡時與地面平行，而不是直挺挺地站著)")]
     public bool alignVisualToSlope = true;
@@ -64,6 +81,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Range(0f, 1f)] public float soundVolume = 0.85f;
 
     private AudioSource _runAudioSource;
+
+    // Update 決定「這一幀想跑多快」，FixedUpdate 才真的推動身體
+    private float _targetSpeedX = 0f;
+    private bool _hasTargetSpeed = false;
 
     // 狀態鎖
     private bool isChasing = false;
@@ -101,6 +122,23 @@ public class WolfEnemy : MonoBehaviour, IResettable
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (col == null) col = GetComponent<Collider>();
+
+        // ★0910：場景裡狼的 Rigidbody 是 Interpolate=None + Collision Detection=Discrete + Mass=1，
+        //   這三個是「移動看起來很假」的直接原因：
+        //   - None：物理跑 50 次/秒、畫面跑 60~144 次/秒，中間沒有內插 → 狼在畫面上一格一格跳
+        //   - Discrete：跑速 6 時一個物理步就移動 0.12 單位，撞薄的地形會直接穿過去
+        //   - Mass=1：玩家是 10，狼比玩家輕 10 倍，撞在一起是狼被撞飛，完全反過來
+        if (autoFixRigidbodySettings && rb != null)
+        {
+            if (rb.interpolation != RigidbodyInterpolation.Interpolate)
+                rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+            if (rb.collisionDetectionMode != CollisionDetectionMode.ContinuousSpeculative)
+                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            if (bodyMass > 0f && !Mathf.Approximately(rb.mass, bodyMass))
+                rb.mass = bodyMass;
+        }
 
 
         // 執行碰撞忽略設定
@@ -144,7 +182,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (isChasing)
             {
                 isChasing = false; // 停止追蹤
-                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, rb.linearVelocity.z); // 原地煞車
+                _targetSpeedX = 0f; _hasTargetSpeed = false;   // 交給 FixedUpdate 用 braking 減速，不在 Update 硬設速度
                 Debug.Log($"【狼追蹤】玩家跳得太高 (高度差：{(player.position.y - transform.position.y):F2} > {stopChaseHeightDifference})，狼停止追蹤！");
             }
         }
@@ -160,7 +198,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
             else if (distanceX > giveUpDistanceX && isChasing)
             {
                 isChasing = false; // 逃太遠了，放棄追蹤
-                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, rb.linearVelocity.z); // 原地煞車
+                _targetSpeedX = 0f; _hasTargetSpeed = false;   // 交給 FixedUpdate 用 braking 減速，不在 Update 硬設速度
             }
         }
 
@@ -197,8 +235,26 @@ public class WolfEnemy : MonoBehaviour, IResettable
         // 若不是斜坡（例如撞到台階邊緣被物理彈起），才清掉向上速度避免飛起來
         // ★ 原本限定 isChasing 才處理，導致「玩家回頭、狼往後退」那段沒有貼合地面。
         //   退後同樣是沿地面移動，這裡不再限制追擊狀態。
-        if (!keepOnGroundWhileChasing || rb == null || rb.isKinematic) return;
-        if (isAttached || isStunned) return;
+        if (rb == null || rb.isKinematic) return;
+        if (isAttached || isStunned) { _hasTargetSpeed = false; return; }
+
+        // ── 1. 先用加速度往目標速度靠，而不是硬把速度設成目標值 ──
+        //   硬設速度＝無限大的加速度：狼沒有體重感、起步瞬間全速、
+        //   而且撞到任何東西的當下速度都會被抹掉，所以碰撞看起來完全沒有作用。
+        Vector3 vel = rb.linearVelocity;
+        float wanted = _hasTargetSpeed ? _targetSpeedX : 0f;
+
+        // 想加速還是想煞車：同方向且要更快＝加速，其餘（要停、要反向）＝煞車
+        bool speedingUp = Mathf.Abs(wanted) > Mathf.Abs(vel.x) && Mathf.Sign(wanted) == Mathf.Sign(vel.x);
+        float rate = speedingUp ? acceleration : braking;
+        if (rate <= 0f) rate = 40f;
+
+        vel.x = Mathf.MoveTowards(vel.x, wanted, rate * Time.fixedDeltaTime);
+        rb.linearVelocity = vel;
+        _hasTargetSpeed = false;   // 這一步用掉了，等下一個 Update 再給新的
+
+        // ── 2. 貼地處理（原本的邏輯，只是搬到速度算完之後，順序才對得上）──
+        if (!keepOnGroundWhileChasing) return;
 
         Vector3 v = rb.linearVelocity;
 
@@ -317,7 +373,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
             }
         }
 
-        rb.linearVelocity = new Vector3(directionX * currentSpeed, rb.linearVelocity.y, rb.linearVelocity.z);
+        // ★0910：這裡只「決定要跑多快」，真正推動身體交給 FixedUpdate。
+        //   原本是在這裡直接寫 rb.linearVelocity，而 ChasePlayer() 是 Update() 呼叫的——
+        //   Update 跟著畫面更新（60～144 次/秒不固定），物理是固定 50 次/秒，兩者對不上：
+        //   撞到東西時 PhysX 算出來的反彈速度，下一個 Update 就被整條覆蓋掉，
+        //   所以狼撞到什麼都沒反應、會硬擠過去，而且畫面上會抖。
+        _targetSpeedX = directionX * currentSpeed;
+        _hasTargetSpeed = true;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -328,12 +390,18 @@ public class WolfEnemy : MonoBehaviour, IResettable
         // 咬到玩家 (接觸)
         if (collision.gameObject.CompareTag("Player"))
         {
-            // 碰到玩家瞬間，先把狼的速度清空，避免殘餘力量撞飛玩家
+            // 碰到玩家瞬間收掉水平衝力，避免殘餘力量把玩家撞飛。
+            // ★0910：原本是整條 Vector3.zero，連垂直速度也一起抹掉——
+            //   狼在半空中咬到人會瞬間定在空中不受重力，很出戲。
+            //   只收水平那一軸，垂直交還給重力。
             if (rb != null)
             {
-                rb.linearVelocity = Vector3.zero; 
+                Vector3 hv = rb.linearVelocity;
+                rb.linearVelocity = new Vector3(0f, Mathf.Min(hv.y, 0f), 0f);
                 rb.angularVelocity = Vector3.zero;
             }
+            _targetSpeedX = 0f;
+            _hasTargetSpeed = false;
 
             // 觸發螢幕受傷回饋 (震動與閃紅邊)
             if (ScreenFeedbackManager.Instance != null)
