@@ -37,6 +37,17 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "每次 OnEnable 重新配對，所以 spawner 生出來的新狼也吃得到")]
     public bool ignoreWolfToWolfCollision = true;
 
+    [Tooltip("依出生順序給每隻狼固定的 Z 深度層（第 0 隻 Z=0、第 1 隻 Z=1…）。\n" +
+             "相機是正交投影，所以 Z 只影響繪製前後順序，不會讓狼變大變小或位移。\n" +
+             "Rigidbody 已鎖 FreezePositionZ，物理不會讓狼在 Z 軸漂移")]
+    public bool useDepthLayering = true;
+
+    [Tooltip("每一層之間的 Z 間距。\n" +
+             "★如果狼放到比較深的層會踩空掉下去，代表地面的碰撞體在 Z 軸不夠厚，把這個值調小。\n" +
+             "正交相機下 0.2 跟 1.0 的視覺結果一樣（都只是換前後順序），所以調小沒有任何損失")]
+    [Range(0.05f, 2f)]
+    public float wolfZSpacing = 1f;
+
     [Tooltip("腳下三點採樣的間距（乘上碰撞體半長）。1 = 前後腳剛好在身體兩端。\n" +
              "把整個身長當成量尺去讀坡面，交界處的法線突變會被前後腳拉平")]
     [Range(0.3f, 1.5f)]
@@ -187,7 +198,31 @@ public class WolfEnemy : MonoBehaviour, IResettable
         RefreshWolfPairIgnore();
         // 新來的這隻也要讓場上舊的那些認識牠（IgnoreCollision 是雙向設定，但清單要互相更新）
         foreach (WolfEnemy w in _allWolves) if (w != null && w != this) w.RefreshWolfPairIgnore();
+
+        ApplyDepthLayer();
     }
+
+    /// <summary>
+    /// 依照出生順序給這隻狼一個固定的 Z 深度層。
+    /// 相機是正交投影（orthographic），所以 Z 只影響繪製前後順序，
+    /// 不會讓狼看起來變大變小或位移——這是純粹的圖層分離。
+    /// ★ 由 OnEnable 依註冊清單的索引指派，所以 spawner 生的、場景本來就有的、
+    ///   重生後重新啟用的，都會自動拿到正確的層，不用另外維護計數器。
+    /// </summary>
+    private void ApplyDepthLayer()
+    {
+        if (!useDepthLayering) return;
+        if (isAttached) return;   // 咬在玩家身上時是玩家的子物件，這時候不要動牠的位置
+
+        int index = _allWolves.IndexOf(this);
+        if (index < 0) index = 0;
+
+        _assignedZ = index * wolfZSpacing;
+        Vector3 p = transform.position;
+        transform.position = new Vector3(p.x, p.y, _assignedZ);
+    }
+
+    private float _assignedZ = 0f;
 
     private void OnDisable()
     {
@@ -822,6 +857,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         // 1. 脫離玩家的子物件階層
         transform.SetParent(null);
+        ApplyDepthLayer();   // 鬆口之後回到自己的深度層（咬住期間跟著玩家的 Z 跑）
 
         // 2. 恢復物理作用，讓牠掉回地上
         rb.isKinematic = false;
@@ -869,6 +905,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         transform.position = _initialPosition;
         transform.rotation = _initialRotation;
+        ApplyDepthLayer();   // 回到出生點之後重新分配深度層，重生後順序才不會亂掉
 
         // 斜坡傾斜也要歸零，不然重生後身體會維持上一次的傾角
         if (visualToAlign != null)

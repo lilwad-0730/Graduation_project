@@ -19,6 +19,14 @@ public class WolfProceduralAnimator : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody>();
     }
 
+    // 每隻狼自己的動畫相位（Awake 取一次），避免整群同步擺腿
+    private float _phaseOffset;
+
+    private void Awake()
+    {
+        _phaseOffset = Random.Range(0f, Mathf.PI * 2f);
+    }
+
     private void Update()
     {
         // 抓取 X 軸的移動速度來判斷是否在奔跑
@@ -28,7 +36,10 @@ public class WolfProceduralAnimator : MonoBehaviour
         if (isRunning)
         {
             // 動態調整動畫速度
-            float time = Time.time * runSpeedMultiplier * speed;
+            // ★0911：同 WolfProceduralAnimator2D，Time.time 是全域時鐘，
+            //   每隻狼算出來的相位一模一樣，所以會整群同步擺腿。
+            //   加上每隻狼自己的相位偏移（Awake 取一次，不是每幀）。
+            float time = Time.time * runSpeedMultiplier * speed + _phaseOffset;
 
             // 前後腳交替擺動的角度 (類似 Sine 波)
             // 腳FL 與 腳BR 同步，腳FR 與 腳BL 同步

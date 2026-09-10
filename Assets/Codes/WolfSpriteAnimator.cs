@@ -30,6 +30,9 @@ public class WolfSpriteAnimator : MonoBehaviour
     [Tooltip("動畫切換時的平滑過渡時間 (秒，2D Sprite 建議設為 0 或極小如 0.02 以免殘影)")]
     public float crossFadeDuration = 0.02f;
 
+    [Tooltip("除錯用：每次切換動畫狀態時在 Console 印一行。六隻狼同時跑會洗版，預設關閉")]
+    public bool logStateChanges = false;
+
     [Header("轉向設定")]
     [Tooltip("如果您的狼原圖朝向是反的 (例如主角在右邊，狼卻看左邊)，請勾選此欄位進行反轉修正")]
     public bool reverseFacingDirection = false;
@@ -151,22 +154,34 @@ public class WolfSpriteAnimator : MonoBehaviour
         PlayAnimationDirectly(targetState);
     }
 
+    // ★0911：每隻狼自己的動畫起始相位（Awake 取一次，不是每幀取）。
+    //   CrossFade / Play 預設都從 normalizedTime = 0 開始播，
+    //   所以六隻狼同一瞬間進入 running 就會從同一格開始，看起來完全同步。
+    //   給每隻狼一個固定的起始偏移，牠們的腳步就會錯開。
+    private float _animPhaseOffset;
+
+    private void Awake()
+    {
+        _animPhaseOffset = Random.Range(0f, 1f);   // normalizedTime 的單位是「循環的幾成」
+    }
+
     private void PlayAnimationDirectly(string stateName)
     {
         if (currentPlayingState == stateName) return;
 
         currentPlayingState = stateName;
-        
+
         if (crossFadeDuration > 0f)
         {
-            animator.CrossFade(stateName, crossFadeDuration);
+            animator.CrossFade(stateName, crossFadeDuration, 0, _animPhaseOffset);
         }
         else
         {
-            animator.Play(stateName);
+            animator.Play(stateName, 0, _animPhaseOffset);
         }
-        
-        Debug.Log($"【程式碼控制動畫】已切換播放狀態為: '{stateName}'");
+
+        // 六隻狼各自切狀態的話這行會洗版，預設關掉
+        if (logStateChanges) Debug.Log($"【程式碼控制動畫】'{gameObject.name}' 已切換播放狀態為: '{stateName}'");
     }
 
     // 利用反射安全讀取 WolfEnemy 的 private bool 狀態
