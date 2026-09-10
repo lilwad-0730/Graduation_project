@@ -74,6 +74,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Range(0.3f, 1.2f)]
     public float groundProbeRadiusScale = 0.8f;
 
+    [Tooltip("★隔離測試用開關：懷疑上坡卡頓是貼地造成的，就把這個關掉跑一次比較。\n" +
+             "貼地只負責防止真正離地，不會改變追擊方向、不碰 X 速度、只作用於真正的地面")]
+    public bool useGroundSnap = true;
+
     [Tooltip("【貼地死區】腳離地小於這個距離就當作已經貼著，不做修正。避免對微小誤差反覆施力")]
     [Range(0f, 0.2f)]
     public float snapMinGap = 0.02f;
@@ -95,6 +99,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "360 大約 0.11 秒轉完一個 40 度的坡，抖動濾得掉、轉場也跟得上")]
     [Range(60f, 1440f)]
     public float slopeDirectionSmoothSpeed = 360f;
+
+    [Tooltip("坡面方向的死區（度）。新讀到的坡面方向跟目前持有的差異小於這個角度就不更新。\n" +
+             "★這是為了讓「平滑」跟「防彈飛鉗制」用同一個目標值——兩邊各用各的會互相抵銷，\n" +
+             "  平滑才剛把方向轉上去、鉗制馬上又壓回來，那就是上坡頓挫的來源。\n" +
+             "太小 → 過濾不掉石頭碎面的法線雜訊；太大 → 真的變坡了也慢半拍才跟上")]
+    [Range(0f, 20f)]
+    public float slopeAngleDeadband = 5f;
 
     [Tooltip("地面偵測短暫射空時，沿用上一個有效法線多久（秒）。\n" +
              "★只拿來算移動方向，不會讓狼被假地面黏住。\n" +
@@ -186,6 +197,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private bool _hasTargetSpeed = false;
     private float _lastFacingX = 1f;   // 停下來時沒有目標方向，用最後一次的朝向來算坡面方向
     private Vector3 _smoothMoveDir = Vector3.zero;   // 平滑後的實際前進方向
+    private Vector3 _heldTargetDir = Vector3.zero;   // 過了 deadband 的目標方向（平滑與防彈飛鉗制共用同一份）
+    private bool _lastGroundedFacingWolf = false;    // 玩家最後一次「踩在地上」時的 123 判定結果
     private Vector3 _lastGoodNormal = Vector3.up;    // 最後一次有效的地面法線（射空時暫時沿用）
 
     // ── Aggro Lock（每隻狼自己一份，不是 static）──
@@ -461,12 +474,31 @@ public class WolfEnemy : MonoBehaviour, IResettable
         //     - 跟 fixedDeltaTime 綁一起，換 FPS 或改物理步長行為都一致
         //     - 是角度上限不是比例衰減，所以不會有「永遠追不到」的殘留誤差
         //     - 小碎面造成的高頻抖動會被濾掉，真正的坡度變化照樣跟得上
-        if (_smoothMoveDir.sqrMagnitude < 0.0001f) _smoothMoveDir = targetMoveDir;   // 第一幀直接對齊，不要從 (0,0,0) 轉
-        if (Mathf.Sign(_smoothMoveDir.x) != Mathf.Sign(targetMoveDir.x) && Mathf.Abs(targetMoveDir.x) > 0.01f)
-            _smoothMoveDir = targetMoveDir;   // 左右轉向是「換方向」不是「換坡度」，不要慢慢繞過去
+        // ★★0911 上坡卡頓的真正原因就在這裡，而且是我自己上一版造成的：
+        //   移動用的是「平滑後」的方向（_smoothMoveDir），
+        //   但下面防彈飛的鉗制用的是「即時未平滑」的 targetMoveDir。
+        //   兩個值在凹凸地面上每一幀都不一樣——只要原始法線某一幀讀得比平滑值平，
+        //   鉗制就把爬坡的 y 速度砍掉一次。上坡時這件事每幾幀就發生一次，
+        //   等於平滑才剛把方向轉上去，鉗制馬上又壓回來，就是那個頓挫。
+        //   平滑跟每幀修正互相抵銷，正是「反應延遲＋每幀修正」的雙重問題。
+        //
+        //   解法不是再加第三套平滑，是讓兩邊用「同一個值」：
+        //   對目標方向加 deadband——跟目前持有的目標差異小於門檻就不更新，
+        //   有實質差異才換。之後平滑的目標跟鉗制的基準都用這個 _heldTargetDir。
+        if (_heldTargetDir.sqrMagnitude < 0.0001f) _heldTargetDir = targetMoveDir;
+
+        bool turnedAround = Mathf.Sign(_heldTargetDir.x) != Mathf.Sign(targetMoveDir.x)
+                            && Mathf.Abs(targetMoveDir.x) > 0.01f;
+        if (turnedAround || Vector3.Angle(_heldTargetDir, targetMoveDir) > slopeAngleDeadband)
+        {
+            _heldTargetDir = targetMoveDir;   // 轉向、或坡度真的變了才更新
+        }
+
+        if (_smoothMoveDir.sqrMagnitude < 0.0001f) _smoothMoveDir = _heldTargetDir;   // 第一幀直接對齊，不要從 (0,0,0) 轉
+        if (turnedAround) _smoothMoveDir = _heldTargetDir;   // 左右轉向是「換方向」不是「換坡度」，不要慢慢繞過去
 
         float maxRad = Mathf.Max(1f, slopeDirectionSmoothSpeed) * Mathf.Deg2Rad * Time.fixedDeltaTime;
-        _smoothMoveDir = Vector3.RotateTowards(_smoothMoveDir, targetMoveDir, maxRad, 0f).normalized;
+        _smoothMoveDir = Vector3.RotateTowards(_smoothMoveDir, _heldTargetDir, maxRad, 0f).normalized;
 
         Vector3 moveDir = _smoothMoveDir;
 
@@ -490,11 +522,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float next = Mathf.MoveTowards(current, target, rate * Time.fixedDeltaTime);
         Vector3 nv = moveDir * next;
 
-        // ★防彈飛鉗制：平滑方向會落後真實坡面，上坡跑到坡頂／坡度變緩的瞬間，
+        // ★防彈飛鉗制：平滑方向會落後坡面，上坡跑到坡頂／坡度變緩的瞬間，
         //   舊的（比較陡的）方向還帶著向上分量，狼會被自己的速度甩上天。
-        //   所以向上分量永遠不准超過「真實坡面此刻允許的量」。
-        //   反過來（地面變陡）不鉗制——那個方向是往下壓，不會飛起來。
-        float maxUpY = targetMoveDir.y * next;
+        //   ★基準改用 _heldTargetDir（過了 deadband 的那個），不是每幀跳動的原始值——
+        //     用原始值的話，法線只要抖一下鉗制就砍一次爬坡速度，
+        //     那就是上坡頓挫的來源。現在鉗制跟平滑用同一個目標，不會互相抵銷。
+        float maxUpY = _heldTargetDir.y * next;
         if (nv.y > maxUpY) nv.y = maxUpY;
 
         if (onWalkableSlope)
@@ -507,8 +540,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
             //   ★用速度不用 teleport：物理照樣能把狼推開，不會穿模也不會硬扯位置。
             //   ★有上下限：低於 snapMinGap 當作已經貼著不動它；
             //     高於 snapMaxGap 代表真的離地（跳起來、被彈飛），不准黏回去。
-            float gap = best_GapToGround(groundHit);
-            if (gap > snapMinGap && gap < snapMaxGap)
+            float gap = useGroundSnap ? best_GapToGround(groundHit) : 0f;
+            if (useGroundSnap && gap > snapMinGap && gap < snapMaxGap)
             {
                 float snapDown = Mathf.Min(gap / Time.fixedDeltaTime, maxSnapSpeed);
                 nv.y -= snapDown;
@@ -839,12 +872,23 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float directionX = Mathf.Sign(dirToPlayerX);
 
         // 偵測玩家是否回頭看著狼 (玩家朝向與狼追擊方向相反)
-        bool isPlayerFacingWolf = false;
+        // ★0911 新規則：玩家在空中時不做新的 123 木頭人判定。
+        //   原本只看 FacingDirection，玩家跳起來在空中轉身也算「回頭」，
+        //   狼就會突然開始倒退——那不是玩家的意圖，是跳躍的副作用。
+        //   ★是「暫停」不是「重置」：離地期間沿用落地前最後一次的判定結果，
+        //     落地後再繼續正常判斷。這樣跳一下不會把進行中的木頭人狀態洗掉。
+        //   ★用玩家真正的 isGrounded，不是用有沒有按跳躍鍵。
+        bool isPlayerFacingWolf = _lastGroundedFacingWolf;
         if (playerMovement != null)
         {
-            float playerFacingX = playerMovement.FacingDirection.x;
-            // 如果玩家面朝方向與狼追擊方向相反，代表玩家正在看著狼
-            isPlayerFacingWolf = (directionX * playerFacingX < 0);
+            if (playerMovement.isGrounded)
+            {
+                float playerFacingX = playerMovement.FacingDirection.x;
+                // 如果玩家面朝方向與狼追擊方向相反，代表玩家正在看著狼
+                isPlayerFacingWolf = (directionX * playerFacingX < 0);
+                _lastGroundedFacingWolf = isPlayerFacingWolf;   // 記住落地時的判定，供空中沿用
+            }
+            // 在空中：isPlayerFacingWolf 維持 _lastGroundedFacingWolf，不更新也不清掉
         }
 
         float currentSpeed = 0f;
@@ -1012,6 +1056,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _hasTargetSpeed = false;
         _targetSpeedX = 0f;
         _smoothMoveDir = Vector3.zero;
+        _heldTargetDir = Vector3.zero;
+        _lastGroundedFacingWolf = false;
 
         transform.position = _initialPosition;
         transform.rotation = _initialRotation;
