@@ -32,6 +32,34 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("貼地穩定性（0910 B：解決上下跳動與互相推擠）")]
+    [Tooltip("狼與狼之間不產生物理推擠。保留狼↔地面、狼↔玩家、狼↔StopAttackObject 的碰撞。\n" +
+             "每次 OnEnable 重新配對，所以 spawner 生出來的新狼也吃得到")]
+    public bool ignoreWolfToWolfCollision = true;
+
+    [Tooltip("腳下三點採樣的間距（乘上碰撞體半長）。1 = 前後腳剛好在身體兩端。\n" +
+             "把整個身長當成量尺去讀坡面，交界處的法線突變會被前後腳拉平")]
+    [Range(0.3f, 1.5f)]
+    public float groundProbeSpread = 0.9f;
+
+    [Tooltip("採樣球的半徑倍率（乘上碰撞體半寬）。越大越能跨過小凹凸，但太大會提早抓到旁邊的牆")]
+    [Range(0.3f, 1.2f)]
+    public float groundProbeRadiusScale = 0.8f;
+
+    [Tooltip("【貼地死區】腳離地小於這個距離就當作已經貼著，不做修正。避免對微小誤差反覆施力")]
+    [Range(0f, 0.2f)]
+    public float snapMinGap = 0.02f;
+
+    [Tooltip("【貼地上限】腳離地超過這個距離就當作「真的離地了」（跳起／被彈飛），不准黏回去。\n" +
+             "太大會讓狼在空中被硬拉下來，太小則蓋不住石頭凸起造成的浮空")]
+    [Range(0.05f, 1f)]
+    public float snapMaxGap = 0.35f;
+
+    [Tooltip("貼地修正的最大向下速度。這是速度不是瞬移，物理照樣能把狼推開。\n" +
+             "太大會看起來像被吸住，太小蓋不過凸起造成的彈跳")]
+    [Range(0.5f, 20f)]
+    public float maxSnapSpeed = 6f;
+
     [Header("斜坡方向平滑（0910 A：解決平地↔斜坡的頓挫感）")]
     [Tooltip("移動方向每秒最多能轉幾度。★注意這只平滑「移動方向」，地面偵測本身還是即時的。\n" +
              "太小 → 進坡出坡會有延遲感、方向追不上地形\n" +
@@ -153,6 +181,17 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private void OnEnable()
     {
         enableTime = Time.time;
+
+        if (col == null) col = GetComponent<Collider>();
+        if (!_allWolves.Contains(this)) _allWolves.Add(this);
+        RefreshWolfPairIgnore();
+        // 新來的這隻也要讓場上舊的那些認識牠（IgnoreCollision 是雙向設定，但清單要互相更新）
+        foreach (WolfEnemy w in _allWolves) if (w != null && w != this) w.RefreshWolfPairIgnore();
+    }
+
+    private void OnDisable()
+    {
+        _allWolves.Remove(this);
     }
 
     public void StartChase()
@@ -179,11 +218,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (rb.interpolation != RigidbodyInterpolation.Interpolate)
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-            if (rb.collisionDetectionMode != CollisionDetectionMode.ContinuousSpeculative)
-                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            // ★0910 修正我自己上一版的選擇：本來設成 ContinuousSpeculative，
+            //   但 Speculative 是「預測式接觸」，在 MeshCollider 的三角面接縫上
+            //   容易產生鬼影碰撞（ghost contact）——狼跑在石頭表面會被不存在的邊緣頂一下，
+            //   那正是「上下跳動」的另一個來源。
+            //   狼只需要對「靜態地形」防穿模，Continuous 的掃描式就夠而且不會有鬼影。
+            //   （水下玩家那邊維持 Speculative 是對的，那是無厚度面的穿模問題，情況不同。）
+            if (rb.collisionDetectionMode != CollisionDetectionMode.Continuous)
+                rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
             if (bodyMass > 0f && !Mathf.Approximately(rb.mass, bodyMass))
                 rb.mass = bodyMass;
+
+            // 2D 橫向捲軸約束：Z 不參與 Gameplay，旋轉一律鎖死（身體傾斜是 Visual 子物件在做）
+            RigidbodyConstraints want2D = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
+            if (rb.constraints != want2D) rb.constraints = want2D;
         }
 
 
@@ -359,6 +408,11 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         Vector3 moveDir = _smoothMoveDir;
 
+        // 把這一幀算好的地面資訊交給 LateUpdate 的視覺傾角用。
+        // 視覺層不再自己打射線，兩邊共用同一份資料，角度才不會各抖各的。
+        _visualHasGround = haveNormal && onWalkableSlope;
+        if (_visualHasGround) _visualGroundNormal = usedNormal;
+
         // ── 沿著同一個方向量目前速度、加速、寫回 ──
         //   平地時 moveDir=(±1,0,0)，Dot 就等於 ±v.x，跟以前完全一樣。
         //   斜坡時把 y 也算進去，因為爬坡的速度有一部分在 y 上——
@@ -383,6 +437,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         if (onWalkableSlope)
         {
+            // ★貼地（Ground Snap）：只在「確定站在可行走地面、而且只是浮起一點點」時，
+            //   加一點點向下的速度把腳壓回地面。
+            //   為什麼需要：坡面速度是純切線方向，沒有任何東西把狼往地面壓。
+            //   石頭表面一個小凸起把狼頂起來之後，切線速度會讓牠繼續飄，
+            //   等重力拉回來已經過了好幾幀——那就是「上下跳動」的感覺。
+            //   ★用速度不用 teleport：物理照樣能把狼推開，不會穿模也不會硬扯位置。
+            //   ★有上下限：低於 snapMinGap 當作已經貼著不動它；
+            //     高於 snapMaxGap 代表真的離地（跳起來、被彈飛），不准黏回去。
+            float gap = best_GapToGround(groundHit);
+            if (gap > snapMinGap && gap < snapMaxGap)
+            {
+                float snapDown = Mathf.Min(gap / Time.fixedDeltaTime, maxSnapSpeed);
+                nv.y -= snapDown;
+            }
             rb.linearVelocity = new Vector3(nv.x, nv.y, v.z);
         }
         else
@@ -455,20 +523,56 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         float targetAngle = 0f;
 
-        if (!isAttached && !isStunned &&
-            TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle) &&
-            slopeAngle < maxWalkableSlopeAngle)
+        // ★0910：原本這裡自己再打一次 TryGetGroundSlope——等於每幀多做一組 SphereCast，
+        //   而且讀到的是「這一幀的原始法線」，跟 FixedUpdate 用的那份是兩套資料。
+        //   視覺傾角因此跟著原始法線抖，這就是「地面角度變化時 Visual 角度卡頓」。
+        //   改成直接吃 FixedUpdate 已經算好、而且已經平滑過的那份，資料只有一個來源。
+        if (!isAttached && !isStunned && _visualHasGround)
         {
             // 地面法線換算成 Z 軸傾角：平地法線是 (0,1,0) → 0 度；坡往右上升 → 正角度
-            targetAngle = Mathf.Atan2(-groundHit.normal.x, groundHit.normal.y) * Mathf.Rad2Deg;
+            targetAngle = Mathf.Atan2(-_visualGroundNormal.x, _visualGroundNormal.y) * Mathf.Rad2Deg;
             targetAngle = Mathf.Clamp(targetAngle, -maxVisualAlignAngle, maxVisualAlignAngle);
         }
         // 離地或被咬住/硬直時 targetAngle 維持 0，身體平滑轉回直立
 
         Vector3 e = visualToAlign.localEulerAngles;
         float current = e.z > 180f ? e.z - 360f : e.z;
-        float next = Mathf.LerpAngle(current, targetAngle, Time.deltaTime * slopeAlignSpeed);
+
+        // ★幀率無關的指數平滑。原本是 LerpAngle(a, b, Time.deltaTime * speed)，
+        //   那個 t 直接乘 deltaTime，60fps 跟 144fps 的收斂速度不一樣。
+        //   1 - exp(-speed * dt) 才是正確寫法，任何幀率下轉過去的時間都相同。
+        float t = 1f - Mathf.Exp(-Mathf.Max(0.01f, slopeAlignSpeed) * Time.deltaTime);
+        float next = Mathf.LerpAngle(current, targetAngle, t);
         visualToAlign.localEulerAngles = new Vector3(e.x, e.y, next);
+    }
+
+    // 給 LateUpdate 的視覺傾角用：由 FixedUpdate 寫入，只有一個資料來源
+    private Vector3 _visualGroundNormal = Vector3.up;
+    private bool _visualHasGround = false;
+
+    // ── 狼與狼不互推 ──
+    private static readonly System.Collections.Generic.List<WolfEnemy> _allWolves = new System.Collections.Generic.List<WolfEnemy>();
+
+    /// <summary>
+    /// 讓這隻狼跟場上其他所有狼互相忽略碰撞。
+    /// 為什麼寫在程式而不是用 Layer Collision Matrix：狼目前在 Default 層，
+    /// 要用 Matrix 得先開一個新 Layer 再改場景，而專案裡好幾處射線遮罩是用層名寫死的
+    /// （例如玩家的貼地射線排除 Player / Ignore Raycast / UI），搬層要一併稽核那些遮罩，
+    /// 在最終除錯階段風險太高。用 IgnoreCollision 效果一樣而且不動任何既有設定。
+    /// ★ IgnoreCollision 是掛在 Collider 實例上的，物件被 Destroy／重生成就會消失，
+    ///   所以每次 OnEnable 都要重新配對一遍（spawner 生出來的新狼也吃得到）。
+    /// </summary>
+    private void RefreshWolfPairIgnore()
+    {
+        if (!ignoreWolfToWolfCollision || col == null) return;
+
+        for (int i = _allWolves.Count - 1; i >= 0; i--)
+        {
+            WolfEnemy other = _allWolves[i];
+            if (other == null) { _allWolves.RemoveAt(i); continue; }
+            if (other == this || other.col == null) continue;
+            Physics.IgnoreCollision(col, other.col, true);
+        }
     }
 
     private void LateUpdate()
@@ -487,29 +591,51 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float rayLength = col.bounds.extents.y + groundCheckDistance;
         int layerMask = ~LayerMask.GetMask("Ignore Raycast");
 
-        // ★0910：原本只有一條從碰撞體中心往下的細射線。
-        //   廢墟的地面是石頭的 MeshCollider，表面凹凸不平，一條細射線很容易射空、
-        //   或剛好打在某個角度很怪的三角面上（讀出來的坡度超過 maxWalkableSlopeAngle）。
-        //   而射空的那一幀，上面的 FixedUpdate 會走平地分支——舊版還會順手把向上速度清成 0，
-        //   等於每射空一次就把爬坡速度殺掉一次。這是「上坡慢、下坡正常」的直接來源。
-        //
-        //   改用球形掃描（SphereCast）：用碰撞體本身的寬度去掃，會自動跨過小凹凸，
-        //   讀到的是整體坡面而不是單一三角面，穩定非常多。掃不到才退回細射線。
-        float radius = Mathf.Max(0.05f, Mathf.Min(col.bounds.extents.x, col.bounds.extents.z));
-        Vector3 sphereStart = origin + Vector3.up * 0.05f;
+        // ★0910 第三版：三點採樣（後腳／中心／前腳）。
+        //   SphereCast 已經比細射線穩很多，但「單一個 hit」讀到的還是「一個」三角面的法線。
+        //   狼身體有長度，跨在兩個面交界時，中心那一點會在相鄰兩幀之間讀到差很多的法線，
+        //   坡度、坡面方向、視覺傾角就跟著跳——這是抖動的來源之一。
+        //   三點取平均等於用狼的身長去「量」整體坡面，交界處的突變會被前後腳拉平。
+        //   ★ 這不是延遲：三個 cast 都是這一幀即時打的，沒有沿用舊資料。
+        float radius = Mathf.Max(0.05f, Mathf.Min(col.bounds.extents.x, col.bounds.extents.z) * groundProbeRadiusScale);
+        float halfLen = col.bounds.extents.x * groundProbeSpread;
 
-        if (Physics.SphereCast(sphereStart, radius, Vector3.down, out RaycastHit sphereHit,
-                               rayLength, layerMask, QueryTriggerInteraction.Ignore))
+        Vector3 sum = Vector3.zero;
+        int valid = 0;
+        RaycastHit best = default;
+        float bestDist = float.MaxValue;
+
+        for (int i = -1; i <= 1; i++)
         {
-            if (!(sphereHit.collider == col || sphereHit.collider.transform.IsChildOf(transform)))
-            {
-                hit = sphereHit;
-                slopeAngle = Vector3.Angle(Vector3.up, sphereHit.normal);
-                _lastGoodGroundTime = Time.time;
-                return true;
-            }
+            Vector3 start = origin + Vector3.up * 0.05f + new Vector3(i * halfLen, 0f, 0f);
+
+            if (!Physics.SphereCast(start, radius, Vector3.down, out RaycastHit h,
+                                    rayLength, layerMask, QueryTriggerInteraction.Ignore)) continue;
+            if (h.collider == col || h.collider.transform.IsChildOf(transform)) continue;
+
+            // 濾掉明顯異常的面：垂直牆壁、天花板不是「腳下的地」，混進平均只會把坡度算歪
+            float a = Vector3.Angle(Vector3.up, h.normal);
+            if (a >= 89f) continue;
+
+            sum += h.normal;
+            valid++;
+
+            // 中心點優先當代表 hit（貼地距離要用最接近身體中線的那個才準）
+            float d = (i == 0) ? h.distance - 1000f : h.distance;
+            if (d < bestDist) { bestDist = d; best = h; }
         }
 
+        if (valid > 0)
+        {
+            Vector3 avg = (sum / valid).normalized;
+            best.normal = avg;          // 用平均法線取代單點法線，位置資訊維持代表 hit 的
+            hit = best;
+            slopeAngle = Vector3.Angle(Vector3.up, avg);
+            _lastGoodGroundTime = Time.time;
+            return true;
+        }
+
+        // 三點全空才退回最原始的細射線，當最後保險
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit downHit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
         {
             if (downHit.collider == col || downHit.collider.transform.IsChildOf(transform)) return false;
@@ -522,6 +648,15 @@ public class WolfEnemy : MonoBehaviour, IResettable
     }
 
     private float _lastGoodGroundTime = -999f;
+
+    /// <summary>腳底離地面還有多少（正值＝浮在空中）。給 Ground Snap 判斷用。</summary>
+    private float best_GapToGround(RaycastHit groundHit)
+    {
+        if (col == null || groundHit.collider == null) return 0f;
+        // 用碰撞體底部中心的高度跟地面接觸點比。斜坡上這個值本來就會有一點誤差，
+        // 所以上面用 snapMinGap 當死區，小誤差不會觸發貼地。
+        return col.bounds.min.y - groundHit.point.y;
+    }
 
     /// <summary>
     /// 距離 → 追擊速度的平滑曲線（Catch-up / Rubber Band，不是作弊 AI）。
