@@ -11080,6 +11080,7 @@ MonoBehaviour:
   runStateName: running
   backwardStateName: backward
   crossFadeDuration: 0.02
+  logStateChanges: 0
   reverseFacingDirection: 0
 --- !u!114 &931082211
 MonoBehaviour:
@@ -11107,6 +11108,39 @@ MonoBehaviour:
   keepOnGroundWhileChasing: 1
   groundCheckDistance: 0.4
   maxWalkableSlopeAngle: 55
+  ignoreWolfToWolfCollision: 1
+  useSoftSeparation: 1
+  separationRadius: 2
+  minimumWolfDistance: 1.2
+  separationStrength: 0.5
+  useDepthLayering: 1
+  wolfZSpacing: 1
+  groundProbeSpread: 0.9
+  groundProbeRadiusScale: 0.8
+  useGroundSnap: 1
+  snapMinGap: 0.02
+  snapMaxGap: 0.35
+  maxSnapSpeed: 6
+  slopeDirectionSmoothSpeed: 360
+  slopeAngleDeadband: 5
+  groundMemoryTime: 0.12
+  debugSlopeLog: 0
+  debugSlopeLogInterval: 0.5
+  useCatchUpCurve: 1
+  nearDistance: 4
+  nearChaseSpeed: 5.5
+  cruiseDistance: 10
+  cruiseChaseSpeed: 7
+  maxCatchUpDistance: 20
+  maxCatchUpSpeed: 10
+  acceleration: 40
+  braking: 60
+  bodyMass: 12
+  autoFixRigidbodySettings: 1
+  alignVisualToSlope: 1
+  visualToAlign: {fileID: 0}
+  slopeAlignSpeed: 8
+  maxVisualAlignAngle: 40
   spawnAttachImmunityTime: 1
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
