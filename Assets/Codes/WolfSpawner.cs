@@ -250,6 +250,10 @@ public class WolfSpawner : MonoBehaviour, IResettable
         isWolfActivated = false;
         if (spawnedWolf != null)
         {
+            // ★0910：這隻狼可能正咬在玩家身上（是玩家的子物件）。
+            //   直接 Destroy 的話，玩家身上的 attachedWolvesCount 不會減回去，
+            //   減速懲罰會殘留。先讓狼自己走完鬆口流程再刪。
+            if (spawnedWolfEnemy != null) spawnedWolfEnemy.ResetToInitialState();
             Destroy(spawnedWolf);
             spawnedWolf = null;
             spawnedWolfEnemy = null;

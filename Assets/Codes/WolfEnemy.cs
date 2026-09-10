@@ -32,6 +32,27 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("視為可行走斜坡的最大角度，超過此角度視同牆壁/台階，改用防彈起邏輯")]
     public float maxWalkableSlopeAngle = 55f;
 
+    [Header("追擊節奏曲線（Catch-up AI，0910）")]
+    [Tooltip("開啟後用「距離 → 速度」的平滑曲線，取代原本 runDistanceThreshold 的兩段式切換。\n" +
+             "關掉就回到舊行為（slowChaseSpeed / fastChaseSpeed 兩段切換）")]
+    public bool useCatchUpCurve = true;
+
+    [Tooltip("【貼身距離】小於這個距離就用 nearChaseSpeed。玩家在這個範圍內要有反應空間")]
+    public float nearDistance = 4f;
+    [Tooltip("【貼身速度】比玩家(5)快一點點就好，讓玩家還躲得掉、跳得開。太快會變成無法閃避")]
+    public float nearChaseSpeed = 5.5f;
+
+    [Tooltip("【中距離】到這個距離用 cruiseChaseSpeed，是最常見的追擊狀態")]
+    public float cruiseDistance = 10f;
+    [Tooltip("【中距離速度】穩定壓迫，明顯比玩家快但追不上得很快")]
+    public float cruiseChaseSpeed = 7f;
+
+    [Tooltip("【追趕距離】拉開到這個距離以上就用滿 maxCatchUpSpeed，不會再更快")]
+    public float maxCatchUpDistance = 20f;
+    [Tooltip("【追趕速度上限】★這是硬上限，再遠也不會超過。\n" +
+             "玩家基礎速度是 5，這裡設 10 等於玩家的兩倍——追得回來但不是瞬移作弊")]
+    public float maxCatchUpSpeed = 10f;
+
     [Header("物理手感（0910 大升級：改成有加速度的真實移動）")]
     [Tooltip("起步／變速的加速度 (單位/秒²)。\n" +
              "越大越接近舊版的「瞬間到達目標速度」，越小越有體重感、起步越慢。\n" +
@@ -85,6 +106,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
     // Update 決定「這一幀想跑多快」，FixedUpdate 才真的推動身體
     private float _targetSpeedX = 0f;
     private bool _hasTargetSpeed = false;
+    private bool _hadTargetThisStep = false;
+    private float _lastFacingX = 1f;   // 停下來時沒有目標方向，用最後一次的朝向來算坡面方向
 
     // 狀態鎖
     private bool isChasing = false;
@@ -244,16 +267,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
         Vector3 vel = rb.linearVelocity;
         float wanted = _hasTargetSpeed ? _targetSpeedX : 0f;
 
-        // 想加速還是想煞車：同方向且要更快＝加速，其餘（要停、要反向）＝煞車
+        _hadTargetThisStep = _hasTargetSpeed;
+        _hasTargetSpeed = false;   // 這一步用掉了，等下一個 Update 再給新的
+        if (Mathf.Abs(wanted) > 0.01f) _lastFacingX = Mathf.Sign(wanted);
+        else if (Mathf.Abs(vel.x) > 0.01f) _lastFacingX = Mathf.Sign(vel.x);
+
+        // 平地：直接對 x 軸加速。斜坡的處理在下面第 2 段，會用沿坡面的量重算一次。
         bool speedingUp = Mathf.Abs(wanted) > Mathf.Abs(vel.x) && Mathf.Sign(wanted) == Mathf.Sign(vel.x);
         float rate = speedingUp ? acceleration : braking;
         if (rate <= 0f) rate = 40f;
 
         vel.x = Mathf.MoveTowards(vel.x, wanted, rate * Time.fixedDeltaTime);
         rb.linearVelocity = vel;
-        _hasTargetSpeed = false;   // 這一步用掉了，等下一個 Update 再給新的
 
-        // ── 2. 貼地處理（原本的邏輯，只是搬到速度算完之後，順序才對得上）──
+        // ── 2. 貼地處理 ──
         if (!keepOnGroundWhileChasing) return;
 
         Vector3 v = rb.linearVelocity;
@@ -261,12 +288,33 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (TryGetGroundSlope(out RaycastHit groundHit, out float slopeAngle) &&
             slopeAngle > 0.5f && slopeAngle < maxWalkableSlopeAngle)
         {
-            Vector3 horizontal = new Vector3(v.x, 0f, 0f);
-            Vector3 projected = Vector3.ProjectOnPlane(horizontal, groundHit.normal);
-            if (projected.sqrMagnitude > 0.0001f)
+            // ★ 這裡原本的寫法會讓狼在斜坡上越跑越慢，慢到剩下設定速度的三分之一。
+            //   舊寫法：把「目前的 x 速度」投影到坡面、再把長度設成 |v.x|，
+            //           結果新的 v.x = |v.x| × cos(坡度)。
+            //   單獨看一次沒問題，但這是每個物理步都跑一次，所以 cos 會一直乘上去：
+            //           x(n+1) = (x(n) + 加速度×dt) × cos θ
+            //   平衡點 x* = 加速度×dt×cosθ ÷ (1 − cosθ)。加速度 40、dt 0.02 時：
+            //           30° → 5.2   40° → 2.6   45° → 1.9  （目標是 6）
+            //   坡越陡掉得越兇，這就是「斜坡超級慢」的真正原因，不是速度值設太小。
+            //
+            //   正確做法跟 PlayerMovement 的斜坡處理一致：速度是「沿著坡面」的量，
+            //   所以要用 Dot 沿坡面量目前速度，而不是量 x 軸分量——量 x 軸才會每次都少掉 cos。
+            //   平地時 slopeDir = (±1,0,0)，Dot 就等於 ±v.x，行為跟以前完全一樣。
+            Vector3 slopeDir = Vector3.ProjectOnPlane(new Vector3(_lastFacingX, 0f, 0f), groundHit.normal);
+            if (slopeDir.sqrMagnitude > 0.0001f)
             {
-                projected = projected.normalized * Mathf.Abs(v.x);
-                rb.linearVelocity = new Vector3(projected.x, projected.y, v.z);
+                slopeDir.Normalize();
+
+                float currentAlong = Vector3.Dot(new Vector3(v.x, v.y, 0f), slopeDir);
+                float wantedAlong = _hadTargetThisStep ? Mathf.Abs(_targetSpeedX) * Mathf.Sign(_targetSpeedX * _lastFacingX) : 0f;
+
+                bool up = Mathf.Abs(wantedAlong) > Mathf.Abs(currentAlong) && Mathf.Sign(wantedAlong) == Mathf.Sign(currentAlong);
+                float r = up ? acceleration : braking;
+                if (r <= 0f) r = 40f;
+
+                float newAlong = Mathf.MoveTowards(currentAlong, wantedAlong, r * Time.fixedDeltaTime);
+                Vector3 alongVel = slopeDir * newAlong;
+                rb.linearVelocity = new Vector3(alongVel.x, alongVel.y, v.z);
             }
         }
         else if (v.y > 0f)
@@ -337,6 +385,49 @@ public class WolfEnemy : MonoBehaviour, IResettable
         return false;
     }
 
+    /// <summary>
+    /// 距離 → 追擊速度的平滑曲線（Catch-up / Rubber Band，不是作弊 AI）。
+    ///
+    /// 為什麼要換掉原本的兩段式切換：場景實際值是 aggroDistanceX 22、runDistanceThreshold 18、
+    /// slowChaseSpeed 5、fastChaseSpeed 6，而玩家基礎速度也是 5。所以：
+    ///   距離 18~22：狼 5 ＝ 玩家 5 → 追擊速度跟玩家一模一樣，永遠拉不近，等於白追
+    ///   距離 0~18 ：狼 6 vs 玩家 5 → 每秒只縮短 1 單位，從 18 追到貼身要 18 秒
+    /// 玩家只要一直往前跑就穩穩甩開，狼完全沒有壓迫感。
+    ///
+    /// 換成曲線後（錨點都照玩家速度 5 訂）：
+    ///   ≤ 4  貼身 5.5：只比玩家快 0.5，玩家還跳得開、閃得掉，不會變成無法閃避
+    ///   10   中距 7.0：穩定壓迫，每秒縮短 2 單位
+    ///   ≥ 20 追趕 10.0：玩家的兩倍，從 20 追到貼身約 3.2 秒——追得回來但不是瞬移
+    /// 中間用線性內插，所以速度是連續變化的，不會在門檻上忽快忽慢。
+    /// maxCatchUpSpeed 是硬上限，再遠也不會超過。
+    /// </summary>
+    private float EvaluateChaseSpeed(float distanceX)
+    {
+        float near = Mathf.Max(0.1f, nearDistance);
+        float cruise = Mathf.Max(near + 0.1f, cruiseDistance);
+        float far = Mathf.Max(cruise + 0.1f, maxCatchUpDistance);
+
+        float speed;
+        if (distanceX <= near)
+        {
+            speed = nearChaseSpeed;
+        }
+        else if (distanceX <= cruise)
+        {
+            speed = Mathf.Lerp(nearChaseSpeed, cruiseChaseSpeed, (distanceX - near) / (cruise - near));
+        }
+        else if (distanceX <= far)
+        {
+            speed = Mathf.Lerp(cruiseChaseSpeed, maxCatchUpSpeed, (distanceX - cruise) / (far - cruise));
+        }
+        else
+        {
+            speed = maxCatchUpSpeed;
+        }
+
+        return Mathf.Min(speed, maxCatchUpSpeed);   // 硬上限，任何情況都不會超過
+    }
+
     private void ChasePlayer()
     {
         // 算出狼到玩家的 X 軸方向與正負號值 (1 或 -1)
@@ -361,16 +452,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
         }
         else
         {
-            // 玩家背對著狼：根據距離決定是慢走還是快跑
+            // 玩家背對著狼：依距離決定速度
             float distanceX = Mathf.Abs(dirToPlayerX);
-            if (distanceX > runDistanceThreshold)
-            {
-                currentSpeed = slowChaseSpeed; // 慢慢走 (預設 3)
-            }
-            else
-            {
-                currentSpeed = fastChaseSpeed; // 奔跑 (預設 6)
-            }
+            currentSpeed = useCatchUpCurve ? EvaluateChaseSpeed(distanceX)
+                                           : (distanceX > runDistanceThreshold ? slowChaseSpeed : fastChaseSpeed);
         }
 
         // ★0910：這裡只「決定要跑多快」，真正推動身體交給 FixedUpdate。
@@ -497,6 +582,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (isAttached)
         {
             transform.SetParent(_initialParent);
+
+            // ★0910：原本這裡只解開 Parent，沒有通知玩家「我鬆口了」。
+            //   玩家身上的 attachedWolvesCount 目前是靠 PlayerPetrification.ClearAllNegativeEffects()
+            //   順手歸零的——等於狼的計數要靠石化系統來收尾，是個很脆的耦合：
+            //   哪天那支腳本被移掉或改動，玩家重生後就會帶著「身上有 3 隻狼」的減速永遠跑不動。
+            //   這裡自己收自己的尾。RemoveWolf 內部會夾在 0，重複呼叫也不會變負數。
+            if (playerMovement != null) playerMovement.RemoveWolf();
         }
         isAttached = false;
         isChasing = false;
