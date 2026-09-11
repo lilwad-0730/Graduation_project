@@ -582,6 +582,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float current = Vector3.Dot(measured, moveDir);
         float target = Mathf.Abs(wanted);   // moveDir 已經帶了方向，這裡只要大小
 
+        // ★0912 智能追擊（斜率補償）：EvaluateChaseSpeed 算出來的曲線是用「純 X 距離」訂的，
+        //   但上面這個 target 是「沿坡方向的總速度」。沿坡跑同一個大小，
+        //   實際能縮短的 X 距離只有 target*cos(坡度)——坡越陡，追擊曲線算出來的數字就越名不副實。
+        //   這是每一隻狼只要「人在坡上」就會發生的地形稅，跟排隊卡住是兩回事：
+        //   同一群狼裡，人在坡上的全部變慢、已經過坡或還沒上坡的那隻不受影響，
+        //   剛好對應「只有一隻正常，其他在坡上的都慢」這個現象。
+        //   這裡把 target 除以 cos(坡度) 補回去，讓狼在坡上跟平地一樣，
+        //   縮短 X 距離的實際速度符合曲線算出來的值。
+        if (onWalkableSlope)
+        {
+            // moveDir 已正規化，x 分量本身就是 cos(坡度)。夾底線避免超陡坡時除出暴衝速度。
+            float cosSlope = Mathf.Max(0.35f, Mathf.Abs(moveDir.x));
+            target /= cosSlope;
+        }
+
         bool speedingUp = target > current;
         float rate = speedingUp ? acceleration : braking;
         if (rate <= 0f) rate = 40f;
@@ -804,7 +819,11 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         Vector3 origin = col.bounds.center;
         float rayLength = col.bounds.extents.y + groundCheckDistance;
-        int layerMask = ~LayerMask.GetMask("Ignore Raycast");
+        // ★排除 Wolf 層：狼群擠在一起時，每顆偵測球本來會連旁邊的狼一起掃進 12 格緩衝區，
+        //   IsRealGround() 雖然會把狼濾掉，但濾掉是查完之後的事——狼越密查詢越貴，
+        //   而且狼多到把緩衝區塞滿時，真正的地面 hit 可能根本擠不進去，那一幀就偵測不到地。
+        //   直接在 layerMask 排除，偵測球從一開始就不會打到別的狼。
+        int layerMask = ~(LayerMask.GetMask("Ignore Raycast") | LayerMask.GetMask("Wolf"));
 
         // ★0910 第三版：三點採樣（後腳／中心／前腳）。
         //   SphereCast 已經比細射線穩很多，但「單一個 hit」讀到的還是「一個」三角面的法線。
@@ -967,12 +986,22 @@ public class WolfEnemy : MonoBehaviour, IResettable
     /// 設計上刻意只做「前後避讓」不做側向：這是 2D 橫向捲軸，
     /// 側向只有 Y（會跟重力打架）跟 Z（是畫面深度層、已經鎖住），兩個都不能拿來閃避。
     /// 所以擠在一起時的解法是「後面的放慢」，狼群會自然排成一列跟上，
-    /// 而不是全部黏在同一個 X 上。沒有任何一隻會停下來等別人——
-    /// 最慢也只到 (1 − separationStrength) 倍，預設還有半速。
+    /// 而不是全部黏在同一個 X 上。
+    ///
+    /// ★0912 改版：原本不管前車實際跑多快，一律照距離打「固定折數」（最重 1-strength）。
+    ///   斜坡是單行道，狼群沒辦法側移，後車幾乎全程都黏在前車 separationRadius 內，
+    ///   於是變成「領頭全速衝、後面死板卡在半速」——固定折數跟前車實際速度完全無關，
+    ///   前車被坡度拖慢，折數卻不會跟著鬆開。
+    ///   改成「貼著前車的實際速度走」：以前車目前的速度為基準，
+    ///   越靠近 minimumWolfDistance 容許速度壓到比前車稍慢（把間距拉開）；
+    ///   越靠近 separationRadius 容許速度可以比前車稍快（把間距補上）。
+    ///   這樣前車全速時後車也跟著全速，前車被斜坡拖慢後車也同步慢下來，不會再有落差。
+    ///   ★仍然保留 (1 − separationStrength) 當安全下限：前車完全停住時，
+    ///   後車也不會被這個機制逼到真的停下來等——沿用原本「沒有誰會停下來等別人」的設計保證。
     /// </summary>
-    private float ComputeSeparationFactor(float directionX)
+    private float ComputeSeparationFactor(float directionX, float ownSpeedAbs)
     {
-        if (!useSoftSeparation || Mathf.Abs(directionX) < 0.01f) return 1f;
+        if (!useSoftSeparation || Mathf.Abs(directionX) < 0.01f || ownSpeedAbs < 0.01f) return 1f;
 
         float factor = 1f;
         for (int i = 0; i < _allWolves.Count; i++)
@@ -982,14 +1011,29 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (other.isAttached || other.isStunned) continue;   // 咬住／硬直中的狼不算障礙
 
             float dx = other.transform.position.x - transform.position.x;
-            if (dx * directionX <= 0f) continue;                 // 只看前進方向前方的
+            if (dx * directionX <= 0f) continue;                 // 只看前進方向前方的（方向判斷只看 X 就夠了）
 
-            float dist = Mathf.Abs(dx);
+            // ★用 XY 平面距離而不是純 X 距離：狼群沿斜坡排隊時，同伴之間真實的間距
+            //   有一部分分量在 Y 軸上，純看 X 會把「沿坡距離其實夠遠」的狼誤判成太近，
+            //   導致爬坡時整群被過度減速——這正是平地正常、一上坡就集體變慢的原因。
+            float dy = other.transform.position.y - transform.position.y;
+            float dist = new Vector2(dx, dy).magnitude;
             if (dist > separationRadius) continue;
 
-            // separationRadius 處不減速，逼近到 minimumWolfDistance 時減到 (1 − strength)
-            float t = Mathf.InverseLerp(separationRadius, Mathf.Min(minimumWolfDistance, separationRadius - 0.01f), dist);
-            float f = 1f - t * Mathf.Clamp01(separationStrength);
+            // 前車目前實際跑多快，才是後車該跟的基準——不是後車自己想跑多快。
+            float leaderSpeed = Mathf.Abs(other.rb.linearVelocity.x);
+
+            // minimumWolfDistance 處：稍慢於前車（把間距拉開）
+            // separationRadius 處：稍快於前車（把間距補上，貼上去）
+            float t = Mathf.InverseLerp(minimumWolfDistance, separationRadius, dist);
+            float leaderBased = Mathf.Lerp(leaderSpeed * 0.85f, leaderSpeed * 1.15f, Mathf.Clamp01(t));
+
+            // 安全下限：前車幾乎停住（leaderSpeed→0）時，這裡不讓後車也被壓到 0，
+            // 保留原本 (1 − separationStrength) 的最低速度保證。
+            float minFloor = ownSpeedAbs * (1f - Mathf.Clamp01(separationStrength));
+            float allowed = Mathf.Max(leaderBased, minFloor);
+
+            float f = Mathf.Clamp01(allowed / ownSpeedAbs);
             if (f < factor) factor = f;
         }
         return Mathf.Clamp01(factor);
@@ -1040,7 +1084,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
         //   ★只縮小速度大小，絕對不改變 directionX——玩家在右邊，狼就永遠往右，
         //     不會因為要閃開同伴而往左跑。倍率夾在 0~1，乘完不可能變負數。
         //   ★只看「我前進方向的前方」那些狼。後面的狼不關我的事，不然會互相拉住誰都跑不動。
-        _dbgSeparationFactor = ComputeSeparationFactor(directionX);
+        _dbgSeparationFactor = ComputeSeparationFactor(directionX, Mathf.Abs(currentSpeed));
         currentSpeed *= _dbgSeparationFactor;
 
         // ★0910：這裡只「決定要跑多快」，真正推動身體交給 FixedUpdate。
