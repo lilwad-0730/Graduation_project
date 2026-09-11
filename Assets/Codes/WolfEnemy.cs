@@ -74,6 +74,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Range(0.3f, 1.2f)]
     public float groundProbeRadiusScale = 0.8f;
 
+    [Tooltip("採樣球半徑的絕對上限（公尺）。★場景裡狼的 CapsuleCollider radius 是 2.196，\n" +
+             "照倍率算出來會變成 1.76 公尺的大球，掃到的根本不是腳下那塊地。這裡夾住")]
+    [Range(0.1f, 2f)]
+    public float groundProbeMaxRadius = 0.45f;
+
+    [Tooltip("三點採樣間距的絕對上限（公尺）。同理，避免拿四公尺的跨距去平均地形法線")]
+    [Range(0.1f, 3f)]
+    public float groundProbeMaxSpread = 0.6f;
+
+    [Tooltip("開場檢查用：碰撞半徑超過這個值就在 Console 警告（不會自動改）")]
+    public float colliderSanityMaxRadius = 0.8f;
+    [Tooltip("開場檢查用：碰撞體中心離身體超過這個距離就警告（不會自動改）")]
+    public float colliderSanityMaxCenterOffset = 0.5f;
+
     [Tooltip("★隔離測試用開關：懷疑上坡卡頓是貼地造成的，就把這個關掉跑一次比較。\n" +
              "貼地只負責防止真正離地，不會改變追擊方向、不碰 X 速度、只作用於真正的地面")]
     public bool useGroundSnap = true;
@@ -331,7 +345,37 @@ public class WolfEnemy : MonoBehaviour, IResettable
         {
             player = pObj.transform;
             // 抓取玩家身上的 PlayerMovement 組件
-            playerMovement = pObj.GetComponent<PlayerMovement>(); 
+            playerMovement = pObj.GetComponent<PlayerMovement>();
+        }
+
+        WarnIfColliderLooksWrong();
+    }
+
+    /// <summary>
+    /// 開場檢查碰撞體尺寸合不合理。不自動改——碰撞體大小會直接影響
+    /// 狼撞地面、撞玩家、咬人的判定，那是關卡與手感的決定，不該由程式偷偷動。
+    /// 但它異常的話所有東西都會怪，所以一定要在 Console 吼出來。
+    /// </summary>
+    private void WarnIfColliderLooksWrong()
+    {
+        CapsuleCollider cap = col as CapsuleCollider;
+        if (cap == null) return;
+
+        float worldScale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
+        float worldRadius = cap.radius * worldScale;
+        float centerOffset = new Vector2(cap.center.x, cap.center.y).magnitude * worldScale;
+
+        if (worldRadius > colliderSanityMaxRadius || centerOffset > colliderSanityMaxCenterOffset)
+        {
+            Debug.LogWarning(
+                $"⚠️【狼碰撞體異常】'{gameObject.name}' 的 CapsuleCollider 尺寸不合理：\n" +
+                $"   radius = {cap.radius:F2}（世界尺寸 {worldRadius:F2} 公尺，直徑 {worldRadius * 2f:F2}）\n" +
+                $"   height = {cap.height:F2}\n" +
+                $"   center = {cap.center}（離身體中心 {centerOffset:F2} 公尺）\n" +
+                $"   一隻狼的碰撞半徑合理值大約 0.3～0.6 公尺，center 應該接近 0。\n" +
+                $"   目前這個尺寸會讓：地面偵測抓到不是腳下的地形、狼在距離身體好幾公尺外就撞到東西、\n" +
+                $"   狼群之間怎麼排都會重疊。程式這邊已經把地面採樣的尺寸夾住了，\n" +
+                $"   但碰撞判定本身還是照這個尺寸走——建議在 Inspector 把 radius 調到 0.4 左右、center 歸零。");
         }
     }
 
@@ -544,7 +588,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (useGroundSnap && gap > snapMinGap && gap < snapMaxGap)
             {
                 float snapDown = Mathf.Min(gap / Time.fixedDeltaTime, maxSnapSpeed);
-                nv.y -= snapDown;
+
+                // ★★0911 這就是上坡減速的真正兇手，而且是我自己上一版寫的。
+                //   原本是 nv.y -= snapDown，沿「世界 Y」往下減。
+                //   問題：在坡上，世界 Y 方向對沿坡方向是有投影的——
+                //       Dot((0,-1,0), moveDir) = -sin(坡度)
+                //   所以每貼地一次，就順手偷走 snapDown × sin(坡度) 的沿坡速度。
+                //   40 度坡 sin=0.64，貼地只要出力 2 m/s 就吃掉 1.28 m/s 的爬坡速度，
+                //   而加速度一個物理步只補得回 0.8。平地 sin=0 完全沒影響，
+                //   所以症狀剛好是「只有上坡變慢」。
+                //
+                //   正解：貼地要沿「地面法線的反方向」施加，那是垂直於坡面的，
+                //   對沿坡方向的投影 Dot(-normal, moveDir) 剛好是 0——
+                //   因為 moveDir 本來就是投影到坡面上的切線方向。
+                //   這樣貼地只做它該做的事（把腳壓回地面），一點都不碰前進速度。
+                nv += -usedNormal * snapDown;
             }
             rb.linearVelocity = new Vector3(nv.x, nv.y, v.z);
         }
@@ -661,6 +719,23 @@ public class WolfEnemy : MonoBehaviour, IResettable
     {
         if (!ignoreWolfToWolfCollision || col == null) return;
 
+        // ★0911 升級成真正的「層級排除」：狼已經搬到專用的 Wolf 層（Layer 6），
+        //   這裡用 Unity 的 Collider.excludeLayers 把自己的層整個排掉。
+        //   這是物理引擎層級的排除，等同於 Layer Collision Matrix 把 Wolf×Wolf 關掉，
+        //   而且不用去手改 DynamicsManager.asset 那串 256 字元的 hex 矩陣（改錯會整包壞掉）。
+        //   ★跟 IgnoreCollision 的差別：IgnoreCollision 是「兩個 Collider 實例」的配對，
+        //     物件一重生成就失效；excludeLayers 是掛在 Collider 上的層遮罩，
+        //     新生成的狼只要在 Wolf 層、跑過這裡一次就永久有效，不用跟場上每一隻配對。
+        int wolfLayerBit = 1 << gameObject.layer;
+        col.excludeLayers |= wolfLayerBit;
+
+        // 子物件上如果也有 Collider（腳、頭之類）一併處理
+        foreach (Collider c in GetComponentsInChildren<Collider>(true))
+        {
+            if (c != null) c.excludeLayers |= wolfLayerBit;
+        }
+
+        // 保留配對式忽略當第二層保險：萬一有哪隻狼忘了設 Layer，這層還擋得住
         for (int i = _allWolves.Count - 1; i >= 0; i--)
         {
             WolfEnemy other = _allWolves[i];
@@ -692,8 +767,18 @@ public class WolfEnemy : MonoBehaviour, IResettable
         //   坡度、坡面方向、視覺傾角就跟著跳——這是抖動的來源之一。
         //   三點取平均等於用狼的身長去「量」整體坡面，交界處的突變會被前後腳拉平。
         //   ★ 這不是延遲：三個 cast 都是這一幀即時打的，沒有沿用舊資料。
-        float radius = Mathf.Max(0.05f, Mathf.Min(col.bounds.extents.x, col.bounds.extents.z) * groundProbeRadiusScale);
-        float halfLen = col.bounds.extents.x * groundProbeSpread;
+        // ★0911：採樣尺寸原本完全跟著碰撞體大小走，但場景裡狼的 CapsuleCollider 是
+        //   radius 2.196（直徑 4.4 公尺）、而且 center 偏移 X = -4.29。
+        //   照那個尺寸算出來的採樣球半徑會是 1.76 公尺、三點間距 4 公尺——
+        //   等於拿一顆兩公尺的球去掃前後四公尺的地形，會掃到牆、掃到遠處的凸起，
+        //   平均出來的法線根本不是腳下那塊地。
+        //   碰撞體該不該縮是關卡/美術的決定，我不擅自改；但採樣尺寸是純內部的東西，
+        //   這裡用絕對上限夾住，讓地面偵測不受那個異常尺寸影響。
+        float rawRadius = Mathf.Min(col.bounds.extents.x, col.bounds.extents.z) * groundProbeRadiusScale;
+        float radius = Mathf.Clamp(rawRadius, 0.05f, groundProbeMaxRadius);
+
+        float rawSpread = col.bounds.extents.x * groundProbeSpread;
+        float halfLen = Mathf.Clamp(rawSpread, 0.05f, groundProbeMaxSpread);
 
         Vector3 sum = Vector3.zero;
         int valid = 0;
