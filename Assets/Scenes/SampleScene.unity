@@ -6102,7 +6102,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.288025, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11117,6 +11117,10 @@ MonoBehaviour:
   wolfZSpacing: 1
   groundProbeSpread: 0.9
   groundProbeRadiusScale: 0.8
+  groundProbeMaxRadius: 0.45
+  groundProbeMaxSpread: 0.6
+  colliderSanityMaxRadius: 0.8
+  colliderSanityMaxCenterOffset: 0.5
   useGroundSnap: 1
   snapMinGap: 0.02
   snapMaxGap: 0.35
@@ -11126,6 +11130,7 @@ MonoBehaviour:
   groundMemoryTime: 0.12
   debugSlopeLog: 0
   debugSlopeLogInterval: 0.5
+  debugForceKinematic: 0
   useCatchUpCurve: 1
   nearDistance: 4
   nearChaseSpeed: 5.5
@@ -11164,10 +11169,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
-  m_Height: 0.8
+  m_Radius: 1.3930473
+  m_Height: 2.7860947
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0.62638474, y: 0, z: 0}
 --- !u!54 &931082213
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -27992,7 +27997,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.288025, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34292,7 +34297,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.288025, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34586,7 +34591,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.292599
+      value: -31.300198
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
