@@ -135,6 +135,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("診斷訊息的間隔（秒）。0.5 大約每秒兩行，不會洗版")]
     public float debugSlopeLogInterval = 0.5f;
 
+    [Tooltip("【A/B 測試 C】強制把 Rigidbody 改成 Kinematic 跑跑看。\n" +
+             "★這只是診斷用的隔離開關，不是正式的 Kinematic 移動架構——\n" +
+             "  開了之後重力與碰撞解算都不作用，狼會用純速度積分移動，\n" +
+             "  拿來判斷「卡頓是不是 PhysX 接觸解算造成的」。驗完請關掉")]
+    public bool debugForceKinematic = false;
+
+    // A/B 診斷用的觀測值（每個 FixedUpdate 更新，只給 log 讀）
+    private float _dbgSeparationFactor = 1f;
+    private bool _dbgSnapFired = false;
+    private float _dbgSnapAmount = 0f;
+    private int _dbgContactCount = 0;
+    private Vector3 _dbgLastLoggedPos;
+    private bool _dbgJitterInit = false;
+    private float _dbgMaxJitter = 0f;
+
     [Header("追擊節奏曲線（Catch-up AI，0910）")]
     [Tooltip("開啟後用「距離 → 速度」的平滑曲線，取代原本 runDistanceThreshold 的兩段式切換。\n" +
              "關掉就回到舊行為（slowChaseSpeed / fastChaseSpeed 兩段切換）")]
@@ -324,6 +339,14 @@ public class WolfEnemy : MonoBehaviour, IResettable
             // 2D 橫向捲軸約束：Z 不參與 Gameplay，旋轉一律鎖死（身體傾斜是 Visual 子物件在做）
             RigidbodyConstraints want2D = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
             if (rb.constraints != want2D) rb.constraints = want2D;
+
+            // A/B 測試 C：隔離 PhysX 接觸解算的影響
+            if (debugForceKinematic && !rb.isKinematic)
+            {
+                rb.isKinematic = true;
+                Debug.LogWarning($"🔬【A/B 測試】'{gameObject.name}' 已強制改成 Kinematic（debugForceKinematic）。" +
+                                 "重力與碰撞解算都不作用，只拿來判斷卡頓是不是 PhysX 造成的。驗完請關掉。");
+            }
         }
 
 
@@ -603,7 +626,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
                 //   因為 moveDir 本來就是投影到坡面上的切線方向。
                 //   這樣貼地只做它該做的事（把腳壓回地面），一點都不碰前進速度。
                 nv += -usedNormal * snapDown;
+                _dbgSnapFired = true;
+                _dbgSnapAmount = snapDown;
             }
+            else { _dbgSnapFired = false; _dbgSnapAmount = 0f; }
             rb.linearVelocity = new Vector3(nv.x, nv.y, v.z);
         }
         else
@@ -646,7 +672,26 @@ public class WolfEnemy : MonoBehaviour, IResettable
         Vector3 v = rb.linearVelocity;
         float distX = player != null ? Mathf.Abs(player.position.x - transform.position.x) : -1f;
 
-        Debug.Log($"🐺【狼斜坡診斷】{gameObject.name}\n" +
+        // Collider 空間錯位：地面偵測、貼地間距全部是從 col.bounds.center 量的，
+        // 那個點跟狼本體差多遠，就代表所有空間量測差多遠。
+        float colOffsetX = col != null ? col.bounds.center.x - transform.position.x : 0f;
+        float lagSeconds = Mathf.Abs(v.x) > 0.1f ? Mathf.Abs(colOffsetX) / Mathf.Abs(v.x) : -1f;
+
+        // 位置抖動：連續兩次取樣之間，Y 方向有沒有來回跳
+        if (_dbgJitterInit)
+        {
+            float dy = Mathf.Abs(transform.position.y - _dbgLastLoggedPos.y);
+            if (dy > _dbgMaxJitter) _dbgMaxJitter = dy;
+        }
+        _dbgLastLoggedPos = transform.position;
+        _dbgJitterInit = true;
+
+        Debug.Log($"🐺【狼診斷】{gameObject.name}  (Kinematic={rb.isKinematic})\n" +
+                  $"  ★Collider 錯位: bounds.center 離狼本體 X {colOffsetX:F2} 公尺" +
+                  (lagSeconds > 0 ? $"  ≈ 以目前速度落後 {lagSeconds:F2} 秒的地形資訊" : "") + "\n" +
+                  $"  Soft Separation 倍率: {_dbgSeparationFactor:F2}" + (_dbgSeparationFactor < 0.99f ? "  ★有在減速★" : "") + "\n" +
+                  $"  Ground Snap: {(_dbgSnapFired ? $"觸發 ({_dbgSnapAmount:F2} m/s)" : "沒觸發")}   實體接觸數: {_dbgContactCount}\n" +
+                  $"  Y 抖動峰值(累計): {_dbgMaxJitter:F3}\n" +
                   $"  地面: {(groundFound ? $"有 (法線 {hit.normal}, 坡度 {slopeAngle:F1}°)" : "★射空★")}" +
                   $"  可行走坡面: {(onSlope ? "是" : "否（走平地分支）")}\n" +
                   $"  前進方向 moveDir: {moveDir}  (長度 {moveDir.magnitude:F3})\n" +
@@ -995,7 +1040,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         //   ★只縮小速度大小，絕對不改變 directionX——玩家在右邊，狼就永遠往右，
         //     不會因為要閃開同伴而往左跑。倍率夾在 0~1，乘完不可能變負數。
         //   ★只看「我前進方向的前方」那些狼。後面的狼不關我的事，不然會互相拉住誰都跑不動。
-        currentSpeed *= ComputeSeparationFactor(directionX);
+        _dbgSeparationFactor = ComputeSeparationFactor(directionX);
+        currentSpeed *= _dbgSeparationFactor;
 
         // ★0910：這裡只「決定要跑多快」，真正推動身體交給 FixedUpdate。
         //   原本是在這裡直接寫 rb.linearVelocity，而 ChasePlayer() 是 Update() 呼叫的——
@@ -1037,6 +1083,24 @@ public class WolfEnemy : MonoBehaviour, IResettable
         }
     }
 
+
+    // A/B 診斷用：數這一幀有幾個實體接觸點。用來驗證 Wolf×Wolf 是不是真的 0 接觸。
+    private void OnCollisionStay(Collision c)
+    {
+        if (!debugSlopeLog) return;
+        _dbgContactCount = c.contactCount;
+
+        if (c.gameObject.GetComponentInParent<WolfEnemy>() != null)
+        {
+            Debug.LogError($"❌【Wolf×Wolf 仍有實體接觸】'{gameObject.name}' 撞到 '{c.gameObject.name}'（{c.contactCount} 個接觸點）——" +
+                           "層級排除沒生效，檢查兩隻狼是不是都在 Wolf 層");
+        }
+    }
+
+    private void OnCollisionExit(Collision c)
+    {
+        _dbgContactCount = 0;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
