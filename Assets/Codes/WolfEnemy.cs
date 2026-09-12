@@ -165,6 +165,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private Vector3 _dbgLastLoggedPos;
     private bool _dbgJitterInit = false;
     private float _dbgMaxJitter = 0f;
+    private string _dbgLastHitName = "（還沒撞到東西）";
 
     [Header("追擊節奏曲線（Catch-up AI，0910）")]
     [Tooltip("開啟後用「距離 → 速度」的平滑曲線，取代原本 runDistanceThreshold 的兩段式切換。\n" +
@@ -766,7 +767,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (_dbgSnapFired) suspects += $"\n     ⚠ 貼地正在作用（力道 {_dbgSnapAmount:F2}）";
         if (!groundFound) suspects += "\n     ⚠ 這一幀沒偵測到地面";
         if (groundFound && !onSlope && slopeAngle >= 3f) suspects += $"\n     ⚠ 坡度 {slopeAngle:F0}° 被判定成「不可行走」（上限是 {maxWalkableSlopeAngle}°）";
-        if (_dbgContactCount > 0) suspects += $"\n     ⚠ 正在跟 {_dbgContactCount} 個東西實體接觸（可能被地形頂住）";
+        if (_dbgContactCount > 0) suspects += $"\n     ⚠ 正在跟 {_dbgContactCount} 個東西實體接觸：{_dbgLastHitName}";
+
+        // 想跑卻跑不動＝被物理擋住，這比任何速度設定都重要，單獨標出來
+        if (Mathf.Abs(_targetSpeedX) > 1f && Mathf.Abs(next) < Mathf.Abs(_targetSpeedX) * 0.4f)
+            suspects += $"\n     🚨 想跑 {Mathf.Abs(_targetSpeedX):F2} 但只跑得出 {Mathf.Abs(next):F2}" +
+                        "——狼是被實體擋住，不是速度被扣";
         if (Mathf.Abs(colOffsetX) > 0.5f) suspects += $"\n     ⚠ 碰撞體離狼本體 {colOffsetX:F2} 公尺，地面偵測抓錯位置";
         if (col == null) suspects += "\n     🚨 狼身上完全沒有 Collider！會直接穿過所有東西掉下去";
         else if (!col.enabled) suspects += "\n     🚨 狼的 Collider 被停用了（enabled = false）";
@@ -778,6 +784,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
             $"  ① 狼實際跑多快：{(measuredSpeed >= 0 ? measuredSpeed.ToString("F2") : "首次取樣")}\n" +
             $"     {verdict}\n" +
             $"  ② 現在踩的地是幾度：{(groundFound ? slopeAngle.ToString("F0") + " 度" : "沒踩到地")}（0 度＝平地）\n" +
+            $"     狼有沒有「沿著坡」跑：{(onSlope ? "有" : "★沒有★（當成平地在跑，會撞向斜坡）")}" +
+            $"   坡面上限 {maxWalkableSlopeAngle}°\n" +
+            $"     方向：目標 {_heldTargetDir}  實際用 {moveDir}（斜坡上 Y 應該不是 0）\n" +
             $"  ③ 狼想跑多快：{Mathf.Abs(_targetSpeedX):F2}   實際沿著地面跑：{next:F2}\n" +
             $"     （這兩個差很多＝有人在扣速度；一樣＝速度沒被扣，問題在別處）\n" +
             $"  ④ 有沒有東西在扣速度：{suspects}\n" +
@@ -1225,6 +1234,18 @@ public class WolfEnemy : MonoBehaviour, IResettable
     {
         if (!debugSlopeLog) return;
         _dbgContactCount = c.contactCount;
+
+        // 記下撞到的是什麼、以及接觸點的法線。
+        // 法線接近水平（像牆壁）代表狼是「被前方擋住」不是「踩在地上」，
+        // 那才是卡在原地跑不動的原因。
+        string nrm = "";
+        if (c.contactCount > 0)
+        {
+            Vector3 n = c.GetContact(0).normal;
+            float upness = Vector3.Angle(Vector3.up, n);
+            nrm = $"（接觸面 {upness:F0}° {(upness > 60f ? "★像牆壁，會擋住前進★" : "像地面")}）";
+        }
+        _dbgLastHitName = c.gameObject.name + nrm;
 
         if (c.gameObject.GetComponentInParent<WolfEnemy>() != null)
         {
