@@ -11133,11 +11133,11 @@ MonoBehaviour:
   debugForceKinematic: 0
   useCatchUpCurve: 1
   nearDistance: 4
-  nearChaseSpeed: 5.5
-  cruiseDistance: 10
-  cruiseChaseSpeed: 7
-  maxCatchUpDistance: 20
-  maxCatchUpSpeed: 10
+  nearChaseSpeed: 6.8
+  cruiseDistance: 9
+  cruiseChaseSpeed: 9
+  maxCatchUpDistance: 18
+  maxCatchUpSpeed: 12.5
   acceleration: 40
   braking: 60
   bodyMass: 12
