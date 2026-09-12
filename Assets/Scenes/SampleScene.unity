@@ -11051,9 +11051,9 @@ GameObject:
   m_Component:
   - component: {fileID: 931082214}
   - component: {fileID: 931082213}
-  - component: {fileID: 931082212}
   - component: {fileID: 931082211}
   - component: {fileID: 931082210}
+  - component: {fileID: 931082215}
   m_Layer: 6
   m_Name: WOLF
   m_TagString: Untagged
@@ -11114,7 +11114,7 @@ MonoBehaviour:
   minimumWolfDistance: 1.2
   separationStrength: 0.5
   useDepthLayering: 1
-  wolfZSpacing: 1
+  wolfZSpacing: 0.2
   groundProbeSpread: 0.9
   groundProbeRadiusScale: 0.8
   groundProbeMaxRadius: 0.45
@@ -11128,7 +11128,7 @@ MonoBehaviour:
   slopeDirectionSmoothSpeed: 360
   slopeAngleDeadband: 5
   groundMemoryTime: 0.12
-  debugSlopeLog: 0
+  debugSlopeLog: 1
   debugSlopeLogInterval: 0.5
   debugForceKinematic: 0
   useCatchUpCurve: 1
@@ -11150,29 +11150,6 @@ MonoBehaviour:
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
   soundVolume: 0.85
---- !u!136 &931082212
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 931082209}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.3930473
-  m_Height: 2.7860947
-  m_Direction: 1
-  m_Center: {x: 0.62638474, y: 0, z: 0}
 --- !u!54 &931082213
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11216,6 +11193,27 @@ Transform:
   - {fileID: 216456109}
   m_Father: {fileID: 979294358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &931082215
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 931082209}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.1885338, y: 1.6623306, z: 1}
+  m_Center: {x: 0.28796577, y: 0.014392853, z: 0}
 --- !u!1 &932045870
 GameObject:
   m_ObjectHideFlags: 0

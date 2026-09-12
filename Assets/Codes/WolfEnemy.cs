@@ -60,10 +60,18 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public bool useDepthLayering = true;
 
     [Tooltip("每一層之間的 Z 間距。\n" +
-             "★如果狼放到比較深的層會踩空掉下去，代表地面的碰撞體在 Z 軸不夠厚，把這個值調小。\n" +
-             "正交相機下 0.2 跟 1.0 的視覺結果一樣（都只是換前後順序），所以調小沒有任何損失")]
+             "★★0912 從 1.0 改成 0.2，原因：地面是 PolygonToMeshCollider 生的，depth = 3，\n" +
+             "  也就是地面只存在於 Z = -1.5 ~ +1.5。間距 1.0 會把第 2 隻之後的狼\n" +
+             "  放到 Z = 2、3、4、5——那裡根本沒有地面，狼直接穿過去掉出地圖。\n" +
+             "  相機是正交投影，0.2 跟 1.0 的視覺結果完全一樣（都只是換前後順序），\n" +
+             "  所以調小沒有任何損失，只是不會掉下去。")]
     [Range(0.05f, 2f)]
-    public float wolfZSpacing = 1f;
+    public float wolfZSpacing = 0.2f;
+
+    [Tooltip("Z 分層的絕對上限（公尺）。不管幾隻狼、間距設多少，Z 都不會超過這個範圍。\n" +
+             "地面 depth = 3（±1.5），所以 1.2 留了安全邊際。這是防止狼被排到沒有地面的深度")]
+    [Range(0.1f, 3f)]
+    public float wolfZMaxAbs = 1.2f;
 
     [Tooltip("腳下三點採樣的間距（乘上碰撞體半長）。1 = 前後腳剛好在身體兩端。\n" +
              "把整個身長當成量尺去讀坡面，交界處的法線突變會被前後腳拉平")]
@@ -288,7 +296,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
         int index = _allWolves.IndexOf(this);
         if (index < 0) index = 0;
 
-        _assignedZ = index * wolfZSpacing;
+        // ★硬上限：不管幾隻狼、間距設多少，都不准排到地面碰撞體的厚度之外。
+        //   地面是 PolygonToMeshCollider 生的，depth = 3 → 只存在於 Z = ±1.5。
+        //   超出去的狼腳下沒有東西接，會直接掉出地圖。
+        _assignedZ = Mathf.Clamp(index * wolfZSpacing, -wolfZMaxAbs, wolfZMaxAbs);
         Vector3 p = transform.position;
         transform.position = new Vector3(p.x, p.y, _assignedZ);
     }
@@ -711,17 +722,26 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         // ── 自動記住平地速度，之後上坡時直接算出慢了幾 % ──
         // 這樣不用自己比對兩段數字，程式直接講結論。
-        if (measuredSpeed > 0.5f)
+        // ★0912 修掉診斷自己的 bug：原本只看 slopeAngle < 3 就當成平地。
+        //   但「沒踩到地」的時候 slopeAngle 也是 0，於是狼在自由落體、
+        //   每秒掉 55 公尺，那個 55 就被當成「平地基準速度」記下來了，
+        //   之後所有百分比全部作廢。基準只能在「真的踩到地」的時候記。
+        bool falling = !groundFound && rb.linearVelocity.y < -8f;
+
+        if (measuredSpeed > 0.5f && groundFound && slopeAngle < 3f)
         {
-            if (slopeAngle < 3f)
-            {
-                // 平地：記最快的那次當基準（避免起步加速中的數值被當成基準）
-                if (measuredSpeed > _dbgFlatBaseline) _dbgFlatBaseline = measuredSpeed;
-            }
+            // 平地：記最快的那次當基準（避免起步加速中的數值被當成基準）
+            if (measuredSpeed > _dbgFlatBaseline) _dbgFlatBaseline = measuredSpeed;
         }
 
         string verdict;
-        if (measuredSpeed < 0f)
+        if (falling)
+        {
+            verdict = $"🚨🚨 狼正在往下墜！Y 速度 {rb.linearVelocity.y:F1}（不是在跑步，是掉出地圖）\n" +
+                      $"     → 腳下沒有碰撞體接得住牠。先確認狼身上有沒有 Collider、\n" +
+                      $"       以及牠出生的位置底下到底有沒有地";
+        }
+        else if (measuredSpeed < 0f)
         {
             verdict = "（第一次取樣，還沒有資料）";
         }
@@ -748,6 +768,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (groundFound && !onSlope && slopeAngle >= 3f) suspects += $"\n     ⚠ 坡度 {slopeAngle:F0}° 被判定成「不可行走」（上限是 {maxWalkableSlopeAngle}°）";
         if (_dbgContactCount > 0) suspects += $"\n     ⚠ 正在跟 {_dbgContactCount} 個東西實體接觸（可能被地形頂住）";
         if (Mathf.Abs(colOffsetX) > 0.5f) suspects += $"\n     ⚠ 碰撞體離狼本體 {colOffsetX:F2} 公尺，地面偵測抓錯位置";
+        if (col == null) suspects += "\n     🚨 狼身上完全沒有 Collider！會直接穿過所有東西掉下去";
+        else if (!col.enabled) suspects += "\n     🚨 狼的 Collider 被停用了（enabled = false）";
+        if (falling) suspects += $"\n     🚨 正在自由落體（Y 速度 {rb.linearVelocity.y:F1}），以下數字都不是跑步的數字";
         if (suspects == "") suspects = "\n     （沒有發現異常）";
 
         Debug.Log(
