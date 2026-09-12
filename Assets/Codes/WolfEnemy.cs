@@ -867,7 +867,6 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (col == null) return false;
 
         Vector3 origin = col.bounds.center;
-        float rayLength = col.bounds.extents.y + groundCheckDistance;
         // ★排除 Wolf 層：狼群擠在一起時，每顆偵測球本來會連旁邊的狼一起掃進 12 格緩衝區，
         //   IsRealGround() 雖然會把狼濾掉，但濾掉是查完之後的事——狼越密查詢越貴，
         //   而且狼多到把緩衝區塞滿時，真正的地面 hit 可能根本擠不進去，那一幀就偵測不到地。
@@ -893,6 +892,24 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float rawSpread = col.bounds.extents.x * groundProbeSpread;
         float halfLen = Mathf.Clamp(rawSpread, 0.05f, groundProbeMaxSpread);
 
+        // ★★0912 實機診斷抓到的真兇：偵測球「一開始就埋在地裡」。
+        //   舊寫法起點是 col.bounds.center + up * 0.05，只比碰撞體中心高 5 公分，
+        //   而偵測球半徑最大 0.45——狼站在地上時，這顆球從第一幀就跟地面重疊。
+        //   Unity 的 SphereCast 從「已經重疊」的狀態起掃，是偵測不到那個碰撞體的
+        //   （回傳 distance 0 加上沒有意義的法線，或是直接當沒打到）。
+        //   所以診斷訊息才會出現「狼在平地、時速 7.44、卻顯示沒踩到地」。
+        //
+        //   在平地這沒差（走平地分支剛好也對），但在斜坡是致命的：
+        //   偵測不到地面 → moveDir 維持水平 → 狼是「撞向」斜坡而不是「沿著」斜坡跑，
+        //   被碰撞解算頂住 → 下一幀偵測又成功 → 爬一下 → 再失敗。
+        //   那個一衝一頓就是上坡卡頓。
+        //
+        //   改成從「狼頭頂上方」開始往下掃，掃過腳底為止。
+        //   起點高過碰撞體頂端一整個球半徑，保證開掃時球是懸空的。
+        float castTopY = col.bounds.max.y + radius + 0.1f;
+        float castBottomY = col.bounds.min.y - groundCheckDistance;
+        float rayLength = Mathf.Max(0.2f, castTopY - castBottomY);
+
         Vector3 sum = Vector3.zero;
         int valid = 0;
         RaycastHit best = default;
@@ -900,7 +917,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         for (int i = -1; i <= 1; i++)
         {
-            Vector3 start = origin + Vector3.up * 0.05f + new Vector3(i * halfLen, 0f, 0f);
+            Vector3 start = new Vector3(origin.x + i * halfLen, castTopY, origin.z);
 
             // ★0911 重要修正：原本用 SphereCast 只拿「最近的那一個」hit，
             //   打到別隻狼就整個採樣點作廢。但狼群疊在一起時，最近的那個常常就是別隻狼，
@@ -947,8 +964,11 @@ public class WolfEnemy : MonoBehaviour, IResettable
             return true;
         }
 
-        // 三點全空才退回最原始的細射線，當最後保險
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit downHit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
+        // 三點全空才退回最原始的細射線，當最後保險。
+        // 起點同樣改成從頭頂上方開始：從碰撞體中心起射的話，中心若已經埋進地形，
+        // 射線會從內部往外射，Unity 預設不算背面命中，一樣會漏掉。
+        Vector3 rayStart = new Vector3(origin.x, castTopY, origin.z);
+        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit downHit, rayLength, layerMask, QueryTriggerInteraction.Ignore))
         {
             if (downHit.collider == col || downHit.collider.transform.IsChildOf(transform)) return false;
             hit = downHit;
