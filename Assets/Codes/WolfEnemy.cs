@@ -129,8 +129,16 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public float groundMemoryTime = 0.12f;
 
     [Header("🔍 斜坡診斷（驗完請關掉）")]
-    [Tooltip("開啟後每隔一段時間在 Console 印出狼的完整移動狀態，包含「實際每秒位移」——\n" +
-             "那個數字才能證明狼真的跑多快，設定值不算數。上坡跟平地各跑一次比較就知道問題在哪一層")]
+    [Tooltip("【怎麼用】\n" +
+             "1. 打勾這一格\n" +
+             "2. 按 Play 開始遊戲\n" +
+             "3. 先在【平地】讓狼追你跑幾秒（程式會自己記下平地速度當基準）\n" +
+             "4. 再跑到【斜坡】讓狼追上來\n" +
+             "5. 看 Unity 下方 Console 視窗，每半秒會印一則「🐺【狼診斷】」\n" +
+             "6. 把上坡時的那幾則複製給我\n\n" +
+             "訊息是白話寫的，第 ① 行會直接告訴你「上坡比平地慢了幾 %」，\n" +
+             "第 ④ 行會列出有哪些東西正在扣速度。你不用自己比對數字。\n\n" +
+             "★驗完記得取消打勾，不然 Console 會一直印")]
     public bool debugSlopeLog = false;
     [Tooltip("診斷訊息的間隔（秒）。0.5 大約每秒兩行，不會洗版")]
     public float debugSlopeLogInterval = 0.5f;
@@ -701,21 +709,62 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _dbgLastLoggedPos = transform.position;
         _dbgJitterInit = true;
 
-        Debug.Log($"🐺【狼診斷】{gameObject.name}  (Kinematic={rb.isKinematic})\n" +
-                  $"  ★Collider 錯位: bounds.center 離狼本體 X {colOffsetX:F2} 公尺" +
-                  (lagSeconds > 0 ? $"  ≈ 以目前速度落後 {lagSeconds:F2} 秒的地形資訊" : "") + "\n" +
-                  $"  Soft Separation 倍率: {_dbgSeparationFactor:F2}" + (_dbgSeparationFactor < 0.99f ? "  ★有在減速★" : "") + "\n" +
-                  $"  Ground Snap: {(_dbgSnapFired ? $"觸發 ({_dbgSnapAmount:F2} m/s)" : "沒觸發")}   實體接觸數: {_dbgContactCount}\n" +
-                  $"  Y 抖動峰值(累計): {_dbgMaxJitter:F3}\n" +
-                  $"  地面: {(groundFound ? $"有 (法線 {hit.normal}, 坡度 {slopeAngle:F1}°)" : "★射空★")}" +
-                  $"  可行走坡面: {(onSlope ? "是" : "否（走平地分支）")}\n" +
-                  $"  前進方向 moveDir: {moveDir}  (長度 {moveDir.magnitude:F3})\n" +
-                  $"  沿方向速度  current: {current:F2}  →  target: {target:F2}  →  寫入 next: {next:F2}\n" +
-                  $"  _targetSpeedX: {_targetSpeedX:F2}   距離玩家 X: {distX:F1}   曲線算出: {(useCatchUpCurve && distX >= 0 ? EvaluateChaseSpeed(distX).ToString("F2") : "n/a")}\n" +
-                  $"  剛體速度: x={v.x:F2}  y={v.y:F2}  合速度={new Vector2(v.x, v.y).magnitude:F2}\n" +
-                  $"  ★實際每秒位移: {(measuredSpeed >= 0 ? measuredSpeed.ToString("F2") : "首次取樣")}  ← 這個才是真的跑多快\n" +
-                  $"  acceleration={acceleration} braking={braking} 這步用的={(target > current ? "加速" : "煞車")}");
+        // ── 自動記住平地速度，之後上坡時直接算出慢了幾 % ──
+        // 這樣不用自己比對兩段數字，程式直接講結論。
+        if (measuredSpeed > 0.5f)
+        {
+            if (slopeAngle < 3f)
+            {
+                // 平地：記最快的那次當基準（避免起步加速中的數值被當成基準）
+                if (measuredSpeed > _dbgFlatBaseline) _dbgFlatBaseline = measuredSpeed;
+            }
+        }
+
+        string verdict;
+        if (measuredSpeed < 0f)
+        {
+            verdict = "（第一次取樣，還沒有資料）";
+        }
+        else if (_dbgFlatBaseline < 0.5f)
+        {
+            verdict = "（還沒在平地跑過，先在平地跑幾秒建立基準）";
+        }
+        else if (slopeAngle < 3f)
+        {
+            verdict = $"目前在平地。基準速度 = {_dbgFlatBaseline:F2}";
+        }
+        else
+        {
+            float pct = (1f - measuredSpeed / _dbgFlatBaseline) * 100f;
+            if (pct < 8f) verdict = $"上坡速度正常（只差 {pct:F0}%，這在誤差內）";
+            else verdict = $"★★ 上坡比平地慢了 {pct:F0}% ★★（平地 {_dbgFlatBaseline:F2} → 現在 {measuredSpeed:F2}）";
+        }
+
+        // 誰有可能在扣速度，直接列出來
+        string suspects = "";
+        if (_dbgSeparationFactor < 0.99f) suspects += $"\n     ⚠ 前面有同伴擋路，速度被打 {_dbgSeparationFactor:F2} 折";
+        if (_dbgSnapFired) suspects += $"\n     ⚠ 貼地正在作用（力道 {_dbgSnapAmount:F2}）";
+        if (!groundFound) suspects += "\n     ⚠ 這一幀沒偵測到地面";
+        if (groundFound && !onSlope && slopeAngle >= 3f) suspects += $"\n     ⚠ 坡度 {slopeAngle:F0}° 被判定成「不可行走」（上限是 {maxWalkableSlopeAngle}°）";
+        if (_dbgContactCount > 0) suspects += $"\n     ⚠ 正在跟 {_dbgContactCount} 個東西實體接觸（可能被地形頂住）";
+        if (Mathf.Abs(colOffsetX) > 0.5f) suspects += $"\n     ⚠ 碰撞體離狼本體 {colOffsetX:F2} 公尺，地面偵測抓錯位置";
+        if (suspects == "") suspects = "\n     （沒有發現異常）";
+
+        Debug.Log(
+            $"🐺【狼診斷】{gameObject.name}\n" +
+            $"  ① 狼實際跑多快：{(measuredSpeed >= 0 ? measuredSpeed.ToString("F2") : "首次取樣")}\n" +
+            $"     {verdict}\n" +
+            $"  ② 現在踩的地是幾度：{(groundFound ? slopeAngle.ToString("F0") + " 度" : "沒踩到地")}（0 度＝平地）\n" +
+            $"  ③ 狼想跑多快：{Mathf.Abs(_targetSpeedX):F2}   實際沿著地面跑：{next:F2}\n" +
+            $"     （這兩個差很多＝有人在扣速度；一樣＝速度沒被扣，問題在別處）\n" +
+            $"  ④ 有沒有東西在扣速度：{suspects}\n" +
+            $"  ⑤ 狼上下抖動的最大幅度：{_dbgMaxJitter:F3}（超過 0.1 就是明顯在跳）\n" +
+            $"  ⑥ 跟玩家差多遠：{distX:F1} 公尺\n" +
+            $"  ── 以下是給程式看的原始值，你可以跳過 ──\n" +
+            $"  速度 x={v.x:F2} y={v.y:F2}｜前進方向 {moveDir}｜Kinematic={rb.isKinematic}");
     }
+
+    private float _dbgFlatBaseline = 0f;   // 平地跑出來的基準速度，用來算上坡慢幾 %
 
     /// <summary>
     /// 讓狼的身體跟著斜坡傾斜，跑上坡時與地面平行，而不是直挺挺地站著。
