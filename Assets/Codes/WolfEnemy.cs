@@ -17,6 +17,40 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public float aggroDistanceX = 6f;
     public float giveUpDistanceX = 12f;
 
+    [Header("狼群個體速度微差與動態競速")]
+    [Tooltip("狼群距離正常時的基礎速度微差 (預設 0.03，即 ±3%，範圍約 0.97 ~ 1.03)")]
+    [SerializeField, Range(0f, 0.05f)]
+    private float baseSpeedVariation = 0.03f;
+
+    [Tooltip("狼群極度重疊時的最大速度微差 (預設 0.08，即最高 ±8%，範圍約 0.92 ~ 1.08)")]
+    [SerializeField, Range(0.03f, 0.15f)]
+    private float maxOverlapSpeedVariation = 0.08f;
+
+    [Tooltip("去同步效果平滑過渡速度 (單位/秒，預設 2.0，約 0.5 秒平滑過渡，消除速度階躍突變)")]
+    [SerializeField, Range(0.5f, 5f)]
+    private float desyncTransitionSpeed = 2.0f;
+
+    [Tooltip("本隻狼的個體速度傾向係數 (-1.0 ~ +1.0，初始化時決定一次且整場固定，負數偏慢、正數偏快)")]
+    [SerializeField]
+    private float individualSpeedBiasRatio = 0f;
+
+    [Tooltip("本隻狼目前的有效速度倍率 (隨同伴距離平滑動態擴展，供 Inspector 觀察)")]
+    [SerializeField]
+    private float currentEffectiveSpeedMultiplier = 1f;
+    public float IndividualSpeedMultiplier => currentEffectiveSpeedMultiplier;
+
+    // 平滑後的重疊強度 (0 ~ 1)
+    private float _smoothedOverlapIntensity = 0f;
+
+    [Header("最低有效追擊速度保證")]
+    [Tooltip("狼在正常追擊玩家時，速度必須高於玩家基礎速度的最低額外差額 (預設 0.4，確保玩家全力奔跑時狼仍可穩定縮短距離咬人)")]
+    [SerializeField, Range(0.1f, 1.5f)]
+    private float minimumChaseSpeedAbovePlayer = 0.4f;
+
+    [Tooltip("當無法取得玩家組件時使用的預設玩家速度 (預設 5.0)")]
+    [SerializeField]
+    private float defaultPlayerSpeed = 5.0f;
+
     [Header("物理免疫設定")]
     [Tooltip("狼要忽略碰撞的物件 Collider 清單")]
     public List<Collider> collidersToIgnore = new List<Collider>();
@@ -158,6 +192,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
         // ★ 核心保證：剛體物理絕對鎖定在 Z = 0！
         // 地面 BoxCollider 厚度僅 0.2（Z 範圍 -0.1 到 +0.1），偏離 Z = 0 會掉出地面或踩在側面！
         transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
+
+        // 每隻狼在初始化/Spawn 時決定一次固定的個體速度傾向 (-1.0 ~ +1.0)，整場保持固定，不每幀重新隨機
+        individualSpeedBiasRatio = Random.Range(-1f, 1f);
+        currentEffectiveSpeedMultiplier = 1f + (individualSpeedBiasRatio * baseSpeedVariation);
     }
 
     private void OnEnable()
@@ -488,6 +526,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (isPlayerFacingWolf)
         {
             currentSpeed = retreatSpeed;
+            // 123 木頭人退後狀態下平滑淡出去同步
+            _smoothedOverlapIntensity = Mathf.MoveTowards(_smoothedOverlapIntensity, 0f, desyncTransitionSpeed * Time.deltaTime);
         }
         else
         {
@@ -498,12 +538,25 @@ public class WolfEnemy : MonoBehaviour, IResettable
             Vector2 playerPos = new Vector2(player.position.x, player.position.y);
             float realDistance = Vector2.Distance(wolfPos, playerPos);
 
+            // 1. Base Chase Speed (Catch-up 曲線或基礎跑速)
             currentSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance)
                                            : (realDistance > runDistanceThreshold ? slowChaseSpeed : fastChaseSpeed);
 
-            // 柔和同伴避讓 (主角拉開距離進行遠距追擊時，同伴不相互煞車，全速集體衝鋒)
-            float sepFactor = ComputeSeparationFactor(directionX, Mathf.Abs(currentSpeed), realDistance);
+            // 2. Separation (柔和同伴避讓與重疊強度計算)
+            float sepFactor = ComputeSeparationFactor(directionX, Mathf.Abs(currentSpeed), realDistance, out float targetOverlap);
             currentSpeed *= sepFactor;
+
+            // 3. Individual Speed Variation (距離越近速度差越大，由 ±3% 平滑放大至最高 ±8%)
+            _smoothedOverlapIntensity = Mathf.MoveTowards(_smoothedOverlapIntensity, targetOverlap, desyncTransitionSpeed * Time.deltaTime);
+            float currentVariation = Mathf.Lerp(baseSpeedVariation, maxOverlapSpeedVariation, _smoothedOverlapIntensity);
+            currentEffectiveSpeedMultiplier = 1f + (individualSpeedBiasRatio * currentVariation);
+            currentSpeed *= currentEffectiveSpeedMultiplier;
+
+            // 4. Minimum Chase Speed 保證與 maxCatchUpSpeed 上限 Clamp
+            // 確保正常追逐時狼速必然高於玩家奔跑速度（至少高出 minimumChaseSpeedAbovePlayer），且不突破 maxCatchUpSpeed
+            float pBaseSpeed = (playerMovement != null) ? playerMovement.BaseSpeed : defaultPlayerSpeed;
+            float minimumChaseSpeed = pBaseSpeed + minimumChaseSpeedAbovePlayer;
+            currentSpeed = Mathf.Clamp(currentSpeed, minimumChaseSpeed, maxCatchUpSpeed);
         }
 
         _targetSpeedX = directionX * currentSpeed;
@@ -537,14 +590,14 @@ public class WolfEnemy : MonoBehaviour, IResettable
         return Mathf.Min(speed, maxCatchUpSpeed);
     }
 
-    private float ComputeSeparationFactor(float directionX, float ownSpeedAbs, float distToPlayer)
+    private float ComputeSeparationFactor(float directionX, float ownSpeedAbs, float distToPlayer, out float overlapIntensity)
     {
+        overlapIntensity = 0f;
         if (!useSoftSeparation || Mathf.Abs(directionX) < 0.01f || ownSpeedAbs < 0.01f) return 1f;
 
-        // 當主角拉開距離 (遠距追擊) 時，群體衝鋒不減速，全力追趕主角
-        if (distToPlayer > nearDistance) return 1f;
-
         float factor = 1f;
+        float minOtherDist = float.MaxValue;
+
         for (int i = 0; i < _allWolves.Count; i++)
         {
             WolfEnemy other = _allWolves[i];
@@ -552,10 +605,16 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (other.isAttached || other.isStunned) continue;
 
             float dx = other.transform.position.x - transform.position.x;
-            if (dx * directionX <= 0f) continue;
-
             float dy = other.transform.position.y - transform.position.y;
             float dist = new Vector2(dx, dy).magnitude;
+
+            // 統計與同伴的最近距離（用於去同步重疊判定）
+            if (dist < minOtherDist) minOtherDist = dist;
+
+            // 當主角拉開距離 (遠距追擊) 時，群體衝鋒不減速，全力追趕主角
+            if (distToPlayer > nearDistance) continue;
+
+            if (dx * directionX <= 0f) continue;
             if (dist > separationRadius) continue;
 
             // 僅在貼身準備咬人時微幅拉開間距，絕不卡死
@@ -564,6 +623,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
             float f = Mathf.Lerp(minF, 1f, t);
             if (f < factor) factor = f;
         }
+
+        // 當同伴距離小於 separationRadius 時計算重疊強度 (0 ~ 1)，越近強度越高
+        if (minOtherDist < separationRadius)
+        {
+            overlapIntensity = Mathf.Clamp01(1f - (minOtherDist / separationRadius));
+        }
+
         return factor;
     }
 
@@ -739,6 +805,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _hasTargetSpeed = false;
         _targetSpeedX = 0f;
         _currentSpeed = 0f;
+        _smoothedOverlapIntensity = 0f;
+        currentEffectiveSpeedMultiplier = 1f + (individualSpeedBiasRatio * baseSpeedVariation);
         _lastGroundedFacingWolf = false;
 
         transform.position = new Vector3(_initialPosition.x, _initialPosition.y, 0f);
