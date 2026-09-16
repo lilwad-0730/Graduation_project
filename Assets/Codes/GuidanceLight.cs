@@ -68,7 +68,40 @@ public class GuidanceLight : MonoBehaviour, IResettable
     // 吸收完成的事件委派，供後續加成效果偵測
     public event System.Action OnAbsorbed;
 
+    /// <summary>
+    /// 當光球抵達並完成所有路徑點時觸發的事件 (供拉桿或其他機關解鎖監聽)
+    /// </summary>
+    public event System.Action OnAllWaypointsCompleted;
+
+    private bool _hasCompletedAllWaypoints = false;
+
+    /// <summary>
+    /// 是否已經完成所有路徑點 (以光球程式內的 waypoints 陣列為準)
+    /// </summary>
+    public bool IsAllWaypointsCompleted
+    {
+        get
+        {
+            if (waypoints == null || waypoints.Length == 0) return true;
+            if (_hasCompletedAllWaypoints) return true;
+            if (currentWaypointIndex >= waypoints.Length) return true;
+            if (currentWaypointIndex == waypoints.Length - 1 && waypoints[currentWaypointIndex] != null)
+            {
+                float d = Vector3.Distance(transform.position, waypoints[currentWaypointIndex].position);
+                if (d <= waypointThreshold) return true;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>目前進行中/已抵達的路徑點索引 (0 ~ waypoints.Length)</summary>
+    public int CurrentWaypointIndex => Mathf.Clamp(Mathf.Max(currentWaypointIndex, maxWaypointReached), 0, TotalWaypointsCount);
+
+    /// <summary>全部路徑點總數</summary>
+    public int TotalWaypointsCount => (waypoints != null) ? waypoints.Length : 0;
+
     private int currentWaypointIndex = 0;
+    private int maxWaypointReached = 0;
     private bool isWaitingForPlayerCatchup = false;
     private Vector3 logicPosition; 
     private bool isLockingPlayer = false; // 是否正在鎖定玩家看動畫
@@ -176,6 +209,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 如果已經抵達最後一個點，就在原地浮動
         if (currentWaypointIndex >= waypoints.Length)
         {
+            if (!_hasCompletedAllWaypoints)
+            {
+                _hasCompletedAllWaypoints = true;
+                OnAllWaypointsCompleted?.Invoke();
+            }
             ApplyBobbing();
             return;
         }
@@ -263,6 +301,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         else
         {
             currentWaypointIndex++;
+            maxWaypointReached = Mathf.Max(maxWaypointReached, currentWaypointIndex);
         }
     }
 
@@ -295,6 +334,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
         // 4. 切換目標點，開始飛行（鏡頭全程跟著光絮走）
         currentWaypointIndex++;
+        maxWaypointReached = Mathf.Max(maxWaypointReached, currentWaypointIndex);
         Transform nextWP = waypoints[currentWaypointIndex];
 
         while (Vector3.Distance(logicPosition, nextWP.position) > waypointThreshold)

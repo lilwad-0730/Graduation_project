@@ -18,6 +18,22 @@ public class LeverSystem : MonoBehaviour, IResettable
     [Tooltip("是否靠近就直接觸發 (勾選後，玩家一碰到拉桿就自動拉下，不需按鍵)")]
     public bool triggerOnEnter = false;
 
+    [Header("光球路徑點解鎖設定")]
+    [Tooltip("是否需要以光球程式 (GuidanceLight) 的路徑點作為解鎖條件")]
+    public bool lockByGuidanceLight = true;
+
+    [Tooltip("要監聽的光球物件 (GuidanceLight)；留空時會在遊戲開始時自動搜尋場景中的 GuidanceLight")]
+    public GuidanceLight targetGuidanceLight;
+
+    [Tooltip("解鎖拉桿需要完成幾個路徑點？(0 代表全部走完；若大於 0 則只需達到此點數即可解鎖，例如 6 代表光球走到第 6 個點就解鎖)")]
+    public int requiredWaypointsCount = 0;
+
+    [Tooltip("光球走完所有路徑點解鎖一次後，是否永久解鎖 (重生後不會再次被鎖住)")]
+    public bool unlockOnceForever = true;
+
+    [Tooltip("拉桿鎖住拉不動時播放的卡住悶響音效 (選填，留空會自動以較低音量播放拉動音效提示)")]
+    public AudioClip stuckSound;
+
     [Header("拉桿視覺效果")]
     [Tooltip("拉桿的 SpriteRenderer (若為空，會嘗試自動在自身或子物件尋找)")]
     public SpriteRenderer leverRenderer;
@@ -49,10 +65,39 @@ public class LeverSystem : MonoBehaviour, IResettable
 
     private bool isPulled = false;
     private bool isPlayerInZone = false;
+    private bool isUnlockedOnce = false;
+    private Coroutine _stuckShakeCoroutine;
     private Sprite originalSprite;
     private Quaternion originalRotation;
     private Vector3 _rockInitialPosition;
     private Quaternion _rockInitialRotation;
+
+    /// <summary>
+    /// 拉桿當前是否處於鎖定狀態（以光球程式的 waypoints 為準）
+    /// </summary>
+    public bool IsLeverLocked
+    {
+        get
+        {
+            if (isPulled) return false;
+            if (!lockByGuidanceLight) return false;
+            if (unlockOnceForever && isUnlockedOnce) return false;
+
+            // 以光球程式 (GuidanceLight) 內部的 waypoints 物件為準判定
+            if (targetGuidanceLight != null)
+            {
+                int req = requiredWaypointsCount > 0 ? requiredWaypointsCount : targetGuidanceLight.TotalWaypointsCount;
+                if (targetGuidanceLight.CurrentWaypointIndex >= req || targetGuidanceLight.IsAllWaypointsCompleted)
+                {
+                    isUnlockedOnce = true;
+                    return false;
+                }
+                return true; // 光球尚未走完全部路徑點，拉桿鎖定中
+            }
+
+            return false;
+        }
+    }
 
     private void Start()
     {
@@ -63,6 +108,20 @@ public class LeverSystem : MonoBehaviour, IResettable
         {
             originalSprite = leverRenderer.sprite;
             originalRotation = leverRenderer.transform.localRotation;
+        }
+
+        // 自動搜尋場景中的光球程式 (GuidanceLight)
+        if (lockByGuidanceLight && targetGuidanceLight == null)
+        {
+            targetGuidanceLight = FindFirstObjectByType<GuidanceLight>();
+            if (targetGuidanceLight != null)
+            {
+                Debug.Log($"【拉桿系統】已自動鎖定光球程式：'{targetGuidanceLight.gameObject.name}' (共有 {targetGuidanceLight.TotalWaypointsCount} 個路徑點)");
+            }
+            else
+            {
+                Debug.LogWarning("【拉桿系統】場景中未找到任何 GuidanceLight，拉桿將不被光球鎖定。");
+            }
         }
 
         // 初始狀態下，確保目標巨石是鎖定的 (Kinematic 鎖死，不受重力影響)
@@ -83,9 +142,14 @@ public class LeverSystem : MonoBehaviour, IResettable
         {
             if (Input.GetKeyDown(interactKey))
             {
-                // ★0905 廢墟光絮：沒收滿拉不動——只晃一下＋悶響（沒有 Collector／沒被鎖時照常）
-                if (LightMoteCollector.IsLeverLocked(this)) LightMoteCollector.NotifyLeverStuck(this);
-                else PullLever();
+                if (IsLeverLocked)
+                {
+                    NotifyLeverStuck();
+                }
+                else
+                {
+                    PullLever();
+                }
             }
         }
     }
@@ -97,8 +161,14 @@ public class LeverSystem : MonoBehaviour, IResettable
             isPlayerInZone = true;
             if (triggerOnEnter && !isPulled)
             {
-                if (LightMoteCollector.IsLeverLocked(this)) LightMoteCollector.NotifyLeverStuck(this);   // ★0905
-                else PullLever();
+                if (IsLeverLocked)
+                {
+                    NotifyLeverStuck();
+                }
+                else
+                {
+                    PullLever();
+                }
             }
         }
     }
@@ -109,6 +179,49 @@ public class LeverSystem : MonoBehaviour, IResettable
         {
             isPlayerInZone = false;
         }
+    }
+
+    /// <summary>
+    /// 光球未走完所有路徑點時按拉桿的回饋：晃動拉桿＋播放提示音效
+    /// </summary>
+    private void NotifyLeverStuck()
+    {
+        // 1. 播放卡住音效
+        if (stuckSound != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFXAt(stuckSound, transform.position, soundVolume);
+        }
+        else if (pullSound != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFXAt(pullSound, transform.position, soundVolume * 0.4f);
+        }
+
+        // 2. 晃動拉桿視覺回饋 (Shake)
+        if (_stuckShakeCoroutine != null) StopCoroutine(_stuckShakeCoroutine);
+        _stuckShakeCoroutine = StartCoroutine(ShakeRoutine());
+
+        // 3. Console 提示進度
+        int current = targetGuidanceLight != null ? targetGuidanceLight.CurrentWaypointIndex : 0;
+        int total = targetGuidanceLight != null ? targetGuidanceLight.TotalWaypointsCount : 0;
+        int req = requiredWaypointsCount > 0 ? requiredWaypointsCount : total;
+        Debug.Log($"【拉桿系統】拉桿尚未解鎖！需要光球程式前進至路徑點 (目前進度: {current}/{req})");
+    }
+
+    private IEnumerator ShakeRoutine()
+    {
+        Transform t = leverRenderer != null ? leverRenderer.transform : transform;
+        Quaternion baseRot = originalRotation;
+        float dur = 0.35f, el = 0f;
+        while (el < dur)
+        {
+            el += Time.deltaTime;
+            float p = el / dur;
+            float ang = Mathf.Sin(p * Mathf.PI * 5f) * 4f * (1f - p);
+            t.localRotation = baseRot * Quaternion.Euler(0f, 0f, ang);
+            yield return null;
+        }
+        t.localRotation = baseRot;
+        _stuckShakeCoroutine = null;
     }
 
     private void PullLever()
@@ -192,9 +305,14 @@ public class LeverSystem : MonoBehaviour, IResettable
     public void ResetToInitialState()
     {
         StopAllCoroutines();
+        _stuckShakeCoroutine = null;
 
         isPulled = false;
         isPlayerInZone = false;
+        if (!unlockOnceForever)
+        {
+            isUnlockedOnce = false;
+        }
 
         if (targetRock != null)
         {

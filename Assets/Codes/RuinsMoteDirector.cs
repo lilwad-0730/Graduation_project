@@ -16,7 +16,8 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public class RuinsMoteDirector : MonoBehaviour
 {
-    public static bool Enabled = true;
+    // ★ 依需求徹底停用自動生成散落光絮機制，改用 GuidanceLight 路徑點解鎖
+    public static bool Enabled = false;
     public static RuinsMoteDirector Instance { get; private set; }
 
     [System.Serializable]

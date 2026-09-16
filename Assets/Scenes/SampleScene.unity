@@ -826,6 +826,21 @@ MonoBehaviour:
   levelMusic: {fileID: 8300000, guid: d43bbcce3590fc64ea95c13cad5691b7, type: 3}
   playOnStart: 1
   stopOnExit: 0
+--- !u!115 &53159552
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: BridgeGapFallTrigger
+  m_Namespace: 
+  m_AssemblyName: Assembly-CSharp
 --- !u!1 &60187623
 GameObject:
   m_ObjectHideFlags: 0
@@ -6155,7 +6170,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.288025, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.28778, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8857,6 +8872,10 @@ GameObject:
   - component: {fileID: 710415346}
   - component: {fileID: 710415345}
   - component: {fileID: 710415344}
+  - component: {fileID: 710415347}
+  - component: {fileID: 710415348}
+  - component: {fileID: 710415349}
+  - component: {fileID: 710415350}
   m_Layer: 0
   m_Name: BridgeGap_DeathZone
   m_TagString: DeathZone
@@ -8913,6 +8932,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &710415347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710415343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 790408030}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
+--- !u!114 &710415348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710415343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1790199341}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
+--- !u!114 &710415349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710415343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1816474421}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
+--- !u!114 &710415350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 710415343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 53159552}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
 --- !u!1 &713567039
 GameObject:
   m_ObjectHideFlags: 0
@@ -9104,14 +9175,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 713567039}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: 0.0029701174, w: 0.9999956}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1476480595}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.34}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 30.3, y: 9.55}
@@ -9888,6 +9959,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1465910203}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!115 &790408030
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: BridgeGapFallTrigger
+  m_Namespace: 
+  m_AssemblyName: Assembly-CSharp
 --- !u!1 &797838392
 GameObject:
   m_ObjectHideFlags: 0
@@ -11328,6 +11414,13 @@ MonoBehaviour:
   runDistanceThreshold: 18
   aggroDistanceX: 22
   giveUpDistanceX: 24
+  baseSpeedVariation: 0.03
+  maxOverlapSpeedVariation: 0.08
+  desyncTransitionSpeed: 2
+  individualSpeedBiasRatio: 0
+  currentEffectiveSpeedMultiplier: 1
+  minimumChaseSpeedAbovePlayer: 0.4
+  defaultPlayerSpeed: 5
   collidersToIgnore:
   - {fileID: 327784617}
   - {fileID: 2072297853}
@@ -20278,7 +20371,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1276438437}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -22090,7 +22183,7 @@ MonoBehaviour:
   checkYDown: 10
   checkYUp: 20
   guidanceLight: {fileID: 0}
-  targetWaypointIndex: -1
+  targetWaypointIndex: 5
 --- !u!1001 &1440556828
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25413,13 +25506,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1635803048}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: 0.005672907, w: 0.9999839}
   m_LocalPosition: {x: 49.54, y: 4.58, z: 0}
   m_LocalScale: {x: 2.1278622, y: 1.7813866, z: 2.9756784}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.65}
 --- !u!65 &1635803051
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26228,6 +26321,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2032865229}
+--- !u!115 &1790199341
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: BridgeGapFallTrigger
+  m_Namespace: 
+  m_AssemblyName: Assembly-CSharp
 --- !u!1 &1792095774
 GameObject:
   m_ObjectHideFlags: 0
@@ -26595,6 +26703,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2118130078}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!115 &1816474421
+MonoScript:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 7
+  m_DefaultReferences: {}
+  m_Icon: {fileID: 0}
+  m_Type: 0
+  m_ExecutionOrder: 0
+  m_ClassName: BridgeGapFallTrigger
+  m_Namespace: 
+  m_AssemblyName: Assembly-CSharp
 --- !u!1 &1821779807
 GameObject:
   m_ObjectHideFlags: 0
@@ -28352,7 +28475,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.288025, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.28778, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34284,6 +34407,11 @@ MonoBehaviour:
   targetRock: {fileID: 1472103423}
   interactKey: 101
   triggerOnEnter: 0
+  lockByGuidanceLight: 1
+  targetGuidanceLight: {fileID: 0}
+  requiredWaypointsCount: 0
+  unlockOnceForever: 1
+  stuckSound: {fileID: 0}
   leverRenderer: {fileID: 0}
   leverAnimator: {fileID: 2103394476}
   visualEffect: 3
@@ -34657,7 +34785,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.288025, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.28778, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34951,7 +35079,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.300198
+      value: -31.299736
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
