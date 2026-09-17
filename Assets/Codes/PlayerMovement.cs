@@ -21,7 +21,9 @@ public class PlayerMovement : MonoBehaviour
     public Animator animator; 
     public float CurrentMoveInput { get; private set; }
     public float BaseSpeed => baseSpeed;
-    
+    /// <summary>★0917 唯讀：這一幀腳下地面的坡度（度，沒踩地＝0）。給狼的追擊速度決策對照玩家實際移動狀態用，不影響玩家自己。</summary>
+    public float GroundSlopeAngle { get; private set; }
+
     private Collider playerCollider;
     private string currentAnimState = ""; 
     public bool isGrounded = false;
@@ -412,6 +414,7 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit groundHit;
         float currentSlopeAngle = 0f;
         bool preliminaryGrounded = CheckGrounded(out groundHit, out currentSlopeAngle);
+        GroundSlopeAngle = preliminaryGrounded ? currentSlopeAngle : 0f;
 
         if (preliminaryGrounded && groundHit.collider != null)
         {

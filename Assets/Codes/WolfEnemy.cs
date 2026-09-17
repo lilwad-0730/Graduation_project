@@ -180,6 +180,11 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private float _dbgNextLog = 0f;
     private Vector3 _dbgLastPos;
     private float _dbgLastTime = -1f;
+    // ★0917 追擊速度決策的中間值（只給 debugSlopeLog 印，不參與計算）
+    private float _dbgTerrainFactor = 1f;
+    private float _dbgCatchUpSpeed;
+    private float _dbgSepFactor = 1f;
+    private float _dbgDistance;
 
     private void Awake()
     {
@@ -557,10 +562,37 @@ public class WolfEnemy : MonoBehaviour, IResettable
             float pBaseSpeed = (playerMovement != null) ? playerMovement.BaseSpeed : defaultPlayerSpeed;
             float minimumChaseSpeed = pBaseSpeed + minimumChaseSpeedAbovePlayer;
             currentSpeed = Mathf.Clamp(currentSpeed, minimumChaseSpeed, maxCatchUpSpeed);
+
+            // 5. ★0917 玩家地形係數：讓狼的目標速度跟玩家「實際」的水平移動能力對應
+            //   上面 1～4 的速度都是以「平地」定義的（貼身 6.8／最低＝玩家 6＋0.4／上限 12.5，都是水平速度）。
+            //   玩家在坡上是沿坡面走，水平速度只剩 基本速度 × cos(坡度)（35° 時 6 → 4.91）；
+            //   狼卻因為 FixedUpdate 的斜坡補償（Protected，不動）在坡上維持同樣的水平速度，
+            //   於是上坡時「狼的最低速度 − 玩家實際水平速度」從平地的 0.4 放大成 1.49，貼身追擊差距從 0.8 放大成 1.89，
+            //   Editor.log 實測狼在 35° 坡上水平速度 8～12 m/s。
+            //   這裡把平地定義的目標速度乘上玩家腳下坡度的 cos：上坡時兩邊的速度比例回到跟平地一樣
+            //   （貼身、最低速度仍然比玩家快，咬得到），玩家離地（跳躍）時係數＝1，因為她在空中水平速度也是全速。
+            _dbgTerrainFactor = GetPlayerTerrainSpeedFactor();
+            currentSpeed *= _dbgTerrainFactor;
+
+            _dbgCatchUpSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance) : 0f;
+            _dbgSepFactor = sepFactor;
+            _dbgDistance = realDistance;
         }
 
         _targetSpeedX = directionX * currentSpeed;
         _hasTargetSpeed = true;
+    }
+
+    /// <summary>
+    /// 玩家腳下坡度對她水平速度的影響（1＝平地或離地；35° 坡＝0.819）。
+    /// 坡度範圍跟 PlayerMovement 判定「在斜坡上走」的條件一致（0.5°～60°，超過視為牆／平地模式）。
+    /// </summary>
+    private float GetPlayerTerrainSpeedFactor()
+    {
+        if (playerMovement == null || !playerMovement.isGrounded) return 1f;
+        float a = playerMovement.GroundSlopeAngle;
+        if (a <= 0.5f || a >= 60f) return 1f;
+        return Mathf.Cos(a * Mathf.Deg2Rad);
     }
 
     private float EvaluateChaseSpeed(float distance)
@@ -853,5 +885,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         Vector3 v = rb.linearVelocity;
         Debug.Log($"🐺【狼運行】{gameObject.name} | 實測速度: {measuredSpeed:F2} | 坡度: {slopeAngle:F0}° (沿坡={onSlope}) | 速度: x={v.x:F2} y={v.y:F2} | 法線: {hit.normal}");
+
+        // ★0917 追擊速度決策：一行對照玩家實際水平速度與狼的目標／實際水平速度
+        Rigidbody prb = playerMovement != null ? playerMovement.GetComponent<Rigidbody>() : null;
+        float playerVx = prb != null ? prb.linearVelocity.x : 0f;
+        float playerSlope = (playerMovement != null && playerMovement.isGrounded) ? playerMovement.GroundSlopeAngle : 0f;
+        Debug.Log($"🐺【狼追擊決策】{gameObject.name} | 玩家水平速度 {Mathf.Abs(playerVx):F2}（腳下坡度 {playerSlope:F0}°） | " +
+                  $"狼目標水平 {Mathf.Abs(_targetSpeedX):F2} | 狼實際水平 {Mathf.Abs(v.x):F2}（自己坡度 {slopeAngle:F0}°） | " +
+                  $"距離 {_dbgDistance:F1} | Catch-up {_dbgCatchUpSpeed:F2} | 分離係數 {_dbgSepFactor:F2} | 個體倍率 {currentEffectiveSpeedMultiplier:F3} | 地形係數 {_dbgTerrainFactor:F3} | 123 退後 {( _targetSpeedX * Mathf.Sign(player != null ? player.position.x - transform.position.x : 1f) < 0f ? "是" : "否")}");
     }
 }
