@@ -6170,7 +6170,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.28778, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8895,7 +8895,6 @@ MonoBehaviour:
   m_Script: {fileID: 764476860}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 2027794883}
 --- !u!65 &710415345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8944,7 +8943,6 @@ MonoBehaviour:
   m_Script: {fileID: 790408030}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 2027794883}
 --- !u!114 &710415348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8957,7 +8955,6 @@ MonoBehaviour:
   m_Script: {fileID: 1790199341}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 2027794883}
 --- !u!114 &710415349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8970,7 +8967,6 @@ MonoBehaviour:
   m_Script: {fileID: 1816474421}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 2027794883}
 --- !u!114 &710415350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11222,22 +11218,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardId: M1
-  freezePlayer: 1
-  onlyOnce: 1
-  disableAfterPlay: 0
---- !u!114 &910000011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1488007601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 884bb78516a74e05f7f4a6bec3ace578, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardId: M2
   freezePlayer: 1
   onlyOnce: 1
   disableAfterPlay: 0
@@ -18072,6 +18052,7 @@ Transform:
   - {fileID: 981337945}
   - {fileID: 622203818}
   - {fileID: 2132239886}
+  - {fileID: 2132239888}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1081794022
@@ -23064,7 +23045,6 @@ GameObject:
   - component: {fileID: 1488007604}
   - component: {fileID: 1488007603}
   - component: {fileID: 1488007602}
-  - component: {fileID: 910000011}
   m_Layer: 0
   m_Name: Storm_TransitionTrigger
   m_TagString: Untagged
@@ -25506,13 +25486,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1635803048}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: 0.005672907, w: 0.9999839}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 49.54, y: 4.58, z: 0}
   m_LocalScale: {x: 2.1278622, y: 1.7813866, z: 2.9756784}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0.65}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1635803051
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -28475,7 +28455,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.28778, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -33454,6 +33434,7 @@ MonoBehaviour:
   - {fileID: 981337945}
   - {fileID: 622203818}
   - {fileID: 2132239886}
+  - {fileID: 2132239888}
   moveSpeed: 9
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
@@ -34409,7 +34390,7 @@ MonoBehaviour:
   triggerOnEnter: 0
   lockByGuidanceLight: 1
   targetGuidanceLight: {fileID: 0}
-  requiredWaypointsCount: 0
+  requiredWaypointsCount: 10
   unlockOnceForever: 1
   stuckSound: {fileID: 0}
   leverRenderer: {fileID: 0}
@@ -34576,6 +34557,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 157.63, y: 63.62, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1075336708}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2132239887
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2132239888}
+  m_Layer: 0
+  m_Name: P11
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2132239888
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2132239887}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 164.11, y: 45.56, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34785,7 +34797,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.28778, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.284027, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35079,7 +35091,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.299736
+      value: -31.292599
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
