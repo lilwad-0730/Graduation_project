@@ -146,19 +146,59 @@ public class RollingRockVisual : MonoBehaviour
         }
     }
 
+    // ★0916 上坡推石抖動：短暫分開時的緩衝
+    //   原本巨石一被碰到就設成「完整基本速度」的水平速度，但玩家在坡上是沿坡面走，
+    //   水平速度只有 基本速度 × cos(坡度)，巨石比玩家快 → 衝開 → 沒人推、無摩擦往回滑 → 撞回玩家 → 再衝開，
+    //   每秒循環好幾次就是抖動（平地 cos0=1 剛好相等，所以只有上坡會抖）。
+    //   改成巨石直接照玩家「實際速度」走（含上坡的 Y），並在剛分開的一小段時間內繼續跟著，不讓它先滑回來。
+    private const float PushGraceTime = 0.15f;
+    private float _lastPushTime = -1f;
+    private PlayerMovement _pusher;
+    private Rigidbody _pusherRb;
+
+    void FixedUpdate()
+    {
+        if (rb == null || rb.isKinematic || _pusher == null) return;
+        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; return; }
+
+        // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石先跟著玩家走，別往回滑
+        // （還碰著的話 OnCollisionStay 會在這之後再設一次同樣的速度）
+        float input = _pusher.CurrentMoveInput;
+        float dirToRock = Mathf.Sign(transform.position.x - _pusher.transform.position.x);
+        float gap = Mathf.Abs(transform.position.x - _pusher.transform.position.x) - radius;
+        if (Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f)
+        {
+            rb.linearVelocity = GetPushVelocity(_pusher, _pusherRb);
+        }
+    }
+
+    private Vector3 GetPushVelocity(PlayerMovement pm, Rigidbody playerRb)
+    {
+        float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed;
+        if (playerRb == null) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
+
+        Vector3 v = playerRb.linearVelocity;
+        // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回原本的推力，免得兩邊都停住推不動
+        if (Mathf.Abs(v.x) < 0.1f) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
+        return new Vector3(v.x, v.y, 0f);
+    }
+
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponentInParent<PlayerMovement>() != null)
         {
             PlayerMovement pm = collision.gameObject.GetComponent<PlayerMovement>();
             if (pm == null) pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
-            if (pm != null && rb != null)
+            if (pm != null && rb != null && !rb.isKinematic)
             {
                 if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f)
                 {
-                    // ★ 玩家主動推石頭：巨石順應主角推力同步前進，徹底消除球體曲面與斜坡夾角互頂產生的抖動！
-                    float pushSpeed = pm.CurrentMoveInput * pm.BaseSpeed;
-                    rb.linearVelocity = new Vector3(pushSpeed, rb.linearVelocity.y, 0f);
+                    // ★ 玩家主動推石頭：巨石照玩家實際速度同步前進（上坡含 Y），不再比玩家快而衝開
+                    Rigidbody playerRb = collision.rigidbody != null ? collision.rigidbody : pm.GetComponent<Rigidbody>();
+                    rb.linearVelocity = GetPushVelocity(pm, playerRb);
+                    _pusher = pm;
+                    _pusherRb = playerRb;
+                    _lastPushTime = Time.time;
                 }
                 else
                 {
