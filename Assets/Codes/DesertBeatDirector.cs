@@ -76,9 +76,10 @@ public class DesertBeatDirector : MonoBehaviour
     public float demoDiveOffsetFromShelter = -1.0f;
     public float demoDiveDetectionRange = 12f;
 
-    [Header("拍三：前搖錯開（三隻一組 1.2／1.5／1.8）")]
+    [Header("拍三：前搖錯開（三隻一組 1.0／1.3／1.6）")]
     public bool beat3StaggerWarnings = true;
-    public float beat3WarningBase = 1.2f;
+    [Tooltip("★0916 1.2 → 1.0：沒掩體時玩家一路跑，前搖越長她跑越遠，鳥就插在她身後；縮短一點讓鳥打得到，紅線仍亮 1 秒以上")]
+    public float beat3WarningBase = 1.0f;
     public float beat3WarningStep = 0.3f;
 
     [Header("拍三開場鳥影、拍四風停、散落物、表現")]

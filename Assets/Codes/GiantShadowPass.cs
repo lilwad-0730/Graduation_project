@@ -16,6 +16,8 @@ public class GiantShadowPass : MonoBehaviour
     [Header("屏息")]
     [Tooltip("風保持平靜、鳥不攻擊的秒數")]
     public float holdCalmSeconds = 6f;
+    [Tooltip("★0916 鳥不攻擊的秒數（跟風分開算）。原本鳥跟風一起停 6 秒，玩家跑 6 秒會把前面一整排鳥跳過、牠們再也不會攻擊；\n縮成 3.5 秒＝影子掃完（sweepSeconds 3.2）就放鳥。風的平靜照舊用 holdCalmSeconds")]
+    public float birdCalmSeconds = 3.5f;
 
     [Header("影子")]
     [Tooltip("影子從畫面左外掃到右外要幾秒")]
@@ -74,7 +76,7 @@ public class GiantShadowPass : MonoBehaviour
         // 1. 世界屏息：風停、鳥不動
         WindGustSystem wind = WindGustSystem.Instance;
         if (wind != null) wind.HoldCalm(holdCalmSeconds);
-        IndividualBirdEnemy.SuppressAllUntil = Mathf.Max(IndividualBirdEnemy.SuppressAllUntil, Time.time + holdCalmSeconds);
+        IndividualBirdEnemy.SuppressAllUntil = Mathf.Max(IndividualBirdEnemy.SuppressAllUntil, Time.time + birdCalmSeconds);
 
         if (passClip != null)
         {
