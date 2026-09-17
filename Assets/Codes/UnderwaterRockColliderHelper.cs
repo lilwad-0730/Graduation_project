@@ -72,7 +72,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             if (mc != null)
             {
                 mc.material = noFriction;
-                mc.enabled = true;
+                // 已經把碰撞搬到玩家平面的石頭，原本那份要保持關閉，不然兩份碰撞疊在一起
+                mc.enabled = mr.transform.Find(PlaneColliderName) == null;
             }
 
             bool meshColliderUsable = mc != null && mc.sharedMesh != null;
@@ -129,6 +130,9 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             }
         }
 
+        // ★0916 卡石根治：把碰撞搬到石頭「最厚的那一層」
+        int aligned = AlignRockCollidersToPlayerPlane(renderers, playerZ, noFriction);
+
         // 最後掃一遍：列出「完全沒有有效實體碰撞」的石頭。
         // 玩家穿過石頭墜落，最直接的原因就是那顆石頭根本沒有能擋住她的碰撞體。
         foreach (var mr in renderers)
@@ -158,7 +162,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
         Debug.Log($"[UnderwaterRockColliderHelper] 掃描 {renderers.Length} 個 MeshRenderer，" +
                   $"名稱符合石頭關鍵字的有 {matchedRocks} 顆。"
                   + (solidifyForeground ? $"　前景石頭邊緣實體化：{solidified} 顆；" : "　")
-                  + $"保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆");
+                  + $"保留 BoxCollider：{noColliderMesh} 顆；完全沒有碰撞的石頭：{noColliderAtAll} 顆；"
+                  + $"碰撞搬到玩家平面：{aligned} 顆");
 
         // ★ 2.5D 深度對不上的診斷：
         //   石頭是 3D 網格，玩家被鎖在單一 Z 平面上。
@@ -208,6 +213,8 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
             playerObj.AddComponent<UnderwaterPenetrationProbe>();
         }
 
+        CheckImportantPointsNotInsideRocks(playerZ, playerObj);
+
         if (matchedRocks == 0)
         {
             Debug.LogWarning("[UnderwaterRockColliderHelper] ⚠️ 一顆石頭都沒抓到！" +
@@ -215,5 +222,136 @@ public class UnderwaterRockColliderHelper : MonoBehaviour
                              "如果場景裡的石頭不是這樣命名，整支腳本等於完全沒有作用，" +
                              "所有碰撞修正與前景實體化都不會發生。");
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ★0916 卡石根治
+    //
+    // 為什麼好幾顆石頭都會把玩家吃進去：
+    //   石頭是隨機轉向的 3D 網格，全部擺在 Z≈-1.3（Rocks_Container 還把 Z 拉長 2 倍），
+    //   網格的 Z 範圍大約是 -5.2 ~ +0.4；玩家卻被鎖在 Z=-0.4。
+    //   等於玩家走的那一層，是切在石頭「背面收尾」的地方（離最後面只剩 0.4～1.2 公尺）。
+    //   那一帶的石頭表面幾乎是正對鏡頭／背對鏡頭的，表面朝向是 ±Z。
+    //   玩家撞上去時，物理引擎沿著表面朝向把她往 ±Z 推——但玩家的 Z 是鎖死的（FreezePositionZ），
+    //   推力全部被吃掉，X/Y 方向沒有任何東西把她推出來，她就一路陷進石頭裡，穿過殼就出不來。
+    //   所以不是某幾顆石頭壞掉，是所有石頭的擺法都一樣，只是剛好游到的那幾顆先中。
+    //
+    // 修法：畫面（MeshRenderer）完全不動，只把「碰撞」複製一份往 Z 挪，
+    //   讓玩家那一層正好切在石頭的中段（最厚、表面朝向是上下左右的地方），
+    //   撞上去時推力是 X/Y 方向，會正常把她推出來；原本那份碰撞關掉。
+    //   中段的剖面也更接近畫面上看到的石頭輪廓（原本切在收尾處，剖面比畫面小一圈，玩家看起來會陷進石頭圖裡）。
+    // ─────────────────────────────────────────────────────────────
+    public const string PlaneColliderName = "RockPlaneCollider";
+
+    private static int AlignRockCollidersToPlayerPlane(MeshRenderer[] renderers, float playerZ, PhysicsMaterial mat)
+    {
+        int aligned = 0;
+        foreach (var mr in renderers)
+        {
+            if (mr == null) continue;
+            string n = mr.name;
+            if (!n.Contains("Rocks") && !n.Contains("Rock") && !n.Contains("rock") && !n.Contains("Stone")) continue;
+            if (n.Contains("[EdgeSolidify]")) continue;
+            if (mr.transform.Find(PlaneColliderName) != null) continue;   // 已經搬過（重複呼叫）
+
+            MeshCollider mc = mr.GetComponent<MeshCollider>();
+            MeshFilter mf = mr.GetComponent<MeshFilter>();
+            if (mc == null || !mc.enabled || mc.convex || mc.sharedMesh == null || mf == null) continue;
+
+            float dz = playerZ - mr.bounds.center.z;
+            if (Mathf.Abs(dz) < 0.05f) continue;   // 本來就切在中段，不用搬
+
+            GameObject go = new GameObject(PlaneColliderName);
+            go.layer = mr.gameObject.layer;
+            go.tag = mr.gameObject.tag;
+            go.transform.SetParent(mr.transform, false);
+            go.transform.position = mr.transform.position + new Vector3(0f, 0f, dz);
+
+            MeshCollider copy = go.AddComponent<MeshCollider>();
+            copy.sharedMesh = mc.sharedMesh;
+            copy.material = mat;
+            copy.cookingOptions = mc.cookingOptions;
+
+            mc.enabled = false;
+            aligned++;
+        }
+        Physics.SyncTransforms();
+        return aligned;
+    }
+
+    /// <summary>
+    /// 碰撞變成中段剖面後比原本大一圈。檢查重要的點（玩家起點、日誌、存檔點、收集物等觸發區）
+    /// 有沒有剛好被包進石頭裡，有的話印出來——那些東西會拿不到或卡住。
+    /// </summary>
+    private static void CheckImportantPointsNotInsideRocks(float playerZ, GameObject playerObj)
+    {
+        var points = new System.Collections.Generic.List<(string name, Vector3 pos)>();
+        if (playerObj != null) points.Add(("玩家起點", playerObj.transform.position));
+
+        foreach (var c in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
+        {
+            if (c == null || !c.isTrigger || !c.enabled) continue;
+            if (Mathf.Abs(c.bounds.center.z - playerZ) > 3f) continue;
+            if (c.bounds.size.x > 30f || c.bounds.size.y > 30f) continue;   // 大範圍區域觸發器（水域、BGM 區）不用檢查
+            points.Add((c.gameObject.name, new Vector3(c.bounds.center.x, c.bounds.center.y, playerZ)));
+        }
+        foreach (var gl in Object.FindObjectsByType<GuidanceLight>(FindObjectsSortMode.None))
+        {
+            if (gl == null || gl.waypoints == null) continue;
+            foreach (var wp in gl.waypoints)
+            {
+                if (wp != null) points.Add(($"光絮路徑點 {wp.name}", new Vector3(wp.position.x, wp.position.y, playerZ)));
+            }
+        }
+
+        Vector3[] dirs = { Vector3.right, Vector3.left, Vector3.up, Vector3.down };
+        int bad = 0;
+        string list = "";
+        bool old = Physics.queriesHitBackfaces;
+        try
+        {
+            foreach (var p in points)
+            {
+                // 4 個方向裡至少 3 個「最近的東西是石頭碰撞的內側」＝這個點在石頭裡面
+                var inside = new System.Collections.Generic.Dictionary<Collider, int>();
+                foreach (var d in dirs)
+                {
+                    Physics.queriesHitBackfaces = true;
+                    RaycastHit best = default;
+                    float bestDist = float.MaxValue;
+                    foreach (var h in Physics.RaycastAll(p.pos, d, 40f, ~0, QueryTriggerInteraction.Ignore))
+                    {
+                        if (h.collider == null) continue;
+                        if (playerObj != null && h.collider.transform.IsChildOf(playerObj.transform)) continue;
+                        if (h.distance < bestDist) { bestDist = h.distance; best = h; }
+                    }
+                    if (best.collider == null || best.collider.gameObject.name != PlaneColliderName) continue;
+
+                    Physics.queriesHitBackfaces = false;
+                    bool front = best.collider.Raycast(new Ray(p.pos, d), out RaycastHit fh, bestDist + 0.02f)
+                                 && Mathf.Abs(fh.distance - bestDist) < 0.02f;
+                    if (front) continue;
+                    inside.TryGetValue(best.collider, out int k);
+                    inside[best.collider] = k + 1;
+                }
+                foreach (var kv in inside)
+                {
+                    if (kv.Value < 3) continue;
+                    bad++;
+                    if (bad <= 15) list += $"\n  ・{p.name} {p.pos} 在石頭「{kv.Key.transform.parent.name}」裡面";
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            Physics.queriesHitBackfaces = old;
+        }
+
+        if (bad == 0)
+            Debug.Log($"[UnderwaterRockColliderHelper] 檢查 {points.Count} 個重要位置（起點、日誌、存檔點、收集物、光絮路徑點），碰撞搬移後沒有任何一個被包進石頭裡。");
+        else
+            Debug.LogError($"[UnderwaterRockColliderHelper] ⚠️ 碰撞搬移後，有 {bad} 個重要位置被包進石頭裡（可能拿不到或卡住），請把這段貼給 Claude：" + list +
+                           (bad > 15 ? $"\n  ...(還有 {bad - 15} 個)" : ""));
     }
 }
