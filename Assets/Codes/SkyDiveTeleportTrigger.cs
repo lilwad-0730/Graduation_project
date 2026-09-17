@@ -40,6 +40,16 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
     private bool _isTeleporting = false;
+
+    // ★0917 場景裡有兩個 SkyDive 觸發器（SkyDive_Trigger／SkyDive_Trigger (1)，範圍互相重疊、目標同一點）。
+    //   原本「正在傳送」是各自記的，玩家跳下時同時擦過兩個就傳送兩次：
+    //   第二次在第一次傳送完約 0.3 秒後，又把正在下墜的玩家拉回墜落起點、鏡頭再瞬移一次（卡頓），兩段淡入淡出搶同一張白幕（閃）。
+    //   Editor.log 實測：19 次觸發裡 10 次是緊接著的第二次。
+    //   改成所有 SkyDive 觸發器共用一個「最近一次開始傳送的時間」：一段傳送演出沒結束前，其他觸發器一律不接。
+    //   用時間而不是 bool：協程若被換場景中途砍掉，bool 會永遠卡 true，時間窗口過了就自動恢復。
+    private static float _sharedTeleportStartTime = -999f;
+    private float TeleportWindow => fadeOutDuration + holdDuration + fadeInDuration + 0.5f;
+
     private static Canvas _fadeCanvas;
     private static Image _fadeImage;
 
@@ -107,6 +117,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     private void TryTriggerTeleport(GameObject hitObj)
     {
         if (_isTeleporting || hitObj == null) return;
+        if (Time.unscaledTime - _sharedTeleportStartTime < TeleportWindow) return;   // 另一個 SkyDive 觸發器正在傳送
 
         // 智能識別主角 (支援 Tag、名稱、組件、根物件等多維度搜尋)
         PlayerMovement pm = hitObj.GetComponent<PlayerMovement>();
@@ -121,6 +132,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
         {
             if (targetDropPoint != null)
             {
+                _sharedTeleportStartTime = Time.unscaledTime;
                 Debug.Log($"☁️【SkyDiveTeleportTrigger】偵測到主角 '{hitObj.name}' 進入跳崖觸發區！開始極速白霧轉場至 '{targetDropPoint.name}'！");
                 StartCoroutine(SkyDiveTeleportRoutine(pm));
             }

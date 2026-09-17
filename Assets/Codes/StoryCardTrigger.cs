@@ -34,6 +34,13 @@ public class StoryCardTrigger : MonoBehaviour
 
     private bool _fired;
 
+    // ★0917 同一張卡在同一次場景載入裡只播一次（跨觸發器）。
+    //   M1 掛在兩個互相重疊的 SkyDive 觸發器上（為了跳崖範圍抓得到），
+    //   原本 onlyOnce 是各觸發器自己記，兩個都擦到就同一張卡並行播兩次：文字重播、第一段收尾時提早解凍玩家、黑幕閃。
+    //   記的是 scene.handle：重新載入場景（重玩整關）handle 會變，卡片照舊會再播。
+    private static readonly System.Collections.Generic.Dictionary<string, int> _firedCardSceneHandle =
+        new System.Collections.Generic.Dictionary<string, int>();
+
     private void Reset()
     {
         Collider c = GetComponent<Collider>();
@@ -48,6 +55,17 @@ public class StoryCardTrigger : MonoBehaviour
         //   「只播一次」的記憶還在。只有整個遊戲重開才會再看到卡片。
         if (PlayerRespawnSystem.IsAnyRespawning) return;
         if (!IsPlayer(other)) return;
+
+        if (onlyOnce)
+        {
+            int handle = gameObject.scene.handle;
+            if (_firedCardSceneHandle.TryGetValue(cardId, out int h) && h == handle)
+            {
+                _fired = true;   // 別的觸發器已經播過這張卡
+                return;
+            }
+            _firedCardSceneHandle[cardId] = handle;
+        }
 
         _fired = true;
         StartCoroutine(Run(other));
