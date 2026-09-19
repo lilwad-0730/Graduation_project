@@ -155,39 +155,59 @@ public class RollingRockVisual : MonoBehaviour
     private float _lastPushTime = -1f;
     private PlayerMovement _pusher;
     private Rigidbody _pusherRb;
+    private float _targetPushSpeedX;
+
+    [Header("★0920 推動的重量感（只作用在水平方向）")]
+    [Tooltip("巨石追上玩家推力的加速度 (單位/秒²)。越小越重、起步越慢。\n" +
+             "太小會讓玩家一直撞在石頭上，有機會重新引發上坡抖動，調整時請實測上坡。")]
+    public float boulderAcceleration = 12f;
+
+    [Tooltip("玩家停止推動或放慢時，巨石收速度的減速度 (單位/秒²)。越小滑得越久、慣性越明顯")]
+    public float boulderBraking = 10f;
+
+    [Tooltip("巨石被推動時的水平速度上限 (單位/秒)")]
+    public float boulderMaxSpeed = 8f;
 
     void FixedUpdate()
     {
         if (rb == null || rb.isKinematic || _pusher == null) return;
         if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; return; }
-
-        // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石先跟著玩家走，別往回滑
-        // （還碰著的話 OnCollisionStay 會在這之後再設一次同樣的速度）
         if (!_pusher.isGrounded) return;   // 空中不接續推力
+
+        // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石才繼續跟，別在剛分開時往回滑
         float input = _pusher.CurrentMoveInput;
         float dirToRock = Mathf.Sign(transform.position.x - _pusher.transform.position.x);
         float gap = Mathf.Abs(transform.position.x - _pusher.transform.position.x) - radius;
-        if (Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f)
-        {
-            rb.linearVelocity = GetPushVelocity(_pusher, _pusherRb);
-        }
+        bool stillPushing = Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f;
+
+        // ★0920 重量感：目標速度不再「當幀直接指定」，改成用加速度／減速度逼近。
+        //   玩家停手時巨石會自己滑一小段，起步也要一點時間，質量才有存在感。
+        //   垂直速度完全不碰，一律交給重力與地面。
+        float target = stillPushing ? _targetPushSpeedX : 0f;
+        float current = rb.linearVelocity.x;
+        rb.linearVelocity = new Vector3(ApproachPushSpeed(current, target, Time.fixedDeltaTime), rb.linearVelocity.y, 0f);
+    }
+
+    /// <summary>朝目標水平速度逼近：加速用 boulderAcceleration，收速度（含反向）用 boulderBraking。</summary>
+    private float ApproachPushSpeed(float current, float target, float dt)
+    {
+        bool speedingUp = Mathf.Abs(target) > Mathf.Abs(current) && (Mathf.Abs(current) < 0.01f || Mathf.Sign(target) == Mathf.Sign(current));
+        float rate = speedingUp ? boulderAcceleration : boulderBraking;
+        if (rate <= 0f) rate = 10f;
+        return Mathf.MoveTowards(current, target, rate * dt);
     }
 
     /// <summary>
-    /// 巨石跟著玩家走的速度。
-    /// ★0919 只取玩家的「水平」速度，垂直永遠保留巨石自己的（重力／地面）。
-    ///   0916 那版連玩家的垂直速度一起抄過來，玩家一跳，巨石就跟著被賦予向上的速度飛起來——
-    ///   那是我上一版造成的，不是原本就有的行為。水平同步就足以解決上坡抖動，垂直本來就該交給重力。
+    /// 玩家這一刻想把巨石推到多快（水平，帶正負號）。只是「目標」，實際速度由加速度逼近。
+    /// ★0919 只取玩家的水平速度，垂直永遠交給重力：0916 那版連垂直一起抄，玩家一跳巨石就跟著飛。
     /// </summary>
-    private Vector3 GetPushVelocity(PlayerMovement pm, Rigidbody playerRb)
+    private float GetPushTargetSpeedX(PlayerMovement pm, Rigidbody playerRb)
     {
         float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed;
-        if (playerRb == null) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
-
-        float vx = playerRb.linearVelocity.x;
+        float vx = playerRb != null ? playerRb.linearVelocity.x : fallbackX;
         // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回原本的推力，免得兩邊都停住推不動
-        if (Mathf.Abs(vx) < 0.1f) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
-        return new Vector3(vx, rb.linearVelocity.y, 0f);
+        if (Mathf.Abs(vx) < 0.1f) vx = fallbackX;
+        return Mathf.Clamp(vx, -boulderMaxSpeed, boulderMaxSpeed);
     }
 
     private void OnCollisionStay(Collision collision)
@@ -201,11 +221,12 @@ public class RollingRockVisual : MonoBehaviour
                 // ★0919 人在空中就不算在推：跳起來、從石頭上跳開時，巨石不該跟著動
                 if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f && pm.isGrounded)
                 {
-                    // ★ 玩家主動推石頭：巨石照玩家實際速度同步前進（上坡含 Y），不再比玩家快而衝開
+                    // ★0920 這裡只登記「玩家想把石頭推到多快」，實際速度統一在 FixedUpdate 用加速度逼近。
+                    //   原本在這裡直接指定速度，等於每幀瞬間同步，石頭才會完全沒有重量。
                     Rigidbody playerRb = collision.rigidbody != null ? collision.rigidbody : pm.GetComponent<Rigidbody>();
-                    rb.linearVelocity = GetPushVelocity(pm, playerRb);
                     _pusher = pm;
                     _pusherRb = playerRb;
+                    _targetPushSpeedX = GetPushTargetSpeedX(pm, playerRb);
                     _lastPushTime = Time.time;
                 }
                 else
