@@ -23,6 +23,17 @@ public class PlayerMovement : MonoBehaviour
     public float BaseSpeed => baseSpeed;
     /// <summary>★0917 唯讀：這一幀腳下地面的坡度（度，沒踩地＝0）。給狼的追擊速度決策對照玩家實際移動狀態用，不影響玩家自己。</summary>
     public float GroundSlopeAngle { get; private set; }
+    /// <summary>★0920 唯讀：這一幀腳下地面的法線（沒踩地＝Vector3.up）。只給視覺貼坡用。</summary>
+    public Vector3 GroundNormal { get; private set; } = Vector3.up;
+
+    [Header("★0920 斜坡視覺貼合（只轉外觀，剛體不轉）")]
+    [Tooltip("站在斜坡上時，讓角色的外觀跟著坡面傾斜。關掉就是原本永遠正立的樣子")]
+    public bool enableSlopeVisualTilt = true;
+    [Tooltip("視覺最多傾斜幾度（實際坡度超過也只會傾到這個角度）")]
+    [Range(0f, 45f)] public float maxSlopeVisualAngle = 30f;
+    [Tooltip("傾斜與回正的平滑速度，越大越快跟上坡面")]
+    [Range(1f, 30f)] public float slopeVisualTiltSpeed = 10f;
+    private float _slopeVisualAngle;   // 目前已套用的視覺傾角（度）
 
     private Collider playerCollider;
     private string currentAnimState = ""; 
@@ -415,6 +426,7 @@ public class PlayerMovement : MonoBehaviour
         float currentSlopeAngle = 0f;
         bool preliminaryGrounded = CheckGrounded(out groundHit, out currentSlopeAngle);
         GroundSlopeAngle = preliminaryGrounded ? currentSlopeAngle : 0f;
+        GroundNormal = (preliminaryGrounded && groundHit.normal.sqrMagnitude > 0.001f) ? groundHit.normal : Vector3.up;
 
         if (preliminaryGrounded && groundHit.collider != null)
         {
@@ -673,6 +685,26 @@ public class PlayerMovement : MonoBehaviour
             if (facingDirection != Vector3.zero)
             {
                 Quaternion baseRotation = Quaternion.LookRotation(facingDirection);
+
+                // ★0920 斜坡視覺貼合：站在坡上時外觀跟著坡面傾斜，離地平滑回正。
+                //   ・只轉 animator 這個外觀子物件，剛體的 FreezeRotation 完全不動
+                //   ・傾角繞畫面的 Z 軸、而且是「左乘」＝在世界空間疊加，所以左右朝向翻面時方向仍然正確
+                //     （右乘會被 LookRotation 的 180° 轉向鏡射成反方向）
+                //   ・水下維持原本的仰角演出，不疊坡度
+                float targetTilt = 0f;
+                if (enableSlopeVisualTilt && !isUnderwater && isGrounded && !isJumping)
+                {
+                    Vector3 n = GroundNormal;
+                    targetTilt = Mathf.Clamp(Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg,
+                                             -maxSlopeVisualAngle, maxSlopeVisualAngle);
+                }
+                _slopeVisualAngle = Mathf.LerpAngle(_slopeVisualAngle, targetTilt,
+                                                    1f - Mathf.Exp(-slopeVisualTiltSpeed * Time.deltaTime));
+                if (Mathf.Abs(_slopeVisualAngle) > 0.01f)
+                {
+                    baseRotation = Quaternion.Euler(0f, 0f, _slopeVisualAngle) * baseRotation;
+                }
+
                 bool isSwimmingUpward = isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || rb.linearVelocity.y > 0.3f);
 
                 if (isSwimmingUpward)
