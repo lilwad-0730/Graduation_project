@@ -51,6 +51,32 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [SerializeField]
     private float defaultPlayerSpeed = 5.0f;
 
+    [Header("★0919 貼身速度跟著玩家實際速度走")]
+    [Tooltip("開啟後，貼身追擊速度＝玩家「實際水平速度」× 下面的倍率（而不是固定的 nearChaseSpeed）。\n" +
+             "實測：玩家推巨石上坡時實際只有 1.4～2.2 m/s，但狼的貼身速度是固定 6.8，等於瞬間就咬到；\n" +
+             "改成跟著玩家走，狼永遠只快一點點，壓迫感在但有得跑。關掉＝完全回到原本的固定速度。")]
+    public bool useAdaptivePlayerReference = true;
+
+    [Tooltip("咬到距離內，狼是玩家速度的幾倍 (1.05 ＝ 快 5%)。這是「已經貼上去之後」的跟隨速度")]
+    [Range(1.0f, 1.6f)]
+    public float finalChaseSpeedRatio = 1.05f;
+
+    [Tooltip("狼與玩家的中心距離小於這個值時視為已經貼上（碰撞體實際接觸約 2.3 公尺），進入上面的跟隨速度")]
+    public float biteApproachDistance = 2.5f;
+
+    [Tooltip("還沒貼上時，狼每秒要比玩家多前進幾公尺（固定差額，不是百分比）。\n" +
+             "百分比在玩家很慢的時候會失效：玩家推巨石只有 2.5 m/s，×1.05 只快 0.12 m/s，" +
+             "從 4 公尺接近到碰得到的 2.3 公尺要花 14 秒，實機上就是「一直逼近卻永遠咬不到」。")]
+    [Range(0.2f, 3f)]
+    public float minClosingSpeed = 0.8f;
+
+    [Tooltip("玩家停下來或非常慢時，用來計算貼身速度的最低參考速度 (避免玩家站著不動時狼也停住)")]
+    public float minPlayerReferenceSpeed = 2.5f;
+
+    [Tooltip("玩家速度的平滑秒數 (避免玩家一頓一頓時狼的速度跟著抖)")]
+    [Range(0.05f, 1f)]
+    public float playerSpeedSmoothing = 0.25f;
+
     [Header("物理免疫設定")]
     [Tooltip("狼要忽略碰撞的物件 Collider 清單")]
     public List<Collider> collidersToIgnore = new List<Collider>();
@@ -183,6 +209,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
     // ★0917 追擊速度決策的中間值（只給 debugSlopeLog 印，不參與計算）
     private float _dbgTerrainFactor = 1f;
     private float _dbgCatchUpSpeed;
+    private float _dbgNearTarget;
+    private float _dbgCloseSpeed;
     private float _dbgSepFactor = 1f;
     private float _dbgDistance;
 
@@ -543,9 +571,31 @@ public class WolfEnemy : MonoBehaviour, IResettable
             Vector2 playerPos = new Vector2(player.position.x, player.position.y);
             float realDistance = Vector2.Distance(wolfPos, playerPos);
 
+            // ★0919 速度基準重新定義（見 Header 說明）：
+            //   ・貼身：跟著玩家「實際水平速度」× finalChaseSpeedRatio
+            //   ・遠距：維持原本的 Catch-up 絕對速度（乘地形係數），才追得回落後的距離
+            //   ・Clamp 移到 Separation／個體差「之前」，讓那兩個系統仍然能微調最終速度（原本會被 Clamp 吃掉）
+            float terrainFactor = GetPlayerTerrainSpeedFactor();
+            float pBaseSpeed = (playerMovement != null) ? playerMovement.BaseSpeed : defaultPlayerSpeed;
+            float playerRef = useAdaptivePlayerReference ? GetPlayerReferenceSpeed(pBaseSpeed) : pBaseSpeed * terrainFactor;
+
+            // ★0919 分成兩段：
+            //   ・shadowSpeed：已經貼到咬得到的距離 → 玩家速度 × finalChaseSpeedRatio（跟著她跑，不硬擠）
+            //   ・closeSpeed ：還沒貼上 → 玩家速度 ＋ minClosingSpeed（固定差額，保證真的會縮短距離）
+            //   只用百分比會在玩家慢的時候失效，這就是「一直逼近卻咬不到」的成因。
+            float shadowSpeed = useAdaptivePlayerReference
+                ? playerRef * finalChaseSpeedRatio
+                : (pBaseSpeed + minimumChaseSpeedAbovePlayer) * terrainFactor;
+            float closeSpeed = useAdaptivePlayerReference
+                ? Mathf.Max(shadowSpeed, playerRef + minClosingSpeed)
+                : shadowSpeed;
+            float ceiling = maxCatchUpSpeed * terrainFactor;
+
             // 1. Base Chase Speed (Catch-up 曲線或基礎跑速)
-            currentSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance)
-                                           : (realDistance > runDistanceThreshold ? slowChaseSpeed : fastChaseSpeed);
+            currentSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance, shadowSpeed, closeSpeed, terrainFactor)
+                                           : (realDistance > runDistanceThreshold ? slowChaseSpeed : fastChaseSpeed) * terrainFactor;
+            currentSpeed = Mathf.Clamp(currentSpeed, shadowSpeed, Mathf.Max(shadowSpeed, ceiling));
+            float nearTarget = shadowSpeed;   // 診斷用
 
             // 2. Separation (柔和同伴避讓與重疊強度計算)
             float sepFactor = ComputeSeparationFactor(directionX, Mathf.Abs(currentSpeed), realDistance, out float targetOverlap);
@@ -557,24 +607,17 @@ public class WolfEnemy : MonoBehaviour, IResettable
             currentEffectiveSpeedMultiplier = 1f + (individualSpeedBiasRatio * currentVariation);
             currentSpeed *= currentEffectiveSpeedMultiplier;
 
-            // 4. Minimum Chase Speed 保證與 maxCatchUpSpeed 上限 Clamp
-            // 確保正常追逐時狼速必然高於玩家奔跑速度（至少高出 minimumChaseSpeedAbovePlayer），且不突破 maxCatchUpSpeed
-            float pBaseSpeed = (playerMovement != null) ? playerMovement.BaseSpeed : defaultPlayerSpeed;
-            float minimumChaseSpeed = pBaseSpeed + minimumChaseSpeedAbovePlayer;
-            currentSpeed = Mathf.Clamp(currentSpeed, minimumChaseSpeed, maxCatchUpSpeed);
+            // 4. 安全上下限：
+            //    上限＝設計的追趕上限；下限＝玩家當下的速度（Separation／個體差可以讓狼慢下來錯開，
+            //    但不能慢到比玩家還慢而被甩開，否則又會變成永遠追不到）
+            currentSpeed = Mathf.Clamp(currentSpeed,
+                                       Mathf.Min(playerRef, shadowSpeed),
+                                       Mathf.Max(shadowSpeed, ceiling));
 
-            // 5. ★0917 玩家地形係數：讓狼的目標速度跟玩家「實際」的水平移動能力對應
-            //   上面 1～4 的速度都是以「平地」定義的（貼身 6.8／最低＝玩家 6＋0.4／上限 12.5，都是水平速度）。
-            //   玩家在坡上是沿坡面走，水平速度只剩 基本速度 × cos(坡度)（35° 時 6 → 4.91）；
-            //   狼卻因為 FixedUpdate 的斜坡補償（Protected，不動）在坡上維持同樣的水平速度，
-            //   於是上坡時「狼的最低速度 − 玩家實際水平速度」從平地的 0.4 放大成 1.49，貼身追擊差距從 0.8 放大成 1.89，
-            //   Editor.log 實測狼在 35° 坡上水平速度 8～12 m/s。
-            //   這裡把平地定義的目標速度乘上玩家腳下坡度的 cos：上坡時兩邊的速度比例回到跟平地一樣
-            //   （貼身、最低速度仍然比玩家快，咬得到），玩家離地（跳躍）時係數＝1，因為她在空中水平速度也是全速。
-            _dbgTerrainFactor = GetPlayerTerrainSpeedFactor();
-            currentSpeed *= _dbgTerrainFactor;
-
-            _dbgCatchUpSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance) : 0f;
+            _dbgTerrainFactor = terrainFactor;
+            _dbgNearTarget = nearTarget;
+            _dbgCloseSpeed = closeSpeed;
+            _dbgCatchUpSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance, shadowSpeed, closeSpeed, terrainFactor) : 0f;
             _dbgSepFactor = sepFactor;
             _dbgDistance = realDistance;
         }
@@ -595,31 +638,71 @@ public class WolfEnemy : MonoBehaviour, IResettable
         return Mathf.Cos(a * Mathf.Deg2Rad);
     }
 
-    private float EvaluateChaseSpeed(float distance)
+    /// <summary>
+    /// 距離 → 速度曲線。貼身那一端改吃 nearSpeed（跟著玩家實際速度算出來的），
+    /// 中距離與遠距離維持原本的絕對速度，只乘上地形係數，才追得回被拉開的距離。
+    /// </summary>
+    private float EvaluateChaseSpeed(float distance, float shadowSpeed, float closeSpeed, float terrainFactor)
     {
-        float near = Mathf.Max(0.1f, nearDistance);
+        float bite = Mathf.Max(0.05f, biteApproachDistance);
+        float near = Mathf.Max(bite + 0.1f, nearDistance);
         float cruise = Mathf.Max(near + 0.1f, cruiseDistance);
         float far = Mathf.Max(cruise + 0.1f, maxCatchUpDistance);
 
+        closeSpeed = Mathf.Max(shadowSpeed, closeSpeed);
+        float cruiseSpeed = Mathf.Max(closeSpeed, cruiseChaseSpeed * terrainFactor);
+        float maxSpeed = Mathf.Max(cruiseSpeed, maxCatchUpSpeed * terrainFactor);
+
         float speed;
-        if (distance <= near)
+        if (distance <= bite)
         {
-            speed = nearChaseSpeed;
+            // 已經貼上：跟著玩家跑，不硬擠
+            speed = shadowSpeed;
+        }
+        else if (distance <= near)
+        {
+            // 最後一段：從固定差額的接近速度平滑收斂到跟隨速度
+            speed = Mathf.Lerp(shadowSpeed, closeSpeed, (distance - bite) / (near - bite));
         }
         else if (distance <= cruise)
         {
-            speed = Mathf.Lerp(nearChaseSpeed, cruiseChaseSpeed, (distance - near) / (cruise - near));
+            speed = Mathf.Lerp(closeSpeed, cruiseSpeed, (distance - near) / (cruise - near));
         }
         else if (distance <= far)
         {
-            speed = Mathf.Lerp(cruiseChaseSpeed, maxCatchUpSpeed, (distance - cruise) / (far - cruise));
+            speed = Mathf.Lerp(cruiseSpeed, maxSpeed, (distance - cruise) / (far - cruise));
         }
         else
         {
-            speed = maxCatchUpSpeed;
+            speed = maxSpeed;
         }
 
-        return Mathf.Min(speed, maxCatchUpSpeed);
+        return Mathf.Min(speed, maxSpeed);
+    }
+
+    // 玩家水平速度的平滑值：整群狼共用，每幀只算一次
+    private static float _sharedPlayerSpeed;
+    private static int _sharedPlayerSpeedFrame = -1;
+
+    /// <summary>
+    /// 貼身速度的參考值＝玩家「實際」水平速度（平滑過），夾在 minPlayerReferenceSpeed 與玩家基礎速度之間。
+    /// 玩家停下或推著巨石慢慢走時，狼不會跟著停死；玩家全速跑時，狼也不會超出設計上限。
+    /// </summary>
+    private float GetPlayerReferenceSpeed(float pBaseSpeed)
+    {
+        if (playerMovement == null) return pBaseSpeed;
+
+        if (_sharedPlayerSpeedFrame != Time.frameCount)
+        {
+            _sharedPlayerSpeedFrame = Time.frameCount;
+            Rigidbody prb = playerMovement.GetComponent<Rigidbody>();
+            float raw = prb != null ? Mathf.Abs(prb.linearVelocity.x) : pBaseSpeed;
+            raw = Mathf.Min(raw, pBaseSpeed);
+            float t = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.01f, playerSpeedSmoothing));
+            _sharedPlayerSpeed = Mathf.Lerp(_sharedPlayerSpeed, raw, t);
+        }
+
+        return Mathf.Clamp(_sharedPlayerSpeed, minPlayerReferenceSpeed, pBaseSpeed);
     }
 
     private float ComputeSeparationFactor(float directionX, float ownSpeedAbs, float distToPlayer, out float overlapIntensity)
@@ -892,6 +975,6 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float playerSlope = (playerMovement != null && playerMovement.isGrounded) ? playerMovement.GroundSlopeAngle : 0f;
         Debug.Log($"🐺【狼追擊決策】{gameObject.name} | 玩家水平速度 {Mathf.Abs(playerVx):F2}（腳下坡度 {playerSlope:F0}°） | " +
                   $"狼目標水平 {Mathf.Abs(_targetSpeedX):F2} | 狼實際水平 {Mathf.Abs(v.x):F2}（自己坡度 {slopeAngle:F0}°） | " +
-                  $"距離 {_dbgDistance:F1} | Catch-up {_dbgCatchUpSpeed:F2} | 分離係數 {_dbgSepFactor:F2} | 個體倍率 {currentEffectiveSpeedMultiplier:F3} | 地形係數 {_dbgTerrainFactor:F3} | 123 退後 {( _targetSpeedX * Mathf.Sign(player != null ? player.position.x - transform.position.x : 1f) < 0f ? "是" : "否")}");
+                  $"距離 {_dbgDistance:F1} | 貼上跟隨 {_dbgNearTarget:F2} | 接近速度 {_dbgCloseSpeed:F2} | Catch-up {_dbgCatchUpSpeed:F2} | 分離係數 {_dbgSepFactor:F2} | 個體倍率 {currentEffectiveSpeedMultiplier:F3} | 地形係數 {_dbgTerrainFactor:F3} | 123 退後 {( _targetSpeedX * Mathf.Sign(player != null ? player.position.x - transform.position.x : 1f) < 0f ? "是" : "否")}");
     }
 }
