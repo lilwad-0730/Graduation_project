@@ -163,6 +163,7 @@ public class RollingRockVisual : MonoBehaviour
 
         // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石先跟著玩家走，別往回滑
         // （還碰著的話 OnCollisionStay 會在這之後再設一次同樣的速度）
+        if (!_pusher.isGrounded) return;   // 空中不接續推力
         float input = _pusher.CurrentMoveInput;
         float dirToRock = Mathf.Sign(transform.position.x - _pusher.transform.position.x);
         float gap = Mathf.Abs(transform.position.x - _pusher.transform.position.x) - radius;
@@ -172,15 +173,21 @@ public class RollingRockVisual : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 巨石跟著玩家走的速度。
+    /// ★0919 只取玩家的「水平」速度，垂直永遠保留巨石自己的（重力／地面）。
+    ///   0916 那版連玩家的垂直速度一起抄過來，玩家一跳，巨石就跟著被賦予向上的速度飛起來——
+    ///   那是我上一版造成的，不是原本就有的行為。水平同步就足以解決上坡抖動，垂直本來就該交給重力。
+    /// </summary>
     private Vector3 GetPushVelocity(PlayerMovement pm, Rigidbody playerRb)
     {
         float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed;
         if (playerRb == null) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
 
-        Vector3 v = playerRb.linearVelocity;
+        float vx = playerRb.linearVelocity.x;
         // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回原本的推力，免得兩邊都停住推不動
-        if (Mathf.Abs(v.x) < 0.1f) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
-        return new Vector3(v.x, v.y, 0f);
+        if (Mathf.Abs(vx) < 0.1f) return new Vector3(fallbackX, rb.linearVelocity.y, 0f);
+        return new Vector3(vx, rb.linearVelocity.y, 0f);
     }
 
     private void OnCollisionStay(Collision collision)
@@ -191,7 +198,8 @@ public class RollingRockVisual : MonoBehaviour
             if (pm == null) pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
             if (pm != null && rb != null && !rb.isKinematic)
             {
-                if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f)
+                // ★0919 人在空中就不算在推：跳起來、從石頭上跳開時，巨石不該跟著動
+                if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f && pm.isGrounded)
                 {
                     // ★ 玩家主動推石頭：巨石照玩家實際速度同步前進（上坡含 Y），不再比玩家快而衝開
                     Rigidbody playerRb = collision.rigidbody != null ? collision.rigidbody : pm.GetComponent<Rigidbody>();
