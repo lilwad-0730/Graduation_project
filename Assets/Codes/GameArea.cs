@@ -32,6 +32,14 @@ public class GameArea : MonoBehaviour
                 // 如果這個腳本有實作 IResettable 介面
                 if (script is IResettable resettable)
                 {
+                    // ★0919 玩家身上的東西絕對不能被背景重置吃進名單。
+                    //   玩家是跟著跑的，她「離開這個背景」正是這支腳本觸發重置的時機；
+                    //   而她一開始就站在 Area_Sky 裡，於是 PlayerPetrification 等玩家組件被掃進名單，
+                    //   墜落中切背景時被呼叫 ResetToInitialState() → ClearAllNegativeEffects() →
+                    //   rb.linearVelocity = Vector3.zero，墜落速度歸零（畫面上就是掉一半停住、再重新加速）。
+                    //   背景重置的用途是還原「這個背景自己的機關」，玩家的狀態該由重生系統負責。
+                    if (IsOnPlayer(script)) continue;
+
                     // 並且這個物件的座標，剛好在這個背景的 3D BoxCollider 範圍內
                     if (col.bounds.Contains(script.transform.position))
                     {
@@ -46,8 +54,18 @@ public class GameArea : MonoBehaviour
     /// <summary>
     /// 提供給腳本在執行期間動態加入名單的方法 (例如動態生成的怪物)
     /// </summary>
+    /// <summary>這個腳本是不是掛在玩家身上（含子物件）。</summary>
+    private static bool IsOnPlayer(MonoBehaviour script)
+    {
+        if (script == null) return false;
+        if (script.CompareTag("Player")) return true;
+        if (script.GetComponentInParent<PlayerMovement>() != null) return true;
+        return false;
+    }
+
     public void RegisterResettable(IResettable resettable)
     {
+        if (resettable is MonoBehaviour mb && IsOnPlayer(mb)) return;   // 玩家身上的東西不進背景重置名單
         if (!resettableObjects.Contains(resettable))
         {
             resettableObjects.Add(resettable);
