@@ -38,6 +38,11 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
     public float safeRecordInterval = 0.25f;
     [Tooltip("救援時退回幾秒前的安全位置（太近的話她還按著方向鍵會馬上又穿進去）")]
     public float rescueLookbackSeconds = 1f;
+    [Tooltip("★0920 救援目標至少要離目前位置這麼遠才算數 (公尺)。\n" +
+             "必須明顯大於 noProgressDistance(0.3) 與 shrink(0.25)，不然「救援」等於原地傳送。\n" +
+             "C 條件成立的前提就是『2.5 秒內移動不到 0.3 公尺』，所以卡住期間記下來的安全點\n" +
+             "一定都貼在卡住位置旁邊，沒有這道門檻就會挑到它們。")]
+    public float rescueMinDistance = 1.0f;
     [Tooltip("往外打射線的長度")]
     public float rayLength = 30f;
 
@@ -213,9 +218,53 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         {
             _nextSafeRecordTime = Time.time + safeRecordInterval;
             _safePositions.Add(transform.position);
-            int keep = Mathf.Max(2, Mathf.CeilToInt(rescueLookbackSeconds / Mathf.Max(0.05f, safeRecordInterval)) + 1);
+            int keep = SafePositionCapacity();
             while (_safePositions.Count > keep) _safePositions.RemoveAt(0);
         }
+    }
+
+    /// <summary>
+    /// ★0920 安全點要保留幾筆。
+    ///
+    /// 原本是只照 rescueLookbackSeconds 算，預設 1 秒 ÷ 0.25 ＋1 ＝ 5 筆。
+    /// 但 C 條件要「2.5 秒沒移動」才觸發，而卡住期間那些位置照樣會被記成安全點
+    /// （記錄條件只擋 embedded／shell，不擋 around），於是 5 筆全部落在卡住之後，
+    /// 救援必然挑到貼著卡住位置的點——這就是「已放回石頭外的位置」卻原地沒動的成因。
+    ///
+    /// 改成至少涵蓋 noProgressSeconds + rescueLookbackSeconds，卡住時才留得住「卡住之前」的位置。
+    /// 依現有參數動態算（2.5 + 1.0）÷ 0.25 ＋1 ＝ 15 筆，不寫死。
+    /// 只是加長保留量，記錄條件與 A／B 的判定完全沒動。
+    /// </summary>
+    private int SafePositionCapacity()
+    {
+        float interval = Mathf.Max(0.05f, safeRecordInterval);
+        float requiredSeconds = Mathf.Max(0f, noProgressSeconds) + Mathf.Max(0f, rescueLookbackSeconds);
+        return Mathf.Max(2, Mathf.CeilToInt(requiredSeconds / interval) + 1);
+    }
+
+    /// <summary>
+    /// ★0920 從「最新 → 最舊」挑第一個離目前位置至少 rescueMinDistance 的安全點。
+    /// 卡住期間記下來的那一串近距離點會被逐一跳過，一路退到真正還游得動的位置。
+    /// farthest 是掃過的候選裡最遠的距離，只在找不到時拿來寫 Log（找到時會提早 break，不完整也用不到）。
+    /// </summary>
+    private bool TryPickSafePosition(Vector3 current, out Vector3 target, out float distance, out float farthest)
+    {
+        target = current;
+        distance = 0f;
+        farthest = 0f;
+
+        for (int i = _safePositions.Count - 1; i >= 0; i--)
+        {
+            float d = Vector3.Distance(current, _safePositions[i]);
+            if (d > farthest) farthest = d;
+            if (d >= rescueMinDistance)
+            {
+                target = _safePositions[i];
+                distance = d;
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>玩家中心落在哪一顆石頭的範圍（外框）內。</summary>
@@ -291,8 +340,9 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
     private void Rescue(Collider rock, string reason)
     {
         string rockName = rock != null ? rock.gameObject.name : "未知";
+        Vector3 current = transform.position;
         string context = $"  原因：{reason}\n" +
-                         $"  卡住位置：{transform.position}\n" +
+                         $"  卡住位置：{current}\n" +
                          $"  速度：{(_rb != null ? _rb.linearVelocity.ToString() : "無剛體")}\n" +
                          $"  按鍵：{(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) ? "上 " : "")}" +
                          $"{(Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? "下 " : "")}" +
@@ -302,9 +352,13 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         bool rescuedRecently = Time.time - _lastRescueTime < 3f;
         _lastRescueTime = Time.time;
 
-        if (!rescuedRecently && _safePositions.Count > 0)
+        // ★0920 不再無腦拿 _safePositions[0]。從最新往最舊掃，挑第一個「離目前位置夠遠」的點：
+        //   C 條件卡住期間記下來的那一串，距離都小於 noProgressDistance(0.3)，會被全部跳過。
+        int sampleCount = _safePositions.Count;
+        bool found = TryPickSafePosition(current, out Vector3 target, out float moved, out float farthest);
+
+        if (!rescuedRecently && found)
         {
-            Vector3 target = _safePositions[0];   // 最舊的那個＝大約 1 秒前
             _safePositions.Clear();
             if (_pm != null) _pm.WarpTo(target);
             else
@@ -312,16 +366,25 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
                 transform.position = target;
                 if (_rb != null) { _rb.position = target; _rb.linearVelocity = Vector3.zero; }
             }
-            Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，已放回石頭外的位置 {target}。\n{context}");
+            Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，已放回較早的有效安全位置。\n" +
+                           $"  救援位置：{target}\n" +
+                           $"  救援距離：{moved:F2}m（門檻 {rescueMinDistance:F2}m）\n" +
+                           $"{context}");
             return;
         }
 
-        // 沒有安全點，或剛救過又卡住（安全點本身就在問題位置）：走重生，保證不會卡死
+        // 沒有夠遠的安全點，或剛救過又卡住（安全點本身就在問題位置）：走現有的重生退路，保證不會卡死
+        string why;
+        if (rescuedRecently) why = "剛救過又卡住";
+        else if (sampleCount == 0) why = "沒有任何安全位置紀錄";
+        else why = $"沒有找到距離目前位置 >= {rescueMinDistance:F2}m 的安全點"
+                   + $"（共 {sampleCount} 筆，最遠只有 {farthest:F2}m）";
+
         _safePositions.Clear();
         PlayerRespawnSystem respawn = GetComponentInChildren<PlayerRespawnSystem>();
         if (respawn == null) respawn = GetComponentInParent<PlayerRespawnSystem>();
         if (respawn == null) respawn = FindFirstObjectByType<PlayerRespawnSystem>();
         if (respawn != null) respawn.TriggerRespawn();
-        Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，{(rescuedRecently ? "剛救過又卡住" : "沒有可用的安全位置")}，改用重生救出來。\n{context}");
+        Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，{why}，改用現有 Respawn fallback。\n{context}");
     }
 }
