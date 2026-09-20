@@ -787,6 +787,30 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
     }
 
+    /// <summary>
+    /// ★0920 攻擊被中斷／取消時，保證紅色攻擊路徑一定被關掉。
+    ///
+    /// Root Cause：AttackCoroutine 的正常流程是「前搖結束 → SetTelegraphVisible(false) → 俯衝」，
+    /// 而 BounceOff() / OnHitGround() 會先呼叫 StopAllCoroutines()。前搖期間被護盾撞到時，
+    /// 協程就停在 while 迴圈裡，那行關閉永遠跑不到，紅線（useWorldSpace 的 LineRenderer）
+    /// 會凍在半空，直到物件被 SetActive(false) 才一起消失。
+    ///
+    /// 這裡不新增第二個控制來源——仍然只呼叫既有的 SetTelegraphVisible()，
+    /// 只是把「取消攻擊必須清掉預告」這件事收斂成一個所有中斷路徑共用的入口。
+    /// 正常的 Lock-on／Warning 時長／Laser 開關時機／Lunge 時機完全沒有動。
+    /// </summary>
+    private void ClearAttackTelegraph()
+    {
+        _hasLockedDiveTarget = false;
+        SetTelegraphVisible(false);
+    }
+
+    private void OnDisable()
+    {
+        // 物件被關掉／場景卸載時，紅線不留殘影（SetTelegraphVisible(false) 不會建立任何物件，可安全呼叫）
+        ClearAttackTelegraph();
+    }
+
     // ── 紅色攻擊路徑（前搖預告）─────────────────────────
     private void SetTelegraphVisible(bool on)
     {
@@ -1019,6 +1043,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (currentState != BirdState.Diving) return;
 
         StopAllCoroutines(); // 立即停止俯衝攜程
+        ClearAttackTelegraph();   // ★0920 任何中斷路徑都必須保證紅色路徑被關掉（見 ClearAttackTelegraph）
 
         // 校正插地深度：停滯/超時/直接碰撞等後備判定路徑觸發時，鳥當下位置可能已經穿入地面內部太深，
         // 統一往回貼齊到剛好卡在碰撞表面上（SweepForSurface 命中的路徑已經精準貼齊，這裡再做一次是安全的校正，不會有副作用）
@@ -1281,6 +1306,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (currentState == BirdState.Bounced) return;
 
         StopAllCoroutines(); // 立即停止俯衝與其他運動
+        ClearAttackTelegraph();   // ★0920 前搖中被護盾撞飛時，AttackCoroutine 會在這裡被砍掉，紅線必須自己關
         currentState = BirdState.Bounced;
 
         if (rb != null)

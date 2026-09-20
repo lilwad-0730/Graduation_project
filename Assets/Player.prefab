@@ -164,7 +164,7 @@ MonoBehaviour:
   isGrounded: 0
   isStrictLockingX: 0
   lockedXValue: 0
-  maxWolvesToStop: 10
+  maxWolvesToStop: 6
   attachedWolvesCount: 0
   currentSpeed: 0
   freezeHorizontal: 0

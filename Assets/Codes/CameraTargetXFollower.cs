@@ -263,12 +263,25 @@ public class CameraTargetXFollower : MonoBehaviour
         if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
         if (Instance == null) return;
 
+        // ★0920 只有「狀態真的變了」才寫 Log。
+        //   MountainCameraZone 的 boundaryBackground 有指定時會每幀呼叫這支函式重新套邊界（背景會被
+        //   Parallax 移動，邊界必須每幀跟上），原本無條件 Debug.Log 於是變成每幀一行：
+        //   實測單場 193,397 行、wonita_debug.log 撐到 42 MB，Editor 每行還要收 stack trace，
+        //   所有效能與物理量測都被這個污染。相機行為完全不動，只擋重複訊息。
+        bool stateChanged = !Instance.verticalFollowActive
+                            || Mathf.Abs(Instance.verticalFollowMinY - minY) > 0.5f
+                            || Mathf.Abs(Instance.verticalFollowMaxY - maxY) > 0.5f;
+
         Instance.verticalFollowActive = true;
         Instance.verticalFollowMinY = minY;
         Instance.verticalFollowMaxY = maxY;
         Instance.verticalFollowSpeed = followSpeed > 0.01f ? followSpeed : 8f;
         Instance.verticalFollowYOffset = yOffset;
-        Debug.Log($"⛰️【垂直跟隨啟用】鏡頭改為上下跟隨玩家，範圍 Y: [{minY:F1} ~ {maxY:F1}]");
+
+        if (stateChanged)
+        {
+            Debug.Log($"⛰️【垂直跟隨啟用】鏡頭改為上下跟隨玩家，範圍 Y: [{minY:F1} ~ {maxY:F1}]");
+        }
     }
 
     /// <summary>關閉垂直跟隨，鏡頭 Y 平滑回到該層原本的固定高度。</summary>

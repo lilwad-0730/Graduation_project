@@ -10,8 +10,34 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public float fastChaseSpeed = 6f;
     [Tooltip("偵測到玩家在遠處時，狼的慢走速度 (慢步接近，設為 3)")]
     public float slowChaseSpeed = 3f;
-    [Tooltip("狼被迫往後退的退後速度 (負數代表往回走，設為 -1.5)")]
+    [Tooltip("狼被迫往後退的退後速度上限 (負數代表往回走)。\n" +
+             "★0920 起這個值是「上限」不是固定值：實際退後速度＝玩家當下水平速度 × Retreat Speed Multiplier，" +
+             "再夾在 Min Retreat Speed 與這個值之間。設 0 仍然是「一回頭狼就原地罰站」。")]
     public float retreatSpeed = -1.5f;
+
+    [Header("★0920 123 退後速度跟著玩家走")]
+    [Tooltip("退後速度＝玩家當下水平速度 × 這個倍率。\n" +
+             "必須小於 1，玩家往前走才會真的縮短距離。\n" +
+             "實測：玩家推巨石上坡只有 2.2 m/s，舊版狼固定退 2.70，等於每秒被拉開 0.5 公尺而且沒有上限。\n" +
+             "0.8 的依據：追擊那邊已經驗證過「純百分比在玩家慢的時候會失效」，所以用 minClosingSpeed 0.8 " +
+             "做固定差額；退後這邊取同一個量級——玩家 6.0 時差 1.2 m/s、2.2 時差 0.44 m/s，都真的會接近。\n" +
+             "註：玩家速度超過約 3.4 m/s 時會被 Retreat Speed 上限夾住，行為跟舊版完全一樣。")]
+    [Range(0.1f, 1f)]
+    public float retreatSpeedMultiplier = 0.8f;
+
+    [Tooltip("退後速度的下限 (m/s)。玩家站著不動盯著狼時，狼還是要看得出來在往後退，不能整個定住。\n" +
+             "這是刻意的取捨：玩家慢於「本值 ÷ Retreat Speed Multiplier」時，狼仍會比她快一點點。\n" +
+             "預設 0.6 ÷ 0.8 ＝ 交叉點 0.75 m/s：玩家只要走得比 0.75 m/s 快就一定會接近狼；\n" +
+             "比這更慢（幾乎等於站著）時才換成狼緩緩拉開，而這正是「回頭嚇退狼」該有的效果。\n" +
+             "覺得壓迫感不夠就把這個值調小，交叉點會跟著往下移。")]
+    [Range(0f, 2f)]
+    public float minRetreatSpeed = 0.6f;
+
+    [Tooltip("退到離玩家這麼遠就停止後退、改成原地罰站 (公尺)。\n" +
+             "防止玩家站著不動盯著狼時，狼以 Min Retreat Speed 無限往後退出整個關卡。\n" +
+             "預設 18＝maxCatchUpDistance，也就是設計上已經視為「很遠」的距離。設 0 或負數＝不限制。")]
+    public float maxRetreatDistance = 18f;
+
     [Tooltip("狼從慢走切換到快跑的距離閥值")]
     public float runDistanceThreshold = 6f;
     public float aggroDistanceX = 6f;
@@ -213,6 +239,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private float _dbgCloseSpeed;
     private float _dbgSepFactor = 1f;
     private float _dbgDistance;
+    // ★0920 直接記錄「這一幀是不是 123 退後」。原本是從 _targetSpeedX 的正負號反推，
+    //   退後速度被夾成 0（原地罰站／超過 maxRetreatDistance）時會誤印成「否」。
+    private bool _dbgRetreating;
 
     private void Awake()
     {
@@ -556,21 +585,27 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         float currentSpeed = 0f;
 
+        // ★★★ 智能追擊 (Catch-up AI) 核心優化：
+        // 使用真實 2D 平面距離 (XY 距離)，而不是純 X 軸距離！
+        // 在斜坡上，主角跑得越高、XY 真實距離就越大，狼才能真正觸發遠距狂暴加速（越遠越狂暴）！
+        // ★0920 這段從 else 分支上移：原本只在「正常追擊」時算，123 退後時 _dbgDistance 會停在
+        //   進入退後前的最後一個值，Log 看起來就像狼卡在 12.20m 不動——實際上同一時間
+        //   「狼運行」那行的實測速度是 2.51，狼一路正常後退。診斷值失真會誤導後續所有判讀，
+        //   所以改成兩個分支共用同一份當下距離。移動邏輯完全不動。
+        Vector2 wolfPos = new Vector2(transform.position.x, transform.position.y);
+        Vector2 playerPos = new Vector2(player.position.x, player.position.y);
+        float realDistance = Vector2.Distance(wolfPos, playerPos);
+        _dbgDistance = realDistance;
+        _dbgRetreating = isPlayerFacingWolf;
+
         if (isPlayerFacingWolf)
         {
-            currentSpeed = retreatSpeed;
+            currentSpeed = -ComputeRetreatMagnitude(realDistance);
             // 123 木頭人退後狀態下平滑淡出去同步
             _smoothedOverlapIntensity = Mathf.MoveTowards(_smoothedOverlapIntensity, 0f, desyncTransitionSpeed * Time.deltaTime);
         }
         else
         {
-            // ★★★ 智能追擊 (Catch-up AI) 核心優化：
-            // 使用真實 2D 平面距離 (XY 距離)，而不是純 X 軸距離！
-            // 在斜坡上，主角跑得越高、XY 真實距離就越大，狼才能真正觸發遠距狂暴加速（越遠越狂暴）！
-            Vector2 wolfPos = new Vector2(transform.position.x, transform.position.y);
-            Vector2 playerPos = new Vector2(player.position.x, player.position.y);
-            float realDistance = Vector2.Distance(wolfPos, playerPos);
-
             // ★0919 速度基準重新定義（見 Header 說明）：
             //   ・貼身：跟著玩家「實際水平速度」× finalChaseSpeedRatio
             //   ・遠距：維持原本的 Catch-up 絕對速度（乘地形係數），才追得回落後的距離
@@ -608,10 +643,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
             currentSpeed *= currentEffectiveSpeedMultiplier;
 
             // 4. 安全上下限：
-            //    上限＝設計的追趕上限；下限＝玩家當下的速度（Separation／個體差可以讓狼慢下來錯開，
-            //    但不能慢到比玩家還慢而被甩開，否則又會變成永遠追不到）
+            //    上限＝設計的追趕上限；下限＝玩家當下的速度，避免狼慢到比玩家還慢而被甩開。
+            //    ★0920 下限也要讓 Separation／個體差合法地往下打折。
+            //      原本下限是 Min(playerRef, shadowSpeed)，而 shadowSpeed = playerRef × 1.05，
+            //      所以下限恆等於 playerRef。後排狼被 Separation 打 0.85 折之後會被這個 Clamp
+            //      整個抵銷、剛好拉回玩家速度 → 分離減速等於沒發生，而且那隻狼會永遠平行跟跑、
+            //      一公尺都不會縮短。把同一組折扣套到下限上，Separation 才真的有效。
+            //      單狼時 sepFactor = 1、個體倍率 ≈ 1，下限幾乎等於原本的 playerRef，
+            //      也就是 Phase 1 實測的那個情境行為不變。
+            //      被打折而落後的狼一旦超出 nearDistance，Separation 依設計自動失效（見
+            //      ComputeSeparationFactor 的 distToPlayer > nearDistance 直接 continue），
+            //      Catch-up 曲線會把牠拉回來，不會被永久甩掉。
+            float speedFloor = Mathf.Min(playerRef, shadowSpeed) * sepFactor * currentEffectiveSpeedMultiplier;
             currentSpeed = Mathf.Clamp(currentSpeed,
-                                       Mathf.Min(playerRef, shadowSpeed),
+                                       speedFloor,
                                        Mathf.Max(shadowSpeed, ceiling));
 
             _dbgTerrainFactor = terrainFactor;
@@ -619,7 +664,6 @@ public class WolfEnemy : MonoBehaviour, IResettable
             _dbgCloseSpeed = closeSpeed;
             _dbgCatchUpSpeed = useCatchUpCurve ? EvaluateChaseSpeed(realDistance, shadowSpeed, closeSpeed, terrainFactor) : 0f;
             _dbgSepFactor = sepFactor;
-            _dbgDistance = realDistance;
         }
 
         _targetSpeedX = directionX * currentSpeed;
@@ -703,6 +747,52 @@ public class WolfEnemy : MonoBehaviour, IResettable
         }
 
         return Mathf.Clamp(_sharedPlayerSpeed, minPlayerReferenceSpeed, pBaseSpeed);
+    }
+
+    /// <summary>
+    /// ★0920 123 退後速度（正值，方向由呼叫端補上負號）。
+    ///
+    /// Root Cause：原本是 `currentSpeed = retreatSpeed` 一個與玩家無關的常數（場景值 2.70），
+    /// 而玩家推巨石上坡實測只有 0.4～2.2 m/s，狼退得比玩家走得還快、而且沒有任何距離上限，
+    /// 玩家只要一直回頭就能無限拉開，123 的壓迫感整個消失。
+    ///
+    /// 修法：沿用專案裡既有的玩家速度參考（GetPlayerReferenceSpeed 的共用平滑值），
+    /// 乘上 Inspector 的 retreatSpeedMultiplier，再夾在 minRetreatSpeed 與原本的 retreatSpeed 之間。
+    /// 玩家速度高於約 retreatSpeed / multiplier 時會被上限夾住，行為與舊版完全一致。
+    ///
+    /// 這裡只算「退多快」，123 的判定條件、狀態切換、正常追擊都完全沒動。
+    /// </summary>
+    private float ComputeRetreatMagnitude(float realDistance)
+    {
+        float ceiling = Mathf.Abs(retreatSpeed);
+
+        // 「Retreat Speed 設 0 ＝ 一回頭狼就原地罰站」是既有的企劃開關，必須保留
+        if (ceiling < 0.01f) return 0f;
+
+        // 沒開自適應參考時，完全走舊行為（一鍵回退）
+        if (!useAdaptivePlayerReference) return ceiling;
+
+        // 退到夠遠就停止後退、原地罰站，避免玩家站著不動盯著狼時，狼以 minRetreatSpeed 無限退出關卡
+        if (maxRetreatDistance > 0f && realDistance >= maxRetreatDistance) return 0f;
+
+        float pBaseSpeed = (playerMovement != null) ? playerMovement.BaseSpeed : defaultPlayerSpeed;
+        float playerSpeed = GetPlayerSmoothedSpeedRaw(pBaseSpeed);
+
+        float floor = Mathf.Min(minRetreatSpeed, ceiling);   // 下限不能高於上限
+        return Mathf.Clamp(playerSpeed * retreatSpeedMultiplier, floor, ceiling);
+    }
+
+    /// <summary>
+    /// 玩家平滑後的「實際」水平速度，不套 minPlayerReferenceSpeed 那個 2.5 的地板。
+    /// 追擊需要那個地板（玩家停住時狼不能跟著停），但退後剛好相反：
+    /// 玩家只走 0.4 m/s 時如果還拿 2.5 當基準，狼照樣退得比她快，等於沒修。
+    /// 先呼叫一次 GetPlayerReferenceSpeed 確保共用平滑值這一幀已經更新過（那支函式本身完全沒改）。
+    /// </summary>
+    private float GetPlayerSmoothedSpeedRaw(float pBaseSpeed)
+    {
+        if (playerMovement == null) return pBaseSpeed;
+        GetPlayerReferenceSpeed(pBaseSpeed);
+        return Mathf.Clamp(_sharedPlayerSpeed, 0f, pBaseSpeed);
     }
 
     private float ComputeSeparationFactor(float directionX, float ownSpeedAbs, float distToPlayer, out float overlapIntensity)
@@ -969,12 +1059,34 @@ public class WolfEnemy : MonoBehaviour, IResettable
         Vector3 v = rb.linearVelocity;
         Debug.Log($"🐺【狼運行】{gameObject.name} | 實測速度: {measuredSpeed:F2} | 坡度: {slopeAngle:F0}° (沿坡={onSlope}) | 速度: x={v.x:F2} y={v.y:F2} | 法線: {hit.normal}");
 
+        // ★0920 卡住現場取證（只在 debugSlopeLog 開著、而且真的「給了速度卻沒位移」時才跑）。
+        //   Phase 1 量到 3577 筆裡有 268 筆實測速度 0.00、最長連續 13 秒，但 Log 不足以判斷
+        //   擋住牠的是什麼——地面射線那時回報腳下還有 0.3～0.5m 的空隙（vy 帶著下拉補償），
+        //   代表撐住牠的東西是射線看不到的（Ignore Raycast 圖層、或被 IsRealGround 濾掉的物件）。
+        //   這裡只做一次 Physics query（不改任何速度、不改物理），把重疊到的碰撞體與圖層印出來，
+        //   下一輪就能直接指名兇手，再決定要不要動 Retreat 邏輯。
+        if (measuredSpeed >= 0f && measuredSpeed < 0.05f && Mathf.Abs(_targetSpeedX) > 0.5f && col != null)
+        {
+            Collider[] touching = Physics.OverlapBox(col.bounds.center, col.bounds.extents * 1.05f,
+                                                     Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < touching.Length; i++)
+            {
+                Collider c = touching[i];
+                if (c == null || c == col || c.transform.IsChildOf(transform)) continue;
+                sb.Append($"[{c.name} / layer={LayerMask.LayerToName(c.gameObject.layer)}({c.gameObject.layer})"
+                          + $" / 被地面射線採用={(IsRealGround(c) ? "是" : "否")}] ");
+            }
+            Debug.LogWarning($"🚧【狼卡住取證】{gameObject.name} | 位置 {transform.position} | 目標水平 {_targetSpeedX:F2}"
+                             + $" | 退後中={( _dbgRetreating ? "是" : "否")} | 重疊物件: {(sb.Length > 0 ? sb.ToString() : "（沒有任何非自身碰撞體重疊）")}");
+        }
+
         // ★0917 追擊速度決策：一行對照玩家實際水平速度與狼的目標／實際水平速度
         Rigidbody prb = playerMovement != null ? playerMovement.GetComponent<Rigidbody>() : null;
         float playerVx = prb != null ? prb.linearVelocity.x : 0f;
         float playerSlope = (playerMovement != null && playerMovement.isGrounded) ? playerMovement.GroundSlopeAngle : 0f;
         Debug.Log($"🐺【狼追擊決策】{gameObject.name} | 玩家水平速度 {Mathf.Abs(playerVx):F2}（腳下坡度 {playerSlope:F0}°） | " +
                   $"狼目標水平 {Mathf.Abs(_targetSpeedX):F2} | 狼實際水平 {Mathf.Abs(v.x):F2}（自己坡度 {slopeAngle:F0}°） | " +
-                  $"距離 {_dbgDistance:F1} | 貼上跟隨 {_dbgNearTarget:F2} | 接近速度 {_dbgCloseSpeed:F2} | Catch-up {_dbgCatchUpSpeed:F2} | 分離係數 {_dbgSepFactor:F2} | 個體倍率 {currentEffectiveSpeedMultiplier:F3} | 地形係數 {_dbgTerrainFactor:F3} | 123 退後 {( _targetSpeedX * Mathf.Sign(player != null ? player.position.x - transform.position.x : 1f) < 0f ? "是" : "否")}");
+                  $"距離 {_dbgDistance:F1} | 貼上跟隨 {_dbgNearTarget:F2} | 接近速度 {_dbgCloseSpeed:F2} | Catch-up {_dbgCatchUpSpeed:F2} | 分離係數 {_dbgSepFactor:F2} | 個體倍率 {currentEffectiveSpeedMultiplier:F3} | 地形係數 {_dbgTerrainFactor:F3} | 123 退後 {(_dbgRetreating ? "是" : "否")}");
     }
 }

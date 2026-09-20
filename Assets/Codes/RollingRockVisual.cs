@@ -203,11 +203,29 @@ public class RollingRockVisual : MonoBehaviour
     /// </summary>
     private float GetPushTargetSpeedX(PlayerMovement pm, Rigidbody playerRb)
     {
-        float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed;
+        // ★0920 fallback 也要照坡度折算。
+        //   玩家在斜坡上是「沿著坡面」走，baseSpeed 6.0 指的是坡面上的速度，
+        //   換算成世界水平只有 6 × cos(35°) ≈ 4.91。原本 fallback 直接拿 6.0，
+        //   一旦觸發，巨石的目標就比玩家實際水平速度快約 1.1 m/s：
+        //   石頭衝到前面 → gap > 1.5 判定沒在推 → 煞車 → 無摩擦往回滑 → 撞回玩家，
+        //   正是 0916 上坡抖動的那個迴圈。改成用玩家腳下坡度折算後才當備援值。
+        float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed * GetPlayerSlopeHorizontalFactor(pm);
         float vx = playerRb != null ? playerRb.linearVelocity.x : fallbackX;
         // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回原本的推力，免得兩邊都停住推不動
         if (Mathf.Abs(vx) < 0.1f) vx = fallbackX;
         return Mathf.Clamp(vx, -boulderMaxSpeed, boulderMaxSpeed);
+    }
+
+    /// <summary>
+    /// 玩家腳下坡度把「沿坡速度」折成「世界水平速度」的係數（平地或離地＝1；35° 坡＝0.819）。
+    /// 角度範圍跟 PlayerMovement 判定「正在斜坡上走」的條件一致（0.5°～60°），超過就當平地模式。
+    /// </summary>
+    private static float GetPlayerSlopeHorizontalFactor(PlayerMovement pm)
+    {
+        if (pm == null || !pm.isGrounded) return 1f;
+        float a = pm.GroundSlopeAngle;
+        if (a <= 0.5f || a >= 60f) return 1f;
+        return Mathf.Cos(a * Mathf.Deg2Rad);
     }
 
     private void OnCollisionStay(Collision collision)
