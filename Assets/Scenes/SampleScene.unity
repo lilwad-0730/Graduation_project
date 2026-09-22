@@ -6170,7 +6170,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.290405, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11391,6 +11391,9 @@ MonoBehaviour:
   fastChaseSpeed: 6
   slowChaseSpeed: 5
   retreatSpeed: -2.7
+  retreatSpeedMultiplier: 0.8
+  minRetreatSpeed: 0.6
+  maxRetreatDistance: 18
   runDistanceThreshold: 18
   aggroDistanceX: 22
   giveUpDistanceX: 24
@@ -11401,6 +11404,12 @@ MonoBehaviour:
   currentEffectiveSpeedMultiplier: 1
   minimumChaseSpeedAbovePlayer: 0.4
   defaultPlayerSpeed: 5
+  useAdaptivePlayerReference: 1
+  finalChaseSpeedRatio: 1.05
+  biteApproachDistance: 2.5
+  minClosingSpeed: 0.8
+  minPlayerReferenceSpeed: 2.5
+  playerSpeedSmoothing: 0.25
   collidersToIgnore:
   - {fileID: 327784617}
   - {fileID: 2072297853}
@@ -22746,6 +22755,9 @@ MonoBehaviour:
   mass: 20
   impactSFX: {fileID: 8300000, guid: c82b1f686d675c44d807751e599e7df2, type: 3}
   impactVolume: 0.9
+  boulderAcceleration: 12
+  boulderBraking: 10
+  boulderMaxSpeed: 8
 --- !u!1 &1473894181
 GameObject:
   m_ObjectHideFlags: 0
@@ -26564,10 +26576,10 @@ MonoBehaviour:
   followX: 1
   offsetX: 0
   followY: 1
-  offsetY: -11
+  offsetY: -50
   fixedZ: -4
   smoothSpeed: 6
-  triggerOnPlayer: 1
+  triggerOnPlayer: 0
   triggerDistance: 6
   tornadoColor: {r: 0.82, g: 0.85, b: 0.88, a: 0.65}
 --- !u!1 &1801608008
@@ -27260,15 +27272,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4352851065904126833, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0.06505875
+      value: 0.34
       objectReference: {fileID: 0}
     - target: {fileID: 4352851065904126833, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.33999738
+      value: 0.49
       objectReference: {fileID: 0}
     - target: {fileID: 4352851065904126833, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0.82
+      value: 0.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 5302391685310997860, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
+      propertyPath: m_SortingOrder
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalScale.x
@@ -27288,7 +27304,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -35
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.z
@@ -28455,7 +28471,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.290405, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34797,7 +34813,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.284027, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.290405, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35091,7 +35107,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.292599
+      value: -31.304724
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -35106,6 +35122,75 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+--- !u!1 &9120000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9120000000000000002}
+  - component: {fileID: 9120000000000000003}
+  - component: {fileID: 9120000000000000004}
+  m_Layer: 0
+  m_Name: Tornado_FollowTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9120000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9120000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 215.5, y: -108, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &9120000000000000003
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9120000000000000001}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 47, y: 50, z: 30}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &9120000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9120000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52269b4006bc136469a6d1ea13d3975c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TornadoEncounterTrigger
+  targetTornado: {fileID: 1799041782}
+  encounterSFX: {fileID: 0}
+  sfxVolume: 0.9
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -35213,3 +35298,4 @@ SceneRoots:
   - {fileID: 382595406}
   - {fileID: 710415346}
   - {fileID: 830744374}
+  - {fileID: 9120000000000000002}
