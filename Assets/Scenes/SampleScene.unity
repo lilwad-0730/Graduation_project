@@ -5379,8 +5379,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.399991, z: 0.19999997}
+  m_Center: {x: -0.0000000018915816, y: -0.11576017, z: 0}
 --- !u!212 &455608031
 SpriteRenderer:
   serializedVersion: 2
@@ -5450,7 +5450,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 299.31998, y: -63.069996, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6170,7 +6170,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.290405, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.292816, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6907,8 +6907,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.4037285, z: 0.19999997}
+  m_Center: {x: -2.9615776e-10, y: -0.11389009, z: 0}
 --- !u!212 &604660670
 SpriteRenderer:
   serializedVersion: 2
@@ -6978,7 +6978,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 328.87997, y: -42.670002, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -8895,6 +8895,7 @@ MonoBehaviour:
   m_Script: {fileID: 764476860}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
 --- !u!65 &710415345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8943,6 +8944,7 @@ MonoBehaviour:
   m_Script: {fileID: 790408030}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8955,6 +8957,7 @@ MonoBehaviour:
   m_Script: {fileID: 1790199341}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8967,6 +8970,7 @@ MonoBehaviour:
   m_Script: {fileID: 1816474421}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10289,8 +10293,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.4085364, z: 0.19999997}
+  m_Center: {x: -0.0000000047646704, y: -0.11148509, z: 0}
 --- !u!212 &832465793
 SpriteRenderer:
   serializedVersion: 2
@@ -10360,7 +10364,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 210.59, y: -124.42999, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -10733,8 +10737,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.415815, z: 0.19999997}
+  m_Center: {x: -0.0000000016145298, y: -0.10784595, z: 0}
 --- !u!212 &883788702
 SpriteRenderer:
   serializedVersion: 2
@@ -10804,7 +10808,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 240.15, y: -104.03, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -10895,8 +10899,8 @@ Transform:
   m_GameObject: {fileID: 885076984}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 355.36, y: -32.449997, z: 0}
-  m_LocalScale: {x: 1.3740333, y: 1.7389507, z: 1.3740333}
+  m_LocalPosition: {x: 353.52, y: -34.04, z: 0}
+  m_LocalScale: {x: 1.3740333, y: 3, z: 1.3740333}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -10920,8 +10924,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631504, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.72, y: 5.441559, z: 0.20000002}
+  m_Center: {x: 0, y: -0.09497325, z: 0}
 --- !u!1 &886359352
 GameObject:
   m_ObjectHideFlags: 0
@@ -11420,9 +11424,10 @@ MonoBehaviour:
   maxWalkableSlopeAngle: 55
   ignoreWolfToWolfCollision: 1
   useSoftSeparation: 1
-  separationRadius: 2
-  minimumWolfDistance: 1.2
+  separationRadius: 4.2
+  minimumWolfDistance: 1.6
   separationStrength: 0.5
+  separationPlayerRange: 9
   useDepthLayering: 1
   useCatchUpCurve: 1
   nearDistance: 4
@@ -11440,6 +11445,7 @@ MonoBehaviour:
   slopeAlignSpeed: 8
   maxVisualAlignAngle: 40
   slopeVisualYOffset: -0.45
+  alignVisualWhileAttached: 1
   spawnAttachImmunityTime: 1
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
@@ -12242,7 +12248,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 181, y: -144.9, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -12266,8 +12272,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.413352, z: 0.19999997}
+  m_Center: {x: -0.0000000047245226, y: -0.10907738, z: 0}
 --- !u!1 &979191916
 GameObject:
   m_ObjectHideFlags: 0
@@ -18531,8 +18537,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 21.72, y: 5.631505, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 21.719995, y: 5.4036207, z: 0.19999997}
+  m_Center: {x: 1.7220936e-10, y: -0.113944374, z: 0}
 --- !u!212 &1132564305
 SpriteRenderer:
   serializedVersion: 2
@@ -18602,7 +18608,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.2977758, w: 0.95463586}
   m_LocalPosition: {x: 269.72998, y: -83.53999, z: 0}
-  m_LocalScale: {x: 1.659041, y: 2.099651, z: 1.659041}
+  m_LocalScale: {x: 1.659041, y: 3, z: 1.659041}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -20511,8 +20517,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 12.06, y: 12.96, z: 5}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 12.06, y: 53.005985, z: 5}
+  m_Center: {x: 0, y: 20.022984, z: 0}
 --- !u!114 &1286745635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20528,6 +20534,8 @@ MonoBehaviour:
   specificDestructionObject: {fileID: 1472103420}
   targetTag: RollingRock
   minImpactSpeed: 0
+  ignoreBoulderAboveVisibleWall: 1
+  visibleWallTopTolerance: 0.3
 --- !u!1 &1296081860
 GameObject:
   m_ObjectHideFlags: 0
@@ -26570,13 +26578,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TornadoFollowCamera
   enableSweep: 1
-  sweepDistance: 4.5
-  sweepSpeed: 1.3
+  sweepDistance: 16
+  sweepSpeed: 1.6
   autoFollowOnStart: 0
   followX: 1
   offsetX: 0
   followY: 1
-  offsetY: -50
+  offsetY: -64
   fixedZ: -4
   smoothSpeed: 6
   triggerOnPlayer: 0
@@ -27288,15 +27296,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.8
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.8
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.8
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 7627093159334978863, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.x
@@ -28471,7 +28479,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.290405, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.292816, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34813,7 +34821,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.290405, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.292816, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34869,6 +34877,11 @@ MonoBehaviour:
   currentMode: 0
   fallingCameraYOffset: 0
   fallingFollowSpeed: 18
+  enableBoulderCameraWeightFeedback: 1
+  boulderCameraDownOffset: 0.6
+  boulderCameraSinkSpeed: 2.5
+  boulderCameraRecoverSpeed: 4
+  boulderCameraMinSpeed: 0.6
   isOverridden: 0
   overrideTarget: {fileID: 0}
   overrideOrthoSize: -1
@@ -35107,7 +35120,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.304724
+      value: -31.3093
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y

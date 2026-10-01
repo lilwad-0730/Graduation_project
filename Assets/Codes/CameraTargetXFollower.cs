@@ -111,6 +111,31 @@ public class CameraTargetXFollower : MonoBehaviour
     [Tooltip("Falling Mode 下 Y 軸垂直追隨基礎速度 (高速墜落時會自動加速跟隨)")]
     public float fallingFollowSpeed = 18f;
 
+    [Header("🪨 巨石重量回饋（只在 Mario 模式、只影響 Y）")]
+    [Tooltip("玩家真正在推巨石時，鏡頭額外往下沉一點。關掉＝完全回到修改前的行為")]
+    public bool enableBoulderCameraWeightFeedback = true;
+
+    [Tooltip("最大下沉量 (世界單位)。保守值 0.6：廢墟層的 orthoSize 是 11.1，0.6 約是半個畫面高的 5%")]
+    [Range(0f, 3f)]
+    public float boulderCameraDownOffset = 0.6f;
+
+    [Tooltip("下沉的平滑速度 (越大越快沉下去)")]
+    [Range(0.1f, 20f)]
+    public float boulderCameraSinkSpeed = 2.5f;
+
+    [Tooltip("放手後恢復的平滑速度 (建議比下沉快一點，收得乾淨)")]
+    [Range(0.1f, 20f)]
+    public float boulderCameraRecoverSpeed = 4f;
+
+    [Tooltip("巨石水平速度要大於這個值才算『真的在被推動』(公尺/秒)。\n" +
+             "用來排除『玩家貼著石頭但石頭其實沒動』的情況，避免原地頂著就下沉")]
+    [Range(0f, 5f)]
+    public float boulderCameraMinSpeed = 0.6f;
+
+    // 目前已套用的下沉量（恆 ≤ 0），每幀只推進一次
+    private float _boulderWeightOffsetY = 0f;
+    private int _boulderWeightFrame = -1;
+
     [Header("🎬 暫時性 Camera Override 狀態 (劇情/特寫用)")]
     public bool isOverridden = false;
     public Transform overrideTarget;
@@ -606,12 +631,14 @@ public class CameraTargetXFollower : MonoBehaviour
         switch (currentMode)
         {
             case CameraMode.CinematicOverride:
+                StepBoulderWeightOffset(false);   // ★1001 演出模式：下沉量平滑歸零，絕不疊在特寫上
                 Vector3 overridePos = overrideTarget.position;
                 transform.position = new Vector3(overridePos.x, overridePos.y, 0f);
                 if (overrideOrthoSize > 0f) ApplyOrthoSize(overrideOrthoSize);
                 break;
 
             case CameraMode.Falling:
+                StepBoulderWeightOffset(false);   // ★1001 墜落模式：同上，不套用下沉
                 if (activeFallingBounds.HasValue)
                 {
                     ApplyFallingModePosition(activeFallingBounds.Value, playerPos, false);
@@ -643,7 +670,22 @@ public class CameraTargetXFollower : MonoBehaviour
 
                 float clampedX = GetClampedX(playerPos.x, currentOrthoSize, playerY);
                 UpdateMarioTargetY(currentZone, playerPos);
-                transform.position = new Vector3(clampedX, currentTargetY, 0f);
+
+                // ★1001 巨石重量回饋：在既有的 currentTargetY 之上疊一層「只影響 Y」的下沉量。
+                //   currentTargetY 本身（含 verticalFollow 的上下界夾制）完全沒有被改寫，
+                //   X 的 clamp、orthoSize、Falling／CinematicOverride 模式都不受影響。
+                float marioY = currentTargetY + StepBoulderWeightOffset(true);
+
+                // 不讓下沉量突破既有的垂直邊界（與 UpdateMarioTargetY 用的是同一組界線）
+                if (verticalFollowActive)
+                {
+                    float halfH = currentOrthoSize;
+                    float loY = verticalFollowMinY + halfH;
+                    float hiY = verticalFollowMaxY - halfH;
+                    if (loY <= hiY) marioY = Mathf.Clamp(marioY, loY, hiY);
+                }
+
+                transform.position = new Vector3(clampedX, marioY, 0f);
 
                 ApplyOrthoSize(currentOrthoSize);
                 break;
@@ -717,6 +759,47 @@ public class CameraTargetXFollower : MonoBehaviour
     /// 沒有垂直跟隨區時維持本層固定高度（原本行為完全不變）；
     /// 進入垂直跟隨區時改為跟隨玩家，並夾在該區指定的上下邊界內；離開時平滑回到固定高度。
     /// </summary>
+    /// <summary>
+    /// ★1001 巨石重量回饋：推進並回傳這一幀要疊加的 Y 偏移（恆 ≤ 0）。
+    ///
+    /// 觸發條件刻意要求「兩個都成立」，避免會議需求裡列的那幾種誤觸發：
+    ///   1. RollingRockVisual.ActivelyPushed != null 且 IsBeingPushedByPlayer
+    ///      ＝ 巨石自己回報「玩家有輸入、方向朝我、就在我旁邊、而且站在地上」。
+    ///        所以「巨石自己滑動」「被別的東西撞到」「Reset」「場景載入」都不算，
+    ///        推 square_rock 之類的普通 Pushable 也不算（那是另一個物件，沒有這支腳本）。
+    ///   2. 巨石的水平速度 > boulderCameraMinSpeed
+    ///      ＝ 排除「貼著石頭頂住但石頭沒動」的情況。
+    /// 玩家跳起來時 RollingRockVisual 自己的 !isGrounded 分支會把狀態清掉，所以不會殘留下沉。
+    ///
+    /// allowSink = false 時只做「平滑歸零」，用在 Falling／CinematicOverride 模式。
+    /// 用 frameCount 擋住重複推進：UpdatePosition() 在 Update() 與 LateUpdate() 各被呼叫一次，
+    /// 不擋的話同一幀會跑兩次 deltaTime，平滑速度會變成兩倍。
+    /// </summary>
+    private float StepBoulderWeightOffset(bool allowSink)
+    {
+        if (!enableBoulderCameraWeightFeedback)
+        {
+            _boulderWeightOffsetY = 0f;
+            return 0f;
+        }
+
+        if (_boulderWeightFrame == Time.frameCount) return _boulderWeightOffsetY;
+        _boulderWeightFrame = Time.frameCount;
+
+        bool pushing = allowSink
+                       && RollingRockVisual.ActivelyPushed != null
+                       && RollingRockVisual.ActivelyPushed.IsBeingPushedByPlayer
+                       && RollingRockVisual.ActivelyPushedSpeedAbs > boulderCameraMinSpeed;
+
+        float target = pushing ? -Mathf.Abs(boulderCameraDownOffset) : 0f;
+        float speed = pushing ? boulderCameraSinkSpeed : boulderCameraRecoverSpeed;
+
+        _boulderWeightOffsetY = Mathf.Lerp(_boulderWeightOffsetY, target,
+                                           1f - Mathf.Exp(-Mathf.Max(0.01f, speed) * Time.deltaTime));
+        if (Mathf.Abs(_boulderWeightOffsetY) < 0.0005f) _boulderWeightOffsetY = 0f;
+        return _boulderWeightOffsetY;
+    }
+
     private void UpdateMarioTargetY(BackgroundZone zone, Vector3 playerPos)
     {
         float zoneFixedY = GetZoneFixedY(zone);

@@ -35,6 +35,20 @@ public class PlayerMovement : MonoBehaviour
     [Range(1f, 30f)] public float slopeVisualTiltSpeed = 10f;
     private float _slopeVisualAngle;   // 目前已套用的視覺傾角（度）
 
+    [Tooltip("★1001 斜坡視覺空隙補償：0 ＝ 完全關閉，1 ＝ 完整幾何補償（預設）。\n" +
+             "成因是純幾何、不是物理穿透：剛體鎖了 FreezeRotation，碰撞盒永遠保持水平，\n" +
+             "放在斜坡上時只有下坡側的底角碰得到坡面，底面中心必然懸空「半寬 × tan(坡度)」。\n" +
+             "廢墟山坡 34.648°、玩家世界半寬 1.064 → 空隙約 0.736 公尺（角色身高的 21%）。\n" +
+             "這裡只把外觀子物件往下移該補償量，碰撞盒／剛體／地面偵測一律不動；\n" +
+             "平地、跳躍、離地、水下、坡度過小一律為 0，並沿用 Slope Visual Tilt Speed 平滑。\n" +
+             "（狼的 WolfEnemy.slopeVisualYOffset 是同一個問題的既有解法，這裡沿用同一個模式）")]
+    [Range(0f, 1f)] public float slopeVisualGapFactor = 1f;
+
+    // 外觀子物件與它的原始 local Y（在 Start 快取，補償量以此為基準往下疊）
+    private Transform _visualRoot;
+    private float _visualBaseLocalY;
+    private bool _hasVisualBase = false;
+
     private Collider playerCollider;
     private string currentAnimState = ""; 
     public bool isGrounded = false;
@@ -60,8 +74,54 @@ public class PlayerMovement : MonoBehaviour
     [Range(1f, 12f)]
     public float maxWolvesToStop = 6f;
 
-    [Tooltip("咬住數達到 maxWolvesToStop 時是否觸發重生。關掉的話玩家會被咬到速度 0 但不會死")]
+    [Tooltip("咬住數達到 Wolves To Respawn 時是否觸發重生。關掉的話玩家只會被減速，不會死")]
     public bool respawnWhenMaxWolves = true;
+
+    [Tooltip("★1001 咬住幾隻狼就觸發重生（可自由調整）。\n" +
+             "刻意與 maxWolvesToStop 分開成兩個數字，因為它們是兩件事：\n" +
+             "  ・maxWolvesToStop  ＝ 減速曲線的分母（速度 = baseSpeed × (1 − 咬住數 / 它)），維持 6 不動\n" +
+             "  ・wolvesToRespawn  ＝ 死亡門檻\n" +
+             "原本兩者共用 maxWolvesToStop = 6，但場上最多只會同時存在 5 隻狼\n" +
+             "（場景那隻 WOLF 是 5 個 WolfSpawner 的複製模板，開場就被 SetActive(false)），\n" +
+             "所以 6 這個門檻永遠達不到＝狼永遠咬不死人。拆開之後門檻才真的會成立。")]
+    [Range(1, 12)]
+    public int wolvesToRespawn = 5;
+
+    [Header("🐺 狼咬住的向下拖曳負載（只作用在斜坡上）")]
+    [Tooltip("每一隻咬住的狼，沿坡面往下拖曳的速度 (公尺/秒)。設 0 ＝ 整個機制關閉，行為完全回到修改前。\n" +
+             "為什麼不用 AddForce：斜坡分支會關掉重力並且每幀整個覆寫 rb.linearVelocity，\n" +
+             "任何加在剛體上的力都會被下一次 Update 抹掉，所以改成直接參與坡面速度合成。")]
+    [Range(0f, 3f)]
+    public float wolfDragDownPerWolf = 0.6f;
+
+    [Tooltip("所有咬住的狼加起來的拖曳速度上限 (公尺/秒)。預設 1.8 ≒ 三隻狼的量，之後再多咬也不會更強")]
+    [Range(0f, 6f)]
+    public float wolfDragDownMax = 1.8f;
+
+    [Tooltip("保護上限：拖曳速度最多只能吃掉玩家「當下沿坡速度」的這個比例。\n" +
+             "0.5 ＝ 永遠保留一半的爬坡能力，數學上保證她不會被狼拖著倒退下坡。\n" +
+             "注意：這只保證玩家自己還在往上走，不等於巨石一定推得上去（巨石有自己的目標速度邏輯）")]
+    [Range(0f, 0.9f)]
+    public float wolfDragDownMaxSpeedFraction = 0.5f;
+
+    /// <summary>★1001 唯讀診斷：這一幀實際套用的沿坡向下拖曳速度（不在斜坡上＝0）。</summary>
+    public float WolfDragDownSpeed { get; private set; }
+
+    /// <summary>
+    /// ★1001 唯讀：這一幀 PlayerMovement 實際寫進剛體的「世界水平速度」（指令值）。
+    ///
+    /// 這是唯一同時反映下列所有因素的數字，所以也是外部要「跟著玩家目前有效速度」時該用的來源：
+    ///   ・狼咬住的等比減速（currentSpeed＝baseSpeed × (1 − 咬住數 / maxWolvesToStop)）
+    ///   ・狼咬住的沿坡向下拖曳（WolfDragDownSpeed）
+    ///   ・斜坡把沿坡速度折算成世界水平的 cos(坡度)
+    ///   ・逆風推力、水下速度倍率、被拉動物件的重量折扣
+    ///
+    /// 注意不要改用 baseSpeed 或 currentSpeed：
+    ///   baseSpeed    固定 6，完全不理任何減速
+    ///   currentSpeed 只含「咬住幾隻狼」的等比減速，不含拖曳、不含坡度折算、不含風
+    /// 移動平台的速度刻意不計入——那是平台載著她走，不是她自己的推進力。
+    /// </summary>
+    public float CommandedHorizontalSpeed { get; private set; }
     
     [Header("觀察用 (不要手動改)")]
     public int attachedWolvesCount = 0; 
@@ -355,6 +415,21 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.applyRootMotion = false; // 強制關閉 Root Motion！防止 3D/FBX 動畫拖走或鎖死 Transform 導致玩家在水下卡住不能動！
             animator.speed = 1.0f;
+
+            // ★1001 斜坡視覺空隙補償：快取外觀子物件與它的原始 local Y。
+            //   ★必須確認它不是玩家根物件——根物件上掛著 BoxCollider 與 Rigidbody，
+            //     移動根物件會連碰撞盒一起移動，那就不是「只改視覺」了。
+            if (animator.transform != transform)
+            {
+                _visualRoot = animator.transform;
+                _visualBaseLocalY = _visualRoot.localPosition.y;
+                _hasVisualBase = true;
+            }
+            else
+            {
+                _hasVisualBase = false;
+                Debug.LogWarning("[斜坡視覺補償] animator 就掛在玩家根物件上，為了不動到碰撞盒，已停用視覺空隙補償。");
+            }
         }
         
         // 強制重置所有狀態，避免卡死
@@ -720,6 +795,9 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
+            // ★1001 斜坡視覺空隙補償（純視覺，與上面的傾斜是同一組表現）
+            UpdateSlopeVisualGapCompensation();
+
             string targetAnim = "Idle";
 
             // 判斷是否應該播放墜落動畫 (加入了延遲時間與掉落速度的容錯閥值)
@@ -855,6 +933,10 @@ public class PlayerMovement : MonoBehaviour
         {
             bool isOnSlope = isGrounded && !isJumping && (currentSlopeAngle > 0.5f && currentSlopeAngle < 60f);
 
+            // ★1001 狼拖曳負載：先歸零，只有真正走到斜坡＋有輸入那條路徑才會被填值。
+            //   這樣平地、空中、水下、演出鎖定一律保證是 0，不會有殘留的 Y 漂移。
+            WolfDragDownSpeed = 0f;
+
             // 計算逆風推力偏移量
             float windOffset = 0f;
             if (_windPushTimer > 0f)
@@ -882,12 +964,29 @@ public class PlayerMovement : MonoBehaviour
                     // 玩家主動按鍵移動：貼合斜坡移動並疊加逆風阻力
                     Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
                     Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
+                    float slopeSpeed = finalSpeed * Mathf.Abs(moveInput);
+
+                    // ★1001 狼咬住的向下拖曳：沿「坡面往下」的方向疊加一段速度。
+                    //   ・方向用 world down 投影到坡面，所以是真正的順坡向下，不是粗暴的世界 −Y
+                    //   ・平地時這個投影長度為 0（而且平地根本進不到 isOnSlope 這條分支），雙重保險
+                    //   ・大小由 ComputeWolfDragDown 夾三道上限：每狼量、總上限、當下沿坡速度的比例
+                    Vector3 dragVec = Vector3.zero;
+                    Vector3 downSlope = Vector3.ProjectOnPlane(Vector3.down, groundHit.normal);
+                    if (downSlope.sqrMagnitude > 0.000001f)
+                    {
+                        float drag = ComputeWolfDragDown(slopeSpeed);
+                        WolfDragDownSpeed = drag;
+                        if (drag > 0f) dragVec = downSlope.normalized * drag;
+                    }
 
                     Vector3 targetVelocity = new Vector3(
-                        slopeDir.x * finalSpeed * Mathf.Abs(moveInput) + windOffset,
-                        slopeDir.y * finalSpeed * Mathf.Abs(moveInput),
+                        slopeDir.x * slopeSpeed + windOffset + dragVec.x,
+                        slopeDir.y * slopeSpeed + dragVec.y,
                         0f
                     );
+
+                    // ★1001 在加上移動平台之前記錄：這是她自己的推進力（含減速／拖曳／坡度折算／風）
+                    CommandedHorizontalSpeed = targetVelocity.x;
 
                     if (activeMovingPlatform != null)
                     {
@@ -959,6 +1058,9 @@ public class PlayerMovement : MonoBehaviour
                 }
 
                 Vector3 targetVelocity = new Vector3(targetX, rb.linearVelocity.y, rb.linearVelocity.z);
+
+                // ★1001 平地／空中／水下也記錄同一個語意的值（見 CommandedHorizontalSpeed 的說明）
+                CommandedHorizontalSpeed = targetVelocity.x;
 
                 if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
@@ -1160,11 +1262,12 @@ public class PlayerMovement : MonoBehaviour
         CalculateSpeed();
 
         int maxW = Mathf.Max(1, Mathf.RoundToInt(maxWolvesToStop));
+        int killW = Mathf.Max(1, wolvesToRespawn);   // ★1001 死亡門檻改用獨立欄位
         float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
-        Debug.Log($"狼咬！目前身上有 {attachedWolvesCount}/{maxW} 隻狼，玩家速度：{currentSpeed:F2} ({pct:F0}%)");
+        Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}／重生門檻 {killW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
 
         // 咬滿就死。TriggerRespawn 內部有 _isRespawning 防重入，不會重複觸發，這裡不另外做旗標。
-        if (respawnWhenMaxWolves && attachedWolvesCount >= maxW)
+        if (respawnWhenMaxWolves && attachedWolvesCount >= killW)
         {
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
@@ -1208,6 +1311,73 @@ public class PlayerMovement : MonoBehaviour
         float maxWolves = Mathf.Max(1f, maxWolvesToStop);   // 防除以 0：Inspector 被填成 0 會炸
         float ratio = 1f - (attachedWolvesCount / maxWolves);
         currentSpeed = Mathf.Max(0f, baseSpeed * ratio);    // 最低就是 0，不會倒退
+    }
+
+    /// <summary>
+    /// ★1001 這一幀要沿坡面往下拖曳多少（公尺/秒，永遠 ≥ 0，方向由呼叫端補上）。
+    ///
+    /// 三道夾制，順序就是設計上的優先權：
+    ///   1. 每狼量：wolfDragDownPerWolf × 咬住的狼數
+    ///   2. 總上限：wolfDragDownMax（狼再多也不會更強）
+    ///   3. 保護上限：當下沿坡速度 × wolfDragDownMaxSpeedFraction
+    ///      → 這一道保證「拖曳永遠小於她自己的速度」，所以她絕對不會被拖著倒退下坡，
+    ///        也不會出現「被咬住就永遠爬不上去」。
+    ///
+    /// 這裡刻意直接讀既有的 attachedWolvesCount，不另外做一套計數：
+    /// 咬住／鬆口／重生歸零全部沿用 AddWolf／RemoveWolf／WarpTo 既有的流程，
+    /// 所以狼一鬆口就自動歸零，也不會在沒有狼的時候殘留。
+    /// </summary>
+    private float ComputeWolfDragDown(float currentSlopeSpeed)
+    {
+        if (attachedWolvesCount <= 0 || wolfDragDownPerWolf <= 0f) return 0f;
+
+        float raw = wolfDragDownPerWolf * attachedWolvesCount;
+        float capped = Mathf.Min(raw, wolfDragDownMax);
+        float protectionCap = Mathf.Max(0f, currentSlopeSpeed) * wolfDragDownMaxSpeedFraction;
+        return Mathf.Min(capped, protectionCap);
+    }
+
+    /// <summary>
+    /// ★1001 斜坡視覺空隙補償（純視覺，一行都不碰物理）。
+    ///
+    /// Root Cause：剛體鎖了 FreezeRotation，BoxCollider 永遠保持水平。水平的盒子放在斜坡上
+    /// 只有下坡側的底角碰得到坡面，所以底面中心必然懸在坡面上方「半寬 × tan(坡度)」。
+    /// 廢墟山坡 34.648°、玩家世界半寬 1.064 → 約 0.736 公尺。這不是穿透、也不是懸空 bug，
+    /// 碰撞是成立的（角接觸），只是外觀看起來浮著。
+    ///
+    /// 修法沿用 WolfEnemy.slopeVisualYOffset 的既有模式：把外觀子物件往下移該補償量。
+    /// 差別是這裡直接用碰撞盒實際半寬與當下坡度算，不寫死數字，所以換場景（玩家 scale 不同）自動適應。
+    /// </summary>
+    private void UpdateSlopeVisualGapCompensation()
+    {
+        if (!_hasVisualBase || _visualRoot == null) return;
+
+        float targetLocalY = _visualBaseLocalY;
+
+        if (slopeVisualGapFactor > 0.0001f && !isUnderwater && isGrounded && !isJumping && playerCollider != null)
+        {
+            float angle = GroundSlopeAngle;
+            // 坡度範圍與 isOnSlope／視覺傾斜完全一致；平地與過陡（視為牆）都不補償
+            if (angle > 0.5f && angle < 60f)
+            {
+                float worldGap = playerCollider.bounds.extents.x
+                               * Mathf.Tan(angle * Mathf.Deg2Rad)
+                               * slopeVisualGapFactor;
+
+                // ★座標空間：localPosition 是父物件的空間，世界單位不能直接當 local 用，
+                //   必須除掉父物件累積的 Y 縮放（玩家根物件在 SampleScene 是 1.776、荒原是 1.506）。
+                float parentScaleY = (_visualRoot.parent != null) ? _visualRoot.parent.lossyScale.y : 1f;
+                if (Mathf.Abs(parentScaleY) > 0.0001f)
+                {
+                    targetLocalY = _visualBaseLocalY - (worldGap / parentScaleY);
+                }
+            }
+        }
+
+        // 沿用視覺傾斜同一組平滑參數，不瞬間跳位置
+        Vector3 lp = _visualRoot.localPosition;
+        lp.y = Mathf.Lerp(lp.y, targetLocalY, 1f - Mathf.Exp(-slopeVisualTiltSpeed * Time.deltaTime));
+        _visualRoot.localPosition = lp;
     }
 
     // ==========================================

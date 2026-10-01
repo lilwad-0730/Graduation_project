@@ -168,17 +168,44 @@ public class RollingRockVisual : MonoBehaviour
     [Tooltip("巨石被推動時的水平速度上限 (單位/秒)")]
     public float boulderMaxSpeed = 8f;
 
+    // ───────── ★1001 給相機重量回饋用的唯讀狀態（完全不影響推動邏輯）─────────
+    /// <summary>這一刻玩家是不是真的在推這顆巨石（＝FixedUpdate 算出來的 stillPushing）。</summary>
+    public bool IsBeingPushedByPlayer { get; private set; }
+
+    /// <summary>目前正在被玩家推動的那顆巨石（沒有就是 null）。相機用這個，避免每幀 Find。</summary>
+    public static RollingRockVisual ActivelyPushed { get; private set; }
+
+    /// <summary>正在被推的巨石的水平速度絕對值（沒有就是 0）。</summary>
+    public static float ActivelyPushedSpeedAbs =>
+        (ActivelyPushed != null && ActivelyPushed.rb != null)
+            ? Mathf.Abs(ActivelyPushed.rb.linearVelocity.x) : 0f;
+
+    private void SetPushedState(bool pushed)
+    {
+        IsBeingPushedByPlayer = pushed;
+        if (pushed) ActivelyPushed = this;
+        else if (ActivelyPushed == this) ActivelyPushed = null;
+    }
+
+    private void OnDisable()
+    {
+        // static 會跨場景留著，物件被關掉／場景卸載時一定要清掉，否則相機會對著不存在的石頭下沉
+        SetPushedState(false);
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     void FixedUpdate()
     {
-        if (rb == null || rb.isKinematic || _pusher == null) return;
-        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; return; }
-        if (!_pusher.isGrounded) return;   // 空中不接續推力
+        if (rb == null || rb.isKinematic || _pusher == null) { SetPushedState(false); return; }
+        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; SetPushedState(false); return; }
+        if (!_pusher.isGrounded) { SetPushedState(false); return; }   // 空中不接續推力
 
         // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石才繼續跟，別在剛分開時往回滑
         float input = _pusher.CurrentMoveInput;
         float dirToRock = Mathf.Sign(transform.position.x - _pusher.transform.position.x);
         float gap = Mathf.Abs(transform.position.x - _pusher.transform.position.x) - radius;
         bool stillPushing = Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f;
+        SetPushedState(stillPushing);   // ★1001 只回報狀態，不改變任何既有判定
 
         // ★0920 重量感：目標速度不再「當幀直接指定」，改成用加速度／減速度逼近。
         //   玩家停手時巨石會自己滑一小段，起步也要一點時間，質量才有存在感。
@@ -209,9 +236,28 @@ public class RollingRockVisual : MonoBehaviour
         //   一旦觸發，巨石的目標就比玩家實際水平速度快約 1.1 m/s：
         //   石頭衝到前面 → gap > 1.5 判定沒在推 → 煞車 → 無摩擦往回滑 → 撞回玩家，
         //   正是 0916 上坡抖動的那個迴圈。改成用玩家腳下坡度折算後才當備援值。
-        float fallbackX = pm.CurrentMoveInput * pm.BaseSpeed * GetPlayerSlopeHorizontalFactor(pm);
+        // ★1001 fallback 改用 pm.CommandedHorizontalSpeed（玩家這一幀實際寫進剛體的世界水平速度）。
+        //
+        // Root Cause：原本是 pm.CurrentMoveInput × pm.BaseSpeed × cos(坡度)。BaseSpeed 固定 6，
+        // 完全不理「咬住幾隻狼的等比減速」也不理「狼的沿坡向下拖曳」。
+        // 於是只要玩家被石頭頂住、物理把她的實際 vx 吃到 0.1 以下，fallback 就會把巨石的目標
+        // 拉回「沒有狼、滿速」的 4.94，巨石突然加速衝開 → gap > 1.5 判定沒在推 → 煞車 →
+        // 零摩擦在 34.6° 坡上往回滑 → 撞回玩家，正是 0916 上坡抖動的那個迴圈。
+        // 咬 3 隻狼時落差可達 4.0 倍（玩家 1.23 vs fallback 4.94）。
+        //
+        // 為什麼不用 pm.currentSpeed：那只含「咬住幾隻狼」的等比減速，不含拖曳、不含坡度折算、不含風。
+        // CommandedHorizontalSpeed 是 PlayerMovement 自己算完所有因素後寫進剛體的那個值，
+        // 語意上就是「她現在真的推得出多快」，而且已經是世界水平方向，不需要再乘 cos。
+        float fallbackX = pm.CommandedHorizontalSpeed;
+
+        // 防呆：若該值因故為 0（例如這一幀還沒跑過 Update），退回原本的算法，不要讓巨石整個停住
+        if (Mathf.Abs(fallbackX) < 0.0001f)
+        {
+            fallbackX = pm.CurrentMoveInput * pm.BaseSpeed * GetPlayerSlopeHorizontalFactor(pm);
+        }
+
         float vx = playerRb != null ? playerRb.linearVelocity.x : fallbackX;
-        // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回原本的推力，免得兩邊都停住推不動
+        // 玩家被石頭頂住時物理可能把她的速度吃掉，這時退回她的指令速度，免得兩邊都停住推不動
         if (Mathf.Abs(vx) < 0.1f) vx = fallbackX;
         return Mathf.Clamp(vx, -boulderMaxSpeed, boulderMaxSpeed);
     }

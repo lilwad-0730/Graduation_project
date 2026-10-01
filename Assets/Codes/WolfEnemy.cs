@@ -137,6 +137,16 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Range(0f, 0.5f)]
     public float separationStrength = 0.25f;
 
+    [Tooltip("★0930 分離系統自己的啟用範圍（公尺）：狼離玩家超過這個距離就不再避讓同伴，全力衝鋒。\n" +
+             "原本這道閘門直接借用 nearDistance（追擊速度曲線的參數，值 4），造成兩件事被同一個數字綁在一起：\n" +
+             "領頭狼會穩定跟在玩家後方 biteApproachDistance（2.5）處，所以第二隻狼只要離玩家超過 4 就失去避讓，\n" +
+             "間距上限被鎖在 4 − 2.5 ＝ 1.5 公尺，遠小於狼的身體寬度（碰撞箱 3.19／視覺 4.39），必然大幅重疊。\n" +
+             "改用獨立欄位後，追擊速度曲線（nearDistance／cruiseDistance／maxCatchUpSpeed）完全不受影響。\n" +
+             "預設 9 ＝ cruiseDistance，沿用本專案既有的「中距離壓迫 vs 遠距追趕」分界：\n" +
+             "玩家真的拉開到 9 公尺以上才恢復原本的群體衝鋒行為。")]
+    [Range(1f, 20f)]
+    public float separationPlayerRange = 9f;
+
     [Tooltip("依出生順序給每隻狼不同的 SpriteRenderer sortingOrder，在畫面上有前後圖層感")]
     public bool useDepthLayering = true;
 
@@ -176,6 +186,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public float maxVisualAlignAngle = 40f;
     [Tooltip("斜坡上視覺貼地的高度微調 (負值向下貼近地面，預設 -0.45 解決寬碰撞盒在斜坡浮空問題)")]
     public float slopeVisualYOffset = -0.45f;
+
+    [Tooltip("★1001 咬住玩家之後，狼的身體是否仍然即時貼合地面坡度。\n" +
+             "關掉＝回到原本行為（一咬住就立刻回正成水平）。\n" +
+             "原因：咬住時 rb.isKinematic 被設為 true，FixedUpdate 第一行就 return，地面法線不再更新，\n" +
+             "而且貼坡判定本身也排除了 isAttached，所以狼一咬住就變水平。\n" +
+             "開啟後會在 LateUpdate 重新取樣腳下地面（沿用既有的 TryGetGroundSlope，不另建偵測）。")]
+    public bool alignVisualWhileAttached = true;
 
     [Header("安全防護")]
     public float spawnAttachImmunityTime = 1.0f;
@@ -651,8 +668,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
             //      一公尺都不會縮短。把同一組折扣套到下限上，Separation 才真的有效。
             //      單狼時 sepFactor = 1、個體倍率 ≈ 1，下限幾乎等於原本的 playerRef，
             //      也就是 Phase 1 實測的那個情境行為不變。
-            //      被打折而落後的狼一旦超出 nearDistance，Separation 依設計自動失效（見
-            //      ComputeSeparationFactor 的 distToPlayer > nearDistance 直接 continue），
+            //      被打折而落後的狼一旦超出 separationPlayerRange（★0930 起改用分離系統自己的
+            //      欄位，預設 9；原本這裡借用速度曲線的 nearDistance＝4，見該欄位的 Tooltip），
+            //      Separation 依設計自動失效（見 ComputeSeparationFactor 的
+            //      distToPlayer > separationPlayerRange 直接 continue），
             //      Catch-up 曲線會把牠拉回來，不會被永久甩掉。
             float speedFloor = Mathf.Min(playerRef, shadowSpeed) * sepFactor * currentEffectiveSpeedMultiplier;
             currentSpeed = Mathf.Clamp(currentSpeed,
@@ -817,14 +836,20 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (dist < minOtherDist) minOtherDist = dist;
 
             // 當主角拉開距離 (遠距追擊) 時，群體衝鋒不減速，全力追趕主角
-            if (distToPlayer > nearDistance) continue;
+            // ★0930 閘門改用分離系統自己的 separationPlayerRange，不再借用速度曲線的 nearDistance。
+            //   原因見 separationPlayerRange 的 Tooltip：借用會把狼群間距上限鎖在 1.5 公尺。
+            //   nearDistance 本身完全沒動，EvaluateChaseSpeed 的曲線不受影響。
+            if (distToPlayer > separationPlayerRange) continue;
 
             if (dx * directionX <= 0f) continue;
             if (dist > separationRadius) continue;
 
             // 僅在貼身準備咬人時微幅拉開間距，絕不卡死
             float t = Mathf.InverseLerp(minimumWolfDistance, separationRadius, dist);
-            float minF = Mathf.Clamp(1f - separationStrength, 0.85f, 1f);
+            // ★0930 Clamp 下限 0.85 → 0.5：對齊 separationStrength 自己宣告的 [Range(0f, 0.5f)]。
+            //   原本下限 0.85 讓這個欄位即使拉到 Range 上限 0.5，實際也只能產生 15% 減速，
+            //   Inspector 上 0.25 與 0.5 的效果完全相同（都被夾成 0.85），欄位等於失效。
+            float minF = Mathf.Clamp(1f - separationStrength, 0.5f, 1f);
             float f = Mathf.Lerp(minF, 1f, t);
             if (f < factor) factor = f;
         }
@@ -876,10 +901,28 @@ public class WolfEnemy : MonoBehaviour, IResettable
             if (visualToAlign == null) return;
         }
 
+        // ★1001 咬住玩家時，FixedUpdate 第一行就被 rb.isKinematic 擋掉，_visualGroundNormal 不會再更新，
+        //   所以這裡自己補一次地面取樣。沿用既有的 TryGetGroundSlope（已把法線投影到 XY、已排除狼與玩家），
+        //   不另外建第二套 Ground Detection。咬住時狼是玩家的子物件，射線打到的就是玩家腳下的坡面。
+        if (isAttached && !isStunned && alignVisualWhileAttached)
+        {
+            if (TryGetGroundSlope(out RaycastHit attachedHit, out float attachedAngle))
+            {
+                _visualHasGround = true;
+                _visualGroundNormal = attachedHit.normal;
+            }
+            else
+            {
+                _visualHasGround = false;
+            }
+        }
+
         float targetAngle = 0f;
         float targetYOffset = 0f;
 
-        if (!isAttached && !isStunned && _visualHasGround)
+        bool allowAlign = !isStunned && _visualHasGround && (!isAttached || alignVisualWhileAttached);
+
+        if (allowAlign)
         {
             targetAngle = Mathf.Atan2(-_visualGroundNormal.x, _visualGroundNormal.y) * Mathf.Rad2Deg;
             targetAngle = Mathf.Clamp(targetAngle, -maxVisualAlignAngle, maxVisualAlignAngle);

@@ -333,6 +333,47 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("示範用：命中玩家不觸發死亡，只彈開")]
     public bool harmless = false;
 
+    [Header("★1001 路線預判（攻擊玩家前進方向的預測位置）")]
+    [Tooltip("開啟後，鳥不再瞄玩家「當下位置」，而是瞄「等牠飛到時玩家會在的位置」。\n" +
+             "關掉＝完全回到原本的 DirectPlayer 行為。")]
+    public bool enableRoutePrediction = true;
+
+    [Tooltip("預判時間的倍率。\n" +
+             "1.0 ＝ 精準攔截（預判時間就是「前搖 + 俯衝飛行時間」，鳥剛好在玩家抵達時到達）\n" +
+             "> 1 ＝ 打得更前面（超前量），< 1 ＝ 打得偏後。\n" +
+             "要更難就往上調，但紅色預告線會先亮 warningDuration 秒，玩家看得到就躲得掉。")]
+    [Range(0f, 2f)]
+    public float predictionTimeMultiplier = 1.0f;
+
+    [Tooltip("預判時間下限 (秒)。太小就幾乎等於瞄當下位置")]
+    [Range(0f, 1f)]
+    public float minimumPredictionTime = 0.15f;
+
+    [Tooltip("預判時間上限 (秒)。防止鳥離很遠時把攻擊點推到天邊")]
+    [Range(0.1f, 3f)]
+    public float maximumPredictionTime = 1.2f;
+
+    [Tooltip("預判點最多可以離玩家目前位置多遠 (公尺)。這是最後一道保險，確保落點永遠在可反應範圍內")]
+    [Range(0f, 20f)]
+    public float predictionDistanceLimit = 7f;
+
+    [Header("★1001 命中逼退（沿玩家前進方向的反方向推）")]
+    [Tooltip("命中時把玩家往後推，而不是直接觸發死亡重生。\n" +
+             "關掉＝回到原本「命中即死」的行為（石化硬撐／護盾／無敵／harmless 的既有豁免不受影響）。")]
+    public bool retreatInsteadOfKill = true;
+
+    [Tooltip("逼退速度 (公尺/秒)。沿用既有的 PlayerMovement.ApplyWindPush 管道，所以斜坡與平地都已正確處理")]
+    [Range(0f, 12f)]
+    public float retreatPushSpeed = 6f;
+
+    [Tooltip("逼退持續時間 (秒)。ApplyWindPush 每次只維持 0.15 秒，所以這段時間內會持續補推")]
+    [Range(0f, 1f)]
+    public float retreatPushDuration = 0.35f;
+
+    // 玩家剛體快取（只抓一次，預判要讀她的實際水平速度）
+    private Rigidbody _playerRb;
+    private PlayerMovement _playerMove;
+
     /// <summary>全域壓制：Time.time 小於這個值時，所有鳥不偵測、不攻擊（鳥影掠地 6 秒／風停區永久）。換場景由 DesertBeatDirector 歸零。</summary>
     public static float SuppressAllUntil = -1f;
     public static bool IsAllSuppressed => Time.time < SuppressAllUntil;
@@ -770,6 +811,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                         {
                             Debug.LogWarning($"🛡️【無敵模式】{gameObject.name} 撲擊命中無敵主角！鳥怪正常彈開，主角不觸發死亡重生！");
                         }
+                        else if (retreatInsteadOfKill)
+                        {
+                            // ★1001 逼退取代死亡：沿玩家前進方向的反方向推她，製造「前進有阻力」
+                            //   上面所有既有豁免（石化硬撐／護盾／演出鎖定／harmless／無敵）都在這之前，
+                            //   行為完全沒變；這裡只取代最後那條「命中即死」。
+                            Debug.LogWarning($"🪶【鳥群系統】{gameObject.name} 命中主角！沿前進方向反向逼退（retreatInsteadOfKill）。");
+                            ApplyPlayerRetreat();
+                        }
                         else
                         {
                             Debug.LogWarning($"💀【鳥群系統】{gameObject.name} 成功撲擊命中主角！觸發重生！");
@@ -1015,6 +1064,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         Vector3 playerPos = playerTrans.position;
         Vector3 groundTargetPos = new Vector3(playerPos.x, playerPos.y, originalPosition.z);
 
+        // ★1001 路線預判：改瞄「等牠飛到時玩家會在的位置」。
+        //   這支函式只在 AttackCoroutine 的 Warning 開頭被呼叫一次（lock-on 的那一刻），
+        //   之後整段俯衝都沿鎖定的直線走，所以不會每幀重算，57 隻鳥也不會變成效能負擔。
+        if (enableRoutePrediction && overrideTarget == null)
+        {
+            groundTargetPos.x = PredictPlayerX(playerPos);
+        }
+
         switch (behaviorType)
         {
             case BirdBehavior.DirectPlayer:
@@ -1032,6 +1089,92 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 // 動態即時追蹤
                 targetPosition = groundTargetPos;
                 break;
+        }
+    }
+
+    /// <summary>
+    /// ★1001 預測玩家會經過的 X：PlayerX + PlayerVelocityX × PredictionTime。
+    ///
+    /// PredictionTime 完全沿用既有 attack flow 的時間，不另外建一套：
+    ///     前搖    ＝ warningDuration（DesertBeatDirector 會依「拍」覆寫成 1.0／1.3／1.5／1.6）
+    ///     飛行    ＝ 鳥到玩家的距離 ÷ diveSpeed（diveSpeed 是既有的俯衝速度 9.8）
+    ///   PredictionTime = (前搖 + 飛行) × predictionTimeMultiplier，再夾在 min/max 之間。
+    ///
+    /// 玩家站著不動 → velocityX ≈ 0 → 預判點自動收回她目前位置，不會把攻擊點推到很遠。
+    /// 玩家往右跑 → 預判點在右邊；往左跑 → 在左邊，方向自動跟著速度正負號。
+    /// 最後再用 predictionDistanceLimit 夾住，保證落點永遠在可反應範圍內。
+    /// </summary>
+    private float PredictPlayerX(Vector3 playerPos)
+    {
+        if (_playerRb == null && playerTrans != null)
+        {
+            _playerRb = playerTrans.GetComponent<Rigidbody>();
+            if (_playerRb == null) _playerRb = playerTrans.GetComponentInParent<Rigidbody>();
+            _playerMove = playerTrans.GetComponent<PlayerMovement>();
+            if (_playerMove == null) _playerMove = playerTrans.GetComponentInParent<PlayerMovement>();
+        }
+
+        // 玩家的水平速度：優先用剛體實際速度（已含狼減速／拖曳／坡度折算），退而用指令速度
+        float playerVx = 0f;
+        if (_playerRb != null) playerVx = _playerRb.linearVelocity.x;
+        else if (_playerMove != null) playerVx = _playerMove.CommandedHorizontalSpeed;
+
+        // 幾乎沒在動就不預判，直接打當下位置（避免站著不動時攻擊點亂跑）
+        if (Mathf.Abs(playerVx) < 0.2f) return playerPos.x;
+
+        float warnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
+        float dist = Vector2.Distance(new Vector2(transform.position.x, transform.position.y),
+                                      new Vector2(playerPos.x, playerPos.y));
+        float travelTime = dist / Mathf.Max(0.1f, diveSpeed);
+
+        float predictionTime = Mathf.Clamp((warnTime + travelTime) * predictionTimeMultiplier,
+                                           minimumPredictionTime, maximumPredictionTime);
+
+        float lead = Mathf.Clamp(playerVx * predictionTime, -predictionDistanceLimit, predictionDistanceLimit);
+        return playerPos.x + lead;
+    }
+
+    /// <summary>
+    /// ★1001 命中逼退：沿玩家前進方向的反方向推她。
+    ///
+    /// 刻意重用既有的 PlayerMovement.ApplyWindPush() 管道，不新增平行的外力系統：
+    ///   ・斜坡分支與平地分支都已經正確處理 windOffset（斜坡會投影到坡面）
+    ///   ・已有 IsWindPushBlocked() 的防抖保護（撞到牆就停止施力）
+    ///   ・只作用在水平方向，不會破壞 slope movement／boulder push／wolf drag-down／jump／gravity
+    /// ApplyWindPush 單次只維持 0.15 秒，所以這裡用一小段協程持續補推到 retreatPushDuration。
+    /// </summary>
+    private void ApplyPlayerRetreat()
+    {
+        if (_playerMove == null && playerTrans != null)
+        {
+            _playerMove = playerTrans.GetComponent<PlayerMovement>();
+            if (_playerMove == null) _playerMove = playerTrans.GetComponentInParent<PlayerMovement>();
+        }
+        if (_playerMove == null || retreatPushSpeed <= 0f || retreatPushDuration <= 0f) return;
+
+        // 推的方向＝玩家前進方向的反方向。速度太小就用她的面向，面向也沒有就用「鳥往玩家的反方向」
+        float forward = 0f;
+        if (_playerRb != null && Mathf.Abs(_playerRb.linearVelocity.x) > 0.2f)
+            forward = Mathf.Sign(_playerRb.linearVelocity.x);
+        else if (Mathf.Abs(_playerMove.FacingDirection.x) > 0.01f)
+            forward = Mathf.Sign(_playerMove.FacingDirection.x);
+        else
+            forward = Mathf.Sign(playerTrans.position.x - transform.position.x);
+
+        if (Mathf.Approximately(forward, 0f)) forward = 1f;
+
+        _playerMove.StartCoroutine(RetreatPushRoutine(_playerMove, -forward * retreatPushSpeed, retreatPushDuration));
+    }
+
+    // 協程掛在玩家身上執行：鳥自己可能在這段時間內被 Destroy，掛在鳥身上會被中斷
+    private static System.Collections.IEnumerator RetreatPushRoutine(PlayerMovement pm, float pushX, float duration)
+    {
+        float t = 0f;
+        while (t < duration && pm != null)
+        {
+            pm.ApplyWindPush(pushX);
+            t += Time.deltaTime;
+            yield return null;
         }
     }
 
