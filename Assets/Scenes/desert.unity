@@ -1518,6 +1518,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &198497820
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1809,6 +1821,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &198497827
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1986,6 +2010,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &209746466 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -2173,6 +2209,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &224980042 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -2360,6 +2408,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &239759718
 GameObject:
   m_ObjectHideFlags: 0
@@ -7407,6 +7467,86 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
   m_PrefabInstance: {fileID: 797476968}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &281887062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 281887064}
+  - component: {fileID: 281887063}
+  m_Layer: 0
+  m_Name: DesertBeatDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &281887063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281887062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c991377537c457bb61b0f854d10a2de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DesertBeatDirector
+  beat1End: 45
+  beat2End: 135
+  beat3End: 225
+  beat1AllTrueShelters: 1
+  beat1RemoveBirds: 1
+  enableDriftShelters: 0
+  driftShelterXs:
+  - 70.8
+  - 98.1
+  - 114.3
+  driftShelterSearchRadius: 2.5
+  driftActiveSeconds: 6
+  driftFadeOutSeconds: 1.5
+  driftInactiveSeconds: 3
+  driftFadeInSeconds: 1.5
+  beat2ThinBirds: 1
+  beat2WarningSeconds: 1.5
+  enableDemoDive: 1
+  demoDiveFallbackX: 62.5
+  demoDiveOffsetFromShelter: -1
+  demoDiveDetectionRange: 12
+  beat3StaggerWarnings: 1
+  beat3WarningBase: 1
+  beat3WarningStep: 0.3
+  enableGiantShadow: 1
+  giantShadowX: 137
+  enableWindStop: 1
+  enableRelics: 1
+  enableTelegraphHum: 1
+  enableBraceFrost: 1
+  fixedAttackWeight: 1
+  predictedAttackWeight: 1
+  maxSameAttackTypeInRow: 2
+  queuedBirdReleaseInterval: 0.45
+  groundFallbackY: -6.3
+  groundRayZ: -1
+--- !u!4 &281887064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281887062}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -14.7, y: 21.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &283131840 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -7594,6 +7734,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &295856593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8075,6 +8227,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &308089449
 GameObject:
   m_ObjectHideFlags: 0
@@ -8209,7 +8373,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.507669, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.505089, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8709,6 +8873,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &327007296 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -8891,6 +9067,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &340062527 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -9073,6 +9261,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &341364196
 GameObject:
   m_ObjectHideFlags: 0
@@ -9630,6 +9830,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &372427844
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9807,6 +10019,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &376656439
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10763,6 +10987,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &446626816 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -10945,6 +11181,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &452239496 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -11492,6 +11740,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &480514349
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11669,6 +11929,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &492759901 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -11994,6 +12266,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &508028242 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -12176,6 +12460,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &530181473
 GameObject:
   m_ObjectHideFlags: 0
@@ -13110,6 +13406,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &596971190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13393,6 +13701,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &636829700
 GameObject:
   m_ObjectHideFlags: 0
@@ -14590,6 +14910,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &738394998
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14767,6 +15099,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &747122038
 GameObject:
   m_ObjectHideFlags: 0
@@ -14793,7 +15137,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.50767, y: 5.29, z: 0}
+  m_LocalPosition: {x: 16.505089, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14849,6 +15193,11 @@ MonoBehaviour:
   currentMode: 0
   fallingCameraYOffset: 0
   fallingFollowSpeed: 18
+  enableBoulderCameraWeightFeedback: 1
+  boulderCameraDownOffset: 0.6
+  boulderCameraSinkSpeed: 2.5
+  boulderCameraRecoverSpeed: 4
+  boulderCameraMinSpeed: 0.6
   isOverridden: 0
   overrideTarget: {fileID: 0}
   overrideOrthoSize: -1
@@ -15133,6 +15482,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &748939896 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -15315,6 +15676,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &754483469 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -15497,6 +15870,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &778340339
 GameObject:
   m_ObjectHideFlags: 0
@@ -15905,6 +16290,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &797557924 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -16087,6 +16484,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &799729485
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16964,6 +17373,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &837637432
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -17141,6 +17562,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &840317286 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17323,6 +17756,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &848223933 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17606,6 +18051,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &852823267 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -17788,6 +18245,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &859091808
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18183,6 +18652,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &862704299
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18360,6 +18841,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &863241826 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -18542,6 +19035,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &867742666
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18833,6 +19338,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &867742673
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -19010,6 +19527,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &879180877
 GameObject:
   m_ObjectHideFlags: 0
@@ -19350,6 +19879,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &909063426
 GameObject:
   m_ObjectHideFlags: 0
@@ -19844,6 +20385,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &937310458
 GameObject:
   m_ObjectHideFlags: 0
@@ -20268,6 +20821,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &950837339
 GameObject:
   m_ObjectHideFlags: 0
@@ -20679,6 +21244,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &994402413 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -20973,6 +21550,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1046791338
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21264,6 +21853,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1054951023
 GameObject:
   m_ObjectHideFlags: 0
@@ -21602,7 +22203,7 @@ PrefabInstance:
     - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: petrifySFX
       value: 
-      objectReference: {fileID: 8300000, guid: 2494c9225a748324d829691e4a91099e, type: 3}
+      objectReference: {fileID: 8300000, guid: b5caaa95841b0d146875491361adb634, type: 3}
     - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: unpetrifySFX
       value: 
@@ -21813,6 +22414,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1069608645 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -21995,6 +22608,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1076271210
 GameObject:
   m_ObjectHideFlags: 0
@@ -22230,6 +22855,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1083144185
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22900,6 +23537,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1147295696
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -23077,6 +23726,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1166126468
 GameObject:
   m_ObjectHideFlags: 0
@@ -28380,6 +29041,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1229319572
 GameObject:
   m_ObjectHideFlags: 0
@@ -28784,6 +29457,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1235777195
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -28961,6 +29646,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1259780287
 GameObject:
   m_ObjectHideFlags: 0
@@ -29234,6 +29931,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1264987126
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29525,6 +30234,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1264987133
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -29702,6 +30423,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1279824611
 GameObject:
   m_ObjectHideFlags: 0
@@ -30200,6 +30933,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1326084089
 GameObject:
   m_ObjectHideFlags: 0
@@ -35467,6 +36212,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1362677365 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -35649,6 +36406,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1376206461
 GameObject:
   m_ObjectHideFlags: 0
@@ -36329,6 +37098,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1389233650
 GameObject:
   m_ObjectHideFlags: 0
@@ -36624,6 +37405,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1399529194
 GameObject:
   m_ObjectHideFlags: 0
@@ -36919,6 +37712,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1420397823
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37192,6 +37997,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1440046342 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -37374,6 +38191,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1444385478 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -37556,6 +38385,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1453928884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37847,6 +38688,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1453928891
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -38024,6 +38877,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1460206123 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -38206,6 +39071,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!43 &1463530621
 Mesh:
   m_ObjectHideFlags: 0
@@ -38566,6 +39443,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1494404774
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38852,6 +39741,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1525900690 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -39034,6 +39935,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1534076190
 GameObject:
   m_ObjectHideFlags: 0
@@ -39456,6 +40369,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1545679102 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -39742,6 +40667,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1594557421
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40023,6 +40960,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1607187551 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -40205,6 +41154,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1625430969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40486,6 +41447,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1628159571
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40767,6 +41740,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1639217559 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -40949,6 +41934,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1657044647
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41230,6 +42227,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1657807653
 GameObject:
   m_ObjectHideFlags: 0
@@ -41602,6 +42611,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1675996994
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -41883,6 +42904,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1688040281
 GameObject:
   m_ObjectHideFlags: 0
@@ -42156,6 +43189,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1712628209 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -42338,6 +43383,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1715981104
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42629,6 +43686,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1715981111
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -42806,6 +43875,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1719821682
 GameObject:
   m_ObjectHideFlags: 0
@@ -43101,6 +44182,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1744740335
 GameObject:
   m_ObjectHideFlags: 0
@@ -43379,6 +44472,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1770549944
 GameObject:
   m_ObjectHideFlags: 0
@@ -43839,6 +44944,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1790475359
 GameObject:
   m_ObjectHideFlags: 0
@@ -48857,6 +49974,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1792429549 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -49039,6 +50168,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1794822145 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -49221,6 +50362,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1812729720
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49494,6 +50647,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1820716505
 GameObject:
   m_ObjectHideFlags: 0
@@ -49729,6 +50894,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1823686047 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -49911,6 +51088,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1825610762
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -50202,6 +51391,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &1825610769
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -50379,6 +51580,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1835300432
 GameObject:
   m_ObjectHideFlags: 0
@@ -50688,6 +51901,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1855975710
 GameObject:
   m_ObjectHideFlags: 0
@@ -50961,6 +52186,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1858188625 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -51143,6 +52380,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1860318834 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -51330,6 +52579,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1868895076 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -51512,6 +52773,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1882475287 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100122, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -51694,6 +52967,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1893617914
 GameObject:
   m_ObjectHideFlags: 0
@@ -52066,6 +53351,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1918916555
 GameObject:
   m_ObjectHideFlags: 0
@@ -52406,6 +53703,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1923538536
 GameObject:
   m_ObjectHideFlags: 0
@@ -52732,6 +54041,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &1960167367
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53005,6 +54326,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1970097111
 GameObject:
   m_ObjectHideFlags: 0
@@ -53278,6 +54611,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &1978253942
 GameObject:
   m_ObjectHideFlags: 0
@@ -53348,7 +54693,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.507669, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.505089, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -53890,6 +55235,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &2011832821
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -54171,6 +55528,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &2014794179
 GameObject:
   m_ObjectHideFlags: 0
@@ -59349,6 +60718,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &2051816438 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
@@ -59657,6 +61038,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &2058465744 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100124, guid: 0646ceebc81f52a4e8a676e94ab46092, type: 3}
@@ -59839,6 +61232,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &2067308743
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60120,6 +61525,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1 &2071087495
 GameObject:
   m_ObjectHideFlags: 0
@@ -60468,6 +61885,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &2105805957
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60759,6 +62188,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!54 &2105805964
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -60936,6 +62377,18 @@ MonoBehaviour:
   windDriftDistance: 1.2
   overrideTarget: {fileID: 0}
   harmless: 0
+  enableRoutePrediction: 1
+  predictionTimeMultiplier: 1
+  minimumPredictionTime: 0.15
+  maximumPredictionTime: 1.2
+  predictionDistanceLimit: 7
+  retreatInsteadOfKill: 1
+  retreatPushSpeed: 6
+  retreatPushDuration: 0.35
+  useAttackScheduler: 1
+  overrideAttackType: 0
+  attackTypeOverride: 0
+  queueAttackDuringWind: 1
 --- !u!1001 &355908065880826960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60990,7 +62443,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 40.697952
+      value: 40.69305
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -61103,3 +62556,4 @@ SceneRoots:
   - {fileID: 910000021}
   - {fileID: 9130000000000000001}
   - {fileID: 1054951024}
+  - {fileID: 281887064}

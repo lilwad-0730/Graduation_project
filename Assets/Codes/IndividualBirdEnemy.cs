@@ -140,7 +140,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private Vector3 _lockedDiveTarget;
     private bool _hasLockedDiveTarget;
 
-    private enum BirdState { Idle, Warning, Diving, Stuck, Bounced }
+    // ★1002 Pending＝偵測到玩家但正在吹風：只記一筆「待攻擊」，風停才真正 lock-on（見 AttackCoroutine 開頭）
+    private enum BirdState { Idle, Warning, Diving, Stuck, Bounced, Pending }
     private BirdState currentState = BirdState.Idle;
 
     private Transform playerTrans;
@@ -370,6 +371,38 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Range(0f, 1f)]
     public float retreatPushDuration = 0.35f;
 
+    [Header("★1002 攻擊類型與風停排隊")]
+    [Tooltip("開啟＝每次攻擊由 BirdAttackScheduler 挑「定點」或「預判」（加權＋同種不連續太多次）。\n" +
+             "權重、連續上限在 DesertBeatDirector 的「★1002 鳥攻擊排程」調。\n" +
+             "關掉＝回到 1001 的行為（enableRoutePrediction 開就一律預判）。")]
+    public bool useAttackScheduler = true;
+
+    [Tooltip("勾選＝這隻鳥固定用下面指定的類型，不走排程（測試用）")]
+    public bool overrideAttackType = false;
+    public BirdAttackType attackTypeOverride = BirdAttackType.FixedPosition;
+
+    [Tooltip("吹風（含 1 秒沙塵前兆）期間偵測到玩家：不攻擊、先排隊，風停才鎖定目標＋亮紅線＋俯衝。\n" +
+             "排隊期間不鎖座標，免得風吹了 2 秒她早跑遠了還去打舊位置。")]
+    public bool queueAttackDuringWind = true;
+
+    private BirdAttackType _currentAttackType = BirdAttackType.FixedPosition;
+
+    /// <summary>吹風中或沙塵前兆中（荒原的 Wind Phase）。沿用 WindGustSystem 既有狀態，不另做一套。</summary>
+    private static bool IsWindPhase()
+    {
+        WindGustSystem w = WindGustSystem.Instance;
+        if (w == null || w.IsStoppedForever) return false;
+        return w.CurrentState == WindState.Blowing || w.IsTelegraphing;
+    }
+
+    private BirdAttackType ChooseAttackType()
+    {
+        if (overrideTarget != null || !enableRoutePrediction) return BirdAttackType.FixedPosition;   // 示範俯衝／預判總開關關掉＝只打定點
+        if (overrideAttackType) return attackTypeOverride;
+        if (!useAttackScheduler) return BirdAttackType.PredictedPosition;
+        return BirdAttackScheduler.PickNextType();
+    }
+
     // 玩家剛體快取（只抓一次，預判要讀她的實際水平速度）
     private Rigidbody _playerRb;
     private PlayerMovement _playerMove;
@@ -402,7 +435,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private void Update()
     {
         // 核心功能 1：3D 有機空中漂浮與自然微盤旋 (多頻率波形 + Perlin 氣流雜訊)
-        if (currentState == BirdState.Idle && enableIdleHover)
+        if ((currentState == BirdState.Idle || currentState == BirdState.Pending) && enableIdleHover)
         {
             UpdateOrganicIdleHover();
         }
@@ -646,8 +679,28 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private IEnumerator AttackCoroutine()
     {
+        // ★1002 Wind Phase 不開新攻擊：先排隊（Pending），風停後依序放行，每隻錯開 queuedReleaseInterval 秒。
+        //   排隊期間完全不鎖座標、不亮紅線；放行後才往下走「選類型 → lock-on → 紅線 → 俯衝」。
+        if (queueAttackDuringWind && IsWindPhase())
+        {
+            currentState = BirdState.Pending;
+            while (true)
+            {
+                while (IsWindPhase() || IsAllSuppressed) yield return null;
+                if (UmbrellaZone.IsPlayerUnderUmbrella)
+                {
+                    currentState = BirdState.Idle;   // 她躲進遮陽傘了：取消排隊，之後照常重新偵測
+                    yield break;
+                }
+                float release = BirdAttackScheduler.ReserveQueuedRelease();
+                while (Time.time < release && !IsWindPhase()) yield return null;
+                if (!IsWindPhase()) break;           // 等放行的空檔風又來了就回去重排
+            }
+        }
+
         currentState = BirdState.Warning;
-        
+        _currentAttackType = ChooseAttackType();
+
         // 1. 程式切換為警報動畫 (worried)
         PlayAnim(warningAnimName);
 
@@ -1067,7 +1120,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // ★1001 路線預判：改瞄「等牠飛到時玩家會在的位置」。
         //   這支函式只在 AttackCoroutine 的 Warning 開頭被呼叫一次（lock-on 的那一刻），
         //   之後整段俯衝都沿鎖定的直線走，所以不會每幀重算，57 隻鳥也不會變成效能負擔。
-        if (enableRoutePrediction && overrideTarget == null)
+        if (enableRoutePrediction && overrideTarget == null && _currentAttackType == BirdAttackType.PredictedPosition)
         {
             groundTargetPos.x = PredictPlayerX(playerPos);
         }

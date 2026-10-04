@@ -127,6 +127,9 @@ public class PlayerRespawnSystem : MonoBehaviour
     }
 
     // 跨場景指定生成點 (由轉場腳本在 LoadScene 前指派)
+    /// <summary>★1002 重生流程在黑屏中、IResettable 全部重置完之後觸發（玩家尚未傳送）。</summary>
+    public static event System.Action OnResettablesReset;
+
     public static string NextSceneSpawnTargetName = "";
     public static Vector3? NextSceneCustomSpawnPos = null;
     public static PlayerRespawnSystem Instance { get; private set; }
@@ -522,6 +525,10 @@ public class PlayerRespawnSystem : MonoBehaviour
                 resettable.ResetToInitialState();
             }
         }
+
+        // ★1002 全場景 IResettable 跑完、玩家還沒傳送的這一刻（黑屏中）通知外部。
+        //   BoulderChallengeController 用它把巨石放回 Boulder Spawn——必須在這之後，否則會被拉桿的重置蓋回原位。
+        OnResettablesReset?.Invoke();
 
         // --- 傳送至明確存檔點並精準貼合地表 ---
         PlayerMovement pmComponent = GetMovement();

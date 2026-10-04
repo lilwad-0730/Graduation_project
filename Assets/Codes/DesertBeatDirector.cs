@@ -90,6 +90,16 @@ public class DesertBeatDirector : MonoBehaviour
     public bool enableTelegraphHum = true;
     public bool enableBraceFrost = true;
 
+    [Header("★1002 鳥攻擊排程（定點／預判＋風停排隊放行）")]
+    [Tooltip("定點俯衝的權重：鎖她「發現當下」的位置。一路往前衝的人會直接跑過去")]
+    public float fixedAttackWeight = 1f;
+    [Tooltip("預判俯衝的權重：鎖她「等鳥飛到時會在的位置」。站著不動時自動收回成當下位置")]
+    public float predictedAttackWeight = 1f;
+    [Tooltip("同一種類型最多連續幾次，超過就強制換另一種")]
+    [Range(1, 6)] public int maxSameAttackTypeInRow = 2;
+    [Tooltip("風停之後排隊的鳥，每隻放行的間隔 (秒)。越大越不會同時一起衝")]
+    public float queuedBirdReleaseInterval = 0.45f;
+
     [Header("找地面")]
     [Tooltip("射線找不到地面時用的 y（掩體柱腳大約在 -6.3）")]
     public float groundFallbackY = -6.3f;
@@ -154,6 +164,11 @@ public class DesertBeatDirector : MonoBehaviour
 
         System.Text.StringBuilder log = new System.Text.StringBuilder();
         log.Append("[DesertBeatDirector] 套用四拍（").Append(beat1End).Append("／").Append(beat2End).Append("／").Append(beat3End).Append("）：");
+
+        BirdAttackScheduler.fixedWeight = fixedAttackWeight;
+        BirdAttackScheduler.predictedWeight = predictedAttackWeight;
+        BirdAttackScheduler.maxSameTypeInRow = maxSameAttackTypeInRow;
+        BirdAttackScheduler.queuedReleaseInterval = queuedBirdReleaseInterval;
 
         ApplyShelters(log);
         ApplyBirds(log);

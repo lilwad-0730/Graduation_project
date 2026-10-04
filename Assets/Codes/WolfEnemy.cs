@@ -17,12 +17,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     [Header("★0920 123 退後速度跟著玩家走")]
     [Tooltip("退後速度＝玩家當下水平速度 × 這個倍率。\n" +
-             "必須小於 1，玩家往前走才會真的縮短距離。\n" +
+             "★1004 上限放寬到 3。小於 1＝玩家往前走會縮短距離；大於 1＝狼退得比玩家快，回頭一次就會被拉開距離。\n" +
              "實測：玩家推巨石上坡只有 2.2 m/s，舊版狼固定退 2.70，等於每秒被拉開 0.5 公尺而且沒有上限。\n" +
              "0.8 的依據：追擊那邊已經驗證過「純百分比在玩家慢的時候會失效」，所以用 minClosingSpeed 0.8 " +
              "做固定差額；退後這邊取同一個量級——玩家 6.0 時差 1.2 m/s、2.2 時差 0.44 m/s，都真的會接近。\n" +
              "註：玩家速度超過約 3.4 m/s 時會被 Retreat Speed 上限夾住，行為跟舊版完全一樣。")]
-    [Range(0.1f, 1f)]
+    [Range(0.1f, 3f)]
     public float retreatSpeedMultiplier = 0.8f;
 
     [Tooltip("退後速度的下限 (m/s)。玩家站著不動盯著狼時，狼還是要看得出來在往後退，不能整個定住。\n" +
@@ -30,7 +30,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "預設 0.6 ÷ 0.8 ＝ 交叉點 0.75 m/s：玩家只要走得比 0.75 m/s 快就一定會接近狼；\n" +
              "比這更慢（幾乎等於站著）時才換成狼緩緩拉開，而這正是「回頭嚇退狼」該有的效果。\n" +
              "覺得壓迫感不夠就把這個值調小，交叉點會跟著往下移。")]
-    [Range(0f, 2f)]
+    [Range(0f, 6f)]
     public float minRetreatSpeed = 0.6f;
 
     [Tooltip("退到離玩家這麼遠就停止後退、改成原地罰站 (公尺)。\n" +
@@ -194,9 +194,30 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "開啟後會在 LateUpdate 重新取樣腳下地面（沿用既有的 TryGetGroundSlope，不另建偵測）。")]
     public bool alignVisualWhileAttached = true;
 
+    [Header("★1003 上坡追擊 / 卡住脫困")]
+    [Tooltip("狼在斜坡上時的追擊速度倍率（只在狼自己踩在斜坡上才乘，平地不變）。1＝不加成。\n" +
+             "廢墟這段上坡要追得更狠就調高；建議 1.0～1.4，超過 1.5 狼會明顯快過玩家的視覺節奏")]
+    [Range(1f, 2f)]
+    public float slopeChaseMultiplier = 1.02f;
+
+    [Tooltip("開啟＝「給了前進速度卻幾乎沒位移」超過 stuckSeconds 時，把狼輕輕抬高一小段幫牠越過地面接縫／坡腳的小台階")]
+    public bool enableStuckRecovery = true;
+
+    [Tooltip("判定卡住的秒數：目標水平速度 > 2 但實際位移速度 < 目標的 15% 持續這麼久")]
+    public float stuckSeconds = 0.3f;
+
+    [Tooltip("脫困時把狼往上抬的高度 (公尺)。接縫高度實測只有 0.005～0.06，0.15 足夠，太大會看到狼跳一下")]
+    public float stuckLiftHeight = 0.15f;
+
     [Header("安全防護")]
     public float spawnAttachImmunityTime = 1.0f;
     private float enableTime = -999f;
+
+    // ★1003 地面接觸與卡住偵測
+    private float _lastGroundContactTime = -999f;
+    private Vector3 _stuckLastPos;
+    private float _stuckTimer = 0f;
+    private float _unstickUntil = -999f;
 
     [Header("🎵 狼群音效")]
     public AudioClip aggroHowlSFX;
@@ -373,8 +394,35 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (maxCatchUpSpeed < 11.0f) maxCatchUpSpeed = 12.5f;
     }
 
+    /// <summary>
+    /// ★1002 巨石挑戰失敗中：沒咬住人的狼全部停止追擊、也不再咬人（第一隻咬到就失敗，後面的不用再咬）。
+    /// 由 BoulderChallengeController 開關；重置挑戰時一定會關回 false。
+    /// </summary>
+    public static bool ChallengeFailHalt = false;
+
+    /// <summary>★1002 失敗當下讓這隻狼停下來。咬住玩家的那隻不動（它是玩家的子物件，重置時才會被收走）。</summary>
+    public void HaltForChallengeFail(params Collider[] ignoreColliders)
+    {
+        if (isAttached) return;
+
+        // 停下來的狼還是一個實心剛體，會堵在坡腳夾角變成擋住玩家／巨石的牆（實機：玩家被夾在夾角）。
+        // 失敗演出中讓它跟玩家、巨石互相穿過；重置時這些狼會被出生點收掉，不需要還原。
+        if (col != null && ignoreColliders != null)
+        {
+            foreach (Collider c in ignoreColliders)
+            {
+                if (c != null && c != col) Physics.IgnoreCollision(col, c, true);
+            }
+        }
+        isChasing = false;
+        _aggroLocked = false;
+        _hasTargetSpeed = false;
+        _targetSpeedX = 0f;
+    }
+
     void Update()
     {
+        if (ChallengeFailHalt && !isAttached) return;   // ★1002 挑戰失敗中：不追、不重新鎖定
         if (isStunned || isAttached || player == null) return;
 
         float distanceX = Mathf.Abs(player.position.x - transform.position.x);
@@ -447,13 +495,19 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, rate * Time.fixedDeltaTime);
         float speed = _currentSpeed;
 
+        // ★1003 狼自己踩在斜坡上才加成，平地行為不變；123 退後（往反方向）時不加成
+        if (onWalkableSlope && slopeChaseMultiplier > 1f && !_dbgRetreating) speed *= slopeChaseMultiplier;
+
+        UpdateStuckRecovery(_currentSpeed);
+        bool unsticking = Time.time < _unstickUntil;
+
         if (onWalkableSlope)
         {
             // 計算狼底部與地面間距 (gap)
             float gap = col != null ? (col.bounds.min.y - groundHit.point.y) : 0f;
 
             // 若有些微浮空 (gap > 0.06m) 保留重力拉回，貼地時 (gap <= 0.06m) 關閉重力流暢滑行
-            rb.useGravity = (gap > 0.06f);
+            rb.useGravity = (gap > 0.06f) && !unsticking;
 
             // 移動方向投影到地面法線上（法線已投影到 XY 平面，Z 永遠為 0）
             Vector3 moveDir = new Vector3(_lastFacingX, 0f, 0f);
@@ -473,7 +527,13 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
                 float vy = slopeDir.y * climbSpeed;
                 // 若有些微浮空則施加柔和向下微調，防止狼在空中平行漂浮
-                if (gap > 0.04f) vy -= Mathf.Min(gap * 5f, 2.5f);
+                // ★1003 Root Cause：gap 是用「射線命中點」量的，但水平的盒子在斜坡上其實是靠前方底角撐著，
+                //   所以 gap 恆大於真實浮空（前腳射線在盒子前緣 70% 處，漏掉那最後 30% 的坡面高度），
+                //   實機 log 量到狼明明貼著坡、gap 卻被算成約 0.33，vy 從 6.4 被壓到 4.67，等於每幀把底角往坡裡頂，
+                //   在坡腳／接縫就卡死（位移 0.01 m/s，目標水平 9.11）。
+                //   現在只有「真的沒有碰到地面」（OnCollisionStay 沒回報近期地面接觸）才補這段下壓；貼著地就不壓。
+                bool touchingGround = Time.time - _lastGroundContactTime < 0.1f;
+                if (gap > 0.04f && !touchingGround && !unsticking) vy -= Mathf.Min(gap * 5f, 2.5f);
                 rb.linearVelocity = new Vector3(slopeDir.x * climbSpeed, vy, 0f);
             }
 
@@ -483,10 +543,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
         else
         {
             // 平地或懸空：開啟重力，水平依照目標推動，垂直完全交給重力與碰撞（絕不強制 y = 0）
-            rb.useGravity = true;
+            rb.useGravity = !unsticking;
 
             float vx = (targetSpeed < 0.01f) ? 0f : (_lastFacingX * speed);
-            rb.linearVelocity = new Vector3(vx, v.y, 0f);
+            rb.linearVelocity = new Vector3(vx, unsticking ? Mathf.Max(v.y, 0f) : v.y, 0f);
 
             _visualHasGround = groundFound;
             _visualGroundNormal = groundFound ? groundHit.normal : Vector3.up;
@@ -495,6 +555,57 @@ public class WolfEnemy : MonoBehaviour, IResettable
         if (debugSlopeLog)
         {
             LogSlopeDiagnostics(groundFound, onWalkableSlope, slopeAngle, groundHit, speed);
+        }
+    }
+
+    // ★1003 記錄「最近一次踩到真實地面」的時間（法線朝上的接觸才算），給斜坡下壓補償判斷真的有沒有浮空
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.collider == null || !IsRealGround(collision.collider)) return;
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            if (collision.GetContact(i).normal.y > 0.2f) { _lastGroundContactTime = Time.time; return; }
+        }
+    }
+
+    /// <summary>
+    /// ★1003 卡住脫困。實機 log 的「狼卡住取證」713 筆裡 322 筆集中在 x≈184、y≈-128 的平地：
+    /// 那裡是 Ruin_Ground_Loop (2) 與 (4) 兩塊地板的接縫（兩塊頂面差約 5 mm、水平方向重疊約 0.1 m），
+    /// 盒狀碰撞體的底前緣會被接縫的內部邊卡住（ghost collision），目標水平 7.8～10 m/s 實測 0；
+    /// 另 88 筆在 x≈189、y≈-127 的坡腳（slope 分段 (1)/(3) 的接頭，頂面差約 4 cm）。
+    /// 治本是把地板接縫在場景裡做齊（見回報），這裡是安全網：
+    /// 給了明確前進速度卻幾乎沒位移、而且離玩家夠遠（不是被玩家／巨石擋住）超過 stuckSeconds，
+    /// 就把狼抬高 stuckLiftHeight，並在接下來 0.25 秒關掉重力與下壓，讓牠越過去。
+    /// </summary>
+    private void UpdateStuckRecovery(float wantedAbs)
+    {
+        Vector3 pos = rb.position;
+        if (!enableStuckRecovery || Time.time < _unstickUntil)
+        {
+            _stuckLastPos = pos;
+            _stuckTimer = 0f;
+            return;
+        }
+
+        float dt = Time.fixedDeltaTime;
+        float moved = Mathf.Abs(pos.x - _stuckLastPos.x);
+        _stuckLastPos = pos;
+
+        bool farFromPlayer = player == null || Mathf.Abs(player.position.x - transform.position.x) > 3f;
+        if (wantedAbs > 2f && farFromPlayer && !ChallengeFailHalt && moved < wantedAbs * dt * 0.15f)
+        {
+            _stuckTimer += dt;
+        }
+        else
+        {
+            _stuckTimer = 0f;
+        }
+
+        if (_stuckTimer >= stuckSeconds)
+        {
+            _stuckTimer = 0f;
+            _unstickUntil = Time.time + 0.25f;
+            rb.position = pos + Vector3.up * stuckLiftHeight;
         }
     }
 
@@ -946,7 +1057,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (isStunned || isAttached || Time.time < enableTime + spawnAttachImmunityTime) return;
+        if (isStunned || isAttached || ChallengeFailHalt || Time.time < enableTime + spawnAttachImmunityTime) return;
 
         if (collision.gameObject.CompareTag("Player"))
         {

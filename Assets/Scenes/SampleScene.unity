@@ -618,6 +618,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 39033384}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &36236455
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 36236457}
+  - component: {fileID: 36236456}
+  m_Layer: 0
+  m_Name: BoulderChallengeController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &36236456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36236455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ce842b0ee705a146aa36c67b9dff8a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoulderChallengeController
+  challengePlayerSpawn: {fileID: 852219068}
+  challengeBoulderSpawn: {fileID: 857486093}
+  boulder: {fileID: 0}
+  rollbackStartDelay: 0.3
+  afterFlatDelay: 0.8
+  maxRollbackSeconds: 15
+  unlockBoulderAfterReset: 1
+--- !u!4 &36236457
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36236455}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 170.6563, y: -109.43, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &39033382
 GameObject:
   m_ObjectHideFlags: 0
@@ -6170,7 +6221,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.292816, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.2863, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7957,6 +8008,74 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1780106809}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &645442053
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 645442056}
+  - component: {fileID: 645442055}
+  - component: {fileID: 645442054}
+  m_Layer: 0
+  m_Name: BoulderFailExit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &645442054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645442053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c057f4f47c165148ab5c352e9fbdd50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoulderFailExitTrigger
+  controller: {fileID: 0}
+  triggerOnBoulder: 1
+--- !u!65 &645442055
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645442053}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7.3127747, y: 13.351082, z: 1}
+  m_Center: {x: 1.4506226, y: 0.6851387, z: 0}
+--- !u!4 &645442056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 645442053}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 177.65, y: -124.14, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!134 &648581143
@@ -10482,6 +10601,68 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &852219067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 852219068}
+  m_Layer: 0
+  m_Name: ChallengePlayerSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &852219068
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 852219067}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 137, y: -125.89, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &857486092
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 857486093}
+  m_Layer: 0
+  m_Name: ChallengeBoulderSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &857486093
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 857486092}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 140.87, y: -126.20871, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &865606930
 GameObject:
   m_ObjectHideFlags: 0
@@ -11395,7 +11576,7 @@ MonoBehaviour:
   fastChaseSpeed: 6
   slowChaseSpeed: 5
   retreatSpeed: -2.7
-  retreatSpeedMultiplier: 0.8
+  retreatSpeedMultiplier: 1.3
   minRetreatSpeed: 0.6
   maxRetreatDistance: 18
   runDistanceThreshold: 18
@@ -11446,6 +11627,10 @@ MonoBehaviour:
   maxVisualAlignAngle: 40
   slopeVisualYOffset: -0.45
   alignVisualWhileAttached: 1
+  slopeChaseMultiplier: 1.2
+  enableStuckRecovery: 1
+  stuckSeconds: 0.3
+  stuckLiftHeight: 0.15
   spawnAttachImmunityTime: 1
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
@@ -22763,9 +22948,18 @@ MonoBehaviour:
   mass: 20
   impactSFX: {fileID: 8300000, guid: c82b1f686d675c44d807751e599e7df2, type: 3}
   impactVolume: 0.9
+  slopePushVisualPull: 1.1
+  slopePushVisualSmooth: 8
   boulderAcceleration: 12
   boulderBraking: 10
   boulderMaxSpeed: 8
+  rollbackSpeed: 10
+  rollbackAcceleration: 20
+  rollbackFlatAngle: 5
+  rollbackFlatStableSeconds: 0.35
+  rollbackMinDistance: 4
+  rollbackFlatBrake: 8
+  debugPushGapLog: 0
 --- !u!1 &1473894181
 GameObject:
   m_ObjectHideFlags: 0
@@ -25571,8 +25765,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 14.479999, y: 2.1362653, z: 0.2}
-  m_Center: {x: 0, y: -0.20686686, z: 0}
+  m_Size: {x: 14.479999, y: 2.1267736, z: 0.2}
+  m_Center: {x: 0, y: -0.21161261, z: 0}
 --- !u!212 &1637994719
 SpriteRenderer:
   serializedVersion: 2
@@ -26578,7 +26772,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TornadoFollowCamera
   enableSweep: 1
-  sweepDistance: 16
+  sweepDistance: 20
   sweepSpeed: 1.6
   autoFollowOnStart: 0
   followX: 1
@@ -28479,7 +28673,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.292816, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.2863, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34821,7 +35015,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.292816, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.2863, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35120,11 +35314,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.3093
+      value: -31.296925
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.18
+      value: 17.179996
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -35312,3 +35506,7 @@ SceneRoots:
   - {fileID: 710415346}
   - {fileID: 830744374}
   - {fileID: 9120000000000000002}
+  - {fileID: 852219068}
+  - {fileID: 857486093}
+  - {fileID: 645442056}
+  - {fileID: 36236457}

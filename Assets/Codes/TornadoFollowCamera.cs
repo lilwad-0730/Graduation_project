@@ -7,7 +7,7 @@ using UnityEngine;
 /// 3. 【玩家觸碰/接近觸發】：當玩家觸碰到龍捲風或靠近時，中心自動鎖定追蹤畫面中央。
 /// 4. 【顏色自訂 (Color Tuning)】：Inspector 支援任意顏色調整，預設為淺灰色 (Light Grey)。
 /// </summary>
-public class TornadoFollowCamera : MonoBehaviour
+public class TornadoFollowCamera : MonoBehaviour, IResettable
 {
     [Header("🌪️ 左右橫移擺動 (Horizontal Sweep)")]
     [Tooltip("是否開啟左右橫移擺動 (打勾後龍捲風會左右來回擺動，增強風暴動態感)")]
@@ -104,6 +104,18 @@ public class TornadoFollowCamera : MonoBehaviour
         if (_isFollowing) return;
         _isFollowing = true;
         Debug.Log($"🌪️【龍捲風】啟動畫面中央鎖定追蹤 (Z={fixedZ})！", this);
+    }
+
+    /// <summary>
+    /// ★1003 重生時回到初始狀態：解除鏡頭鎖定、搬回原本的巡邏位置。
+    /// Root Cause：_isFollowing 啟動後沒有任何地方會設回 false，重生又沒有這個元件參與（不是 IResettable），
+    /// 所以巨石挑戰重置後龍捲風仍然黏在鏡頭上。遭遇觸發區（TornadoEncounterTrigger）也一併重置，
+    /// 重新走進去才會再啟動，行為跟第一次進入一樣。
+    /// </summary>
+    public void ResetToInitialState()
+    {
+        _isFollowing = autoFollowOnStart;
+        transform.position = new Vector3(_startWorldX, _startWorldY, fixedZ);
     }
 
     /// <summary>

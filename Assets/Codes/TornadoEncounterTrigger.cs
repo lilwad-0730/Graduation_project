@@ -8,7 +8,7 @@
 /// 3. 可在 Unity Scene 視窗直接用滑鼠拖曳此觸發框，自由微調遭遇位置！
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class TornadoEncounterTrigger : MonoBehaviour
+public class TornadoEncounterTrigger : MonoBehaviour, IResettable
 {
     [Header("🌪️ 目標龍捲風")]
     [Tooltip("要啟動相機跟隨的龍捲風物件 (若留空會自動尋找場景中的龍捲風)")]
@@ -36,6 +36,12 @@ public class TornadoEncounterTrigger : MonoBehaviour
         {
             targetTornado = Object.FindFirstObjectByType<TornadoFollowCamera>();
         }
+    }
+
+    // ★1003 重生後重新武裝，玩家再走進來才會再啟動龍捲風（配合 TornadoFollowCamera.ResetToInitialState）
+    public void ResetToInitialState()
+    {
+        _triggered = false;
     }
 
     private void OnTriggerEnter(Collider other)

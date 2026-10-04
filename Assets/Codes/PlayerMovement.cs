@@ -1266,6 +1266,11 @@ public class PlayerMovement : MonoBehaviour
         float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
         Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}／重生門檻 {killW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
 
+        // ★1002 巨石挑戰進行中：第一隻咬到就由 BoulderChallengeController 接手（失敗下滾 → 重置），
+        //   舊的「咬滿 wolvesToRespawn 隻才死」在這段不再走，避免兩套死亡流程同時跑。
+        //   控制器沒設定好、或挑戰還沒開始（石頭還沒解鎖）時回傳 false，舊流程原封不動。
+        if (BoulderChallengeController.NotifyWolfBite(this)) return;
+
         // 咬滿就死。TriggerRespawn 內部有 _isRespawning 防重入，不會重複觸發，這裡不另外做旗標。
         if (respawnWhenMaxWolves && attachedWolvesCount >= killW)
         {

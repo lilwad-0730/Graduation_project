@@ -93,6 +93,11 @@ public class AudioManager : MonoBehaviour
         _sfxSource.loop = false;
         _sfxSource.playOnAwake = false;
         _sfxSource.volume = 1f;
+
+        _keepSfxSource = gameObject.AddComponent<AudioSource>();
+        _keepSfxSource.loop = false;
+        _keepSfxSource.playOnAwake = false;
+        _keepSfxSource.volume = 1f;
     }
 
     private void OnEnable()
@@ -117,6 +122,10 @@ public class AudioManager : MonoBehaviour
     private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
         if (mode != UnityEngine.SceneManagement.LoadSceneMode.Single) return;
+
+        // ★1004 換場景時，上一關還沒播完的 SFX 一律停掉（例如荒原的石化長音效到下一關還在響）。
+        //   原因：PlaySFX 用的是 DontDestroyOnLoad 的 _sfxSource.PlayOneShot，換場景不會被清掉。
+        StopAllSfx();
 
         // 檢查新載入的場景中是否有任何已啟用的 BGMZone 且設定為開局播放音樂
         bool hasActiveSceneBGM = false;
@@ -295,7 +304,11 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip, float volume = 1.0f)
     {
         if (clip == null) return;
-        if (_sfxSource != null)
+        if (_keepSfxSource != null && KeepAcrossSceneClipNames.Contains(clip.name))
+        {
+            _keepSfxSource.PlayOneShot(clip, ScaleSfx(volume));   // 白名單：換場景不會被停
+        }
+        else if (_sfxSource != null)
         {
             _sfxSource.PlayOneShot(clip, ScaleSfx(volume));
         }
@@ -303,6 +316,21 @@ public class AudioManager : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : Vector3.zero, ScaleSfx(volume));
         }
+    }
+
+    /// <summary>
+    /// ★1004 換場景時不要被停掉的 SFX 白名單（用音檔名稱，不含副檔名）。
+    /// 例如轉場本身的音效、要跨關延續的音效，加進來它就會走獨立的 AudioSource。預設空，代表全部都停。
+    /// 用法：AudioManager.KeepAcrossSceneClipNames.Add("某音檔名");
+    /// </summary>
+    public static readonly System.Collections.Generic.HashSet<string> KeepAcrossSceneClipNames = new System.Collections.Generic.HashSet<string>();
+
+    private AudioSource _keepSfxSource;
+
+    /// <summary>停掉目前所有 PlaySFX 播出的音效（白名單走另一個 AudioSource，不受影響）。BGM 不動。</summary>
+    public void StopAllSfx()
+    {
+        if (_sfxSource != null) _sfxSource.Stop();
     }
 
     /// <summary>
