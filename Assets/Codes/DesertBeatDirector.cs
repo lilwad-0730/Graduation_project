@@ -90,15 +90,54 @@ public class DesertBeatDirector : MonoBehaviour
     public bool enableTelegraphHum = true;
     public bool enableBraceFrost = true;
 
-    [Header("★1002 鳥攻擊排程（定點／預判＋風停排隊放行）")]
-    [Tooltip("定點俯衝的權重：鎖她「發現當下」的位置。一路往前衝的人會直接跑過去")]
-    public float fixedAttackWeight = 1f;
-    [Tooltip("預判俯衝的權重：鎖她「等鳥飛到時會在的位置」。站著不動時自動收回成當下位置")]
-    public float predictedAttackWeight = 1f;
-    [Tooltip("同一種類型最多連續幾次，超過就強制換另一種")]
-    [Range(1, 6)] public int maxSameAttackTypeInRow = 2;
-    [Tooltip("風停之後排隊的鳥，每隻放行的間隔 (秒)。越大越不會同時一起衝")]
-    public float queuedBirdReleaseInterval = 0.45f;
+    [Header("★1006 鳥攻擊排程（Request Queue：偵測 → 排隊 → 放行）")]
+    [Tooltip("攻擊類型循環：C＝定點（鎖她發現當下的位置）、P＝預判（鎖她前方）。照字串順序一直循環，固定可學習、沒有亂數。\n" +
+             "預設 CPCPPCCPCPPC：沒有連續超過 2 個同類型。想純交替就填 CP")]
+    public string attackPattern = "CPCPPCCPCPPC";
+    [Tooltip("兩次放行之間至少間隔幾秒（全場鳥共用一條時間軸）。越大越不會同時衝")]
+    public float slotIntervalSeconds = 0.2f;
+    [Tooltip("每幾次放行算一輪，輪與輪之間有一段空檔")]
+    [Range(2, 8)] public int attacksPerRound = 4;
+    [Tooltip("每輪結束後的短暫空檔 (秒)，玩家可以趁這時候前進／停頓")]
+    public float restAfterRoundSeconds = 0.4f;
+    [Tooltip("同時「前搖＋俯衝中」的鳥最多幾隻。1＝一次只有一隻；3＝最多三隻，仍不會整群一起衝")]
+    [Range(1, 10)] public int maxSimultaneousAttacks = 6;
+    [Tooltip("★1008 佇列很長時，同時攻擊上限會自動增加，但最多到這個數字")]
+    [Range(1, 12)] public int maxSimultaneousHard = 10;
+    [Tooltip("★1008 佇列每多這麼多張需求，同時攻擊上限就 +1（鳥多時自動多放幾隻，鳥少時維持基本值）。0＝不自動增加")]
+    public int queuePressureStep = 5;
+    [Tooltip("同一區（以玩家為中心分 左／中／右）連續放行超過這個次數，就優先挑別區的鳥")]
+    [Range(1, 5)] public int maxSameZoneInRow = 2;
+    [Tooltip("中區半寬 (公尺)：鳥離玩家水平距離在 ± 這個值以內算中區，其餘分左右")]
+    public float zoneHalfWidth = 5f;
+    [Tooltip("需求保留範圍＝該鳥偵測範圍 × 這個倍率。被風／鳥影擋住時需求會一直保留，玩家跑出這個範圍才取消")]
+    public float requestKeepRangeMultiplier = 1.5f;
+    [Tooltip("★1007 優先分數：鳥在玩家「身後」時加的罰分 (公尺)。越大，前方的鳥越優先於身後的鳥")]
+    public float behindPenaltyMeters = 8f;
+    [Tooltip("★1007 優先分數：每等待 1 秒扣多少公尺的分，避免排很久的鳥餓死。0＝純粹看距離")]
+    public float agingMetersPerSecond = 2f;
+
+    [Tooltip("★1008 開局時若存檔裡的排程數值是舊版本，就自動換成程式裡最新的建議值（Inspector 存的舊值會蓋掉程式預設，這是上次放行名額一直不夠的原因）。勾選＝完全照你 Inspector 的數字，不再自動換")]
+    public bool keepMyInspectorValues = false;
+    [HideInInspector] public int tuningVersion = 0;
+    private const int CurrentTuningVersion = 3;
+
+    [Header("★1006 Debug（預設關閉；事件才印 log，沒有每幀 log）")]
+    [Tooltip("開啟後印 [BIRD DETECT]／[QUEUED]／[BLOCKED-WIND]／[BLOCKED-SHADOW]／[SLOT]／[LOCK]／[WARNING]／[DIVE]／[HIT]／[RETREAT]／[CANCEL]／[REMOVED]，" +
+             "並在每次重生與離開場景時印 [BIRD STATS]（偵測→排隊→放行→俯衝→命中 各階段轉換率）")]
+    public bool enableBirdAttackDebug = false;
+
+    [Header("★1005 全部鳥統一套用（場景裡每隻鳥各自存了舊值，改這裡一次生效）")]
+    [Tooltip("偵測範圍 (公尺)。玩家進入這個水平距離，鳥就建立攻擊需求。場景原本存 10。0＝不覆蓋，沿用每隻鳥自己的值")]
+    public float birdDetectionRange = 14f;
+    [Tooltip("預判時間上限 (秒)。預判時間＝前搖＋俯衝飛行時間，場景存的 1.2 秒比實際到達時間短太多。0＝不覆蓋")]
+    public float birdMaxPredictionTime = 3f;
+    [Tooltip("預判落點離玩家最遠幾公尺。場景存的 7 偏小。0＝不覆蓋")]
+    public float birdPredictionDistanceLimit = 14f;
+    [Tooltip("（只影響示範俯衝等不走排程器的鳥）排隊太久就放棄的秒數")]
+    public float birdMaxQueueWaitSeconds = 8f;
+    [Tooltip("★1009 被鳥俯衝命中一次就重生（0904 定案「鳥維持殺死」）。關閉＝改成只被逼退（1001 的實驗做法）。石化硬撐、護盾、無敵、演出鎖定、示範俯衝（harmless）的既有豁免不受影響")]
+    public bool birdHitRespawnsPlayer = true;
 
     [Header("找地面")]
     [Tooltip("射線找不到地面時用的 y（掩體柱腳大約在 -6.3）")]
@@ -162,13 +201,40 @@ public class DesertBeatDirector : MonoBehaviour
         if (_applied) return;
         _applied = true;
 
+        if (!keepMyInspectorValues && tuningVersion < CurrentTuningVersion)
+        {
+            Debug.Log($"[DesertBeatDirector] 排程數值是舊版本（v{tuningVersion}），已換成最新建議值：v3 含「超出範圍的鳥也繼續排隊攻擊」（保留範圍 3 倍、預判上限 5 秒／30 公尺）；間隔 {slotIntervalSeconds}→0.2、每輪空檔 {restAfterRoundSeconds}→0.4、每輪 {attacksPerRound}→4 次、同時上限 {maxSimultaneousAttacks}→6（壓力加成最多到 10）。想用自己的數字請勾 Keep My Inspector Values。");
+            slotIntervalSeconds = 0.2f;
+            restAfterRoundSeconds = 0.4f;
+            attacksPerRound = 4;
+            maxSimultaneousAttacks = 6;
+            maxSimultaneousHard = 10;
+            queuePressureStep = 5;
+            behindPenaltyMeters = 8f;
+            agingMetersPerSecond = 2f;
+            // v3：偵測到但已經超出範圍的鳥（被玩家甩在身後）也繼續留在佇列、照常放行，不再 1.5 倍範圍就取消
+            requestKeepRangeMultiplier = 3f;
+            birdMaxPredictionTime = 5f;
+            birdPredictionDistanceLimit = 30f;
+            tuningVersion = CurrentTuningVersion;
+        }
+
         System.Text.StringBuilder log = new System.Text.StringBuilder();
         log.Append("[DesertBeatDirector] 套用四拍（").Append(beat1End).Append("／").Append(beat2End).Append("／").Append(beat3End).Append("）：");
 
-        BirdAttackScheduler.fixedWeight = fixedAttackWeight;
-        BirdAttackScheduler.predictedWeight = predictedAttackWeight;
-        BirdAttackScheduler.maxSameTypeInRow = maxSameAttackTypeInRow;
-        BirdAttackScheduler.queuedReleaseInterval = queuedBirdReleaseInterval;
+        BirdAttackScheduler.debugEnabled = enableBirdAttackDebug;
+        BirdAttackScheduler.attackPattern = attackPattern;
+        BirdAttackScheduler.slotInterval = slotIntervalSeconds;
+        BirdAttackScheduler.attacksPerRound = attacksPerRound;
+        BirdAttackScheduler.restSeconds = restAfterRoundSeconds;
+        BirdAttackScheduler.maxSimultaneous = maxSimultaneousAttacks;
+        BirdAttackScheduler.maxSimultaneousHard = maxSimultaneousHard;
+        BirdAttackScheduler.queuePressureStep = queuePressureStep;
+        BirdAttackScheduler.maxSameZoneInRow = maxSameZoneInRow;
+        BirdAttackScheduler.zoneHalfWidth = zoneHalfWidth;
+        BirdAttackScheduler.requestKeepRangeMultiplier = requestKeepRangeMultiplier;
+        BirdAttackScheduler.behindPenaltyMeters = behindPenaltyMeters;
+        BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
 
         ApplyShelters(log);
         ApplyBirds(log);
@@ -242,6 +308,8 @@ public class DesertBeatDirector : MonoBehaviour
         }
         birds.Sort((a, c) => a.transform.position.x.CompareTo(c.transform.position.x));
 
+        if (enableBirdAttackDebug) AuditBirds(birds);
+
         float demoX = ResolveDemoDiveX();
         int removed1 = 0, thinned = 0, beat2Kept = 0, staggered = 0, removed4 = 0;
         int beat2Index = 0, beat3Index = 0;
@@ -252,6 +320,13 @@ public class DesertBeatDirector : MonoBehaviour
         foreach (IndividualBirdEnemy b in birds)
         {
             float x = b.transform.position.x;
+
+            // ★1005 統一套用偵測範圍／預判參數／排隊上限（場景裡每隻鳥存的是舊值，改鳥身上沒用）
+            if (birdDetectionRange > 0f) b.detectionRange = birdDetectionRange;
+            if (birdMaxPredictionTime > 0f) b.maximumPredictionTime = birdMaxPredictionTime;
+            if (birdPredictionDistanceLimit > 0f) b.predictionDistanceLimit = birdPredictionDistanceLimit;
+            if (birdMaxQueueWaitSeconds > 0f) b.maxQueueWaitSeconds = birdMaxQueueWaitSeconds;
+            b.retreatInsteadOfKill = !birdHitRespawnsPlayer;   // 場景裡每隻鳥存的是 true（逼退），統一由導演決定
 
             if (x < beat1End)
             {
@@ -319,6 +394,117 @@ public class DesertBeatDirector : MonoBehaviour
            .Append("、拍二留 ").Append(beat2Kept).Append(" 去 ").Append(thinned)
            .Append("、拍三錯開 ").Append(staggered).Append("、拍四移除 ").Append(removed4)
            .Append("、示範俯衝 ").Append(demoBird != null ? demoBird.name : "無").Append("）；");
+
+        // ★1006 鳥的分類（一次講清楚哪些是會攻擊的鳥、哪些是裝飾）
+        int totalComps = FindObjectsByType<IndividualBirdEnemy>(FindObjectsSortMode.None).Length;
+        int flocks = FindObjectsByType<ScatteredFlock>(FindObjectsSortMode.None).Length;
+        int flockBirds = 0;
+        foreach (ScatteredFlock f in FindObjectsByType<ScatteredFlock>(FindObjectsSortMode.None)) if (f != null) flockBirds += f.BirdCount;
+        int legacyOffset = 0;
+        foreach (IndividualBirdEnemy b in birds) if (b != null && b.behaviorType == BirdBehavior.PlayerOffset) legacyOffset++;
+        log.Append(" 分類：攻擊鳥（IndividualBirdEnemy）").Append(birds.Count).Append(" 隻（含子層重複元件共 ").Append(totalComps)
+           .Append(" 個）；裝飾鳥群（ScatteredFlock，不攻擊）").Append(flocks).Append(" 團共 ").Append(flockBirds)
+           .Append(" 隻；舊版 PlayerOffset 型 ").Append(legacyOffset).Append(" 隻（預設已改走統一的定點／預判）；");
+    }
+
+    /// <summary>
+    /// ★1008 逐隻檢查鳥的設定（Director 覆寫之前的「原始存檔值」）。只在 enableBirdAttackDebug 時印一次：
+    /// 每個欄位列出「多數值」與「異常的鳥」，另外檢查位置重疊、間距、高度、缺少元件。
+    /// </summary>
+    private void AuditBirds(List<IndividualBirdEnemy> birds)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.Append("[BIRD AUDIT] 攻擊鳥 ").Append(birds.Count).Append(" 隻（依 x 排序）。欄位為 Director 覆寫前的原始值。\n");
+
+        AuditField(sb, birds, "detectionRange", b => b.detectionRange.ToString("F1"));
+        AuditField(sb, birds, "warningDuration", b => b.warningDuration.ToString("F2"));
+        AuditField(sb, birds, "diveSpeed", b => b.diveSpeed.ToString("F1"));
+        AuditField(sb, birds, "behaviorType", b => b.behaviorType.ToString());
+        AuditField(sb, birds, "triggerMode", b => b.triggerMode.ToString());
+        AuditField(sb, birds, "autoDetectPlayer", b => b.autoDetectPlayer.ToString());
+        AuditField(sb, birds, "harmless", b => b.harmless.ToString());
+        AuditField(sb, birds, "overrideTarget", b => b.overrideTarget != null ? b.overrideTarget.name : "null");
+        AuditField(sb, birds, "enableRoutePrediction", b => b.enableRoutePrediction.ToString());
+        AuditField(sb, birds, "maximumPredictionTime", b => b.maximumPredictionTime.ToString("F1"));
+        AuditField(sb, birds, "predictionDistanceLimit", b => b.predictionDistanceLimit.ToString("F0"));
+        AuditField(sb, birds, "retreatInsteadOfKill", b => b.retreatInsteadOfKill.ToString());
+        AuditField(sb, birds, "showAttackTelegraph", b => b.showAttackTelegraph.ToString());
+        AuditField(sb, birds, "enableIdleHover", b => b.enableIdleHover.ToString());
+        AuditField(sb, birds, "scale", b => b.transform.lossyScale.x.ToString("F2"));
+        AuditField(sb, birds, "y(高度)", b => b.transform.position.y.ToString("F0"));
+        AuditField(sb, birds, "z", b => b.transform.position.z.ToString("F1"));
+
+        // 位置：重疊、間距、空洞
+        int overlaps = 0;
+        float minGap = float.MaxValue;
+        int holes = 0;
+        for (int i = 0; i < birds.Count; i++)
+        {
+            for (int j = i + 1; j < birds.Count; j++)
+            {
+                float dxx = birds[j].transform.position.x - birds[i].transform.position.x;
+                if (dxx > 0.3f) break;                       // 已排序，往後只會更遠
+                float d = Vector2.Distance(birds[i].transform.position, birds[j].transform.position);
+                if (d < 0.3f) { overlaps++; sb.Append("  重疊：").Append(birds[i].name).Append(" 與 ").Append(birds[j].name).Append(" 距離 ").Append(d.ToString("F2")).Append("m @x=").Append(birds[i].transform.position.x.ToString("F1")).Append('\n'); }
+            }
+            if (i > 0)
+            {
+                float gap = birds[i].transform.position.x - birds[i - 1].transform.position.x;
+                if (gap < minGap) minGap = gap;
+                if (gap > 12f) { holes++; sb.Append("  空洞：x=").Append(birds[i - 1].transform.position.x.ToString("F1")).Append(" → ").Append(birds[i].transform.position.x.ToString("F1")).Append("（無鳥 ").Append(gap.ToString("F1")).Append("m）\n"); }
+            }
+        }
+        sb.Append("  位置：重疊 ").Append(overlaps).Append(" 組、相鄰最小間距 ").Append(minGap.ToString("F2")).Append("m、大於 12m 的空洞 ").Append(holes).Append(" 處\n");
+
+        // 元件
+        int noRb = 0, noAnim = 0, inactive = 0, noCol = 0;
+        foreach (IndividualBirdEnemy b in birds)
+        {
+            if (!b.gameObject.activeInHierarchy) { inactive++; sb.Append("  未啟用：").Append(b.name).Append('\n'); }
+            if (b.GetComponent<Rigidbody>() == null) noRb++;
+            if (b.GetComponentInChildren<Animator>() == null) noAnim++;
+            if (b.GetComponentInChildren<Collider>() == null) noCol++;
+        }
+        sb.Append("  元件：無 Rigidbody ").Append(noRb).Append("（執行時會自動補）、無 Animator ").Append(noAnim).Append("、無 Collider ").Append(noCol).Append("、未啟用 ").Append(inactive).Append('\n');
+
+        // 每隻一行（x 排序）
+        sb.Append("  逐隻：name | x | y | 偵測 | 前搖 | 俯衝速 | behavior\n");
+        foreach (IndividualBirdEnemy b in birds)
+        {
+            Vector3 p = b.transform.position;
+            sb.Append("  ").Append(b.name).Append(" | ").Append(p.x.ToString("F1")).Append(" | ").Append(p.y.ToString("F1")).Append(" | ")
+              .Append(b.detectionRange.ToString("F0")).Append(" | ").Append(b.warningDuration.ToString("F1")).Append(" | ")
+              .Append(b.diveSpeed.ToString("F0")).Append(" | ").Append(b.behaviorType).Append('\n');
+        }
+        Debug.Log(sb.ToString());
+    }
+
+    private static void AuditField(System.Text.StringBuilder sb, List<IndividualBirdEnemy> birds, string label, System.Func<IndividualBirdEnemy, string> sel)
+    {
+        Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
+        foreach (IndividualBirdEnemy b in birds)
+        {
+            string v = sel(b);
+            List<string> l;
+            if (!groups.TryGetValue(v, out l)) { l = new List<string>(); groups[v] = l; }
+            l.Add(b.name);
+        }
+        string mode = null; int modeCount = -1;
+        foreach (var kv in groups) if (kv.Value.Count > modeCount) { mode = kv.Key; modeCount = kv.Value.Count; }
+        sb.Append("  ").Append(label).Append(": 多數=").Append(mode).Append("（").Append(modeCount).Append(" 隻）");
+        if (groups.Count > 1)
+        {
+            sb.Append(" ★有不同值：");
+            foreach (var kv in groups)
+            {
+                if (kv.Key == mode) continue;
+                sb.Append(kv.Key).Append("→").Append(kv.Value.Count).Append(" 隻[");
+                for (int i = 0; i < kv.Value.Count && i < 6; i++) sb.Append(i > 0 ? "," : "").Append(kv.Value[i]);
+                if (kv.Value.Count > 6) sb.Append("…");
+                sb.Append("] ");
+            }
+        }
+        sb.Append('\n');
     }
 
     /// <summary>示範俯衝落點：第一座假掩體（x ≥ beat1End）的背風面。</summary>
