@@ -148,7 +148,7 @@ public static class BirdAttackScheduler
         int hit = S("HIT"), retreat = S("RETREAT"), cancel = S("CANCEL"), removed = S("REMOVED");
         Debug.Log($"[BIRD STATS @{when}] Detection={detect} Queue={queued} WindBlock={S("BLOCK-WIND")} ShadowBlock={S("BLOCK-SHADOW")} " +
                   $"SchedulerBusy={S("BLOCK-BUSY")} OtherBlock={S("BLOCK-OTHER")} AttackStart(Slot)={slot} Lock={lockn} Dive={dive} " +
-                  $"Hit={hit} Retreat={retreat} Cancel={cancel} Removed={removed} DiveEndedByEnvironment={S("DIVE-ENV")}\n" +
+                  $"Hit={hit} Retreat={retreat} Cancel={cancel} Removed={removed} DiveEndedByEnvironment={S("DIVE-ENV")} ResetRefresh={S("RESET-REFRESH")} ResetDecor={S("RESET-DECOR")} ResetGone={S("RESET-GONE")}\n" +
                   $"  Detection→Queue={Pct(queued, detect)}  Queue→Attack={Pct(slot, queued)}  Attack→Dive={Pct(dive, slot)}  Dive→Hit/Retreat={Pct(hit + retreat, dive)}  佇列剩餘={_queue.Count}");
     }
 
@@ -212,6 +212,12 @@ public static class BirdAttackScheduler
         return Mathf.Clamp(Mathf.Max(1, maxSimultaneous) + bonus, 1, Mathf.Max(maxSimultaneous, maxSimultaneousHard));
     }
 
+    private static bool AnyWindFreeRequest()
+    {
+        for (int i = 0; i < _queue.Count; i++) if (_queue[i].bird != null && _queue[i].bird.IgnoresWind) return true;
+        return false;
+    }
+
     private static string ZoneName(int z) { return z == 0 ? "LEFT" : (z == 1 ? "CENTER" : "RIGHT"); }
 
     /// <summary>由 Runner 每幀呼叫一次。佇列為空時幾乎沒有成本。</summary>
@@ -227,10 +233,11 @@ public static class BirdAttackScheduler
         if (_queue.Count == 0) { _lastBlock = ""; return; }
 
         // 2. 全場阻擋：只延後，不丟需求（事件只在「開始被擋」那一刻記一次）
+        bool windPhase = IndividualBirdEnemy.IsWindPhase();
         string block = "";
         if (PlayerRespawnSystem.IsAnyRespawning || !PlayerRespawnSystem.IsPlayerMovingAfterRespawn) block = "OTHER";
         else if (UmbrellaZone.IsPlayerUnderUmbrella) block = "OTHER";
-        else if (IndividualBirdEnemy.IsWindPhase()) block = "WIND";
+        else if (windPhase && !AnyWindFreeRequest()) block = "WIND";
         else if (IndividualBirdEnemy.IsAllSuppressed) block = "SHADOW";
         else if (Time.time < _nextSlotTime || _active.Count >= EffectiveCap()) block = "BUSY";
 
@@ -268,6 +275,9 @@ public static class BirdAttackScheduler
             // 這樣風停時「前方剛偵測到的鳥」不會被「早就排著、現在已在身後或很遠的鳥」搶走名額。
             bool behind = dx * fwd < 0f;
             r.score = Mathf.Abs(dx) + (behind ? behindPenaltyMeters : 0f) - (Time.time - r.time) * agingMetersPerSecond;
+
+            // ★1012 風期間只放行「最後一座掩體之後」的鳥（它們不受風起風停限制）
+            if (windPhase && !r.bird.IgnoresWind) continue;
 
             if (IsBetter(r, oldestAny >= 0 ? _queue[oldestAny] : null)) oldestAny = i;
 

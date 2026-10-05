@@ -138,6 +138,24 @@ public class DesertBeatDirector : MonoBehaviour
     public float birdMaxQueueWaitSeconds = 8f;
     [Tooltip("★1009 被鳥俯衝命中一次就重生（0904 定案「鳥維持殺死」）。關閉＝改成只被逼退（1001 的實驗做法）。石化硬撐、護盾、無敵、演出鎖定、示範俯衝（harmless）的既有豁免不受影響")]
     public bool birdHitRespawnsPlayer = true;
+    [Tooltip("★1013 重生後，存檔點之前（玩家已經過了）還沒攻擊過的鳥是否還會從身後攻擊。取消＝只盤旋不攻擊（預設）。攻擊過的鳥一律永久消失、不刷新")]
+    public bool birdsBehindCheckpointCanAttack = false;
+    [Tooltip("★1012 最後一座掩體之後的鳥，不受風起風停限制（風吹時也會放行攻擊）。掩體區是「躲風＋躲鳥」，掩體之後只剩「躲鳥」。取消勾選＝全場都受風限制")]
+    public bool birdsIgnoreWindAfterLastShelter = true;
+    [Tooltip("★1012 不受風限制的起點 = 最後一座掩體的 x + 這個數字（公尺）。想讓更早的鳥也不受限制就填負數")]
+    public float windFreeMargin = 0f;
+
+    [Header("★1010 預判準度（微調）")]
+    [Tooltip("預判攻擊中，打「剛好攔截點」的比例 (0～1)。0.7＝七成很準、三成隨便。想更難調高，想更好躲調低")]
+    [Range(0f, 1f)] public float predictionPreciseChance = 0.7f;
+    [Tooltip("「很準」的攻擊相對攔截點再多（正）或少（負）幾公尺，沿玩家前進方向。0＝剛好；+1＝比剛好再前面 1 公尺")]
+    public float predictionPreciseOffset = 0f;
+    [Tooltip("「寬鬆」攻擊的偏移範圍下限 (公尺)，負＝落在她身後")]
+    public float predictionLooseMin = -5f;
+    [Tooltip("「寬鬆」攻擊的偏移範圍上限 (公尺)，正＝落在她前面")]
+    public float predictionLooseMax = 5f;
+    [Tooltip("俯衝命中玩家的距離 (公尺)，原本固定 1.1。稍微加大＝「剛好又稍微多一點打到」；不建議超過 2")]
+    public float birdHitRadius = 1.4f;
 
     [Header("找地面")]
     [Tooltip("射線找不到地面時用的 y（掩體柱腳大約在 -6.3）")]
@@ -223,6 +241,7 @@ public class DesertBeatDirector : MonoBehaviour
         log.Append("[DesertBeatDirector] 套用四拍（").Append(beat1End).Append("／").Append(beat2End).Append("／").Append(beat3End).Append("）：");
 
         BirdAttackScheduler.debugEnabled = enableBirdAttackDebug;
+        IndividualBirdEnemy.BehindCheckpointBirdsCanAttack = birdsBehindCheckpointCanAttack;
         BirdAttackScheduler.attackPattern = attackPattern;
         BirdAttackScheduler.slotInterval = slotIntervalSeconds;
         BirdAttackScheduler.attacksPerRound = attacksPerRound;
@@ -237,6 +256,7 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
 
         ApplyShelters(log);
+        ApplyWindFreeZone(log);
         ApplyBirds(log);
 
         if (enableGiantShadow) { GiantShadowPass.Install(giantShadowX); log.Append(" 鳥影@").Append(giantShadowX).Append('；'); }
@@ -246,6 +266,20 @@ public class DesertBeatDirector : MonoBehaviour
         if (enableBraceFrost)  { BraceFrostFX.Install();               log.Append(" 硬撐結霜；"); }
 
         Debug.Log(log.ToString());
+    }
+
+    private void ApplyWindFreeZone(System.Text.StringBuilder log)
+    {
+        IndividualBirdEnemy.WindFreeFromX = float.PositiveInfinity;
+        if (!birdsIgnoreWindAfterLastShelter) return;
+        float last = float.NegativeInfinity;
+        foreach (WindShelter ws in FindObjectsByType<WindShelter>(FindObjectsSortMode.None))
+        {
+            if (ws != null && ws.transform.position.x > last) last = ws.transform.position.x;
+        }
+        if (float.IsNegativeInfinity(last)) { log.Append(" 找不到掩體，鳥全場受風限制；"); return; }
+        IndividualBirdEnemy.WindFreeFromX = last + windFreeMargin;
+        log.Append(" 最後一座掩體 x=").Append(last.ToString("F1")).Append("，x>").Append((last + windFreeMargin).ToString("F1")).Append(" 的鳥不受風限制；");
     }
 
     private void ApplyShelters(System.Text.StringBuilder log)
@@ -327,6 +361,11 @@ public class DesertBeatDirector : MonoBehaviour
             if (birdPredictionDistanceLimit > 0f) b.predictionDistanceLimit = birdPredictionDistanceLimit;
             if (birdMaxQueueWaitSeconds > 0f) b.maxQueueWaitSeconds = birdMaxQueueWaitSeconds;
             b.retreatInsteadOfKill = !birdHitRespawnsPlayer;   // 場景裡每隻鳥存的是 true（逼退），統一由導演決定
+            b.predictionPreciseChance = predictionPreciseChance;
+            b.predictionPreciseOffset = predictionPreciseOffset;
+            b.predictionLooseMin = predictionLooseMin;
+            b.predictionLooseMax = predictionLooseMax;
+            b.hitRadius = birdHitRadius;
 
             if (x < beat1End)
             {

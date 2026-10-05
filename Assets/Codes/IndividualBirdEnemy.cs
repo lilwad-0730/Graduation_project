@@ -358,6 +358,22 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Range(0f, 20f)]
     public float predictionDistanceLimit = 7f;
 
+    [Header("★1010 預判準度（微調用；DesertBeatDirector 會統一覆蓋）")]
+    [Tooltip("預判攻擊中，打「剛好攔截點」的比例 (0～1)。其餘打寬鬆點。0.7＝七成很準、三成隨便")]
+    [Range(0f, 1f)] public float predictionPreciseChance = 0.7f;
+    [Tooltip("「很準」的攻擊相對攔截點再多（正）或少（負）幾公尺，沿玩家前進方向。0＝剛好；+1＝比剛好再前面 1 公尺")]
+    public float predictionPreciseOffset = 0f;
+    [Tooltip("「寬鬆」的攻擊相對攔截點的偏移範圍下限 (公尺)，沿玩家前進方向，負＝落在她身後")]
+    public float predictionLooseMin = -5f;
+    [Tooltip("「寬鬆」的攻擊相對攔截點的偏移範圍上限 (公尺)，正＝落在她前面")]
+    public float predictionLooseMax = 5f;
+    [Tooltip("俯衝命中玩家的距離 (公尺)。原本固定 1.1；稍微加大就是「剛好又稍微多一點打到」")]
+    public float hitRadius = 1.1f;
+
+    private int _predictCount = 0;
+    private bool _dbgPrecise = true;
+    private float _dbgOffset = 0f;
+
     [Header("★1001 命中逼退（沿玩家前進方向的反方向推）")]
     [Tooltip("命中時把玩家往後推，而不是直接觸發死亡重生。\n" +
              "關掉＝回到原本「命中即死」的行為（石化硬撐／護盾／無敵／harmless 的既有豁免不受影響）。")]
@@ -430,6 +446,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     /// <summary>吹風中或沙塵前兆中（荒原的 Wind Phase）。沿用 WindGustSystem 既有狀態，不另做一套。</summary>
     /// <summary>吹風中或沙塵前兆中（Wind Phase）。排程器用它決定要不要放行；沿用 WindGustSystem 的狀態，不另做一套。</summary>
+    /// <summary>★1012 最後一座掩體之後的鳥（x 大於這個值）不受風起風停限制：照常放行。掩體之前才是「躲風＋躲鳥」。由導演設定，預設無限大＝全部受限制。</summary>
+    public static float WindFreeFromX = float.PositiveInfinity;
+    public bool IgnoresWind { get { return originalPosition.x > WindFreeFromX; } }
+
     public static bool IsWindPhase()
     {
         WindGustSystem w = WindGustSystem.Instance;
@@ -450,6 +470,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private PlayerMovement _playerMove;
 
     /// <summary>全域壓制：Time.time 小於這個值時，所有鳥不偵測、不攻擊（鳥影掠地 6 秒／風停區永久）。換場景由 DesertBeatDirector 歸零。</summary>
+    /// <summary>★1013 重生後，存檔點之前（玩家已經過了）還沒攻擊過的鳥是否還能攻擊。false＝只盤旋不攻擊（預設）。攻擊過的鳥一律永久消失。由 DesertBeatDirector 設定。</summary>
+    public static bool BehindCheckpointBirdsCanAttack = false;
+    private bool _attackDisabled = false;
+
     public static float SuppressAllUntil = -1f;
     public static bool IsAllSuppressed => Time.time < SuppressAllUntil;
 
@@ -494,6 +518,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             // ★1006 只有「永久壓制」（風停區 x≥225，SuppressAllUntil＝無限大）才不偵測。
             //   鳥影掠地的 3.5 秒是有限壓制：照常偵測、建立需求，由排程器等壓制結束才放行（不再直接略過）。
             if (IsAllSuppressed && float.IsPositiveInfinity(SuppressAllUntil)) return;
+            if (_attackDisabled) return;   // ★1011 存檔點後面的裝飾鳥：只盤旋，不偵測
             if (PlayerRespawnSystem.IsAnyRespawning || !PlayerRespawnSystem.IsPlayerMovingAfterRespawn || UmbrellaZone.IsPlayerUnderUmbrella)
             {
                 return; // 重生過場中、玩家尚未主動開始移動、或在遮陽傘下安全避難，均不觸發攻擊
@@ -719,6 +744,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public void StartAttackSequence()
     {
         if (currentState != BirdState.Idle) return;
+        if (_attackDisabled) return;
 
         // ★1006 一般鳥：建立「攻擊需求」進排程器佇列，進 Pending（照常盤旋）。等放行才鎖定。
         //   示範俯衝（overrideTarget）或關掉排程器的鳥走舊路徑，直接開始。
@@ -742,7 +768,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (!_granted)
         {
             float legacyWait = 0f;
-            while ((queueAttackDuringWind && IsWindPhase()) || IsAllSuppressed)
+            while ((queueAttackDuringWind && IsWindPhase() && !IgnoresWind) || IsAllSuppressed)
             {
                 currentState = BirdState.Pending;
                 legacyWait += Time.deltaTime;
@@ -772,7 +798,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             BirdAttackScheduler.Log("LOCK", this,
                 $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} QueueWait={waited:F1}s " +
                 $"PlayerX={px:F1} vx={(_playerRb != null ? _playerRb.linearVelocity.x : 0f):F1} TargetX={_lockedDiveTarget.x:F1} Lead={(_lockedDiveTarget.x - px):F1} " +
-                $"[warn={warningDuration:F1} diveSpeed={diveSpeed:F1} predT={_dbgPredT:F2} maxPredT={maximumPredictionTime:F1} leadLimit={predictionDistanceLimit:F0} legacyType={(useLegacyBehaviorType ? behaviorType.ToString() : "off")}]");
+                $"[warn={warningDuration:F1} diveSpeed={diveSpeed:F1} predT={_dbgPredT:F2} {(_currentAttackType == BirdAttackType.PredictedPosition ? (_dbgPrecise ? "準" : "寬鬆") + "偏移" + _dbgOffset.ToString("F1") + "m" : "")} maxPredT={maximumPredictionTime:F1} leadLimit={predictionDistanceLimit:F0} legacyType={(useLegacyBehaviorType ? behaviorType.ToString() : "off")}]");
             BirdAttackScheduler.Log("WARNING", this, $"Duration={warningDuration:F1}s");
         }
 
@@ -911,7 +937,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 else
                 {
                     // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
-                    if (distToPlayer <= 1.1f)
+                    if (distToPlayer <= hitRadius)
                     {
                         // 主動石化硬撐中：她是石頭，啄不動，直接彈飛（企劃：按住不放＝抗風抗鳥）
                         PlayerPetrification pet = playerTrans.GetComponentInParent<PlayerPetrification>();
@@ -1262,26 +1288,48 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         float warnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
 
-        // ★1005 預判時間要用「真正的到達時間」＝前搖 ＋ 鳥飛到「預判落點」的時間。
-        //   原本只算鳥飛到玩家「現在位置」的時間，落點比實際晚到的玩家近很多；
-        //   再加上場景裡存的上限 1.2 秒、7 公尺，鳥打的點比玩家真正會到的地方少 4～5 公尺，
-        //   一路往前跑的玩家永遠早鳥一步跑過去（實測 109 次攻擊 0 次命中）。
-        //   落點在更前面 → 鳥飛得更遠 → 到達時間更長，所以迭代兩次收斂。上下限仍然夾住，保證可反應。
-        float predictedX = playerPos.x;
+        // ★1010 預判時間＝前搖 ＋ 鳥飛到「預判落點」的時間，是個不動點問題（落點越遠，鳥飛越久，時間越長，落點又更遠）。
+        //   1005 只迭代 2 次，沒收斂：實測鎖定時用的預判時間 2.23 秒，鳥實際 1.9 秒就到了落點，
+        //   落點比玩家真正會到的地方多 2 公尺左右，一直跑的玩家剛好在鳥到之前就過去了。
+        //   現在迭代到收斂（落點每次只會修正「玩家速度／鳥速度」≈ 0.5 倍，6 次誤差 < 2%）。
         float predictionTime = minimumPredictionTime;
-        for (int i = 0; i < 2; i++)
+        float travelTimeGuess = 0f;
+        float predictedX = playerPos.x;
+        float sgn = Mathf.Sign(playerVx);
+        for (int i = 0; i < 6; i++)
         {
             float dist = Vector2.Distance(new Vector2(transform.position.x, transform.position.y),
                                           new Vector2(predictedX, playerPos.y));
-            float travelTime = dist / Mathf.Max(0.1f, diveSpeed);
-            predictionTime = Mathf.Clamp((warnTime + travelTime) * predictionTimeMultiplier,
+            travelTimeGuess = dist / Mathf.Max(0.1f, diveSpeed);
+            predictionTime = Mathf.Clamp((warnTime + travelTimeGuess) * predictionTimeMultiplier,
                                          minimumPredictionTime, maximumPredictionTime);
-            float lead = Mathf.Clamp(playerVx * predictionTime, -predictionDistanceLimit, predictionDistanceLimit);
-            predictedX = playerPos.x + lead;
-            _dbgPredT = predictionTime;
-            _dbgPredLead = lead;
+            predictedX = playerPos.x + Mathf.Clamp(playerVx * predictionTime, -predictionDistanceLimit, predictionDistanceLimit);
         }
-        return predictedX;
+        float lead = predictedX - playerPos.x;
+
+        // ★1010 預判的「準度」：predictionPreciseChance（預設 70%）的攻擊打「剛好的攔截點」（再加 predictionPreciseOffset 公尺），
+        //   其餘打「寬鬆點」：在 intercept ± predictionLooseRange 之間（沿玩家前進方向，正＝更前面）隨便落。
+        //   用鳥名字＋第幾次預判做穩定雜湊，不是每次 Random：同一場同一隻鳥結果可重現。
+        _predictCount++;
+        float u1 = StableHash01(GetInstanceID() * 31 + _predictCount * 17 + 1);
+        float u2 = StableHash01(GetInstanceID() * 131 + _predictCount * 71 + 7);
+        bool precise = u1 < Mathf.Clamp01(predictionPreciseChance);
+        float offset = precise
+            ? predictionPreciseOffset
+            : Mathf.Lerp(predictionLooseMin, predictionLooseMax, u2);
+        float finalLead = Mathf.Clamp(lead + sgn * offset, -predictionDistanceLimit - Mathf.Abs(predictionLooseMax), predictionDistanceLimit + Mathf.Abs(predictionLooseMax));
+        _dbgPredT = predictionTime;
+        _dbgPredLead = finalLead;
+        _dbgPrecise = precise;
+        _dbgOffset = sgn * offset;
+        return playerPos.x + finalLead;
+    }
+
+    // 穩定的 0..1 偽亂數（同樣的輸入永遠同樣的結果）
+    private static float StableHash01(int seed)
+    {
+        float s = Mathf.Sin(seed * 12.9898f) * 43758.5453f;
+        return s - Mathf.Floor(s);
     }
 
     /// <summary>
@@ -1721,11 +1769,18 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 檢查存檔點進度：
         // 若當前存檔點已經推進到這隻鳥的原點之後 (代表玩家已通過該存檔點且該鳥已死亡/攻擊過)，則該鳥永久保持死亡消失！
         Vector3 currentCheckpoint = PlayerRespawnSystem.ActiveRespawnPosition;
-        if (hasAttackedOrDied && currentCheckpoint != Vector3.zero && (originalPosition.x <= currentCheckpoint.x + 1.0f))
+        bool behindCheckpoint = currentCheckpoint != Vector3.zero && (originalPosition.x <= currentCheckpoint.x + 1.0f);
+        // 存檔點之前（玩家已經過了的區段）：攻擊過的鳥永久消失，不刷新。
+        if (hasAttackedOrDied && behindCheckpoint)
         {
+            BirdAttackScheduler.Stat("RESET-GONE");
             gameObject.SetActive(false);
             return;
         }
+
+        // ★1013 存檔點之前還沒攻擊過的鳥：保持原樣盤旋，但這一輪不再偵測、不從身後攻擊（BehindCheckpointBirdsCanAttack 可開）。
+        _attackDisabled = behindCheckpoint && !BehindCheckpointBirdsCanAttack;
+        BirdAttackScheduler.Stat(_attackDisabled ? "RESET-DECOR" : "RESET-REFRESH");
 
         // 尚未通過的存檔點前方鳥敵人：完全刷新重生！
         hasAttackedOrDied = false;
