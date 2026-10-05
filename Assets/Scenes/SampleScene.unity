@@ -9014,7 +9014,6 @@ MonoBehaviour:
   m_Script: {fileID: 764476860}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 2027794883}
 --- !u!65 &710415345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9063,7 +9062,6 @@ MonoBehaviour:
   m_Script: {fileID: 790408030}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 0}
 --- !u!114 &710415348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9076,7 +9074,6 @@ MonoBehaviour:
   m_Script: {fileID: 1790199341}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 0}
 --- !u!114 &710415349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9089,7 +9086,6 @@ MonoBehaviour:
   m_Script: {fileID: 1816474421}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
-  controller: {fileID: 0}
 --- !u!114 &710415350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22948,7 +22944,7 @@ MonoBehaviour:
   mass: 20
   impactSFX: {fileID: 8300000, guid: c82b1f686d675c44d807751e599e7df2, type: 3}
   impactVolume: 0.9
-  slopePushVisualPull: 1.1
+  slopePushVisualPull: 1.2
   slopePushVisualSmooth: 8
   boulderAcceleration: 12
   boulderBraking: 10
@@ -26771,7 +26767,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a012019dab7e5847b1837a8e13e03c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TornadoFollowCamera
-  enableSweep: 1
+  enableSweep: 0
   sweepDistance: 20
   sweepSpeed: 1.6
   autoFollowOnStart: 0
