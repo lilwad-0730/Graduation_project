@@ -111,6 +111,11 @@ public class CameraTargetXFollower : MonoBehaviour
     [Tooltip("Falling Mode 下 Y 軸垂直追隨基礎速度 (高速墜落時會自動加速跟隨)")]
     public float fallingFollowSpeed = 18f;
 
+    [Tooltip("★1006 從 Mario 模式切進 Falling 模式時，主角要比墜落通道頂端低多少（米）才算真的掉進去。"
+           + "棉花堡第二個金色台階下方的地面和往廢墟的墜落通道（FALLING/connect_0 (1)）頂端重疊，"
+           + "原本走在那段地上鏡頭就被切成墜落畫面。已經在墜落中則照原本的範圍（頂端上方 1 米）判定。")]
+    public float fallingEntryDepth = 4f;
+
     [Header("🪨 巨石重量回饋（只在 Mario 模式、只影響 Y）")]
     [Tooltip("玩家真正在推巨石時，鏡頭額外往下沉一點。關掉＝完全回到修改前的行為")]
     public bool enableBoulderCameraWeightFeedback = true;
@@ -486,11 +491,14 @@ public class CameraTargetXFollower : MonoBehaviour
     public Bounds? GetActiveFallingBounds(Vector3 playerPos)
     {
         if (_fallingBoundsList == null || _fallingBoundsList.Count == 0) return null;
+        // ★1006 要真的掉進通道（低於頂端 fallingEntryDepth）才切進墜落模式；已在墜落模式中照原本的寬容（頂端上方 1 米）
+        bool alreadyFalling = currentMode == CameraMode.Falling;
         for (int i = 0; i < _fallingBoundsList.Count; i++)
         {
             Bounds b = _fallingBoundsList[i];
+            float topY = alreadyFalling ? b.max.y + 1f : b.max.y - fallingEntryDepth;
             if (playerPos.x >= b.min.x - 3f && playerPos.x <= b.max.x + 3f &&
-                playerPos.y >= b.min.y - 1f && playerPos.y <= b.max.y + 1f)
+                playerPos.y >= b.min.y - 1f && playerPos.y <= topY)
             {
                 return b;
             }
