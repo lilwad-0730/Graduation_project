@@ -335,7 +335,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         // ===================================
         // ★ 水下跳過：這套判定是為荒原「被鳥往左撞飛」寫的 (向左速度 + 向左飛行距離)，
         //   水中橫向游動或水流都可能達到門檻而誤觸發重生，而且水下本來就沒有擊飛機制。
-        if (_playerRb != null && !_isRespawning && !IsUnderwaterLevel())
+        if (_playerRb != null && !_isRespawning && !IsUnderwaterLevel() && !BoulderChallengeController.IsFailing)
         {
             // 1. 如果突然承受巨大的向左速度 (小於 -8 代表絕對是被鳥衝撞而不是走路，因走路最快才 -5)
             if (!_inKnockbackState && _playerRb.linearVelocity.x < knockbackVelocityThreshold)
@@ -399,7 +399,7 @@ public class PlayerRespawnSystem : MonoBehaviour
         // 放坑洞底部的死亡判定區
         else if (other.CompareTag("DeathZone") || other.name.Contains("DeathZone"))
         {
-            if (!_isRespawning)
+            if (!_isRespawning && !BoulderChallengeController.IsFailing)
             {
                 Debug.Log("【墜崖死亡】玩家碰到 DeathZone，觸發重生！");
                 TriggerRespawn();

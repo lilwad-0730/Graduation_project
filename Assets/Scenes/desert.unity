@@ -899,6 +899,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -1218,6 +1220,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -2087,6 +2091,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -2397,6 +2403,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -2593,6 +2601,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -2799,6 +2809,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -3000,6 +3012,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -3305,6 +3319,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -3506,6 +3522,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -8858,6 +8876,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -9054,6 +9074,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -9201,6 +9223,9 @@ MonoBehaviour:
   predictionLooseMin: -5
   predictionLooseMax: 5
   birdHitRadius: 1.8
+  birdDescentSpeed: 3
+  birdAlignSpeed: 7
+  birdShowTelegraph: 0
   groundFallbackY: -6.3
   groundRayZ: -1
 --- !u!4 &281887064
@@ -9369,6 +9394,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -9869,6 +9896,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -10058,7 +10087,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.505089, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.5304165, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10285,6 +10314,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -10599,6 +10630,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -10929,6 +10962,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -11130,6 +11165,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -11336,6 +11373,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -11537,6 +11576,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -11738,6 +11779,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -12210,6 +12253,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -12619,6 +12664,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -12815,6 +12862,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -13889,6 +13938,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -14090,6 +14141,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -14656,6 +14709,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -14852,6 +14907,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -15058,6 +15115,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -15269,6 +15328,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -15372,7 +15433,7 @@ Transform:
   m_GameObject: {fileID: 498734890}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 5.3441486, y: 1.62, z: -0.028583795}
+  m_LocalPosition: {x: 5.3441486, y: 9.1, z: -0.028583795}
   m_LocalScale: {x: 2.8915, y: 2.8915, z: 2.8915}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15639,6 +15700,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -15840,6 +15903,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -16892,6 +16957,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -17296,6 +17363,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -17606,6 +17675,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -17802,6 +17873,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -18104,6 +18177,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -19211,6 +19286,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -19521,6 +19598,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -19717,6 +19796,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -19918,6 +19999,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -19999,7 +20082,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.505089, y: 5.29, z: 0}
+  m_LocalPosition: {x: 16.530416, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20308,6 +20391,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -20509,6 +20594,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -20710,6 +20797,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -21137,6 +21226,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -21338,6 +21429,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -22179,6 +22272,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -22732,6 +22827,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -22928,6 +23025,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -23129,6 +23228,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -23530,6 +23631,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -23731,6 +23834,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -23937,6 +24042,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -24351,6 +24458,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -24547,6 +24656,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -24748,6 +24859,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -25058,6 +25171,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -25254,6 +25369,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -25613,6 +25730,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -25968,6 +26087,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -26332,6 +26453,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -26775,6 +26898,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -27109,6 +27234,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -27604,6 +27731,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -27810,6 +27939,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -28070,6 +28201,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -28271,6 +28404,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -33422,6 +33557,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -33831,6 +33968,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -34508,6 +34647,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -34704,6 +34845,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -34905,6 +35048,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -35106,6 +35251,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -35360,6 +35507,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -35791,6 +35940,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -35992,6 +36143,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -36198,6 +36351,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -41447,6 +41602,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -41798,6 +41955,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -41994,6 +42153,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -42427,6 +42588,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -47530,6 +47693,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -47835,6 +48000,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -48127,6 +48294,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -48550,6 +48719,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -48746,6 +48917,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -48947,6 +49120,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -49153,6 +49328,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -49445,6 +49622,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -49755,6 +49934,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -49951,6 +50132,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -50567,6 +50750,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -50931,6 +51116,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -51223,6 +51410,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -51424,6 +51613,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -51630,6 +51821,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -52017,6 +52210,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -52530,6 +52725,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -52844,6 +53041,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -53158,6 +53357,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -53364,6 +53565,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -53565,6 +53768,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -53857,6 +54062,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -54058,6 +54265,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -54264,6 +54473,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -54470,6 +54681,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -54671,6 +54884,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -54872,6 +55087,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -55182,6 +55399,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -55378,6 +55597,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -55579,6 +55800,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -55958,6 +56181,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -56362,6 +56587,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -56563,6 +56790,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -57004,6 +57233,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -57210,6 +57441,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -57510,6 +57743,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -57716,6 +57951,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -58016,6 +58253,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -58217,6 +58456,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -58418,6 +58659,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -58718,6 +58961,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -59018,6 +59263,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -59219,6 +59466,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -59425,6 +59674,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -59725,6 +59976,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -60116,6 +60369,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -60317,6 +60572,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -60716,6 +60973,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -61008,6 +61267,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -61209,6 +61470,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -61519,6 +61782,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -61715,6 +61980,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -62034,6 +62301,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -62235,6 +62504,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -62631,6 +62902,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -62832,6 +63105,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -63509,6 +63784,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -63710,6 +63987,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -68846,6 +69125,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -69047,6 +69328,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -69248,6 +69531,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -69454,6 +69739,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -69746,6 +70033,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -70000,6 +70289,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -70206,6 +70497,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -70407,6 +70700,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -70717,6 +71012,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -70913,6 +71210,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -71119,6 +71418,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -71452,6 +71753,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -71653,6 +71956,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -71945,6 +72250,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -72146,6 +72453,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -72352,6 +72661,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -72652,6 +72963,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -72858,6 +73171,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -73059,6 +73374,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -73351,6 +73668,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -73651,6 +73970,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -73852,6 +74173,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -74211,6 +74534,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -74556,6 +74881,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -74757,6 +75084,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -75049,6 +75378,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -75341,6 +75672,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -75466,7 +75799,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.505089, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.5304165, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -75782,6 +76115,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -76173,6 +76508,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -76473,6 +76810,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -76910,6 +77249,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -77237,6 +77578,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -77438,6 +77781,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -77738,6 +78083,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -78198,6 +78545,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -78508,6 +78857,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -78704,6 +79055,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 1
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -78905,6 +79258,8 @@ MonoBehaviour:
   detectionRange: 10
   behaviorType: 0
   diveSpeed: 12
+  diveDescentSpeed: 3
+  diveAlignSpeed: 7
   targetOffset: 3
   warningDuration: 1.2
   stuckDuration: 2
@@ -79014,7 +79369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 40.69305
+      value: 40.741173
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
