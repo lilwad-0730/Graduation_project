@@ -33,6 +33,16 @@ using UnityEngine.Video;
 /// 廢墟第一次死亡＝被狼咬滿，或死的時候她在廢墟高度（y 低於 ruinsBelowY；棉花堡在天上，掉出雲的死亡不算）。
 /// 一輪遊戲只播一次：之後的死亡直接黑幕；回到主選單（下一位玩家）才重設。找不到影片就照 version 播漫畫（只限被狼咬滿）。
 ///
+/// ★1007 改成程式播 D 版漫畫（M：「然後加上廢墟第一次被狼群追擊死亡後出現漫畫」→ 選「改成程式播的 D 版漫畫」）：
+/// useVideo 預設關、version 預設 D。影片檔還在 Resources，要換回影片就把 useVideo 預設改回 true。
+/// 「被狼群追擊而死」三種都算：
+///   1. 咬滿 PlayerMovement.wolvesToRespawn 隻。1001 起死亡門檻和減速分母 maxWolvesToStop 分開了；
+///      原本拿 maxWolvesToStop（6）判斷，場上最多 5 隻狼，所以漫畫永遠不會播（影片靠「在廢墟死亡」那條才播得出來）。
+///   2. 巨石挑戰中被第一隻狼咬到而失敗（BoulderChallengeController 接手：巨石下滾 → 重置）。
+///   3. 在廢墟死掉時身上還咬著狼（例如被拖下坑）。
+/// 巨石挑戰失敗時，重生要等巨石滾完才開始，所以格 1 用「被咬到那一刻」先截好的畫面，不是滾完之後的畫面。
+/// 測試：Play 模式下，Player 身上這個元件右鍵 →「測試：現在播第一次死亡漫畫」。
+///
 /// 場景不用改：載入有 WolfEnemy 的場景時自動掛到 Player。
 /// </summary>
 [DisallowMultipleComponent]
@@ -44,9 +54,9 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     public enum StoryVersion { A_PageBuild, B_GuidedView, C_VerticalStrip, D_FreezeFrame, E_Storybook }
 
-    [Header("影片（1006，優先）")]
-    [Tooltip("有影片就播影片，優先於下面的漫畫版本；找不到影片才照 version 播漫畫")]
-    public bool useVideo = true;
+    [Header("影片（1006；1007 起預設關）")]
+    [Tooltip("★1007 預設關：M 改用程式播的 D 版漫畫（格 1 是死亡那一刻的實機畫面）。\n打開＝有影片就播影片，優先於下面的漫畫版本；找不到影片才照 version 播漫畫")]
+    public bool useVideo = false;
     [Tooltip("Resources 裡的影片（不含副檔名）。預設是 D7 連續世界版的預覽影片（20.5 秒、1280×720、無聲）；換影片就用同名檔覆蓋")]
     public string videoResource = "RespawnStory/Video/first_death";
     [Tooltip("也可以直接指定影片（優先於 videoResource）")]
@@ -64,7 +74,7 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     [Header("版本（1003）")]
     [Tooltip("A 頁面逐格：一頁三格一格一格疊上去\nB 導覽鏡頭：直式漫畫頁，鏡頭一格一格推進再拉回整頁\nC 直式條漫（1004 再設計）：七拍往下捲——光被夾住、同格反覆、滾、蝕、塵成星、醒、坡\nD 定格分格（1004 連續世界版）：被咬滿那一刻的實機畫面定格成格 1（一張照片），同一張頁面上接六格——倒下、往崖邊滾回、落下狼四散、山腳（她的光沿著巨石的路下來）、再推、狼又跟在身後；每一列是同一片連續的夜山，鏡頭跟著巨石與她的光走\nE 繪本翻頁：團隊繪本頁（廢-12 → 黑頁 → 廢-8）")]
-    public StoryVersion version = StoryVersion.A_PageBuild;
+    public StoryVersion version = StoryVersion.D_FreezeFrame;   // ★1007 預設 D（原本 A）
     [Tooltip("B：整頁停、移到格1、停、移到格2、停、移到格3、停、拉回整頁、停、淡出")]
     public float[] guidedTimes = new float[] { 0.6f, 0.9f, 2.0f, 0.8f, 2.6f, 0.9f, 2.6f, 1.0f, 1.0f, 0.6f };
     [Tooltip("C：每一停的視窗上緣（條漫像素，條寬 1820、每塊 1024、畫面一次看 1024）\n0 光被夾住｜1 同格反覆｜2 蝕｜3 塵成星・一點光｜4 醒｜5 山頂光球｜6 坡底・她又把手放上去")]
@@ -140,6 +150,11 @@ public class FirstWolfDeathStory : MonoBehaviour
     private float _originalBlackTime = -1f;
     private Coroutine _routine;
     private readonly System.Collections.Generic.List<Texture2D> _loaded = new System.Collections.Generic.List<Texture2D>();   // B–E 播完要卸掉的貼圖
+    private bool _wasFailing = false;      // ★1007 巨石挑戰失敗的開始（第一隻狼咬到）
+    private Texture2D _failCapture;        // ★1007 失敗那一刻先截好的畫面（D 版格 1）
+    private int _prevAttached = 0;         // ★1007 上一幀身上咬著幾隻狼（重生偵測晚一幀時用）
+    private bool _testNext = false;        // ★1007 測試：下一次重生當成被狼群追擊而死
+    private string _why = "";
 
     // ── 自動掛載 ─────────────────────────────────────────────
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -186,28 +201,44 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     private void Update()
     {
+        // ★1007 巨石挑戰失敗的那一刻（第一隻狼咬到）先截好畫面：重生要等巨石滾完才開始，那時已經不是「被咬」的畫面
+        bool failing = BoulderChallengeController.IsFailing;
+        if (failing && !_wasFailing) OnBoulderFailStarted();
+        _wasFailing = failing;
+
         bool now = PlayerRespawnSystem.IsAnyRespawning;
         if (now && !_wasRespawning) OnRespawnStarted();
         _wasRespawning = now;
+        if (_pm != null) _prevAttached = _pm.attachedWolvesCount;
     }
 
     private void OnRespawnStarted()
     {
-        if (!Enabled || _pm == null || _rs == null) return;
-        if (onlyOnce && ShownThisRun) return;
-        int max = Mathf.Max(1, Mathf.RoundToInt(_pm.maxWolvesToStop));
-        bool wolfDeath = _pm.attachedWolvesCount >= max;
+        if (!Enabled || _pm == null || _rs == null) { DropFailCapture(); return; }
+        if (onlyOnce && ShownThisRun) { DropFailCapture(); return; }
+
+        // ★1007 被狼群追擊而死：咬滿死亡門檻（wolvesToRespawn；原本拿減速分母 maxWolvesToStop＝6 判斷，永遠達不到）、
+        //   巨石挑戰中被第一隻狼咬到而失敗、或在廢墟死掉時身上還咬著狼
+        int attached = Mathf.Max(_pm.attachedWolvesCount, _prevAttached);
+        int killW = Mathf.Max(1, _pm.wolvesToRespawn);
+        bool inRuins = _pm.transform.position.y < ruinsBelowY;
+        bool bitten = attached >= killW;
+        bool boulderFail = BoulderChallengeController.IsFailing;
+        bool dragged = inRuins && attached > 0;
+        bool wolfDeath = _testNext || bitten || boulderFail || dragged;
+        _why = _testNext ? "測試" : bitten ? "被狼咬滿 " + attached + " 隻" : boulderFail ? "巨石挑戰中被狼咬到" : dragged ? "死的時候身上咬著 " + attached + " 隻狼" : "";
+        _testNext = false;
 
         // ★1006 影片：廢墟第一次死亡（被狼咬滿，或在廢墟高度死掉）
         if (useVideo)
         {
-            bool inRuins = _pm.transform.position.y < ruinsBelowY;
-            if ((wolfDeath || (videoOnAnyRuinsDeath && inRuins)) && TryStartVideo(wolfDeath ? "被狼咬滿" : "在廢墟死亡（y " + _pm.transform.position.y.ToString("F0") + "）")) return;
+            if ((wolfDeath || (videoOnAnyRuinsDeath && inRuins)) && TryStartVideo(wolfDeath ? _why : "在廢墟死亡（y " + _pm.transform.position.y.ToString("F0") + "）")) { DropFailCapture(); return; }
         }
 
-        if (!wolfDeath) return;   // 漫畫只在被狼咬滿時播（鳥、石化、溺水…都不播）
+        if (!wolfDeath) { DropFailCapture(); return; }   // 漫畫只在被狼群追擊而死時播（鳥、石化、溺水、沒被狼咬的掉坑…都不播）
 
         if (version != StoryVersion.A_PageBuild && TryStartVersion()) return;
+        DropFailCapture();
 
         Sprite[] sprites = LoadPanels();
         if (sprites == null || sprites.Length == 0)
@@ -222,8 +253,44 @@ public class FirstWolfDeathStory : MonoBehaviour
         if (accumulateLayers) total += Mathf.Max(0.05f, pageFadeOut);
         _originalBlackTime = _rs.blackScreenTime;
         _rs.blackScreenTime = Mathf.Max(_originalBlackTime, total + 0.3f);   // 重生協程在黑幕蓋上後才讀這個值
-        if (logEvents) Debug.Log("[FirstWolfDeathStory] 第一次被狼咬滿：播 A 頁面逐格，黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
+        if (logEvents) Debug.Log("[FirstWolfDeathStory] 廢墟第一次被狼群追擊而死（" + _why + "）：播 A 頁面逐格，黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
         _routine = StartCoroutine(PlayRoutine(sprites));
+    }
+
+    // ── 巨石挑戰失敗的畫面（1007） ─────────────────────────────
+    private void OnBoulderFailStarted()
+    {
+        if (!Enabled || useVideo || (onlyOnce && ShownThisRun)) return;
+        if (version != StoryVersion.D_FreezeFrame) return;   // 只有 D 版的格 1 用實機畫面
+        StartCoroutine(CaptureFailFrame());
+    }
+
+    private IEnumerator CaptureFailFrame()
+    {
+        yield return new WaitForEndOfFrame();
+        Texture2D cap = null;
+        try { cap = ScreenCapture.CaptureScreenshotAsTexture(); }
+        catch (System.Exception e) { Debug.LogWarning("[FirstWolfDeathStory] 巨石挑戰失敗那一刻截不到圖，格 1 改用重生那一刻：" + e.Message); }
+        if (cap == null) yield break;
+        DropFailCapture();
+        _failCapture = cap;
+        if (logEvents) Debug.Log("[FirstWolfDeathStory] 巨石挑戰失敗（第一隻狼咬到）：先截好漫畫格 1 的畫面");
+    }
+
+    private void DropFailCapture()
+    {
+        if (_failCapture != null) Destroy(_failCapture);
+        _failCapture = null;
+    }
+
+    [ContextMenu("測試：現在播第一次死亡漫畫")]
+    private void TestPlayNow()
+    {
+        if (!Application.isPlaying) { Debug.Log("[FirstWolfDeathStory] 要在 Play 模式下用"); return; }
+        if (_rs == null || PlayerRespawnSystem.IsAnyRespawning) { Debug.Log("[FirstWolfDeathStory] 現在不能測：找不到重生系統，或正在重生"); return; }
+        ShownThisRun = false;
+        _testNext = true;
+        _rs.TriggerRespawn();   // 跟真的死掉一樣走重生（回到目前的存檔點）
     }
 
     // ── 影片（1006） ─────────────────────────────────────────
@@ -481,7 +548,7 @@ public class FirstWolfDeathStory : MonoBehaviour
                     float[] ph = (pageHolds != null && pageHolds.Length == n) ? pageHolds : (float[])set.spec.holds.Clone();
                     float[] pm = (pageMoves != null && pageMoves.Length == n) ? pageMoves : (float[])set.spec.moves.Clone();
                     if (logEvents) Debug.Log("[FirstWolfDeathStory] D：頁面版面＝" + set.spec.label + ((ph != pageHolds || pm != pageMoves) ? "；Inspector 的停點數不是 " + n + "，用這個版面的預設節奏" : ""));
-                    if (logEvents && set.page.width < 3000) Debug.LogWarning("[FirstWolfDeathStory] D：頁面圖只有 " + set.page.width + "×" + set.page.height + "，推近會糊。選單「我你他/1001 推進/重新匯入 D 完整頁面圖」");
+                    if (logEvents && set.page.width < 3000) Debug.LogWarning("[FirstWolfDeathStory] D：頁面圖只有 " + set.page.width + "×" + set.page.height + "，推近會糊。Project 視窗右鍵 page.png →「Reimport」（RespawnStoryImport 會設成原尺寸）");
                     bool camOn = pageCamera;
                     float sp = pageSpeed;
                     total = RespawnComicPlayer.DurationDPage(ph, pm, sp);
@@ -522,7 +589,7 @@ public class FirstWolfDeathStory : MonoBehaviour
         // D 從死亡那一刻就蓋上（黑幕淡入的 fadeDuration 也算在裡面）；其他版等黑幕蓋上才開始
         float need = startsAtDeath ? total - _rs.fadeDuration + 0.2f : total + 0.3f;
         _rs.blackScreenTime = Mathf.Max(_originalBlackTime, need);
-        if (logEvents) Debug.Log("[FirstWolfDeathStory] 第一次被狼咬滿：播 " + version + "（" + total.ToString("F1") + " 秒），黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
+        if (logEvents) Debug.Log("[FirstWolfDeathStory] 廢墟第一次被狼群追擊而死（" + _why + "）：播 " + version + "（" + total.ToString("F1") + " 秒），黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
         _routine = StartCoroutine(Run(play));
         return true;
     }
@@ -582,10 +649,19 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     private IEnumerator FreezeRoutine(System.Func<Texture2D, IEnumerator> makePlay)
     {
-        yield return new WaitForEndOfFrame();   // 等這一幀畫完再截（黑幕這時幾乎還是透明的）
         Texture2D cap = null;
-        try { cap = ScreenCapture.CaptureScreenshotAsTexture(); }
-        catch (System.Exception e) { Debug.LogWarning("[FirstWolfDeathStory] 截圖失敗，第一格用黑畫面：" + e.Message); }
+        if (_failCapture != null)
+        {
+            // ★1007 巨石挑戰失敗：格 1 用被咬到那一刻先截好的畫面
+            cap = _failCapture;
+            _failCapture = null;
+        }
+        else
+        {
+            yield return new WaitForEndOfFrame();   // 等這一幀畫完再截（黑幕這時幾乎還是透明的）
+            try { cap = ScreenCapture.CaptureScreenshotAsTexture(); }
+            catch (System.Exception e) { Debug.LogWarning("[FirstWolfDeathStory] 截圖失敗，第一格用黑畫面：" + e.Message); }
+        }
         UIRoot();
         _canvas.gameObject.SetActive(true);
         yield return makePlay(cap);
@@ -774,6 +850,7 @@ public class FirstWolfDeathStory : MonoBehaviour
     {
         FreezeWolves(false);
         CleanupVideo();
+        DropFailCapture();
         if (_canvas != null) Destroy(_canvas.gameObject);
         if (_rs != null && _originalBlackTime >= 0f) _rs.blackScreenTime = _originalBlackTime;
     }
