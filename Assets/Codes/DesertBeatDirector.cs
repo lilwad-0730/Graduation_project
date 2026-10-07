@@ -157,6 +157,14 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("俯衝命中玩家的距離 (公尺)，原本固定 1.1。稍微加大＝「剛好又稍微多一點打到」；不建議超過 2")]
     public float birdHitRadius = 1.4f;
 
+    [Header("★1015 垂直慢速墜落（開局統一覆蓋每隻鳥）")]
+    [Tooltip("下降階段垂直速度 (公尺/秒)。0＝不覆蓋。3＝慢速彈幕，想更慢 2.5、更快 4")]
+    public float birdDescentSpeed = 3f;
+    [Tooltip("下降前水平對準的最高速度 (公尺/秒)。0＝不覆蓋。不建議超過 10")]
+    public float birdAlignSpeed = 7f;
+    [Tooltip("是否顯示既有的紅色攻擊輔助線。企劃決定先不做提示，預設取消勾選（所有鳥統一覆蓋）")]
+    public bool birdShowTelegraph = false;
+
     [Header("找地面")]
     [Tooltip("射線找不到地面時用的 y（掩體柱腳大約在 -6.3）")]
     public float groundFallbackY = -6.3f;
@@ -366,6 +374,9 @@ public class DesertBeatDirector : MonoBehaviour
             b.predictionLooseMin = predictionLooseMin;
             b.predictionLooseMax = predictionLooseMax;
             b.hitRadius = birdHitRadius;
+            if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed;
+            if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed;
+            b.showAttackTelegraph = birdShowTelegraph;
 
             if (x < beat1End)
             {
@@ -457,7 +468,9 @@ public class DesertBeatDirector : MonoBehaviour
 
         AuditField(sb, birds, "detectionRange", b => b.detectionRange.ToString("F1"));
         AuditField(sb, birds, "warningDuration", b => b.warningDuration.ToString("F2"));
-        AuditField(sb, birds, "diveSpeed", b => b.diveSpeed.ToString("F1"));
+        AuditField(sb, birds, "diveSpeed(legacy)", b => b.diveSpeed.ToString("F1"));
+        AuditField(sb, birds, "diveDescentSpeed", b => b.diveDescentSpeed.ToString("F1"));
+        AuditField(sb, birds, "diveAlignSpeed", b => b.diveAlignSpeed.ToString("F1"));
         AuditField(sb, birds, "behaviorType", b => b.behaviorType.ToString());
         AuditField(sb, birds, "triggerMode", b => b.triggerMode.ToString());
         AuditField(sb, birds, "autoDetectPlayer", b => b.autoDetectPlayer.ToString());
@@ -507,12 +520,13 @@ public class DesertBeatDirector : MonoBehaviour
         sb.Append("  元件：無 Rigidbody ").Append(noRb).Append("（執行時會自動補）、無 Animator ").Append(noAnim).Append("、無 Collider ").Append(noCol).Append("、未啟用 ").Append(inactive).Append('\n');
 
         // 每隻一行（x 排序）
-        sb.Append("  逐隻：name | x | y | 偵測 | 前搖 | 俯衝速 | behavior\n");
+        sb.Append("  逐隻：name | x | y | 偵測 | 前搖 | 下降速 | 對準速 | legacy俯衝速 | behavior\n");
         foreach (IndividualBirdEnemy b in birds)
         {
             Vector3 p = b.transform.position;
             sb.Append("  ").Append(b.name).Append(" | ").Append(p.x.ToString("F1")).Append(" | ").Append(p.y.ToString("F1")).Append(" | ")
               .Append(b.detectionRange.ToString("F0")).Append(" | ").Append(b.warningDuration.ToString("F1")).Append(" | ")
+              .Append(b.diveDescentSpeed.ToString("F1")).Append(" | ").Append(b.diveAlignSpeed.ToString("F1")).Append(" | ")
               .Append(b.diveSpeed.ToString("F0")).Append(" | ").Append(b.behaviorType).Append('\n');
         }
         Debug.Log(sb.ToString());

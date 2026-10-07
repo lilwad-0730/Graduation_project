@@ -177,11 +177,14 @@ public class BoulderChallengeController : MonoBehaviour
             yield break;
         }
 
-        // 剛好有別的重生在跑（TriggerRespawn 會被擋掉）：等它結束再接
+        _resetPending = true;
+
+        // 剛好有別的重生在跑（TriggerRespawn 會被擋掉）：等它結束再接。
+        // 若那一輪黑屏已經透過 OnResettablesReset 收掉挑戰，就不要再排第二次重生。
         float wait = 0f;
         while (rs.IsRespawning && wait < 10f) { wait += Time.deltaTime; yield return null; }
+        if (!_resetPending) yield break;
 
-        _resetPending = true;
         rs.TriggerRespawn(challengePlayerSpawn.position);
 
         // 正常情況下黑屏中 OnResettablesReset 會觸發 HandleResettablesReset 把狀態收乾淨。

@@ -194,6 +194,21 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "開啟後會在 LateUpdate 重新取樣腳下地面（沿用既有的 TryGetGroundSlope，不另建偵測）。")]
     public bool alignVisualWhileAttached = true;
 
+    [Header("★1007 咬住後貼地跟隨")]
+    [Tooltip("開啟後，狼咬住玩家時不再成為玩家子物件；只跟隨玩家 X 位置，Y 會持續射線貼地，避免玩家跳起來把狼一起帶飛。")]
+    public bool keepAttachedWolfGrounded = true;
+    [Tooltip("咬住後從多高的位置往下找地面。玩家跳很高時也會從玩家上方開始掃描。")]
+    public float attachedGroundProbeHeight = 4f;
+    [Tooltip("咬住後往下找地面的最遠距離。")]
+    public float attachedGroundProbeDistance = 8f;
+    [Tooltip("咬住後 Y 軸貼地的平滑速度。數值越大越即時貼地。")]
+    [Range(1f, 60f)]
+    public float attachedGroundFollowYSpeed = 30f;
+    [Tooltip("咬住後讓狼碰撞盒底部離地面保留一點點距離，避免 MeshCollider 接縫抖動。")]
+    public float attachedGroundSkin = 0.02f;
+    [Tooltip("咬住後單幀最多允許往下貼地多少公尺。下方很遠的長斜坡會被視為錯誤命中，避免狼突然吸到地底。")]
+    public float attachedGroundMaxSnapDown = 0.75f;
+
     [Header("★1003 上坡追擊 / 卡住脫困")]
     [Tooltip("狼在斜坡上時的追擊速度倍率（只在狼自己踩在斜坡上才乘，平地不變）。1＝不加成。\n" +
              "廢墟這段上坡要追得更狠就調高；建議 1.0～1.4，超過 1.5 狼會明顯快過玩家的視覺節奏")]
@@ -252,6 +267,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private Vector3 _lastGoodNormal = Vector3.up;
     private float _lastGoodGroundTime = -999f;
     private bool _lastGroundedFacingWolf = false;
+    private float _attachedOffsetX = 0f;
+    private float _attachedLastGroundedY = 0f;
 
     // Aggro 鎖定
     private bool _aggroLocked = false;
@@ -400,7 +417,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     /// </summary>
     public static bool ChallengeFailHalt = false;
 
-    /// <summary>★1002 失敗當下讓這隻狼停下來。咬住玩家的那隻不動（它是玩家的子物件，重置時才會被收走）。</summary>
+    /// <summary>★1002 失敗當下讓這隻狼停下來。咬住玩家的那隻維持咬住狀態，重置時才會被收走。</summary>
     public void HaltForChallengeFail(params Collider[] ignoreColliders)
     {
         if (isAttached) return;
@@ -687,6 +704,60 @@ public class WolfEnemy : MonoBehaviour, IResettable
         }
 
         return false;
+    }
+
+    private bool TryGetGroundSlopeAt(float centerX, float rayStartY, float rayLength, out RaycastHit bestHit, out float slopeAngle)
+    {
+        bestHit = default;
+        slopeAngle = 0f;
+        if (col == null) return false;
+
+        float extentsX = col.bounds.extents.x * 0.7f;
+        Vector3[] checkPoints = new Vector3[]
+        {
+            new Vector3(centerX, rayStartY, 0f),
+            new Vector3(centerX - extentsX, rayStartY, 0f),
+            new Vector3(centerX + extentsX, rayStartY, 0f)
+        };
+
+        int layerMask = ~(LayerMask.GetMask("Ignore Raycast") | LayerMask.GetMask("Wolf"));
+        float minDistance = float.MaxValue;
+        bool found = false;
+        Vector3 chosenNormal = Vector3.up;
+
+        foreach (var origin in checkPoints)
+        {
+            int n = Physics.RaycastNonAlloc(origin, Vector3.down, _groundHitBuf, rayLength, layerMask, QueryTriggerInteraction.Ignore);
+            for (int k = 0; k < n; k++)
+            {
+                RaycastHit h = _groundHitBuf[k];
+                if (h.collider == null || !IsRealGround(h.collider)) continue;
+
+                Vector3 flatN = new Vector3(h.normal.x, h.normal.y, 0f);
+                if (flatN.sqrMagnitude < 0.001f) continue;
+                flatN.Normalize();
+
+                float angle = Vector3.Angle(Vector3.up, flatN);
+                if (angle > 85f) continue;
+
+                if (!found || h.distance < minDistance)
+                {
+                    minDistance = h.distance;
+                    bestHit = h;
+                    bestHit.normal = flatN;
+                    slopeAngle = angle;
+                    chosenNormal = flatN;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found) return false;
+
+        bestHit.normal = chosenNormal;
+        _lastGoodNormal = chosenNormal;
+        _lastGoodGroundTime = Time.time;
+        return true;
     }
 
     private bool IsRealGround(Collider c)
@@ -997,7 +1068,62 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void LateUpdate()
     {
+        UpdateAttachedGroundFollow();
         UpdateSlopeAlignment();
+    }
+
+    private void UpdateAttachedGroundFollow()
+    {
+        if (!isAttached || !keepAttachedWolfGrounded || player == null || rb == null || col == null) return;
+
+        float targetX = player.position.x + _attachedOffsetX;
+        Vector3 current = transform.position;
+        if (!IsFinite(current) || !IsFinite(player.position)) return;
+
+        float targetY = current.y;
+
+        float rayStartY = current.y + Mathf.Max(0.1f, attachedGroundProbeHeight);
+        float rayLength = Mathf.Max(0.1f, attachedGroundProbeHeight + attachedGroundProbeDistance);
+
+        if (TryGetGroundSlopeAt(targetX, rayStartY, rayLength, out RaycastHit groundHit, out _))
+        {
+            float colliderBottomOffset = col.bounds.min.y - transform.position.y;
+            float candidateY = groundHit.point.y - colliderBottomOffset + attachedGroundSkin;
+            float maxSnapDown = Mathf.Max(0.05f, attachedGroundMaxSnapDown);
+
+            if (IsFinite(candidateY) && candidateY >= current.y - maxSnapDown)
+            {
+                targetY = candidateY;
+                _attachedLastGroundedY = targetY;
+            }
+            else
+            {
+                targetY = _attachedLastGroundedY;
+            }
+        }
+        else
+        {
+            targetY = _attachedLastGroundedY;
+        }
+
+        float t = 1f - Mathf.Exp(-Mathf.Max(0.01f, attachedGroundFollowYSpeed) * Time.deltaTime);
+        Vector3 next = new Vector3(targetX, Mathf.Lerp(current.y, targetY, t), 0f);
+        if (!IsFinite(next)) return;
+
+        transform.position = next;
+        rb.position = next;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    private bool IsFinite(float value)
+    {
+        return !float.IsNaN(value) && !float.IsInfinity(value);
+    }
+
+    private bool IsFinite(Vector3 value)
+    {
+        return IsFinite(value.x) && IsFinite(value.y) && IsFinite(value.z);
     }
 
     private void UpdateSlopeAlignment()
@@ -1014,10 +1140,19 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
         // ★1001 咬住玩家時，FixedUpdate 第一行就被 rb.isKinematic 擋掉，_visualGroundNormal 不會再更新，
         //   所以這裡自己補一次地面取樣。沿用既有的 TryGetGroundSlope（已把法線投影到 XY、已排除狼與玩家），
-        //   不另外建第二套 Ground Detection。咬住時狼是玩家的子物件，射線打到的就是玩家腳下的坡面。
+        //   不另外建第二套 Ground Detection。★1007 之後狼本體會由 UpdateAttachedGroundFollow 固定貼著地面。
         if (isAttached && !isStunned && alignVisualWhileAttached)
         {
-            if (TryGetGroundSlope(out RaycastHit attachedHit, out float attachedAngle))
+            float rayStartY = transform.position.y + Mathf.Max(0.1f, attachedGroundProbeHeight);
+            float rayLength = Mathf.Max(0.1f, attachedGroundProbeHeight + attachedGroundProbeDistance);
+            RaycastHit attachedHit;
+            float attachedAngle;
+            if (keepAttachedWolfGrounded && TryGetGroundSlopeAt(transform.position.x, rayStartY, rayLength, out attachedHit, out attachedAngle))
+            {
+                _visualHasGround = true;
+                _visualGroundNormal = attachedHit.normal;
+            }
+            else if (!keepAttachedWolfGrounded && TryGetGroundSlope(out attachedHit, out attachedAngle))
             {
                 _visualHasGround = true;
                 _visualGroundNormal = attachedHit.normal;
@@ -1091,6 +1226,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     {
         isAttached = true;
         isChasing = false;
+        CacheAttachedFollowOffset();
 
         LightMoteCollector.NotifyWolfAttached();
 
@@ -1103,12 +1239,39 @@ public class WolfEnemy : MonoBehaviour, IResettable
         rb.isKinematic = true;
         col.isTrigger = true;
 
-        transform.SetParent(player);
+        if (!keepAttachedWolfGrounded)
+        {
+            transform.SetParent(player);
+        }
 
         if (playerMovement != null)
         {
             playerMovement.AddWolf();
         }
+    }
+
+    private void CacheAttachedFollowOffset()
+    {
+        if (player == null)
+        {
+            _attachedOffsetX = 0f;
+            _attachedLastGroundedY = transform.position.y;
+            return;
+        }
+
+        float maxOffset = Mathf.Max(0.4f, biteApproachDistance * 0.9f);
+        float offset = transform.position.x - player.position.x;
+
+        if (Mathf.Abs(offset) < 0.25f)
+        {
+            float facing = (playerMovement != null && Mathf.Abs(playerMovement.FacingDirection.x) > 0.1f)
+                ? Mathf.Sign(playerMovement.FacingDirection.x)
+                : Mathf.Sign(_lastFacingX);
+            offset = -facing * Mathf.Min(1.1f, maxOffset);
+        }
+
+        _attachedOffsetX = Mathf.Clamp(offset, -maxOffset, maxOffset);
+        _attachedLastGroundedY = transform.position.y;
     }
 
     private void DetachAndStun()

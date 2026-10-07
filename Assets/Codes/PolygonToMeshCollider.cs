@@ -14,6 +14,12 @@ public class PolygonToMeshCollider : MonoBehaviour
 
     private void Start()
     {
+        if (Application.isPlaying && IsManualColliderManagedCloudSlope())
+        {
+            DisableGeneratedColliderChild();
+            return;
+        }
+
         if (Application.isPlaying && autoGenerate)
         {
             Generate3DCollider();
@@ -23,6 +29,12 @@ public class PolygonToMeshCollider : MonoBehaviour
     [ContextMenu("手動生成 3D 碰撞網格 (Generate)")]
     public void Generate3DCollider()
     {
+        if (IsManualColliderManagedCloudSlope())
+        {
+            DisableGeneratedColliderChild();
+            return;
+        }
+
         PolygonCollider2D poly2D = GetComponent<PolygonCollider2D>();
         if (poly2D == null || poly2D.pathCount == 0) return;
 
@@ -141,5 +153,32 @@ public class PolygonToMeshCollider : MonoBehaviour
         }
 
         Debug.Log($"[{gameObject.name}] 已成功生成 3D 碰撞網格，放置於子物件 {childName} 中！");
+    }
+
+    private bool IsManualColliderManagedCloudSlope()
+    {
+        string objectName = gameObject.name;
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        string spriteName = spriteRenderer != null && spriteRenderer.sprite != null
+            ? spriteRenderer.sprite.name
+            : string.Empty;
+
+        return objectName.Contains("09_05_37")
+            || spriteName.Contains("09_05_37")
+            || spriteName.Contains("09_05_46");
+    }
+
+    private void DisableGeneratedColliderChild()
+    {
+        Transform childTransform = transform.Find("Generated_3D_Collider");
+        if (childTransform == null) return;
+
+        MeshCollider meshCollider = childTransform.GetComponent<MeshCollider>();
+        if (meshCollider != null)
+        {
+            meshCollider.enabled = false;
+        }
+
+        childTransform.gameObject.SetActive(false);
     }
 }
