@@ -20,6 +20,8 @@ public class GiantShadowPass : MonoBehaviour
     public float birdCalmSeconds = 3.5f;
 
     [Header("影子")]
+    [Tooltip("★1007 M：「去掉這個」——巨鳥影子（畫面上那個灰色的大橢圓）拿掉。\n關掉時只是不畫影子；風停、鳥停、鏡頭抬頭照舊。要拿回來就把預設改回 true。")]
+    public bool showShadow = false;
     [Tooltip("影子從畫面左外掃到右外要幾秒")]
     public float sweepSeconds = 3.2f;
     public float shadowLength = 18f;
@@ -81,6 +83,13 @@ public class GiantShadowPass : MonoBehaviour
         if (passClip != null)
         {
             AudioSource.PlayClipAtPoint(passClip, player != null ? player.position : transform.position, passVolume * AudioManager.SfxVolume);
+        }
+
+        // ★1007 M 要求拿掉影子：不畫影子；鏡頭抬頭照舊（風停、鳥停上面已經做了）
+        if (!showShadow)
+        {
+            if (liftCamera) StartCoroutine(LiftCamera());
+            yield break;
         }
 
         // 2. 影子從畫面左外掃到右外
