@@ -36,7 +36,7 @@ using UnityEngine.Video;
 /// ★1007 改成程式播 D 版漫畫（M：「然後加上廢墟第一次被狼群追擊死亡後出現漫畫」→ 選「改成程式播的 D 版漫畫」）：
 /// useVideo 預設關、version 預設 D。影片檔還在 Resources，要換回影片就把 useVideo 預設改回 true。
 /// 「被狼群追擊而死」三種都算：
-///   1. 咬滿 PlayerMovement.wolvesToRespawn 隻。1001 起死亡門檻和減速分母 maxWolvesToStop 分開了；
+///   1. 咬滿 PlayerMovement.WolfKillThreshold 隻（wolvesToRespawn，或 1008 起「在場的狼全部咬上來」，最少兩隻）。1001 起死亡門檻和減速分母 maxWolvesToStop 分開了；
 ///      原本拿 maxWolvesToStop（6）判斷，場上最多 5 隻狼，所以漫畫永遠不會播（影片靠「在廢墟死亡」那條才播得出來）。
 ///   2. 巨石挑戰中被第一隻狼咬到而失敗（BoulderChallengeController 接手：巨石下滾 → 重置）。
 ///   3. 在廢墟死掉時身上還咬著狼（例如被拖下坑）。
@@ -220,7 +220,7 @@ public class FirstWolfDeathStory : MonoBehaviour
         // ★1007 被狼群追擊而死：咬滿死亡門檻（wolvesToRespawn；原本拿減速分母 maxWolvesToStop＝6 判斷，永遠達不到）、
         //   巨石挑戰中被第一隻狼咬到而失敗、或在廢墟死掉時身上還咬著狼
         int attached = Mathf.Max(_pm.attachedWolvesCount, _prevAttached);
-        int killW = Mathf.Max(1, _pm.wolvesToRespawn);
+        int killW = Mathf.Max(1, _pm.WolfKillThreshold);   // ★1008 跟 PlayerMovement 同一個門檻（在場的狼全部咬上來也算）
         bool inRuins = _pm.transform.position.y < ruinsBelowY;
         bool bitten = attached >= killW;
         bool boulderFail = BoulderChallengeController.IsFailing;

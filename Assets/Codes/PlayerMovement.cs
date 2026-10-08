@@ -87,6 +87,14 @@ public class PlayerMovement : MonoBehaviour
     [Range(1, 12)]
     public int wolvesToRespawn = 5;
 
+    [Tooltip("★1008 狼群全部咬上來也算死：在場的狼（已出場、正在追或咬住）比 Wolves To Respawn 少的時候，改用在場的狼數當門檻，最少 Pack Kill Min Wolves 隻。\n" +
+             "拉桿前只有兩隻狼，原本永遠咬不死；開著的話兩隻都咬上來就重生（廢墟第一次會播重生漫畫）。\n" +
+             "推巨石時被第一口咬到仍由 BoulderChallengeController 接手，跟這個無關。")]
+    public bool packKillWhenAllBite = true;
+    [Tooltip("★1008 狼群全部咬上來才算死的最少隻數：一隻狼單獨咬住只減速，不死")]
+    [Range(1, 6)]
+    public int packKillMinWolves = 2;
+
     [Header("🐺 狼咬住的向下拖曳負載（只作用在斜坡上）")]
     [Tooltip("每一隻咬住的狼，沿坡面往下拖曳的速度 (公尺/秒)。設 0 ＝ 整個機制關閉，行為完全回到修改前。\n" +
              "為什麼不用 AddForce：斜坡分支會關掉重力並且每幀整個覆寫 rb.linearVelocity，\n" +
@@ -1256,13 +1264,31 @@ public class PlayerMovement : MonoBehaviour
     // ==========================================
     // 狼群減速邏輯
     // ==========================================
+    /// <summary>★1008 現在咬住幾隻就重生：wolvesToRespawn；開了 packKillWhenAllBite 時，在場（已出場、正在追或咬住，
+    /// 含硬直中）的狼比它少就以在場數為門檻，最少 packKillMinWolves 隻。FirstWolfDeathStory 也用這個判定「被狼咬滿」。</summary>
+    public int WolfKillThreshold
+    {
+        get
+        {
+            int killW = Mathf.Max(1, wolvesToRespawn);
+            if (!packKillWhenAllBite) return killW;
+            int pack = 0;
+            foreach (WolfEnemy w in FindObjectsByType<WolfEnemy>(FindObjectsInactive.Exclude))
+            {
+                if (w != null && w.enabled) pack++;   // 出生點生出來但還沒啟動追擊的狼 enabled＝false，不算在場
+            }
+            if (pack <= 0) return killW;
+            return Mathf.Max(Mathf.Max(1, packKillMinWolves), Mathf.Min(killW, pack));
+        }
+    }
+
     public void AddWolf()
     {
         attachedWolvesCount++;
         CalculateSpeed();
 
         int maxW = Mathf.Max(1, Mathf.RoundToInt(maxWolvesToStop));
-        int killW = Mathf.Max(1, wolvesToRespawn);   // ★1001 死亡門檻改用獨立欄位
+        int killW = WolfKillThreshold;   // ★1001 死亡門檻改用獨立欄位；★1008 在場的狼全部咬上來也算（見 WolfKillThreshold）
         float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
         Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}／重生門檻 {killW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
 
