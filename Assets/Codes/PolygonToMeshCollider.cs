@@ -12,6 +12,10 @@ public class PolygonToMeshCollider : MonoBehaviour
     [Tooltip("勾選後會自動生成 (建議保持勾選)")]
     public bool autoGenerate = true;
 
+    [Tooltip("★1008 autoGenerate 關著、但這個物件和子物件都沒有任何可用的 3D 碰撞體（也沒有人工放的 BoxCollider）時，執行期仍補生成一次，免得變成沒有實體的平台。\n" +
+             "（10/07 存場景時，拉桿平台 Stone Step 的 autoGenerate 被關掉、Generated_3D_Collider 被停用，卻沒有像 slope1 那樣補人工碰撞體，玩家會直接穿過去）")]
+    public bool generateIfNoCollider = true;
+
     private void Start()
     {
         if (Application.isPlaying && IsManualColliderManagedCloudSlope())
@@ -23,7 +27,30 @@ public class PolygonToMeshCollider : MonoBehaviour
         if (Application.isPlaying && autoGenerate)
         {
             Generate3DCollider();
+            return;
         }
+
+        // ★1008 autoGenerate 關著又什麼碰撞體都沒有：補生成（有人工 BoxCollider 的 slope1、ChatGPT Image 不會進來）
+        if (Application.isPlaying && generateIfNoCollider && !HasUsable3DCollider())
+        {
+            Debug.LogWarning($"[{gameObject.name}] autoGenerate 關著，但這個物件和子物件都沒有任何 3D 碰撞體：先補生成一次（場景裡要嘛把 autoGenerate 打開，要嘛放人工 BoxCollider）");
+            Generate3DCollider();
+        }
+    }
+
+    /// <summary>★1008 自己或子物件上有沒有「啟用、物件也啟用、有網格」的 3D 碰撞體（含 trigger）。</summary>
+    private bool HasUsable3DCollider()
+    {
+        Collider[] cols = GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < cols.Length; i++)
+        {
+            Collider c = cols[i];
+            if (c == null || !c.enabled || !c.gameObject.activeInHierarchy) continue;
+            MeshCollider mc = c as MeshCollider;
+            if (mc != null && mc.sharedMesh == null) continue;
+            return true;
+        }
+        return false;
     }
 
     [ContextMenu("手動生成 3D 碰撞網格 (Generate)")]
@@ -107,11 +134,15 @@ public class PolygonToMeshCollider : MonoBehaviour
             childObj.layer = gameObject.layer; 
         }
 
+        // ★1008 場景裡存成停用的生成碰撞體（Stone Step 10/07 那次存檔）：既然要生成，就把它打開
+        if (!childObj.activeSelf) childObj.SetActive(true);
+
         MeshCollider meshCollider = childObj.GetComponent<MeshCollider>();
         if (meshCollider == null)
         {
             meshCollider = childObj.AddComponent<MeshCollider>();
         }
+        meshCollider.enabled = true;
 
         meshCollider.sharedMesh = newMesh;
 

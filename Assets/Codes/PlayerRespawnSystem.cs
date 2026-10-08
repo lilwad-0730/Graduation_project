@@ -132,7 +132,58 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     public static string NextSceneSpawnTargetName = "";
     public static Vector3? NextSceneCustomSpawnPos = null;
-    public static PlayerRespawnSystem Instance { get; private set; }
+
+    // ★1008 Instance 只認「掛在玩家身上」的那一個。
+    //   SampleScene 裡有一個叫「GameObject」（Tag SavePoint、天空區 x -34.6）的殘留物件也掛著 PlayerRespawnSystem＋Rigidbody（沒有碰撞體）。
+    //   原本誰最後 Awake/OnEnable 誰就是 Instance；把 Player 直接擺在廢墟按 Play 測試時（沒經過墜落通道，玩家身上的重生元件沒有被關掉再打開），
+    //   Instance 會是那個空物件。巨石挑戰失敗 → BoulderChallengeController 拿 Instance 去 TriggerRespawn → 被傳送的是空物件、
+    //   它的 Rigidbody 沒碰撞體就一路往下掉、所有 CinemachineCamera 的 Follow 被指到它 → 畫面只剩相機底色（藍屏），
+    //   玩家留在原地、還被失敗流程鎖著不能動（10/08 M：「漫畫回來後還是藍屏，無法正常切回」）。
+    //   現在：有玩家的優先；掛在別的物件上的收到 TriggerRespawn 會轉給玩家身上的那個。
+    private static PlayerRespawnSystem _instance;
+    private static int _instanceSearchFrame = -1;   // 每幀最多找一次（沒有玩家的場景裡 IsPlayerMovingAfterRespawn 每幀都會問）
+    public static PlayerRespawnSystem Instance
+    {
+        get
+        {
+            if ((_instance == null || !_instance.HasPlayer) && _instanceSearchFrame != Time.frameCount)
+            {
+                _instanceSearchFrame = Time.frameCount;
+                PlayerRespawnSystem[] all = FindObjectsByType<PlayerRespawnSystem>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i] != null && all[i].HasPlayer) { _instance = all[i]; break; }
+                }
+            }
+            return _instance;
+        }
+    }
+
+    /// <summary>★1008 這個重生系統是不是掛在玩家（有 PlayerMovement）身上。</summary>
+    public bool HasPlayer
+    {
+        get
+        {
+            if (_cachedMovement == null) _cachedMovement = GetMovement();
+            return _cachedMovement != null;
+        }
+    }
+
+    /// <summary>★1008 沒有 Instance、或現在的 Instance 不在玩家身上、或自己就在玩家身上 → 自己當 Instance；否則不搶。</summary>
+    private void ClaimInstance()
+    {
+        if (_instance == null || _instance == this || HasPlayer || !_instance.HasPlayer) _instance = this;
+    }
+
+    /// <summary>★1008 掛在非玩家物件上的重生系統被叫去重生／傳送時，轉給玩家身上的那個。回傳 null＝自己處理。</summary>
+    private PlayerRespawnSystem ForwardTarget()
+    {
+        if (HasPlayer) return null;
+        PlayerRespawnSystem real = Instance;
+        if (real == null || real == this || !real.HasPlayer) return null;
+        Debug.LogWarning($"[PlayerRespawnSystem] '{gameObject.name}' 不在玩家身上卻被叫去重生，轉給玩家身上的 '{real.gameObject.name}'");
+        return real;
+    }
     public static Vector3 ActiveRespawnPosition => Instance != null ? Instance._activeRespawnPos : Vector3.zero;
     public static bool IsPlayerMovingAfterRespawn => Instance == null || !Instance._isWaitingForPlayerMove;
 
@@ -158,12 +209,12 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        ClaimInstance();   // ★1008 有玩家的優先（見 Instance 的註解）
     }
 
     void OnEnable()
     {
-        Instance = this;
+        ClaimInstance();
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -424,6 +475,9 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發死亡重生轉場 (預設傳送到當前啟用的明確存檔點)
     public void TriggerRespawn()
     {
+        PlayerRespawnSystem real = ForwardTarget();   // ★1008 不在玩家身上的，轉給玩家身上的
+        if (real != null) { real.TriggerRespawn(); return; }
+
         this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
         if (!_isRespawning)
         {
@@ -435,10 +489,13 @@ public class PlayerRespawnSystem : MonoBehaviour
     // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
+        PlayerRespawnSystem real = ForwardTarget();   // ★1008
+        if (real != null) { real.TriggerRespawn(customSpawnPos); return; }
+
         this.enabled = true;
         if (!_isRespawning)
         {
-            Debug.Log($"【重生系統】TriggerRespawn({customSpawnPos}) 正式啟動！");
+            Debug.Log($"【重生系統】TriggerRespawn({customSpawnPos}) 正式啟動！（{gameObject.name}）");
             StartCoroutine(RespawnSequence(customSpawnPos));
         }
     }
@@ -972,6 +1029,9 @@ public class PlayerRespawnSystem : MonoBehaviour
     /// </summary>
     public void TriggerTeleport(Vector3 destinationPos)
     {
+        PlayerRespawnSystem real = ForwardTarget();   // ★1008
+        if (real != null) { real.TriggerTeleport(destinationPos); return; }
+
         if (!this.enabled) return;
         if (!_isRespawning && !_isTeleporting)
         {

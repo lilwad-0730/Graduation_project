@@ -45,6 +45,9 @@ using UnityEngine.Video;
 /// ★1008 M：「漫畫出現的時候不要出現藍屏等額外的畫面，漸黑，黑屏接漫畫即可，回來也是漸黑接重生畫面」：
 /// comicAfterBlack（預設開）＝死亡那一刻只截圖，不蓋畫面；等重生黑幕蓋滿，漫畫從黑裡淡入 comicFadeIn 秒；播完淡回黑，
 /// 黑幕再照重生流程淡出到存檔點。comicPlainCapture（預設開）＝格 1 的實機畫面不白閃、不轉紫、不加網點。
+/// ★1008 M：「漫畫回來後還是藍屏，無法正常切回」：不是漫畫的問題。SampleScene 有第二個 PlayerRespawnSystem（殘留的空物件「GameObject」），
+/// 巨石挑戰失敗時 BoulderChallengeController 拿到的 Instance 是它：被傳送的是空物件、相機跟著它掉進虛空（藍屏）、玩家留在原地被鎖住，
+/// 黑幕只有它的 2 秒（這裡拉長的是玩家身上那個的）。PlayerRespawnSystem 1008 起 Instance 只認玩家身上的；這裡也改成認「正在重生的那個」。
 ///
 /// 場景不用改：載入有 WolfEnemy 的場景時自動掛到 Player。
 /// </summary>
@@ -223,7 +226,18 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     private void OnRespawnStarted()
     {
-        if (!Enabled || _pm == null || _rs == null) { DropFailCapture(); return; }
+        if (!Enabled || _pm == null) { DropFailCapture(); return; }
+
+        // ★1008 黑幕時間要拉長的是「真的在跑重生」的那個 PlayerRespawnSystem。
+        //   SampleScene 有第二個（殘留的空物件「GameObject」身上）；PlayerRespawnSystem 1008 起會把它轉給玩家身上的，
+        //   這裡再保險一次：找正在重生的那個，不是就換
+        PlayerRespawnSystem running = FindRunningRespawn();
+        if (running != null && running != _rs)
+        {
+            if (logEvents) Debug.LogWarning("[FirstWolfDeathStory] 正在重生的是 '" + running.gameObject.name + "' 身上的 PlayerRespawnSystem（不是玩家身上的）：黑幕時間改拉它的");
+            _rs = running;
+        }
+        if (_rs == null) { DropFailCapture(); return; }
         if (onlyOnce && ShownThisRun) { DropFailCapture(); return; }
 
         // ★1007 被狼群追擊而死：咬滿死亡門檻（wolvesToRespawn；原本拿減速分母 maxWolvesToStop＝6 判斷，永遠達不到）、
@@ -264,6 +278,15 @@ public class FirstWolfDeathStory : MonoBehaviour
         _rs.blackScreenTime = Mathf.Max(_originalBlackTime, total + 0.3f);   // 重生協程在黑幕蓋上後才讀這個值
         if (logEvents) Debug.Log("[FirstWolfDeathStory] 廢墟第一次被狼群追擊而死（" + _why + "）：播 A 頁面逐格，黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
         _routine = StartCoroutine(PlayRoutine(sprites));
+    }
+
+    /// <summary>★1008 現在正在跑重生流程的 PlayerRespawnSystem（優先玩家身上的 _rs）；都沒有在跑就回傳 null。</summary>
+    private PlayerRespawnSystem FindRunningRespawn()
+    {
+        if (_rs != null && _rs.IsRespawning) return _rs;
+        foreach (PlayerRespawnSystem rs in FindObjectsByType<PlayerRespawnSystem>(FindObjectsInactive.Exclude))
+            if (rs != null && rs.IsRespawning) return rs;
+        return null;
     }
 
     // ── 巨石挑戰失敗的畫面（1007） ─────────────────────────────
