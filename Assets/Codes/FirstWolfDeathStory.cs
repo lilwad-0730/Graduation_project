@@ -42,6 +42,9 @@ using UnityEngine.Video;
 ///   3. 在廢墟死掉時身上還咬著狼（例如被拖下坑）。
 /// 巨石挑戰失敗時，重生要等巨石滾完才開始，所以格 1 用「被咬到那一刻」先截好的畫面，不是滾完之後的畫面。
 /// 測試：Play 模式下，Player 身上這個元件右鍵 →「測試：現在播第一次死亡漫畫」。
+/// ★1008 M：「漫畫出現的時候不要出現藍屏等額外的畫面，漸黑，黑屏接漫畫即可，回來也是漸黑接重生畫面」：
+/// comicAfterBlack（預設開）＝死亡那一刻只截圖，不蓋畫面；等重生黑幕蓋滿，漫畫從黑裡淡入 comicFadeIn 秒；播完淡回黑，
+/// 黑幕再照重生流程淡出到存檔點。comicPlainCapture（預設開）＝格 1 的實機畫面不白閃、不轉紫、不加網點。
 ///
 /// 場景不用改：載入有 WolfEnemy 的場景時自動掛到 Player。
 /// </summary>
@@ -102,9 +105,15 @@ public class FirstWolfDeathStory : MonoBehaviour
     [Range(0.5f, 2f)] public float pageSpeed = 1f;
     [Tooltip("D（1003 兩格版，素材不齊時才用）：閃、轉紫、縮進格 1、停、格 2 進、停、格 3 進、停、淡出")]
     public float[] freezeTimes = new float[] { 0.12f, 0.35f, 0.6f, 1.6f, 0.3f, 3.0f, 0.3f, 3.2f, 0.6f };
-    [Tooltip("D：定格畫面乘上的顏色（紫夜）")]
+    [Tooltip("D：定格畫面乘上的顏色（紫夜）。comicPlainCapture 開著時不用")]
     public Color freezeTint = new Color(0.78f, 0.74f, 0.98f, 1f);
     [Range(0f, 1f)] public float freezeHalftoneAlpha = 0.28f;
+    [Tooltip("★1008 M：漫畫出現時不要有藍屏等額外的畫面。開著＝死亡先漸黑，黑幕蓋滿後漫畫從黑裡淡入；播完淡回黑，再接重生畫面。\n關掉＝原本的做法：死亡那一刻直接定格成格 1、白閃、轉紫，黑幕在底下看不到")]
+    public bool comicAfterBlack = true;
+    [Tooltip("★1008 格 1 的實機畫面維持原色：不白閃、不轉紫、不加網點")]
+    public bool comicPlainCapture = true;
+    [Tooltip("★1008 黑幕蓋滿之後，漫畫淡入的秒數")]
+    public float comicFadeIn = 0.6f;
     [Tooltip("E：頁 1 停、翻、頁 2 停、翻、頁 3 停、淡出")]
     public float[] bookTimes = new float[] { 3.2f, 0.7f, 1.8f, 0.7f, 3.6f, 0.6f };
     [Tooltip("各版素材的 Resources 資料夾")]
@@ -552,8 +561,21 @@ public class FirstWolfDeathStory : MonoBehaviour
                     bool camOn = pageCamera;
                     float sp = pageSpeed;
                     total = RespawnComicPlayer.DurationDPage(ph, pm, sp);
-                    startsAtDeath = true;
-                    play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, freezeTint, freezeHalftoneAlpha));
+                    if (comicAfterBlack)
+                    {
+                        // ★1008 先漸黑、黑屏，漫畫再從黑裡淡入；格 1 仍是死亡那一刻先截好的實機畫面
+                        Color tintUse = comicPlainCapture ? Color.white : freezeTint;
+                        float htUse = comicPlainCapture ? 0f : freezeHalftoneAlpha;
+                        float fadeIn = Mathf.Max(0f, comicFadeIn);
+                        total += fadeIn;
+                        startsAtDeath = false;
+                        play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, tintUse, htUse, 0.25f, 2.6f, fadeIn, !comicPlainCapture), true);
+                    }
+                    else
+                    {
+                        startsAtDeath = true;
+                        play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, freezeTint, freezeHalftoneAlpha), false);
+                    }
                     break;
                 }
                 // 1003 兩格版
@@ -564,7 +586,7 @@ public class FirstWolfDeathStory : MonoBehaviour
                 _loaded.Add(p2); _loaded.Add(p3); if (ht != null) _loaded.Add(ht);
                 total = RespawnComicPlayer.DurationD(freezeTimes);
                 startsAtDeath = true;
-                play = FreezeRoutine(cap => RespawnComicPlayer.PlayD(UIRoot(), cap, p2, p3, ht, freezeTimes, freezeTint, freezeHalftoneAlpha));
+                play = FreezeRoutine(cap => RespawnComicPlayer.PlayD(UIRoot(), cap, p2, p3, ht, freezeTimes, freezeTint, freezeHalftoneAlpha), false);
                 break;
             }
             case StoryVersion.E_Storybook:
@@ -647,7 +669,8 @@ public class FirstWolfDeathStory : MonoBehaviour
         yield return inner;
     }
 
-    private IEnumerator FreezeRoutine(System.Func<Texture2D, IEnumerator> makePlay)
+    /// <param name="afterBlack">★1008 true＝截完圖先等黑幕蓋滿再開始播（漸黑 → 黑屏 → 漫畫）；false＝截完馬上蓋上（原本的定格）</param>
+    private IEnumerator FreezeRoutine(System.Func<Texture2D, IEnumerator> makePlay, bool afterBlack)
     {
         Texture2D cap = null;
         if (_failCapture != null)
@@ -662,8 +685,15 @@ public class FirstWolfDeathStory : MonoBehaviour
             try { cap = ScreenCapture.CaptureScreenshotAsTexture(); }
             catch (System.Exception e) { Debug.LogWarning("[FirstWolfDeathStory] 截圖失敗，第一格用黑畫面：" + e.Message); }
         }
+        if (afterBlack)
+        {
+            // ★1008 等重生的黑幕淡入蓋滿（unscaled），漫畫才從黑裡出來
+            float wait = _rs.fadeDuration + 0.1f, t = 0f;
+            while (t < wait) { t += Time.unscaledDeltaTime; yield return null; }
+        }
         UIRoot();
         _canvas.gameObject.SetActive(true);
+        if (afterBlack) yield return null;   // 讓 Canvas 先算好大小
         yield return makePlay(cap);
         if (cap != null) Destroy(cap);
     }

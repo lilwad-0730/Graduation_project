@@ -873,8 +873,11 @@ public static class RespawnComicPlayer
         return _spot;
     }
 
+    /// <param name="fadeIn">★1008 從全黑淡入的秒數（0＝原本：死亡那一刻直接定格）</param>
+    /// <param name="flash">★1008 開頭那一下白閃（關掉＝漸黑之後直接接漫畫，沒有多餘的畫面）</param>
     public static IEnumerator PlayDPage(Transform canvasRoot, Texture2D capture, DPageSet a, float[] holds, float[] moves, float speed,
-                                        bool cameraMoves, Color tint, float halftoneAlpha, float pulse = 0.25f, float pulsePeriod = 2.6f)
+                                        bool cameraMoves, Color tint, float halftoneAlpha, float pulse = 0.25f, float pulsePeriod = 2.6f,
+                                        float fadeIn = 0f, bool flash = true)
     {
         CanvasGroup g; GameObject run;
         RectTransform frame = MakeDesignFrame(canvasRoot, out g, out run);
@@ -920,8 +923,9 @@ public static class RespawnComicPlayer
         spot.sprite = SpotSprite();
         RectTransform srt = spot.rectTransform;
         srt.anchorMin = srt.anchorMax = new Vector2(0f, 1f); srt.pivot = new Vector2(0.5f, 0.5f);
-        Image flash = NewImage(frame, "Flash", new Color(1f, 0.98f, 0.94f, 0.4f));
-        Stretch(flash.rectTransform);
+        Image flashImg = NewImage(frame, "Flash", new Color(1f, 0.98f, 0.94f, flash ? 0.4f : 0f));
+        Stretch(flashImg.rectTransform);
+        if (fadeIn > 0f) g.alpha = 0f;   // ★1008 從黑幕淡入
 
         float sp = Mathf.Max(0.25f, speed);
         float start = DPageFlash + DPageTint;
@@ -945,7 +949,7 @@ public static class RespawnComicPlayer
             if (cameraMoves) cam = follow;
             else cam = LerpCamD(K0, KP, Smoother((t - start) / 0.9f));
             // 閃、轉紫
-            flash.color = new Color(1f, 0.98f, 0.94f, t < DPageFlash ? 0.4f * (1f - t / DPageFlash) : 0f);
+            flashImg.color = new Color(1f, 0.98f, 0.94f, (flash && t < DPageFlash) ? 0.4f * (1f - t / DPageFlash) : 0f);
             float tu = Mathf.Clamp01((t - DPageFlash) / DPageTint);
             float k2 = Smoother((t - p2dim) / p2len);
             cap.color = Color.Lerp(Color.Lerp(Color.white, tint, tu), dimTint, k2);
@@ -975,7 +979,8 @@ public static class RespawnComicPlayer
             }
             else spot.color = new Color(Paper.r, Paper.g, Paper.b, 0f);
             // 淡出
-            g.alpha = 1f - Mathf.Clamp01((t - track.end) / DPageFade);
+            float aIn = fadeIn > 0f ? Mathf.Clamp01(t / fadeIn) : 1f;   // ★1008 淡入
+            g.alpha = Mathf.Min(aIn, 1f - Mathf.Clamp01((t - track.end) / DPageFade));
             yield return null;
         }
         g.alpha = 0f;

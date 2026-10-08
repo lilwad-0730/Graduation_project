@@ -19,7 +19,9 @@ public class LeverSystem : MonoBehaviour, IResettable
     public bool triggerOnEnter = false;
 
     [Header("光球路徑點解鎖設定")]
-    [Tooltip("是否需要以光球程式 (GuidanceLight) 的路徑點作為解鎖條件")]
+    [Tooltip("★1008 M：「拉桿不能拉，改成能拉」（0928 企劃定案甲：隨時能拉）。開著＝不看光球路徑點，走到就能拉；\n關掉＝照下面的 lockByGuidanceLight 看光球走到第幾點才解鎖")]
+    public bool alwaysPullable = true;
+    [Tooltip("是否需要以光球程式 (GuidanceLight) 的路徑點作為解鎖條件（alwaysPullable 關掉時才有用）")]
     public bool lockByGuidanceLight = true;
 
     [Tooltip("要監聽的光球物件 (GuidanceLight)；留空時會在遊戲開始時自動搜尋場景中的 GuidanceLight")]
@@ -80,6 +82,7 @@ public class LeverSystem : MonoBehaviour, IResettable
         get
         {
             if (isPulled) return false;
+            if (alwaysPullable) return false;   // ★1008 隨時能拉
             if (!lockByGuidanceLight) return false;
             if (unlockOnceForever && isUnlockedOnce) return false;
 
