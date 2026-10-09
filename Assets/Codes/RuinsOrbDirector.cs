@@ -17,6 +17,9 @@ using UnityEngine.SceneManagement;
 ///      原本的兩個風暴觸發區關掉，龍捲風不再跟著鏡頭；斜坡上原本站著的龍捲風先藏起來（聲音留著），叫風暴時才從左邊出現。
 ///   重生：還沒放下巨石就死 → 光球回到她前面重新帶路；推巨石失敗（巨石重置後仍是放開的）→ 光球留在斜坡上等。
 /// 整包關掉：RuinsOrbDirector.Enabled = false（回到拉桿與原本的風暴）。
+///
+/// ★1010 跟修毅 10-10（d0f715a）合併：墜落時 PlayerMovement 先把光球傳到 P12、鏡頭特寫光球，落到廢墟地板才放開；
+/// 這支等墜落鎖放開才接手，光球已經在她前方（P12）就從那裡帶路。修毅加的 P13、P14 在這支開著時用不到。
 /// </summary>
 [DisallowMultipleComponent]
 public class RuinsOrbDirector : MonoBehaviour
@@ -28,6 +31,8 @@ public class RuinsOrbDirector : MonoBehaviour
     public float ruinsBelowY = -60f;
     [Tooltip("落地後光球出現在她前方幾米")]
     public float landAheadX = 9f;
+    [Tooltip("★1010 落地時光球如果已經在廢墟、在她前方（修毅的 P12：墜落時鏡頭特寫的那顆），就從那裡開始帶路，不另外放")]
+    public bool startFromCurrentOrb = true;
     [Tooltip("光球離地多高")]
     public float orbHeight = 2.2f;
     [Tooltip("光球停在原本拉桿位置的上方多少")]
@@ -187,7 +192,8 @@ public class RuinsOrbDirector : MonoBehaviour
 
         if (_stage == Stage.Idle)
         {
-            if (inRuins && _pm.isGrounded && !PlayerRespawnSystem.IsAnyRespawning) BeginRuins();
+            // ★1010 等墜落鎖真的放開（修毅的 PlayerMovement 要落到廢墟地板才放）再接手，不跟墜落中的光球特寫搶
+            if (inRuins && _pm.isGrounded && !_pm.freezeHorizontal && !PlayerRespawnSystem.IsAnyRespawning) BeginRuins();
             return;
         }
         if (p.y > ruinsBelowY + 30f) { EndRuins(); return; }   // 測試時把她放回棉花堡
@@ -242,10 +248,20 @@ public class RuinsOrbDirector : MonoBehaviour
         else
         {
             Vector3 p = _pm.transform.position;
-            float x = p.x < _r2.x - 2f ? Mathf.Min(p.x + landAheadX, _r2.x - 2f) : _r2.x;
-            _orbPos = x >= _r2.x ? _r2 : new Vector3(x, GroundY(x, p.y) + orbHeight, 0f);
-            _waiting = true;
-            _stage = x >= _r2.x ? Stage.WaitRelease : Stage.Lead;
+            Vector3 cur = _orb.transform.position;
+            if (startFromCurrentOrb && cur.y < ruinsBelowY + 20f && cur.x > p.x + 2f && cur.x < _r2.x - 2f)
+            {
+                _orbPos = new Vector3(cur.x, cur.y, 0f);   // ★1010 光球已經在前方（P12），從那裡帶路
+                _waiting = true;
+                _stage = Stage.Lead;
+            }
+            else
+            {
+                float x = p.x < _r2.x - 2f ? Mathf.Min(p.x + landAheadX, _r2.x - 2f) : _r2.x;
+                _orbPos = x >= _r2.x ? _r2 : new Vector3(x, GroundY(x, p.y) + orbHeight, 0f);
+                _waiting = true;
+                _stage = x >= _r2.x ? Stage.WaitRelease : Stage.Lead;
+            }
         }
         ApplyOrb();
         Flare(25);

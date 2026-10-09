@@ -105,8 +105,9 @@ public class PlayerMovement : MonoBehaviour
 
     [Tooltip("★1008 狼群全部咬上來也算死：在場的狼（已出場、正在追或咬住）比 Wolves To Respawn 少的時候，改用在場的狼數當門檻，最少 Pack Kill Min Wolves 隻。\n" +
              "拉桿前只有兩隻狼，原本永遠咬不死；開著的話兩隻都咬上來就重生（廢墟第一次會播重生漫畫）。\n" +
-             "推巨石時被第一口咬到仍由 BoulderChallengeController 接手，跟這個無關。")]
-    public bool packKillWhenAllBite = true;
+             "推巨石時被第一口咬到仍由 BoulderChallengeController 接手，跟這個無關。\n" +
+             "★1010 預設關：02 #35 定案「狼咬三次就死」，這個做法作廢（修毅 10-10 已把 wolvesToRespawn 改成 3）；打勾才回到 10-08 的做法")]
+    public bool packKillWhenAllBite = false;
     [Tooltip("★1008 狼群全部咬上來才算死的最少隻數：一隻狼單獨咬住只減速，不死")]
     [Range(1, 6)]
     public int packKillMinWolves = 2;
