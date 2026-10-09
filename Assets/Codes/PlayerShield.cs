@@ -7,9 +7,18 @@ using System.Collections;
 /// 2. 啟動時精確對齊玩家 Y + 2 的位置，且不會無限累加飛走。
 /// 3. 自動將護盾上的所有 Collider 設為 isTrigger = true，防止物理實體碰撞導致玩家卡死。
 /// 4. 包含 3 秒持續時間與 5 秒技能冷卻機制。
+///
+/// ★1009 取消護盾（1008 會議決定「取消護盾」）：
+/// 改動前：荒原按 Q 會出現藍色護盾 3 秒、把鳥彈開，冷卻 5 秒。
+/// 改動後：shieldEnabled 預設關，按 Q 沒有反應、不生成護盾球；場景裡原有的 Shield 物件照舊藏起來。
+/// 要恢復原本的護盾：在 Inspector 把 shieldEnabled 打勾即可，其餘程式沒有拿掉。
 /// </summary>
 public class PlayerShield : MonoBehaviour, IResettable
 {
+    [Header("★1009 取消護盾")]
+    [Tooltip("關＝按 Q 沒有反應、不生成護盾（1008 會議決定取消護盾）。打勾＝恢復原本的護盾")]
+    public bool shieldEnabled = false;
+
     [Header("按鍵與時間設定")]
     [Tooltip("發動護盾的按鍵 (預設 Q)")]
     public KeyCode shieldKey = KeyCode.Q;
@@ -38,7 +47,7 @@ public class PlayerShield : MonoBehaviour, IResettable
     // 狀態追蹤
     public bool IsShieldActive => shieldObject != null && shieldObject.activeSelf;
     public float CurrentCooldownTimer => cooldownTimer;
-    public bool IsReady => cooldownTimer <= 0f && !IsShieldActive && IsShieldAllowedInCurrentScene();
+    public bool IsReady => shieldEnabled && cooldownTimer <= 0f && !IsShieldActive && IsShieldAllowedInCurrentScene();
 
     private float cooldownTimer = 0f;
     private Coroutine shieldCoroutine;
@@ -62,12 +71,33 @@ public class PlayerShield : MonoBehaviour, IResettable
         // 僅在允許的荒原關卡才初始化護盾物件
         if (IsShieldAllowedInCurrentScene())
         {
+            if (!shieldEnabled)
+            {
+                HideExistingShieldWithoutCreating();   // ★1009 取消護盾：不生成護盾球，原有的 Shield 照舊藏起來
+                return;
+            }
+
             EnsureShieldObject();
             if (shieldObject != null)
             {
                 shieldObject.SetActive(false);
             }
         }
+    }
+
+    /// <summary>
+    /// ★1009 取消護盾時用：只找現成的護盾物件藏起來，不自動生成新的球體。
+    /// </summary>
+    private void HideExistingShieldWithoutCreating()
+    {
+        GameObject s = shieldObject;
+        if (s == null && playerRoot != null)
+        {
+            Transform t = playerRoot.Find("Shield");
+            if (t == null) t = transform.Find("Shield");
+            if (t != null) s = t.gameObject;
+        }
+        if (s != null) s.SetActive(false);
     }
 
     /// <summary>
@@ -189,6 +219,9 @@ public class PlayerShield : MonoBehaviour, IResettable
 
     private void Update()
     {
+        // ★1009 取消護盾：關著就完全不監聽 Q
+        if (!shieldEnabled) return;
+
         // 若非允許使用護盾的關卡 (如 玻璃管、天空、水下)，完全不監聽按鍵，絕不觸發任何效果
         if (!IsShieldAllowedInCurrentScene()) return;
 
@@ -219,6 +252,7 @@ public class PlayerShield : MonoBehaviour, IResettable
 
     public void ActivateShield()
     {
+        if (!shieldEnabled) return;   // ★1009 取消護盾
         if (playerRoot == null) LocatePlayerRoot();
         EnsureShieldObject();
         if (shieldObject == null) return;

@@ -22,6 +22,14 @@ public class TeleportTrigger : MonoBehaviour
     [Tooltip("是否同時將玩家的「重生安全點」更新到目的地？(確保在上層城堡失足時在上層重生)")]
     public bool updateRespawnPoint = true;
 
+    [Header("★1009 踩上去先走兩步再傳送（1008 會議：登上最後的金色台階不要直接跳轉）")]
+    [Tooltip("踩上階梯後，她自己往前走幾米才傳送（約兩步）。0＝原本：碰到就傳送")]
+    public float walkBeforeTeleport = 1.6f;
+    [Tooltip("自己走的速度（米／秒，走路的速度，不是跑）")]
+    public float walkSpeed = 2.2f;
+    [Tooltip("最多走幾秒（被擋住也會照常傳送）")]
+    public float walkMaxSeconds = 1.5f;
+
     [Header("🌫️ 夢幻白色轉場設定")]
     [Tooltip("轉場過渡顏色 (天空場景預設純白，營造夢幻明亮氛圍)")]
     public Color transitionColor = new Color(1f, 1f, 1f, 1f);
@@ -261,6 +269,13 @@ public class TeleportTrigger : MonoBehaviour
             _isTeleporting = true;
             _teleportTriggered = true;
 
+            // ★1009 先讓她自己往前走兩步，再走下面原本的傳送
+            if (walkBeforeTeleport > 0.01f)
+            {
+                StartCoroutine(WalkThenTeleport(player));
+                return;
+            }
+
             // ① 立即凍結玩家所有輸入與物理移動（保持當前站立姿態，絕不下掉）
             player.isCutsceneFrozen = true;
             Rigidbody rb = player.GetComponent<Rigidbody>();
@@ -275,6 +290,43 @@ public class TeleportTrigger : MonoBehaviour
             // ② 啟動白色夢幻極速轉場協程
             StartCoroutine(WhiteFadeTeleportRoutine(player, rb));
         }
+    }
+
+    /// <summary>
+    /// ★1009 踩上最後一階：等她站穩（最多 0.6 秒），她自己往前走 walkBeforeTeleport 米（不超過階梯右緣），再接原本的白色傳送。
+    /// 走路借用 PlayerMovement 的風暴牽引（StartWindSuction：朝目標 x 用指定速度走、動畫照走），走完就關掉。
+    /// </summary>
+    private IEnumerator WalkThenTeleport(PlayerMovement player)
+    {
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+
+        float t = 0f;
+        while (t < 0.6f && !player.isGrounded) { t += Time.deltaTime; yield return null; }
+
+        float rightLimit = GetRightEdgeX() - bypassOffsetX - 0.6f;   // 不走出階梯
+        float startX = player.transform.position.x;
+        float targetX = Mathf.Min(startX + walkBeforeTeleport, rightLimit);
+        if (targetX > startX + 0.2f)
+        {
+            player.StartWindSuction(targetX, Mathf.Max(0.5f, walkSpeed));
+            t = 0f;
+            while (t < walkMaxSeconds && Mathf.Abs(player.transform.position.x - targetX) > 0.08f)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+            player.StopWindSuction();
+        }
+
+        // 接原本的傳送：凍結、速度歸零、白色轉場
+        player.isCutsceneFrozen = true;
+        if (rb != null && !rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        Debug.Log($"✨【階梯白色轉場】她在最後一階走了 {player.transform.position.x - startX:F1} 米，開始白色過渡至 '{destination.name}'");
+        yield return WhiteFadeTeleportRoutine(player, rb);
     }
 
     private IEnumerator WhiteFadeTeleportRoutine(PlayerMovement player, Rigidbody rb)

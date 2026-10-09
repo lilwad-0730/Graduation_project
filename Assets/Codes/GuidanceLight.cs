@@ -38,6 +38,20 @@ public class GuidanceLight : MonoBehaviour, IResettable
     [Tooltip("在此模式下，玩家要靠近到多少距離內，光絮才會飛往下一個點？(通常比追逐模式的距離更近)")]
     public float waitPlayerTriggerDistance = 3f;
 
+    [Header("★1009 棉花堡：光球移動時，鏡頭跟著光球（1008 會議 1a）")]
+    [Tooltip("開著＝沒有標籤的路徑點也改成：光球停在點上等她，她走近後她定住、鏡頭跟著光球飛到下一個點，停一下再回到她身上。\n關掉＝原本的「跑給她追」")]
+    public bool cameraFollowsOrbOnPlainWaypoints = true;
+    [Tooltip("只在這個場景用（空白＝所有場景）。水下、玻璃館的光球照舊")]
+    public string cameraFollowsOrbScene = "SampleScene";
+    [Tooltip("她跟光球的水平距離在這以內（或她已經走過光球），而且站在地上，就開始演出")]
+    public float plainCutsceneTriggerX = 3.5f;
+    [Tooltip("她跟光球的高度差在這以內，才算走近（棉花堡有幾個點懸在地面上 10～13 米：P2、P5、P10）")]
+    public float plainCutsceneTriggerY = 14f;
+    [Tooltip("下一個點比這個點「高」超過這個值就不飛：下層到上層由最後一階的傳送帶過去。往下的（例如最後飛到跳崖處）照飛")]
+    public float plainCutsceneMaxRise = 15f;
+    [Tooltip("演出時光球飛的速度（跑給她追的速度 moveSpeed 不變）")]
+    public float cutsceneFlySpeed = 14f;
+
     [Header("敘事鎖定延遲 (增加演出感)")]
     [Tooltip("觸發後，光絮在原地停留幾秒鐘才起飛？")]
     public float flyDelay = 0.5f;
@@ -115,6 +129,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
     private AudioSource hoverAudioSource;
     private CinemachineCamera _cutsceneVcam;      // 演出期間被借走 Follow 的相機
     private Transform _cutsceneOriginalFollow;    // 借走前的 Follow，結束時還回去
+
+    // ★1009 棉花堡演出：鏡頭跟光球改走 CameraTargetXFollower（保留區域固定高度與左右邊界，不會拍到背景圖外的藍底）
+    private Transform _camProxy;                       // 代替她被鏡頭跟的小點，跟著光球走、再走回她身上
+    private CameraTargetXFollower _camProxyOwner;
+    private Transform _camProxyOriginalTarget;
 
     // ── 演出期間的玩家鎖定（剛體、動畫、呼吸）──
     // ★0909：剛體約束與動畫速度的存檔／還原改由 PlayerCutsceneHold 統一管。
@@ -262,8 +281,40 @@ public class GuidanceLight : MonoBehaviour, IResettable
                 AdvanceWaypoint(pm, true);
             }
         }
+        // ★1009 規則 1b：棉花堡（沒有標籤的點）＝停在點上等她，她走近才演出「光球飛、鏡頭跟、她定住」
+        else if (UsePlainCutscene())
+        {
+            float dx = Mathf.Abs(player.position.x - logicPosition.x);
+            float dy = Mathf.Abs(player.position.y - logicPosition.y);
+            bool reachedX = dx <= plainCutsceneTriggerX || player.position.x > logicPosition.x;   // 跳過光球也算（棉花堡一路往右走）
+            bool grounded = pm == null || pm.isGrounded;                                         // 落地才演出，不在半空中定住
+            bool near = reachedX && dy <= plainCutsceneTriggerY && grounded;
+            if (distToWaypoint > 3f)
+            {
+                // 光球還不在這一點上（開場、重生、或最後一階把它帶到上層之後）：她走近才演出飛過去，不自己先飛走
+                if (near && pm != null) StartCoroutine(CutsceneFlightSequence(pm, cutsceneFlySpeed, false));
+            }
+            else
+            {
+                if (distToWaypoint > waypointSnapEpsilon)
+                {
+                    FlyTowards(currentWP.position);
+                }
+                if (arrivedAtWaypoint && near)
+                {
+                    int next = currentWaypointIndex + 1;
+                    bool nextTooFar = next < waypoints.Length && waypoints[next] != null
+                                      && (waypoints[next].position.y - currentWP.position.y) > plainCutsceneMaxRise;   // 只看往上
+                    if (!nextTooFar)
+                    {
+                        AdvanceWaypoint(pm, true, cutsceneFlySpeed);
+                    }
+                    // nextTooFar：在這裡等，最後一階的傳送（TeleportTrigger）會把光球一起帶到上層
+                }
+            }
+        }
         // 規則 1：預設模式 (跟玩家保持距離，跑給玩家追)
-        else 
+        else
         {
             if (!isWaitingForPlayerCatchup && distToPlayer > stopDistance)
             {
@@ -292,11 +343,19 @@ public class GuidanceLight : MonoBehaviour, IResettable
         logicPosition = Vector3.MoveTowards(logicPosition, targetPos, moveSpeed * Time.deltaTime);
     }
 
-    private void AdvanceWaypoint(PlayerMovement pm, bool freezePlayer)
+    /// <summary>★1009 這個場景、這個點要不要用「棉花堡演出」（沒有標籤的點才算；有標籤的照原本規則）</summary>
+    private bool UsePlainCutscene()
+    {
+        if (!cameraFollowsOrbOnPlainWaypoints) return false;
+        if (string.IsNullOrEmpty(cameraFollowsOrbScene)) return true;
+        return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == cameraFollowsOrbScene;
+    }
+
+    private void AdvanceWaypoint(PlayerMovement pm, bool freezePlayer, float flySpeed = -1f)
     {
         if (freezePlayer && pm != null && currentWaypointIndex + 1 < waypoints.Length)
         {
-            StartCoroutine(CutsceneFlightSequence(pm));
+            StartCoroutine(CutsceneFlightSequence(pm, flySpeed));
         }
         else
         {
@@ -305,7 +364,9 @@ public class GuidanceLight : MonoBehaviour, IResettable
         }
     }
 
-    private IEnumerator CutsceneFlightSequence(PlayerMovement pm)
+    /// <param name="flySpeed">★1009 演出時的飛行速度（-1＝原本的 moveSpeed）</param>
+    /// <param name="advance">★1009 true＝飛往下一個點（原本）；false＝飛往目前這個點（光球還沒到點上時）</param>
+    private IEnumerator CutsceneFlightSequence(PlayerMovement pm, float flySpeed = -1f, bool advance = true)
     {
         // 1. 立即停止玩家行動（一路鎖到鏡頭回到玩家身上為止）：剛體、動畫、氧氣一起鎖
         BeginPlayerHold(pm);
@@ -313,14 +374,22 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
         // 2. 鏡頭交給光絮：把場上啟用中的 Cinemachine 相機 Follow 暫時換成光絮。
         //    阻尼維持原設定，鏡頭會平滑地「沿著光絮的飛行路徑」移動，不硬切、不卡頓。
+        //    ★1009 先找「現在正在出畫面」的那台（SampleScene 有兩台 CinemachineCamera，原本隨便抓一台，可能抓到沒在用的 Cam_TopDown）
         _cutsceneVcam = null;
         _cutsceneOriginalFollow = null;
-        foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+        bool useProxy = flySpeed > 0f && BeginCamProxy();   // ★1009 棉花堡演出走這條
+        Camera mainCamForBrain = useProxy ? null : Camera.main;
+        CinemachineBrain brain = mainCamForBrain != null ? mainCamForBrain.GetComponent<CinemachineBrain>() : null;
+        if (brain != null) _cutsceneVcam = brain.ActiveVirtualCamera as CinemachineCamera;
+        if (_cutsceneVcam == null && !useProxy)
         {
-            if (v != null && v.isActiveAndEnabled)
+            foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Exclude))
             {
-                _cutsceneVcam = v;
-                break;
+                if (v != null && v.isActiveAndEnabled)
+                {
+                    _cutsceneVcam = v;
+                    break;
+                }
             }
         }
         if (_cutsceneVcam != null)
@@ -330,25 +399,58 @@ public class GuidanceLight : MonoBehaviour, IResettable
         }
 
         // 3. 停頓一下 (讓玩家感覺到「觸發了」某件事)
-        yield return new WaitForSeconds(flyDelay);
+        if (useProxy) yield return WaitWithCamProxy(flyDelay);
+        else yield return new WaitForSeconds(flyDelay);
 
         // 4. 切換目標點，開始飛行（鏡頭全程跟著光絮走）
-        currentWaypointIndex++;
-        maxWaypointReached = Mathf.Max(maxWaypointReached, currentWaypointIndex);
-        Transform nextWP = waypoints[currentWaypointIndex];
-
-        while (Vector3.Distance(logicPosition, nextWP.position) > waypointThreshold)
+        if (advance)
         {
-            FlyTowards(nextWP.position);
+            currentWaypointIndex++;
+            maxWaypointReached = Mathf.Max(maxWaypointReached, currentWaypointIndex);
+        }
+        Transform nextWP = waypoints[Mathf.Clamp(currentWaypointIndex, 0, waypoints.Length - 1)];
+
+        float speedThisFlight = flySpeed > 0f ? Mathf.Max(moveSpeed, flySpeed) : moveSpeed;   // ★1009 棉花堡演出飛快一點
+        float arriveAt = flySpeed > 0f ? Mathf.Max(waypointSnapEpsilon, 0.3f) : waypointThreshold;  // ★1009 演出要真的停在點上，鏡頭才會停在光球上
+        while (Vector3.Distance(logicPosition, nextWP.position) > arriveAt)
+        {
+            logicPosition = Vector3.MoveTowards(logicPosition, nextWP.position, speedThisFlight * Time.deltaTime);
+            if (useProxy) StepCamProxy(logicPosition, speedThisFlight);
             yield return null; // 等待下一幀
         }
 
         // 5. 光絮停下後，先讓鏡頭穩穩停在光絮上一小段
-        yield return new WaitForSeconds(unlockDelay);
+        if (useProxy) yield return WaitWithCamProxy(unlockDelay);
+        else yield return new WaitForSeconds(unlockDelay);
+
+        // 6'. ★1009 棉花堡演出：小點從光球走回她身上（鏡頭平順地搖回來，不硬切），再把跟隨目標還給她
+        if (useProxy)
+        {
+            float back = 0f;
+            while (_camProxy != null && _camProxyOriginalTarget != null && back < 4f
+                   && Vector3.Distance(_camProxy.position, _camProxyOriginalTarget.position) > 0.15f)
+            {
+                back += Time.deltaTime;
+                _camProxy.position = Vector3.MoveTowards(_camProxy.position, _camProxyOriginalTarget.position, Mathf.Max(24f, speedThisFlight * 1.6f) * Time.deltaTime);
+                yield return null;
+            }
+            Transform followNow = _camProxyOwner != null ? _camProxyOwner.transform : null;
+            EndCamProxy();
+            float waitStart2 = Time.unscaledTime;
+            while (followNow != null && Time.unscaledTime - waitStart2 < 3f)
+            {
+                Camera cam = Camera.main;
+                if (cam == null) break;
+                if (Mathf.Abs(cam.transform.position.x - followNow.position.x) < 1.5f) break;
+                yield return null;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
 
         // 6. 鏡頭還給玩家；等它「真的」回到玩家身上，才解鎖操作
         if (_cutsceneVcam != null)
         {
+            Transform returnTo = _cutsceneOriginalFollow != null ? _cutsceneOriginalFollow : player;
             if (_cutsceneOriginalFollow != null) _cutsceneVcam.Follow = _cutsceneOriginalFollow;
             else if (player != null) _cutsceneVcam.Follow = player;
             _cutsceneVcam = null;
@@ -358,8 +460,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
             {
                 Camera cam = Camera.main;
                 if (cam == null || player == null) break;
-                float dx = Mathf.Abs(cam.transform.position.x - player.position.x);
-                float dy = Mathf.Abs(cam.transform.position.y - player.position.y);
+                // ★1009 比「鏡頭原本跟的目標」（棉花堡是 CameraFollowTarget，會被關卡邊界夾住），不是比她本人；
+                //   原本比她本人，在關卡邊緣鏡頭永遠對不上，每次都要等滿 4 秒
+                Transform target = returnTo != null ? returnTo : player;
+                float dx = Mathf.Abs(cam.transform.position.x - target.position.x);
+                float dy = Mathf.Abs(cam.transform.position.y - target.position.y);
                 if (dx < 2.5f && dy < 7f) break;   // 垂直方向本來就有取景偏移，放寬判定
                 yield return null;
             }
@@ -375,12 +480,53 @@ public class GuidanceLight : MonoBehaviour, IResettable
     {
         // 保險：演出中途被停用／換場景時，把玩家鎖定與鏡頭 Follow 都還回去
         EndPlayerHold();
+        EndCamProxy();
         if (_cutsceneVcam != null)
         {
             if (_cutsceneOriginalFollow != null) _cutsceneVcam.Follow = _cutsceneOriginalFollow;
             else if (player != null) _cutsceneVcam.Follow = player;
             _cutsceneVcam = null;
         }
+    }
+
+    // ── ★1009 棉花堡演出的鏡頭小點 ──────────────────────────
+    /// <summary>把 CameraTargetXFollower 的跟隨目標暫時換成一個小點（從她身上出發），鏡頭就會沿用原本的高度與邊界去跟光球。</summary>
+    private bool BeginCamProxy()
+    {
+        CameraTargetXFollower ctx = CameraTargetXFollower.Instance != null ? CameraTargetXFollower.Instance : FindAnyObjectByType<CameraTargetXFollower>();
+        if (ctx == null || !ctx.isActiveAndEnabled || player == null) return false;
+        if (_camProxy == null) _camProxy = new GameObject("[光球演出鏡頭小點]").transform;
+        _camProxyOwner = ctx;
+        _camProxyOriginalTarget = ctx.targetToFollow != null && ctx.targetToFollow != _camProxy ? ctx.targetToFollow : player;
+        _camProxy.position = _camProxyOriginalTarget.position;
+        ctx.targetToFollow = _camProxy;
+        return true;
+    }
+
+    /// <summary>小點往光球走（一幀最多走幾十公分，鏡頭那邊不會誤判成瞬移而硬切）。</summary>
+    private void StepCamProxy(Vector3 target, float orbSpeed)
+    {
+        if (_camProxy == null) return;
+        _camProxy.position = Vector3.MoveTowards(_camProxy.position, target, Mathf.Max(24f, orbSpeed * 1.6f) * Time.deltaTime);
+    }
+
+    private IEnumerator WaitWithCamProxy(float seconds)
+    {
+        float t = 0f;
+        while (t < seconds)
+        {
+            t += Time.deltaTime;
+            StepCamProxy(logicPosition, moveSpeed);
+            yield return null;
+        }
+    }
+
+    private void EndCamProxy()
+    {
+        if (_camProxyOwner != null && _camProxyOwner.targetToFollow == _camProxy)
+            _camProxyOwner.targetToFollow = _camProxyOriginalTarget != null ? _camProxyOriginalTarget : player;
+        _camProxyOwner = null;
+        _camProxyOriginalTarget = null;
     }
 
     private void StartAbsorbSequence(PlayerMovement pm)
