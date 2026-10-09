@@ -18,6 +18,12 @@ public class PolygonToMeshCollider : MonoBehaviour
 
     private void Start()
     {
+        if (Application.isPlaying && IsRuinsStoneStep())
+        {
+            GenerateStableRuinsStepCollider();
+            return;
+        }
+
         if (Application.isPlaying && IsManualColliderManagedCloudSlope())
         {
             DisableGeneratedColliderChild();
@@ -56,6 +62,12 @@ public class PolygonToMeshCollider : MonoBehaviour
     [ContextMenu("手動生成 3D 碰撞網格 (Generate)")]
     public void Generate3DCollider()
     {
+        if (IsRuinsStoneStep())
+        {
+            GenerateStableRuinsStepCollider();
+            return;
+        }
+
         if (IsManualColliderManagedCloudSlope())
         {
             DisableGeneratedColliderChild();
@@ -184,6 +196,82 @@ public class PolygonToMeshCollider : MonoBehaviour
         }
 
         Debug.Log($"[{gameObject.name}] 已成功生成 3D 碰撞網格，放置於子物件 {childName} 中！");
+    }
+
+    private bool IsRuinsStoneStep()
+    {
+        return gameObject.name == "Stone Step" || gameObject.name == "Stone Step2";
+    }
+
+    private void GenerateStableRuinsStepCollider()
+    {
+        PolygonCollider2D poly2D = GetComponent<PolygonCollider2D>();
+        if (poly2D == null || poly2D.pathCount == 0) return;
+
+        bool hasPoint = false;
+        Bounds localBounds = new Bounds(Vector3.zero, Vector3.zero);
+        for (int p = 0; p < poly2D.pathCount; p++)
+        {
+            Vector2[] points = poly2D.GetPath(p);
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (!hasPoint)
+                {
+                    localBounds = new Bounds(points[i], Vector3.zero);
+                    hasPoint = true;
+                }
+                else
+                {
+                    localBounds.Encapsulate(points[i]);
+                }
+            }
+        }
+        if (!hasPoint) return;
+
+        string meshChildName = "Generated_3D_Collider";
+        Transform meshChild = transform.Find(meshChildName);
+        if (meshChild != null)
+        {
+            MeshCollider meshCollider = meshChild.GetComponent<MeshCollider>();
+            if (meshCollider != null) meshCollider.enabled = false;
+            meshChild.gameObject.SetActive(false);
+        }
+
+        string childName = "Generated_Stable_Step_Collider";
+        Transform childTransform = transform.Find(childName);
+        GameObject childObj;
+        if (childTransform != null)
+        {
+            childObj = childTransform.gameObject;
+        }
+        else
+        {
+            childObj = new GameObject(childName);
+            childObj.transform.SetParent(transform, false);
+        }
+
+        childObj.SetActive(true);
+        childObj.layer = gameObject.layer;
+        childObj.tag = gameObject.tag;
+        childObj.transform.localPosition = Vector3.zero;
+        childObj.transform.localRotation = Quaternion.identity;
+        childObj.transform.localScale = Vector3.one;
+
+        BoxCollider box = childObj.GetComponent<BoxCollider>();
+        if (box == null) box = childObj.AddComponent<BoxCollider>();
+
+        const float surfaceThickness = 0.5f;
+        box.isTrigger = false;
+        box.enabled = true;
+        box.size = new Vector3(localBounds.size.x, surfaceThickness, Mathf.Max(0.2f, depth));
+        box.center = new Vector3(localBounds.center.x, localBounds.max.y - surfaceThickness * 0.5f, 0f);
+
+        if (Application.isPlaying)
+        {
+            poly2D.enabled = false;
+        }
+
+        Debug.Log($"[{gameObject.name}] 已改用穩定薄 BoxCollider 作為廢墟階梯可走面，避免 MeshCollider 邊緣卡腳或漏踩。");
     }
 
     private bool IsManualColliderManagedCloudSlope()

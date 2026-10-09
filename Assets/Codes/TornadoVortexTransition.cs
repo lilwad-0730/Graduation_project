@@ -10,6 +10,8 @@ using UnityEngine;
 /// </summary>
 public class TornadoVortexTransition : MonoBehaviour
 {
+    public static bool IsAnyTransitioning { get; private set; }
+
     [Header("🎯 傳送目的地")]
     [Tooltip("傳送的目的地 Transform (例如 下一關起點 或 下層場景)")]
     public Transform destination;
@@ -32,8 +34,14 @@ public class TornadoVortexTransition : MonoBehaviour
 
     private bool _isTransitioning = false;
 
+    private void OnDisable()
+    {
+        if (_isTransitioning) IsAnyTransitioning = false;
+    }
+
     private void Awake()
     {
+        IsAnyTransitioning = false;
         EnsureCollider();
     }
 
@@ -104,6 +112,7 @@ public class TornadoVortexTransition : MonoBehaviour
     private IEnumerator VortexSuctionRoutine(PlayerMovement pm)
     {
         _isTransitioning = true;
+        IsAnyTransitioning = true;
         Debug.Log($"🌪️【暴風轉場】主角踏入風暴吸入區！開始吸入演出...");
 
         // 播放狂風咆哮音效
@@ -174,6 +183,7 @@ public class TornadoVortexTransition : MonoBehaviour
         }
 
         _isTransitioning = false;
+        IsAnyTransitioning = false;
         Debug.Log($"✨【暴風轉場完成】主角已被暴風完全吞噬並轉場至 '{destination.name}'！");
     }
 

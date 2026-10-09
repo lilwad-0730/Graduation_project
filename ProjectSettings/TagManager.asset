@@ -21,6 +21,7 @@ TagManager:
   - DeathZone
   - Waypoint_WaitPlayer
   - Waypoint_Touch
+  - Waypoint_TouchCloseup
   - Waypoint_Absorb
   - lb_groundTarget
   - lb_perchTarget

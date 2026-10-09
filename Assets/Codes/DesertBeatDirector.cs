@@ -120,7 +120,7 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("★1008 開局時若存檔裡的排程數值是舊版本，就自動換成程式裡最新的建議值（Inspector 存的舊值會蓋掉程式預設，這是上次放行名額一直不夠的原因）。勾選＝完全照你 Inspector 的數字，不再自動換")]
     public bool keepMyInspectorValues = false;
     [HideInInspector] public int tuningVersion = 0;
-    private const int CurrentTuningVersion = 3;
+    private const int CurrentTuningVersion = 5;
 
     [Header("★1006 Debug（預設關閉；事件才印 log，沒有每幀 log）")]
     [Tooltip("開啟後印 [BIRD DETECT]／[QUEUED]／[BLOCKED-WIND]／[BLOCKED-SHADOW]／[SLOT]／[LOCK]／[WARNING]／[DIVE]／[HIT]／[RETREAT]／[CANCEL]／[REMOVED]，" +
@@ -159,11 +159,37 @@ public class DesertBeatDirector : MonoBehaviour
 
     [Header("★1015 垂直慢速墜落（開局統一覆蓋每隻鳥）")]
     [Tooltip("下降階段垂直速度 (公尺/秒)。0＝不覆蓋。3＝慢速彈幕，想更慢 2.5、更快 4")]
-    public float birdDescentSpeed = 3f;
+    public float birdDescentSpeed = 3.6f;
     [Tooltip("下降前水平對準的最高速度 (公尺/秒)。0＝不覆蓋。不建議超過 10")]
-    public float birdAlignSpeed = 7f;
-    [Tooltip("是否顯示既有的紅色攻擊輔助線。企劃決定先不做提示，預設取消勾選（所有鳥統一覆蓋）")]
-    public bool birdShowTelegraph = false;
+    public float birdAlignSpeed = 8.5f;
+    [Tooltip("是否顯示既有的紅色攻擊輔助線。先暫時打開方便測試；之後角度提示穩定後可關掉。")]
+    public bool birdShowTelegraph = true;
+
+    [Header("★1016 鳥群強度與增援")]
+    [Tooltip("整體鳥群壓力倍率。1＝基準；提高會讓增援數量與增援機率變高，並讓下降/對準速度略快。")]
+    [Range(0.5f, 3f)] public float birdAttackIntensity = 1.2f;
+    [Tooltip("開啟後，鳥第一次偵測到玩家時有機率複製出增援鳥。增援鳥不會再生增援，避免失控。")]
+    public bool enableBirdReinforcements = true;
+    [Tooltip("每隻原生鳥觸發增援的基礎機率。會再乘 birdAttackIntensity。")]
+    [Range(0f, 1f)] public float birdReinforcementChance = 0.35f;
+    [Tooltip("觸發增援時至少複製幾隻。0＝有機率不加，主要靠 Max/近距離加量。")]
+    [Range(0, 5)] public int birdReinforcementMinCopies = 0;
+    [Tooltip("觸發增援時最多複製幾隻。會再受 birdAttackIntensity 影響。")]
+    [Range(0, 6)] public int birdReinforcementMaxCopies = 1;
+    [Tooltip("玩家離鳥低於這個水平距離時，視為壓力區，會額外加複製數量。")]
+    public float birdNearReinforcementDistance = 7f;
+    [Tooltip("近距離時額外最多複製幾隻。會再受 birdAttackIntensity 影響。")]
+    [Range(0, 6)] public int birdNearExtraCopies = 2;
+    [Tooltip("增援鳥生成時的水平散布範圍，避免全部重疊。")]
+    public float birdReinforcementSpreadX = 4f;
+    [Tooltip("增援鳥生成時的高度亂數。高度基準仍沿用原鳥，你要調高度可直接調場景鳥。")]
+    public float birdReinforcementHeightJitter = 1f;
+    [Tooltip("增援鳥生成後，隨機等待 0～此秒數再進排程。")]
+    public float birdReinforcementAttackDelayMax = 0.35f;
+    [Tooltip("場上同時存在的增援鳥上限。0＝不限制；建議保留上限，避免效能突然爆量。")]
+    public int birdMaxActiveReinforcements = 24;
+    [Tooltip("玩家通過鳥原始位置這麼遠後，待機/排隊中的鳥會消失並停止攻擊。0＝關閉。")]
+    public float birdDespawnBehindPlayerDistance = 22f;
 
     [Header("找地面")]
     [Tooltip("射線找不到地面時用的 y（掩體柱腳大約在 -6.3）")]
@@ -229,7 +255,7 @@ public class DesertBeatDirector : MonoBehaviour
 
         if (!keepMyInspectorValues && tuningVersion < CurrentTuningVersion)
         {
-            Debug.Log($"[DesertBeatDirector] 排程數值是舊版本（v{tuningVersion}），已換成最新建議值：v3 含「超出範圍的鳥也繼續排隊攻擊」（保留範圍 3 倍、預判上限 5 秒／30 公尺）；間隔 {slotIntervalSeconds}→0.2、每輪空檔 {restAfterRoundSeconds}→0.4、每輪 {attacksPerRound}→4 次、同時上限 {maxSimultaneousAttacks}→6（壓力加成最多到 10）。想用自己的數字請勾 Keep My Inspector Values。");
+            Debug.Log($"[DesertBeatDirector] 排程數值是舊版本（v{tuningVersion}），已換成最新建議值：v5 含鳥群增援、通過後退場、速度小幅提高、紅線暫時開回；間隔 {slotIntervalSeconds}→0.2、每輪空檔 {restAfterRoundSeconds}→0.4、每輪 {attacksPerRound}→4 次、同時上限 {maxSimultaneousAttacks}→6（壓力加成最多到 10）。想用自己的數字請勾 Keep My Inspector Values。");
             slotIntervalSeconds = 0.2f;
             restAfterRoundSeconds = 0.4f;
             attacksPerRound = 4;
@@ -242,6 +268,21 @@ public class DesertBeatDirector : MonoBehaviour
             requestKeepRangeMultiplier = 3f;
             birdMaxPredictionTime = 5f;
             birdPredictionDistanceLimit = 30f;
+            birdDescentSpeed = 3.6f;
+            birdAlignSpeed = 8.5f;
+            birdShowTelegraph = true;
+            birdAttackIntensity = 1.2f;
+            enableBirdReinforcements = true;
+            birdReinforcementChance = 0.35f;
+            birdReinforcementMinCopies = 0;
+            birdReinforcementMaxCopies = 1;
+            birdNearReinforcementDistance = 7f;
+            birdNearExtraCopies = 2;
+            birdReinforcementSpreadX = 4f;
+            birdReinforcementHeightJitter = 1f;
+            birdReinforcementAttackDelayMax = 0.35f;
+            birdMaxActiveReinforcements = 24;
+            birdDespawnBehindPlayerDistance = 22f;
             tuningVersion = CurrentTuningVersion;
         }
 
@@ -262,6 +303,7 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.requestKeepRangeMultiplier = requestKeepRangeMultiplier;
         BirdAttackScheduler.behindPenaltyMeters = behindPenaltyMeters;
         BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
+        ApplyBirdIntensitySettings();
 
         ApplyShelters(log);
         ApplyWindFreeZone(log);
@@ -336,6 +378,22 @@ public class DesertBeatDirector : MonoBehaviour
         log.Append(" 掩體 ").Append(shelters.Length).Append(" 座（拍一改真 ").Append(flipped).Append("、風堆 ").Append(drift).Append("）；");
     }
 
+    private void ApplyBirdIntensitySettings()
+    {
+        IndividualBirdEnemy.EnableReinforcements = enableBirdReinforcements;
+        IndividualBirdEnemy.ReinforcementIntensity = Mathf.Max(0.1f, birdAttackIntensity);
+        IndividualBirdEnemy.ReinforcementChance = birdReinforcementChance;
+        IndividualBirdEnemy.ReinforcementMinCopies = birdReinforcementMinCopies;
+        IndividualBirdEnemy.ReinforcementMaxCopies = birdReinforcementMaxCopies;
+        IndividualBirdEnemy.ReinforcementNearDistance = birdNearReinforcementDistance;
+        IndividualBirdEnemy.ReinforcementNearExtraCopies = birdNearExtraCopies;
+        IndividualBirdEnemy.ReinforcementSpreadX = Mathf.Max(0f, birdReinforcementSpreadX);
+        IndividualBirdEnemy.ReinforcementHeightJitter = Mathf.Max(0f, birdReinforcementHeightJitter);
+        IndividualBirdEnemy.ReinforcementAttackDelayMax = Mathf.Max(0f, birdReinforcementAttackDelayMax);
+        IndividualBirdEnemy.ReinforcementActiveLimit = Mathf.Max(0, birdMaxActiveReinforcements);
+        IndividualBirdEnemy.DespawnBehindPlayerDistance = Mathf.Max(0f, birdDespawnBehindPlayerDistance);
+    }
+
     private void ApplyBirds(System.Text.StringBuilder log)
     {
         List<IndividualBirdEnemy> birds = new List<IndividualBirdEnemy>();
@@ -374,8 +432,9 @@ public class DesertBeatDirector : MonoBehaviour
             b.predictionLooseMin = predictionLooseMin;
             b.predictionLooseMax = predictionLooseMax;
             b.hitRadius = birdHitRadius;
-            if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed;
-            if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed;
+            float speedBoost = Mathf.Lerp(1f, 1.15f, Mathf.Clamp01(birdAttackIntensity - 1f));
+            if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed * speedBoost;
+            if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed * speedBoost;
             b.showAttackTelegraph = birdShowTelegraph;
 
             if (x < beat1End)
@@ -443,7 +502,10 @@ public class DesertBeatDirector : MonoBehaviour
         log.Append(" 鳥 ").Append(birds.Count).Append(" 隻（拍一移除 ").Append(removed1)
            .Append("、拍二留 ").Append(beat2Kept).Append(" 去 ").Append(thinned)
            .Append("、拍三錯開 ").Append(staggered).Append("、拍四移除 ").Append(removed4)
-           .Append("、示範俯衝 ").Append(demoBird != null ? demoBird.name : "無").Append("）；");
+           .Append("、示範俯衝 ").Append(demoBird != null ? demoBird.name : "無")
+           .Append("、強度x").Append(birdAttackIntensity.ToString("F1"))
+           .Append("、增援").Append(enableBirdReinforcements ? "開" : "關")
+           .Append("、通過退場").Append(birdDespawnBehindPlayerDistance.ToString("F0")).Append("m）；");
 
         // ★1006 鳥的分類（一次講清楚哪些是會攻擊的鳥、哪些是裝飾）
         int totalComps = FindObjectsByType<IndividualBirdEnemy>(FindObjectsSortMode.None).Length;

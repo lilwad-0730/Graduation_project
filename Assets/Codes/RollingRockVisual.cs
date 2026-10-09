@@ -32,7 +32,7 @@ public class RollingRockVisual : MonoBehaviour
 
     [Header("物理與音效設定")]
     [Tooltip("巨石的質量 (重量，預設 20f)")]
-    public float mass = 20f;
+    public float mass = 80f;
     [Tooltip("巨石砸落地面時的撞擊音效 (例如 落石2)")]
     public AudioClip impactSFX;
     [Range(0f, 1f)] public float impactVolume = 0.9f;
@@ -248,10 +248,10 @@ public class RollingRockVisual : MonoBehaviour
     // 不碰 boulderAcceleration／boulderBraking／boulderMaxSpeed，也不用 AddForce，所以正常推石完全沒變。
     [Header("★1002 失敗下滾（狼咬失敗時才會用到）")]
     [Tooltip("下滾時沿坡面的目標速度 (單位/秒)")]
-    public float rollbackSpeed = 7f;
+    public float rollbackSpeed = 2.4f;
 
     [Tooltip("下滾時往目標速度加速的加速度 (單位/秒²)")]
-    public float rollbackAcceleration = 14f;
+    public float rollbackAcceleration = 4f;
 
     [Tooltip("地面法線與水平的夾角小於這個角度，才算「滾到平面了」(度)")]
     public float rollbackFlatAngle = 5f;
@@ -263,7 +263,11 @@ public class RollingRockVisual : MonoBehaviour
     public float rollbackMinDistance = 4f;
 
     [Tooltip("到平面後石頭減速到停下的減速度 (單位/秒²)")]
-    public float rollbackFlatBrake = 8f;
+    public float rollbackFlatBrake = 3f;
+
+    [Tooltip("失敗下滾時，巨石把玩家往後帶的速度倍率。越小玩家被推得越慢；只影響狼咬後的壓迫流程，不影響正常推石。")]
+    [Range(0.1f, 1.2f)]
+    public float rollbackPlayerCarryMultiplier = 0.65f;
 
     /// <summary>是否正在失敗下滾。</summary>
     public bool IsRollingBack { get; private set; }
@@ -423,7 +427,7 @@ public class RollingRockVisual : MonoBehaviour
             // ★1004 坡腳凹角：順坡向下的速度會把玩家的底角直接頂進平地地板，卡在夾角。
             //   往前掃一小段，前面有地形（不是石頭、不是 Trigger）就把速度沿接觸面滑開：
             //   碰到平地 → 變成純水平，順勢被石頭押著沿地板往前；沒有障礙時完全等於原本的 newV。
-            Vector3 carry = newV;
+            Vector3 carry = newV * Mathf.Max(0.1f, rollbackPlayerCarryMultiplier);
             Vector3 dir3 = new Vector3(carry.x, carry.y, 0f);
             float dist = dir3.magnitude * Time.fixedDeltaTime * 2f + 0.08f;
             if (dir3.sqrMagnitude > 0.01f
@@ -436,8 +440,8 @@ public class RollingRockVisual : MonoBehaviour
             {
                 carry = Vector3.ProjectOnPlane(dir3, new Vector3(hit.normal.x, hit.normal.y, 0f).normalized);
                 carry.z = 0f;
-                // 滑開後不能比石頭水平速度還慢，不然石頭又追上來擠她
-                if (Mathf.Abs(carry.x) < Mathf.Abs(newV.x) * 0.9f) carry.x = newV.x;
+                float minCarryX = Mathf.Abs(newV.x) * Mathf.Max(0.1f, rollbackPlayerCarryMultiplier) * 0.9f;
+                if (Mathf.Abs(carry.x) < minCarryX) carry.x = Mathf.Sign(newV.x) * minCarryX;
             }
             _rollbackPlayerRb.linearVelocity = carry;
         }
@@ -567,7 +571,7 @@ public class RollingRockVisual : MonoBehaviour
                 if (IsRollingBack)
                 {
                     _rollbackPlayerContactTime = Time.time;
-                    pm.ApplyExternalSlopePush(new Vector3(rb.linearVelocity.x, 0f, 0f));
+                    pm.ApplyExternalSlopePush(new Vector3(rb.linearVelocity.x * Mathf.Max(0.1f, rollbackPlayerCarryMultiplier), 0f, 0f));
                     return;
                 }
 

@@ -13,6 +13,7 @@ using System.Collections;
 [RequireComponent(typeof(Collider))]
 public class StormSceneTransition : MonoBehaviour
 {
+    public static bool IsAnyTransitioning { get; private set; }
 
     [Header("📜 過場文字卡")]
     [Tooltip("黑幕全黑後、載入下一關前要播的文字卡。留空＝不播")]
@@ -42,8 +43,14 @@ public class StormSceneTransition : MonoBehaviour
     private bool isTransitioning = false;
     private UnityEngine.UI.Image fadeImage;
 
+    private void OnDisable()
+    {
+        if (isTransitioning) IsAnyTransitioning = false;
+    }
+
     private void Awake()
     {
+        IsAnyTransitioning = false;
         EnsureColliderSetup();
     }
 
@@ -141,6 +148,7 @@ public class StormSceneTransition : MonoBehaviour
 
     private IEnumerator VortexSuctionAndTransition(PlayerMovement pm)
     {
+        IsAnyTransitioning = true;
         Debug.Log($"🌪️【風暴吸入轉場】主角踏入固定轉場區域！啟動水平 X 引力吸入與原地奔跑演出...");
 
         // 1. 啟動背景龍捲風跟隨 (若有指定)
