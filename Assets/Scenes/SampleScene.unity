@@ -414,6 +414,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &19746637
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 19746638}
+  m_Layer: 0
+  m_Name: P12
+  m_TagString: Waypoint_TouchCloseup
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &19746638
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19746637}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 92.2, y: -113.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1075336708}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &23180636
 GameObject:
   m_ObjectHideFlags: 0
@@ -2164,6 +2195,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 134373641}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &149181804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 149181805}
+  m_Layer: 0
+  m_Name: P14
+  m_TagString: Waypoint_TouchCloseup
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &149181805
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149181804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 274, y: -82, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1075336708}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &177304934
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4136,7 +4198,7 @@ GameObject:
   - component: {fileID: 300902028}
   m_Layer: 0
   m_Name: P2
-  m_TagString: Untagged
+  m_TagString: Waypoint_Touch
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6274,7 +6336,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.28229, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.259754, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9537,7 +9599,7 @@ GameObject:
   - component: {fileID: 733639229}
   m_Layer: 0
   m_Name: P1
-  m_TagString: Untagged
+  m_TagString: Waypoint_TouchCloseup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11846,10 +11908,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WolfEnemy
   fastChaseSpeed: 6
   slowChaseSpeed: 5
-  retreatSpeed: -2.7
-  retreatSpeedMultiplier: 1.3
-  minRetreatSpeed: 0.6
-  maxRetreatDistance: 18
+  retreatSpeed: -5
+  retreatSpeedMultiplier: 2
+  minRetreatSpeed: 2.5
+  maxRetreatDistance: 30
   runDistanceThreshold: 18
   aggroDistanceX: 22
   giveUpDistanceX: 24
@@ -11858,12 +11920,12 @@ MonoBehaviour:
   desyncTransitionSpeed: 2
   individualSpeedBiasRatio: 0
   currentEffectiveSpeedMultiplier: 1
-  minimumChaseSpeedAbovePlayer: 0.4
+  minimumChaseSpeedAbovePlayer: 0.55
   defaultPlayerSpeed: 5
   useAdaptivePlayerReference: 1
-  finalChaseSpeedRatio: 1.05
+  finalChaseSpeedRatio: 1.2
   biteApproachDistance: 2.5
-  minClosingSpeed: 0.8
+  minClosingSpeed: 1.6
   minPlayerReferenceSpeed: 2.5
   playerSpeedSmoothing: 0.25
   collidersToIgnore:
@@ -11904,7 +11966,7 @@ MonoBehaviour:
   attachedGroundFollowYSpeed: 30
   attachedGroundSkin: 0.02
   attachedGroundMaxSnapDown: 0.75
-  slopeChaseMultiplier: 1.2
+  slopeChaseMultiplier: 1.25
   enableStuckRecovery: 1
   stuckSeconds: 0.3
   stuckLiftHeight: 0.15
@@ -18583,6 +18645,9 @@ Transform:
   - {fileID: 622203818}
   - {fileID: 2132239886}
   - {fileID: 2132239888}
+  - {fileID: 19746638}
+  - {fileID: 1734204752}
+  - {fileID: 149181805}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1081794022
@@ -23328,7 +23393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8de1a3281e7c3b4d80f281ac7cfbfe6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RollingRockVisual
-  mass: 20
+  mass: 80
   impactSFX: {fileID: 8300000, guid: c82b1f686d675c44d807751e599e7df2, type: 3}
   impactVolume: 0.9
   slopePushVisualPull: 1.2
@@ -23336,12 +23401,12 @@ MonoBehaviour:
   boulderAcceleration: 12
   boulderBraking: 10
   boulderMaxSpeed: 8
-  rollbackSpeed: 10
-  rollbackAcceleration: 20
+  rollbackSpeed: 2.4
+  rollbackAcceleration: 4
   rollbackFlatAngle: 5
   rollbackFlatStableSeconds: 0.35
   rollbackMinDistance: 4
-  rollbackFlatBrake: 8
+  rollbackFlatBrake: 3
   debugPushGapLog: 0
 --- !u!1 &1473894181
 GameObject:
@@ -26734,6 +26799,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 6.4774494, y: 0.7005463, z: 1}
   m_Center: {x: -0.48849717, y: -0.18224275, z: 0}
+--- !u!1 &1734204751
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1734204752}
+  m_Layer: 0
+  m_Name: P13
+  m_TagString: Waypoint_TouchCloseup
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1734204752
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1734204751}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 143.4, y: -105.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1075336708}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1742491846
 GameObject:
   m_ObjectHideFlags: 0
@@ -27867,7 +27963,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1865603112017772760, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 198
+      value: 246.1
       objectReference: {fileID: 0}
     - target: {fileID: 1865603112017772760, guid: 8e329fe21c043a1459b57cfea18d3f50, type: 3}
       propertyPath: m_LocalPosition.y
@@ -29273,7 +29369,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.28229, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.259754, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34253,6 +34349,9 @@ MonoBehaviour:
   - {fileID: 622203818}
   - {fileID: 2132239886}
   - {fileID: 2132239888}
+  - {fileID: 19746638}
+  - {fileID: 1734204752}
+  - {fileID: 149181805}
   moveSpeed: 9
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
@@ -34263,6 +34362,8 @@ MonoBehaviour:
   waitPlayerTriggerDistance: 2
   flyDelay: 0.5
   unlockDelay: 0.5
+  closeupLensSize: 10
+  closeupLensLerpSpeed: 6
   bobHeight: 0.3
   bobSpeed: 3
   absorbTriggerDistance: 1.5
@@ -35615,7 +35716,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.28229, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.259754, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35914,11 +36015,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.289303
+      value: -31.24648
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.18
+      value: 17.179996
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -35956,7 +36057,7 @@ Transform:
   m_GameObject: {fileID: 9120000000000000001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 215.5, y: -108, z: 0}
+  m_LocalPosition: {x: 257.9, y: -108, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

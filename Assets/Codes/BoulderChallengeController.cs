@@ -2,21 +2,18 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// ★1002 廢墟巨石挑戰：「狼咬到第一口 → 失敗 → 巨石下滾押人下坡 → 離開坡面 → 場景內重置」的總指揮。
+/// ★1002/1017 廢墟巨石挑戰：「狼咬到第一口 → 巨石慢速壓迫下滾 → 狼咬滿門檻才重生」的總指揮。
 ///
 /// 流程：
-///   1. PlayerMovement.AddWolf() 呼叫 NotifyWolfBite()。挑戰進行中（石頭已解鎖）時，第一隻咬到就進入失敗：
-///        ・玩家鎖操作（isCutsceneFrozen）：不能按前進抵抗，但仍會被石頭推著走
-///        ・沒咬住的狼全部停下、不再咬人（WolfEnemy.ChallengeFailHalt）
-///        ・石頭進入 Rollback：沿目前坡面往下滾（RollingRockVisual.BeginRollback）
-///        ・舊的「咬滿 N 隻才死」這段不再走（AddWolf 直接 return）
-///   2. 石頭滾進平面（法線夠平、連續穩定、滾夠遠）才重置；Fail Exit 碰到（也要滾夠遠）是輔助，逾時是最後保險。
-///   3. 重置沿用既有 PlayerRespawnSystem.TriggerRespawn(位置)：黑屏、全場景 IResettable 重置（狼出生點、拉桿、
-///      鳥…）、把玩家傳到 Challenge Player Spawn。巨石在黑屏中、玩家傳送前先放回 Boulder Spawn。
+///   1. PlayerMovement.AddWolf() 呼叫 NotifyWolfBite()。挑戰進行中（石頭已解鎖）時，第一隻咬到只啟動壓迫：
+///        ・不鎖玩家操作：坡上巨石下滾時推不動、只會被帶著走；平地照常可走可推。
+///        ・其他狼不再被停掉，仍可追上繼續咬。
+///        ・石頭進入 Rollback：沿目前坡面慢速往下滾。
+///        ・AddWolf 不被吞掉，咬住數照常累積，達到 PlayerMovement.wolvesToRespawn 才重生。
+///   2. 重置沿用既有 PlayerRespawnSystem 的黑屏重生事件；巨石在黑屏中、玩家傳送前先放回 Boulder Spawn。
 ///      不重載場景。
 ///
-/// 沒設定好（沒拖 Player Spawn、找不到石頭）或挑戰還沒開始（石頭還鎖著）→ NotifyWolfBite 回傳 false，
-/// 舊的狼咬流程原封不動，所以這支掛上去之前行為完全沒變。
+/// 沒設定好（沒拖 Player Spawn、找不到石頭）或挑戰還沒開始（石頭還鎖著）→ 只走原本狼咬流程。
 /// </summary>
 public class BoulderChallengeController : MonoBehaviour
 {
@@ -36,24 +33,60 @@ public class BoulderChallengeController : MonoBehaviour
     [Tooltip("狼咬到之後，到巨石開始下滾之間的停頓 (秒)。給玩家一個「被咬了」的瞬間")]
     public float rollbackStartDelay = 0.3f;
 
-    [Tooltip("巨石滾進平面（RollingRockVisual 判定：法線夠平、連續穩定、滾夠遠）之後，再等多久才重置 (秒)。讓石頭減速、玩家被壓到定位")]
+    [Tooltip("觸發備援重生前的等待秒數。到平面、卡住、逾時都會先等這段時間，讓畫面不要硬切。")]
     public float afterFlatDelay = 0.8f;
 
-    [Tooltip("最後保險：下滾開始後超過這麼多秒還沒滾到平面也沒碰到 Fail Exit，才強制重置。正常情況不該用到")]
+    [Tooltip("壓迫開始後超過這麼多秒仍沒有被狼咬滿時，啟用備援重生。設 0 或負數＝關閉逾時備援。")]
     public float maxRollbackSeconds = 15f;
+
+    [Header("防卡死備援")]
+    [Tooltip("巨石滾到平面後，如果玩家還沒被狼咬滿，是否直接觸發重生。")]
+    public bool respawnWhenRollbackReachesFlat = true;
+
+    [Tooltip("玩家被壓迫流程鎖住後，幾乎沒有位移持續這麼久，就判定卡死並觸發重生。設 0 或負數＝關閉卡住備援。")]
+    public float stuckRespawnSeconds = 4f;
+
+    [Tooltip("玩家位移大於這個距離就視為還有在動，會重置卡住計時。")]
+    public float stuckMovementThreshold = 0.25f;
+
+    [Tooltip("巨石開始下滾後先寬限幾秒，再開始計算玩家卡住時間，避免剛起步就誤判。")]
+    public float stuckCheckGraceSeconds = 1f;
+
+    [Tooltip("壓迫流程逾時時是否觸發重生。關掉則只印警告，通常建議保持開啟避免卡死。")]
+    public bool respawnOnRollbackTimeout = true;
 
     [Tooltip("重置後巨石是否直接解鎖（可以推）。關掉＝巨石鎖在 Boulder Spawn，要重新拉拉桿")]
     public bool unlockBoulderAfterReset = true;
+
+    [Tooltip("玩家腳下坡度（度）達到這個值，被狼咬到才會觸發巨石強推。低於它視為平地，只走一般狼咬。")]
+    public float minSlopeAngleForPressure = 8f;
 
     private Rigidbody _boulderRb;
     private bool _failing;
     private bool _rollbackStarted;
     private bool _exitReached;
     private bool _resetPending;
+    private bool _resetRoutineStarted;
     private PlayerMovement _player;
 
     /// <summary>失敗流程進行中（咬到第一口 → 重置完成之前）。</summary>
     public static bool IsFailing => Instance != null && Instance._failing;
+
+    /// <summary>
+    /// 巨石壓迫期間（咬到第一口 → 重置完成之前）不管是哪條路觸發重生（狼咬滿、備援…），
+    /// 玩家都要回 Challenge Player Spawn。PlayerRespawnSystem.TriggerRespawn() 會先問這裡。
+    /// </summary>
+    public static bool TryGetChallengeRespawnPos(out Vector3 pos)
+    {
+        BoulderChallengeController c = Instance;
+        if (c != null && c._failing && c.challengePlayerSpawn != null)
+        {
+            pos = c.challengePlayerSpawn.position;
+            return true;
+        }
+        pos = Vector3.zero;
+        return false;
+    }
 
     private void Awake()
     {
@@ -97,18 +130,20 @@ public class BoulderChallengeController : MonoBehaviour
     private bool IsChallengeRunning => _boulderRb != null && !_boulderRb.isKinematic && !PlayerRespawnSystem.IsAnyRespawning;
 
     /// <summary>
-    /// PlayerMovement.AddWolf() 呼叫。回傳 true＝這一口由控制器處理（開始失敗，或已在失敗中被吞掉），
-    /// 呼叫端不要再走舊的死亡流程；false＝控制器不管，舊流程照走。
+    /// PlayerMovement.AddWolf() 呼叫。回傳值保留舊介面；現在永遠不吞狼咬，讓死亡門檻仍由 AddWolf 統一管理。
     /// </summary>
     public static bool NotifyWolfBite(PlayerMovement pm)
     {
         BoulderChallengeController c = Instance;
         if (c == null || !c.isActiveAndEnabled || !c.IsConfigured) return false;
-        if (c._failing) return true;
+        if (c._failing) return false;
         if (!c.IsChallengeRunning) return false;
 
-        c.BeginFail(pm);
-        return true;
+        // 只有玩家站在山坡上被咬才會觸發巨石強推；平地被咬只走一般狼咬（減速、累積咬數）
+        if (pm == null || !pm.isGrounded || pm.GroundSlopeAngle < c.minSlopeAngleForPressure) return false;
+
+        c.BeginPressure(pm);
+        return false;
     }
 
     /// <summary>BoulderFailExitTrigger 呼叫：玩家或巨石被押出坡面了。</summary>
@@ -118,47 +153,97 @@ public class BoulderChallengeController : MonoBehaviour
         if (_failing && _rollbackStarted && boulder != null && boulder.RollbackDistance >= boulder.rollbackMinDistance) _exitReached = true;
     }
 
-    private void BeginFail(PlayerMovement pm)
+    private void BeginPressure(PlayerMovement pm)
     {
         _failing = true;
         _rollbackStarted = false;
         _exitReached = false;
+        _resetPending = true;
+        _resetRoutineStarted = false;
         _player = pm;
 
-        Debug.Log("【巨石挑戰】第一隻狼咬到＝失敗！玩家鎖操作、狼群停下、巨石準備下滾。");
+        Debug.Log("【巨石挑戰】第一隻狼咬到＝壓迫開始！玩家可繼續操作（坡上推不動、平地照推），狼群維持攻擊，等待狼咬滿門檻重生。");
 
-        WolfEnemy.ChallengeFailHalt = true;
-        var ignore = new System.Collections.Generic.List<Collider>();
-        if (pm != null) ignore.AddRange(pm.GetComponentsInChildren<Collider>());
-        if (boulder != null) ignore.AddRange(boulder.GetComponentsInChildren<Collider>());
-        Collider[] ignoreArr = ignore.ToArray();
-        foreach (WolfEnemy w in FindObjectsByType<WolfEnemy>(FindObjectsSortMode.None))
-        {
-            if (w != null) w.HaltForChallengeFail(ignoreArr);
-        }
+        // 不再鎖玩家操作：平地上可以繼續走、繼續推巨石；坡面上巨石下滾時 RollingRockVisual 本來就不登記推石，
+        // 玩家推不動，只會被 ApplyExternalSlopePush 帶著走，動作還在。
 
-        if (_player != null) _player.isCutsceneFrozen = true;   // 不能反抗；ApplyExternalSlopePush 仍會帶著她走
-
-        StartCoroutine(FailRoutine());
+        StartCoroutine(PressureRoutine());
     }
 
-    private IEnumerator FailRoutine()
+    private IEnumerator PressureRoutine()
     {
         if (rollbackStartDelay > 0f) yield return new WaitForSeconds(rollbackStartDelay);
 
         boulder.BeginRollback(_player != null ? _player.transform : null);
         _rollbackStarted = true;
 
-        // 主要條件：石頭真的滾進平面。Fail Exit 是輔助（滾夠遠才算），maxRollbackSeconds 是最後保險。
+        bool reportedFlat = false;
+        bool reportedTimeout = false;
+        Vector3 lastMovingPlayerPos = _player != null ? _player.transform.position : Vector3.zero;
+        float stillTimer = 0f;
         float t = 0f;
-        while (!boulder.RollbackReachedFlat && !_exitReached && t < maxRollbackSeconds)
+        while (_failing && !PlayerRespawnSystem.IsAnyRespawning)
         {
             t += Time.deltaTime;
+
+            if (!reportedFlat && boulder.RollbackReachedFlat)
+            {
+                reportedFlat = true;
+                Debug.Log($"【巨石挑戰】巨石已壓到平面，已滾 {boulder.RollbackDistance:F1} 公尺。");
+                if (respawnWhenRollbackReachesFlat)
+                {
+                    yield return TriggerFallbackRespawn($"巨石已滾到平面（已滾 {boulder.RollbackDistance:F1}m）");
+                    yield break;
+                }
+            }
+
+            if (!reportedTimeout && maxRollbackSeconds > 0f && t >= maxRollbackSeconds)
+            {
+                reportedTimeout = true;
+                if (respawnOnRollbackTimeout)
+                {
+                    yield return TriggerFallbackRespawn($"壓迫時間超過 {maxRollbackSeconds:F1}s");
+                    yield break;
+                }
+                Debug.LogWarning("【巨石挑戰】壓迫時間已超過保險秒數，但 respawnOnRollbackTimeout 關閉，所以只印警告。");
+            }
+
+            if (_exitReached)
+            {
+                yield return TriggerFallbackRespawn($"玩家或巨石已離開坡面出口（已滾 {boulder.RollbackDistance:F1}m）");
+                yield break;
+            }
+
+            if (_player != null && stuckRespawnSeconds > 0f && t >= Mathf.Max(0f, stuckCheckGraceSeconds))
+            {
+                Vector3 playerPos = _player.transform.position;
+                float moved = Vector2.Distance(new Vector2(playerPos.x, playerPos.y), new Vector2(lastMovingPlayerPos.x, lastMovingPlayerPos.y));
+                if (moved > Mathf.Max(0.01f, stuckMovementThreshold))
+                {
+                    lastMovingPlayerPos = playerPos;
+                    stillTimer = 0f;
+                }
+                else
+                {
+                    stillTimer += Time.deltaTime;
+                    if (stillTimer >= stuckRespawnSeconds)
+                    {
+                        yield return TriggerFallbackRespawn($"玩家幾乎不動 {stillTimer:F1}s（小於 {stuckMovementThreshold:F2}m）");
+                        yield break;
+                    }
+                }
+            }
+
             yield return null;
         }
+    }
 
-        string why = boulder.RollbackReachedFlat ? "滾進平面" : (_exitReached ? "碰到 Fail Exit" : "下滾逾時（保險）");
-        Debug.Log($"【巨石挑戰】{why}，滾了 {boulder.RollbackDistance:F1} 公尺，{afterFlatDelay:F1} 秒後重置。");
+    private IEnumerator TriggerFallbackRespawn(string reason)
+    {
+        if (_resetRoutineStarted) yield break;
+
+        _resetRoutineStarted = true;
+        Debug.LogWarning($"【巨石挑戰】備援重生：{reason}。避免玩家被鎖住但狼咬數不足而卡死。");
         if (afterFlatDelay > 0f) yield return new WaitForSeconds(afterFlatDelay);
         yield return ResetRoutine();
     }
@@ -178,6 +263,7 @@ public class BoulderChallengeController : MonoBehaviour
         }
 
         _resetPending = true;
+        _resetRoutineStarted = true;
 
         // 剛好有別的重生在跑（TriggerRespawn 會被擋掉）：等它結束再接。
         // 若那一輪黑屏已經透過 OnResettablesReset 收掉挑戰，就不要再排第二次重生。
@@ -199,6 +285,7 @@ public class BoulderChallengeController : MonoBehaviour
     {
         if (!_resetPending) return;
         _resetPending = false;
+        _resetRoutineStarted = false;
         ApplyBoulderReset();
         EndFailState();
     }
@@ -235,6 +322,8 @@ public class BoulderChallengeController : MonoBehaviour
         _failing = false;
         _rollbackStarted = false;
         _exitReached = false;
+        _resetPending = false;
+        _resetRoutineStarted = false;
         WolfEnemy.ChallengeFailHalt = false;
         if (boulder != null) boulder.EndRollback();
     }

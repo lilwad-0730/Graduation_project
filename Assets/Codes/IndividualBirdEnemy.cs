@@ -142,6 +142,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("路徑越過鎖定點再延伸多遠（表示牠會衝過頭）")]
     public float telegraphOvershoot = 12f;
 
+    [Tooltip("前搖期間讓鳥本體先轉向鎖定的攻擊方向。紅線關掉後，玩家仍可靠鳥頭/身體角度猜落點。")]
+    public bool showAttackAngleCue = true;
+
+    [Tooltip("鳥轉向攻擊角度的平滑速度。")]
+    [Range(1f, 30f)] public float attackAngleCueTurnSpeed = 10f;
+
     private LineRenderer _telegraphLine;
     private Vector3 _lockedDiveTarget;
     private bool _hasLockedDiveTarget;
@@ -481,6 +487,32 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public static bool BehindCheckpointBirdsCanAttack = false;
     private bool _attackDisabled = false;
 
+    // ★1016 荒原鳥群強度：由 DesertBeatDirector 統一設定。
+    // 增援鳥只複製一次、不再生增援，避免連鎖爆量；通過後退場只作用在待機/排隊鳥，不打斷已經在俯衝的鳥。
+    public static bool EnableReinforcements = false;
+    public static float ReinforcementIntensity = 1f;
+    public static float ReinforcementChance = 0.35f;
+    public static int ReinforcementMinCopies = 0;
+    public static int ReinforcementMaxCopies = 1;
+    public static float ReinforcementNearDistance = 6f;
+    public static int ReinforcementNearExtraCopies = 2;
+    public static float ReinforcementSpreadX = 4f;
+    public static float ReinforcementHeightJitter = 1f;
+    public static float ReinforcementAttackDelayMax = 0.35f;
+    public static int ReinforcementActiveLimit = 24;
+    public static float DespawnBehindPlayerDistance = 22f;
+
+    private static int _activeReinforcements = 0;
+    private bool _isReinforcement = false;
+    private bool _registeredReinforcement = false;
+    private bool _spawnedReinforcements = false;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetBirdIntensityStatics()
+    {
+        _activeReinforcements = 0;
+    }
+
     public static float SuppressAllUntil = -1f;
     public static bool IsAllSuppressed => Time.time < SuppressAllUntil;
 
@@ -512,6 +544,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             UpdateOrganicIdleHover();
         }
+
+        TryDespawnAfterPlayerPassed();
 
         // 核心功能 2：獨立偵測玩家距離並觸發俯衝 (僅在此鳥設定允許距離感應時運作)
         if (postRespawnDelayTimer > 0f)
@@ -551,7 +585,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 核心功能 3：警報姿態控制 (Idle 狀態的飛行旋轉與 Banking 已由 UpdateOrganicIdleHover 統一接管)
         if (currentState == BirdState.Warning)
         {
-            if (playerTrans != null)
+            if (showAttackAngleCue && _hasLockedDiveTarget)
+            {
+                Vector3 lookDir = _lockedDiveTarget - transform.position;
+                lookDir.z = 0f;
+                if (lookDir.sqrMagnitude > 0.001f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(lookDir.normalized, Vector3.up) * Quaternion.Euler(modelRotationOffset);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * attackAngleCueTurnSpeed);
+                }
+            }
+            else if (playerTrans != null)
             {
                 float dx = playerTrans.position.x - transform.position.x;
                 Vector3 lookDir = dx < 0 ? Vector3.left : Vector3.right;
@@ -752,6 +796,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         if (currentState != BirdState.Idle) return;
         if (_attackDisabled) return;
+        if (playerTrans == null) EnsureComponents();
+
+        TrySpawnReinforcements();
 
         // ★1006 一般鳥：建立「攻擊需求」進排程器佇列，進 Pending（照常盤旋）。等放行才鎖定。
         //   示範俯衝（overrideTarget）或關掉排程器的鳥走舊路徑，直接開始。
@@ -765,6 +812,108 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             return;
         }
         StartCoroutine(AttackCoroutine());
+    }
+
+    private void TrySpawnReinforcements()
+    {
+        if (!EnableReinforcements || _isReinforcement || _spawnedReinforcements) return;
+        if (harmless || overrideTarget != null) return;
+        if (playerTrans == null) return;
+
+        _spawnedReinforcements = true;
+
+        float intensity = Mathf.Max(0.1f, ReinforcementIntensity);
+        float xDist = Mathf.Abs(transform.position.x - playerTrans.position.x);
+        float chance = Mathf.Clamp01(ReinforcementChance * intensity);
+        if (Random.value > chance) return;
+
+        int minCopies = Mathf.Max(0, ReinforcementMinCopies);
+        int maxCopies = Mathf.Max(minCopies, Mathf.RoundToInt(ReinforcementMaxCopies * intensity));
+        int copies = Random.Range(minCopies, maxCopies + 1);
+
+        if (xDist <= Mathf.Max(0.1f, ReinforcementNearDistance))
+        {
+            int extraMax = Mathf.Max(0, Mathf.RoundToInt(ReinforcementNearExtraCopies * intensity));
+            copies += Random.Range(0, extraMax + 1);
+        }
+
+        int activeLimit = Mathf.Max(0, ReinforcementActiveLimit);
+        if (activeLimit > 0) copies = Mathf.Min(copies, Mathf.Max(0, activeLimit - _activeReinforcements));
+        if (copies <= 0) return;
+
+        for (int i = 0; i < copies; i++)
+        {
+            Vector3 spawnPos = transform.position;
+            spawnPos.x += Random.Range(-ReinforcementSpreadX, ReinforcementSpreadX);
+            spawnPos.y += Random.Range(-ReinforcementHeightJitter, ReinforcementHeightJitter);
+
+            GameObject cloneObj = Instantiate(gameObject, spawnPos, transform.rotation);
+            cloneObj.name = gameObject.name + "_Reinforcement";
+
+            IndividualBirdEnemy clone = cloneObj.GetComponent<IndividualBirdEnemy>();
+            if (clone == null) continue;
+
+            clone.PrepareAsReinforcement(spawnPos);
+            clone.StartCoroutine(clone.StartReinforcementAttackAfterDelay(Random.Range(0f, Mathf.Max(0f, ReinforcementAttackDelayMax))));
+        }
+    }
+
+    private void PrepareAsReinforcement(Vector3 spawnPos)
+    {
+        _isReinforcement = true;
+        _registeredReinforcement = true;
+        _activeReinforcements++;
+
+        _spawnedReinforcements = true;
+        _requestQueued = false;
+        _granted = false;
+        _attackDisabled = false;
+        hasAttackedOrDied = false;
+        currentState = BirdState.Idle;
+        postRespawnDelayTimer = 0f;
+
+        originalPosition = spawnPos;
+        originalRotation = transform.rotation;
+        originalScale = transform.localScale != Vector3.zero ? transform.localScale : Vector3.one;
+        transform.position = spawnPos;
+        transform.localScale = originalScale;
+
+        autoDetectPlayer = false;
+        overrideTarget = null;
+        harmless = false;
+
+        EnsureComponents();
+        InitializeHoverProfile();
+        RestoreMaterialsOpaque();
+        SetAlpha(1f);
+        PlayAnim(idleAnimName);
+    }
+
+    private IEnumerator StartReinforcementAttackAfterDelay(float delay)
+    {
+        if (delay > 0f) yield return new WaitForSeconds(delay);
+        if (this != null && isActiveAndEnabled && currentState == BirdState.Idle)
+        {
+            StartAttackSequence();
+        }
+    }
+
+    private void TryDespawnAfterPlayerPassed()
+    {
+        if (DespawnBehindPlayerDistance <= 0f) return;
+        if (currentState != BirdState.Idle && currentState != BirdState.Pending) return;
+        if (playerTrans == null) EnsureComponents();
+        if (playerTrans == null) return;
+
+        if (playerTrans.position.x - originalPosition.x < DespawnBehindPlayerDistance) return;
+
+        if (_requestQueued)
+        {
+            CancelRequest(true);
+        }
+
+        hasAttackedOrDied = true;
+        gameObject.SetActive(false);
     }
 
     private IEnumerator AttackCoroutine()
@@ -1059,6 +1208,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void OnDisable()
     {
+        if (_registeredReinforcement)
+        {
+            _registeredReinforcement = false;
+            _activeReinforcements = Mathf.Max(0, _activeReinforcements - 1);
+        }
+
         // 物件被關掉／場景卸載時，紅線不留殘影（SetTelegraphVisible(false) 不會建立任何物件，可安全呼叫）
         ClearAttackTelegraph();
     }
@@ -1810,6 +1965,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         _requestQueued = false;
         _granted = false;
         BirdAttackScheduler.Remove(this);
+
+        if (_isReinforcement)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         // 檢查存檔點進度：
         // 若當前存檔點已經推進到這隻鳥的原點之後 (代表玩家已通過該存檔點且該鳥已死亡/攻擊過)，則該鳥永久保持死亡消失！

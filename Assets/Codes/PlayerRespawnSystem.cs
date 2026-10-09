@@ -427,6 +427,13 @@ public class PlayerRespawnSystem : MonoBehaviour
         this.enabled = true; // 強制開啟，確保重生不會因為被其他腳本停用而死鎖
         if (!_isRespawning)
         {
+            // 巨石壓迫期間死亡（狼咬滿等）一律回 Challenge Player Spawn，不走一般存檔點
+            if (BoulderChallengeController.TryGetChallengeRespawnPos(out Vector3 challengePos))
+            {
+                Debug.Log($"【重生系統】巨石挑戰失敗，重生至 Challenge Player Spawn：{challengePos}");
+                StartCoroutine(RespawnSequence(challengePos));
+                return;
+            }
             Debug.Log($"【重生系統】TriggerRespawn() 正式啟動！將重生至存檔點：{_activeRespawnPos}");
             StartCoroutine(RespawnSequence(_activeRespawnPos));
         }

@@ -13,7 +13,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("狼被迫往後退的退後速度上限 (負數代表往回走)。\n" +
              "★0920 起這個值是「上限」不是固定值：實際退後速度＝玩家當下水平速度 × Retreat Speed Multiplier，" +
              "再夾在 Min Retreat Speed 與這個值之間。設 0 仍然是「一回頭狼就原地罰站」。")]
-    public float retreatSpeed = -1.5f;
+    public float retreatSpeed = -5f;
 
     [Header("★0920 123 退後速度跟著玩家走")]
     [Tooltip("退後速度＝玩家當下水平速度 × 這個倍率。\n" +
@@ -23,7 +23,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "做固定差額；退後這邊取同一個量級——玩家 6.0 時差 1.2 m/s、2.2 時差 0.44 m/s，都真的會接近。\n" +
              "註：玩家速度超過約 3.4 m/s 時會被 Retreat Speed 上限夾住，行為跟舊版完全一樣。")]
     [Range(0.1f, 3f)]
-    public float retreatSpeedMultiplier = 0.8f;
+    public float retreatSpeedMultiplier = 2f;
 
     [Tooltip("退後速度的下限 (m/s)。玩家站著不動盯著狼時，狼還是要看得出來在往後退，不能整個定住。\n" +
              "這是刻意的取捨：玩家慢於「本值 ÷ Retreat Speed Multiplier」時，狼仍會比她快一點點。\n" +
@@ -31,12 +31,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "比這更慢（幾乎等於站著）時才換成狼緩緩拉開，而這正是「回頭嚇退狼」該有的效果。\n" +
              "覺得壓迫感不夠就把這個值調小，交叉點會跟著往下移。")]
     [Range(0f, 6f)]
-    public float minRetreatSpeed = 0.6f;
+    public float minRetreatSpeed = 2.5f;
 
     [Tooltip("退到離玩家這麼遠就停止後退、改成原地罰站 (公尺)。\n" +
              "防止玩家站著不動盯著狼時，狼以 Min Retreat Speed 無限往後退出整個關卡。\n" +
              "預設 18＝maxCatchUpDistance，也就是設計上已經視為「很遠」的距離。設 0 或負數＝不限制。")]
-    public float maxRetreatDistance = 18f;
+    public float maxRetreatDistance = 30f;
 
     [Tooltip("狼從慢走切換到快跑的距離閥值")]
     public float runDistanceThreshold = 6f;
@@ -71,7 +71,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Header("最低有效追擊速度保證")]
     [Tooltip("狼在正常追擊玩家時，速度必須高於玩家基礎速度的最低額外差額 (預設 0.4，確保玩家全力奔跑時狼仍可穩定縮短距離咬人)")]
     [SerializeField, Range(0.1f, 1.5f)]
-    private float minimumChaseSpeedAbovePlayer = 0.4f;
+    private float minimumChaseSpeedAbovePlayer = 0.55f;
 
     [Tooltip("當無法取得玩家組件時使用的預設玩家速度 (預設 5.0)")]
     [SerializeField]
@@ -85,7 +85,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     [Tooltip("咬到距離內，狼是玩家速度的幾倍 (1.05 ＝ 快 5%)。這是「已經貼上去之後」的跟隨速度")]
     [Range(1.0f, 1.6f)]
-    public float finalChaseSpeedRatio = 1.05f;
+    public float finalChaseSpeedRatio = 1.2f;
 
     [Tooltip("狼與玩家的中心距離小於這個值時視為已經貼上（碰撞體實際接觸約 2.3 公尺），進入上面的跟隨速度")]
     public float biteApproachDistance = 2.5f;
@@ -94,7 +94,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
              "百分比在玩家很慢的時候會失效：玩家推巨石只有 2.5 m/s，×1.05 只快 0.12 m/s，" +
              "從 4 公尺接近到碰得到的 2.3 公尺要花 14 秒，實機上就是「一直逼近卻永遠咬不到」。")]
     [Range(0.2f, 3f)]
-    public float minClosingSpeed = 0.8f;
+    public float minClosingSpeed = 1.6f;
 
     [Tooltip("玩家停下來或非常慢時，用來計算貼身速度的最低參考速度 (避免玩家站著不動時狼也停住)")]
     public float minPlayerReferenceSpeed = 2.5f;
@@ -213,7 +213,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     [Tooltip("狼在斜坡上時的追擊速度倍率（只在狼自己踩在斜坡上才乘，平地不變）。1＝不加成。\n" +
              "廢墟這段上坡要追得更狠就調高；建議 1.0～1.4，超過 1.5 狼會明顯快過玩家的視覺節奏")]
     [Range(1f, 2f)]
-    public float slopeChaseMultiplier = 1.02f;
+    public float slopeChaseMultiplier = 1.2f;
 
     [Tooltip("開啟＝「給了前進速度卻幾乎沒位移」超過 stuckSeconds 時，把狼輕輕抬高一小段幫牠越過地面接縫／坡腳的小台階")]
     public bool enableStuckRecovery = true;
@@ -412,7 +412,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     }
 
     /// <summary>
-    /// ★1002 巨石挑戰失敗中：沒咬住人的狼全部停止追擊、也不再咬人（第一隻咬到就失敗，後面的不用再咬）。
+    /// ★1002 舊版巨石失敗流程保留旗標；新版壓迫流程不會啟用，狼群會繼續追擊累積咬住數。
     /// 由 BoulderChallengeController 開關；重置挑戰時一定會關回 false。
     /// </summary>
     public static bool ChallengeFailHalt = false;
@@ -439,6 +439,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     void Update()
     {
+        if (IsAttackGloballyPaused())
+        {
+            StopActiveChaseMotion();
+            return;
+        }
+
         if (ChallengeFailHalt && !isAttached) return;   // ★1002 挑戰失敗中：不追、不重新鎖定
         if (isStunned || isAttached || player == null) return;
 
@@ -488,6 +494,14 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private void FixedUpdate()
     {
         if (rb == null || rb.isKinematic) return;
+        if (IsAttackGloballyPaused())
+        {
+            _hasTargetSpeed = false;
+            _targetSpeedX = 0f;
+            _currentSpeed = 0f;
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            return;
+        }
         if (isAttached || isStunned) { _hasTargetSpeed = false; return; }
 
         // 確保剛體永遠位於 Z = 0
@@ -1192,7 +1206,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (isStunned || isAttached || ChallengeFailHalt || Time.time < enableTime + spawnAttachImmunityTime) return;
+        if (isStunned || isAttached || ChallengeFailHalt || IsAttackGloballyPaused() || Time.time < enableTime + spawnAttachImmunityTime) return;
 
         if (collision.gameObject.CompareTag("Player"))
         {
@@ -1211,6 +1225,29 @@ public class WolfEnemy : MonoBehaviour, IResettable
             }
 
             AttachToPlayer();
+        }
+    }
+
+    private static bool IsAttackGloballyPaused()
+    {
+        return PlayerMovement.IsHardCutsceneLocked
+               || StormSceneTransition.IsAnyTransitioning
+               || TornadoVortexTransition.IsAnyTransitioning;
+    }
+
+    private void StopActiveChaseMotion()
+    {
+        _hasTargetSpeed = false;
+        _targetSpeedX = 0f;
+        _currentSpeed = 0f;
+        if (rb != null && !rb.isKinematic)
+        {
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            rb.angularVelocity = Vector3.zero;
+        }
+        if (_runAudioSource != null && _runAudioSource.isPlaying)
+        {
+            _runAudioSource.Stop();
         }
     }
 

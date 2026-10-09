@@ -64,6 +64,22 @@ public class PlayerMovement : MonoBehaviour
     // FallingBackground 防重複觸發 flag
     private bool _fallingBGEntered = false;
 
+    [Header("廢墟墜落落地鎖定")]
+    [Tooltip("進入廢墟背景後，直到玩家真正落到此 Y 以下的地板才恢復操作。")]
+    public float ruinsLandingUnlockY = -85f;
+
+    [Tooltip("玩家進入廢墟背景時，鏡頭暫時特寫到這個名稱的光球/路徑點。")]
+    public string ruinsIntroLightName = "P12";
+
+    [Tooltip("廢墟第一光球特寫的 Orthographic Size。數字越小越近。")]
+    public float ruinsIntroCloseupLensSize = 10f;
+
+    private bool _waitingForRuinsLanding = false;
+    private bool _ruinsIntroLightSynced = false;
+    private bool _ruinsIntroCloseupStarted = false;
+    private Coroutine _ruinsIntroCameraCoroutine;
+    private Coroutine _ruinsIntroLightGuardCoroutine;
+
 
     [Header("狼群減速狀態 (可調整)")]
     [Tooltip("幾隻狼能讓玩家完全停下（同時也是死亡門檻）。0910 企劃定案：6。\n" +
@@ -85,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
              "（場景那隻 WOLF 是 5 個 WolfSpawner 的複製模板，開場就被 SetActive(false)），\n" +
              "所以 6 這個門檻永遠達不到＝狼永遠咬不死人。拆開之後門檻才真的會成立。")]
     [Range(1, 12)]
-    public int wolvesToRespawn = 5;
+    public int wolvesToRespawn = 3;
 
     [Header("🐺 狼咬住的向下拖曳負載（只作用在斜坡上）")]
     [Tooltip("每一隻咬住的狼，沿坡面往下拖曳的速度 (公尺/秒)。設 0 ＝ 整個機制關閉，行為完全回到修改前。\n" +
@@ -128,6 +144,11 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public float currentSpeed;      
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
+
+    private float _lastGroundContactTime = -999f;
+    private Vector3 _lastGroundContactNormal = Vector3.up;
+    private Vector3 _lastGroundContactPoint = Vector3.zero;
+    private const float GroundContactGraceSeconds = 0.12f;
 
     private static float _hardLockSince = -1f;
 
@@ -517,7 +538,7 @@ public class PlayerMovement : MonoBehaviour
         // 處理水平移動與最高層級墜落鎖定
         // ==========================================
         bool isInDropZone = freezeHorizontal;
-        bool actuallyFreeze = isInDropZone && !preliminaryGrounded && rb.linearVelocity.y < 0f;
+        bool actuallyFreeze = isInDropZone && !preliminaryGrounded;
         
         // 讀取玩家輸入
         float rawInput = Input.GetAxis("Horizontal");
@@ -567,7 +588,7 @@ public class PlayerMovement : MonoBehaviour
                                    || Input.GetKeyDown(KeyCode.W)
                                    || Input.GetKeyDown(KeyCode.Space)
                                    || Input.GetKeyDown(KeyCode.UpArrow);
-                if (wantsToMove)
+                if (wantsToMove && !_waitingForRuinsLanding)
                 {
                     // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
                     isStrictLockingX = false;
@@ -640,9 +661,10 @@ public class PlayerMovement : MonoBehaviour
             // ★★★ 關鍵修正：只要玩家落地踩到任何地面，自動解除掉落鎖定，恢復自由控制！
             if (freezeHorizontal)
             {
-                freezeHorizontal = false;
-                Debug.Log("【掉落解鎖】玩家已著地 (isGrounded)，自動解除橫向鎖定，恢復自由控制！");
-                StartCoroutine(EnableRespawnWithDelay());
+                if (!_waitingForRuinsLanding || IsRuinsLandingGround(groundHit))
+                {
+                    UnlockFallingControl("玩家已著地");
+                }
             }
         }
         else
@@ -1266,9 +1288,8 @@ public class PlayerMovement : MonoBehaviour
         float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
         Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}／重生門檻 {killW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
 
-        // ★1002 巨石挑戰進行中：第一隻咬到就由 BoulderChallengeController 接手（失敗下滾 → 重置），
-        //   舊的「咬滿 wolvesToRespawn 隻才死」在這段不再走，避免兩套死亡流程同時跑。
-        //   控制器沒設定好、或挑戰還沒開始（石頭還沒解鎖）時回傳 false，舊流程原封不動。
+        // ★1002 巨石挑戰進行中：第一隻咬到只啟動巨石壓迫，狼咬計數仍繼續累積。
+        //   控制器沒設定好、或挑戰還沒開始（石頭還沒解鎖）時，仍完全走原本狼咬流程。
         if (BoulderChallengeController.NotifyWolfBite(this)) return;
 
         // 咬滿就死。TriggerRespawn 內部有 _isRespawning 防重入，不會重複觸發，這裡不另外做旗標。
@@ -1631,9 +1652,15 @@ public class PlayerMovement : MonoBehaviour
             // ★ 防止重複觸發：同一次墜落只允許進入一次
             if (_fallingBGEntered) return;
             _fallingBGEntered = true;
+            _waitingForRuinsLanding = true;
+            // 新的一次墜落：上一輪的「只做一次」旗標清掉，否則重生後再掉一次光球不會傳、鏡頭不會特寫
+            _ruinsIntroLightSynced = false;
+            _ruinsIntroCloseupStarted = false;
 
             Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始順暢高速向下墜落！");
             freezeHorizontal = true;
+            SyncGuidanceLightToRuinsIntroOnce();
+            StartRuinsIntroLightGuard();
 
             // ★ 核心修復：絕不把向下速度歸零！保留既有動量並確保向下的重力加速度
             float currentDownSpeed = rb.linearVelocity.y;
@@ -1649,24 +1676,137 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (other.CompareTag("RuinedBackground"))
         {
-            Debug.Log("碰觸到 RuinedBackground！解除鎖定，恢復所有機能！");
-            freezeHorizontal = false;
-            _fallingBGEntered = false; // 重置 FallingBackground 觸發 flag，供下次使用
+            if (_ruinsIntroCloseupStarted) return;
 
-            // 【關鍵修正】強制把「最後安全點」設為現在的位置！
-            // 否則系統會發現玩家跟一開始的天空比起來掉落了幾百公尺，一啟動就立刻把玩家當作墜崖殺死！
-            PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
-            if (respawnSystem != null)
-            {
-                respawnSystem.SetSafeGroundPosition(this.transform.position);
-            }
-
-            // 確保攝影機依然鎖定在玩家身上 (或避震假目標)
-            SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
-
-            // 延遲 0.3 秒再重新啟動重生系統，確保相機完全到位，防範任何假死重生！
-            StartCoroutine(EnableRespawnWithDelay());
+            Debug.Log("碰觸到 RuinedBackground！維持墜落鎖定，鏡頭暫時特寫廢墟第一光球，直到玩家落到廢墟地板。");
+            freezeHorizontal = true;
+            _waitingForRuinsLanding = true;
+            SyncGuidanceLightToRuinsIntroOnce();
+            _ruinsIntroCloseupStarted = true;
+            StartRuinsIntroLightCloseup();
         }
+    }
+
+    private void SyncGuidanceLightToRuinsIntroOnce()
+    {
+        if (_ruinsIntroLightSynced) return;
+
+        GuidanceLight light = Object.FindFirstObjectByType<GuidanceLight>();
+        if (light == null)
+        {
+            Debug.LogWarning("【廢墟墜落光球同步】找不到 GuidanceLight，無法把光球傳送到廢墟第一點。");
+            return;
+        }
+
+        if (!light.TeleportToWaypointName(ruinsIntroLightName))
+        {
+            Debug.LogWarning($"【廢墟墜落光球同步】GuidanceLight 的 waypoints 找不到 {ruinsIntroLightName}。");
+            return;
+        }
+
+        _ruinsIntroLightSynced = true;
+    }
+
+    private bool IsRuinsLandingGround(RaycastHit groundHit)
+    {
+        if (transform.position.y > ruinsLandingUnlockY) return false;
+        if (groundHit.collider == null) return true;
+
+        Transform hitTransform = groundHit.collider.transform;
+        return groundHit.collider.CompareTag("Floor")
+               || groundHit.collider.CompareTag("Ground")
+               || hitTransform.CompareTag("Floor")
+               || hitTransform.CompareTag("Ground")
+               || hitTransform.root.CompareTag("Floor")
+               || hitTransform.root.CompareTag("Ground");
+    }
+
+    private void UnlockFallingControl(string reason)
+    {
+        freezeHorizontal = false;
+        isStrictLockingX = false;
+        _fallingBGEntered = false;
+        _waitingForRuinsLanding = false;
+
+        if (_ruinsIntroCameraCoroutine != null)
+        {
+            StopCoroutine(_ruinsIntroCameraCoroutine);
+            _ruinsIntroCameraCoroutine = null;
+        }
+        if (_ruinsIntroLightGuardCoroutine != null)
+        {
+            StopCoroutine(_ruinsIntroLightGuardCoroutine);
+            _ruinsIntroLightGuardCoroutine = null;
+        }
+        CameraTargetXFollower.ClearCameraOverride();
+
+        PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
+        if (respawnSystem != null)
+        {
+            respawnSystem.SetSafeGroundPosition(this.transform.position);
+        }
+
+        SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
+        Debug.Log($"【掉落解鎖】{reason}，玩家已落到廢墟地面，鏡頭還給玩家並恢復操作。");
+        StartCoroutine(EnableRespawnWithDelay());
+    }
+
+    // 墜落期間每 0.1 秒確認一次光球還在 P12；被別的流程拉走（例如回到起點）就立刻補傳，直到玩家落地。
+    private void StartRuinsIntroLightGuard()
+    {
+        if (_ruinsIntroLightGuardCoroutine != null) return;
+        _ruinsIntroLightGuardCoroutine = StartCoroutine(RuinsIntroLightGuardRoutine());
+    }
+
+    private System.Collections.IEnumerator RuinsIntroLightGuardRoutine()
+    {
+        var wait = new WaitForSeconds(0.1f);
+        while (_waitingForRuinsLanding)
+        {
+            GuidanceLight light = Object.FindFirstObjectByType<GuidanceLight>();
+            if (light != null && !light.IsNearWaypointName(ruinsIntroLightName))
+            {
+                Debug.LogWarning($"【廢墟墜落光球守護】光球不在 {ruinsIntroLightName}（目前在 {light.transform.position}），補傳一次。");
+                light.TeleportToWaypointName(ruinsIntroLightName);
+            }
+            yield return wait;
+        }
+        _ruinsIntroLightGuardCoroutine = null;
+    }
+
+    private void StartRuinsIntroLightCloseup()
+    {
+        if (_ruinsIntroCameraCoroutine != null) return;
+        _ruinsIntroCameraCoroutine = StartCoroutine(RuinsIntroLightCloseupRoutine());
+    }
+
+    private System.Collections.IEnumerator RuinsIntroLightCloseupRoutine()
+    {
+        // 鏡頭跟的是「光球本體」；光球不在或找不到才退回 P12 這個點
+        Transform focus = null;
+        GuidanceLight guideLight = Object.FindFirstObjectByType<GuidanceLight>();
+        if (guideLight != null && guideLight.isActiveAndEnabled) focus = guideLight.transform;
+        if (focus == null)
+        {
+            GameObject focusObj = GameObject.Find(ruinsIntroLightName);
+            if (focusObj != null) focus = focusObj.transform;
+        }
+
+        if (focus != null)
+        {
+            CameraTargetXFollower.SetCameraOverride(focus, ruinsIntroCloseupLensSize);
+        }
+        else
+        {
+            Debug.LogWarning($"【廢墟墜落特寫】找不到 {ruinsIntroLightName}，維持原本墜落鏡頭直到落地。");
+        }
+
+        while (_waitingForRuinsLanding && !isGrounded)
+        {
+            yield return null;
+        }
+
+        _ruinsIntroCameraCoroutine = null;
     }
 
     private void SetCameraFollow(Transform target)
@@ -1917,6 +2057,17 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        // 手拉的斜坡碰撞框或 MeshCollider 接縫上，射線偶爾會剛好落在縫外；
+        // 只要物理接觸仍明確來自腳下，就給一小段 grounded 緩衝，避免站得住卻跳不起來。
+        if (!found && Time.time - _lastGroundContactTime <= GroundContactGraceSeconds)
+        {
+            bestHit = new RaycastHit();
+            bestHit.point = _lastGroundContactPoint;
+            bestHit.normal = _lastGroundContactNormal.sqrMagnitude > 0.001f ? _lastGroundContactNormal.normalized : Vector3.up;
+            slopeAngle = Vector3.Angle(Vector3.up, bestHit.normal);
+            return true;
+        }
+
         if (found)
         {
             slopeAngle = Vector3.Angle(Vector3.up, bestHit.normal);
@@ -2116,11 +2267,13 @@ public class PlayerMovement : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         CheckPushingCollision(collision);
+        CacheGroundContact(collision);
     }
 
     private void OnCollisionStay(Collision collision)
     {
         CheckPushingCollision(collision);
+        CacheGroundContact(collision);
 
         if (!isUnderwater || collision.contactCount == 0) return;
 
@@ -2135,6 +2288,32 @@ public class PlayerMovement : MonoBehaviour
             }
             avgNormal = avgNormal.normalized;
             rb.AddForce(new Vector3(avgNormal.x, avgNormal.y, 0f) * 2.0f, ForceMode.Acceleration);
+        }
+    }
+
+    private void CacheGroundContact(Collision collision)
+    {
+        if (collision == null || collision.contactCount == 0 || playerCollider == null) return;
+        if (collision.collider != null && collision.collider.isTrigger) return;
+        if (collision.collider != null && collision.collider.transform.IsChildOf(transform)) return;
+
+        Bounds b = playerCollider.bounds;
+        float footY = b.min.y + 0.35f;
+
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            ContactPoint cp = collision.GetContact(i);
+            Vector3 n = new Vector3(cp.normal.x, cp.normal.y, 0f);
+            if (n.sqrMagnitude < 0.001f) continue;
+            n.Normalize();
+
+            if (cp.point.y <= footY && Mathf.Abs(n.y) > 0.2f)
+            {
+                _lastGroundContactTime = Time.time;
+                _lastGroundContactNormal = n.y >= 0f ? n : -n;
+                _lastGroundContactPoint = cp.point;
+                return;
+            }
         }
     }
 }

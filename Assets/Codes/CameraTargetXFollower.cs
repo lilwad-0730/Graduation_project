@@ -144,12 +144,20 @@ public class CameraTargetXFollower : MonoBehaviour
     // 快取的整排背景世界合併邊界 (Compound Row Bounds)
     private float _upperMinX = float.MinValue;
     private float _upperMaxX = float.MaxValue;
+    private float _upperMinY = float.MinValue;
+    private float _upperMaxY = float.MaxValue;
     private float _skyMinX = float.MinValue;
     private float _skyMaxX = float.MaxValue;
+    private float _skyMinY = float.MinValue;
+    private float _skyMaxY = float.MaxValue;
     private float _ruinMinX = float.MinValue;
     private float _ruinMaxX = float.MaxValue;
+    private float _ruinMinY = float.MinValue;
+    private float _ruinMaxY = float.MaxValue;
     private float _desertMinX = float.MinValue;
     private float _desertMaxX = float.MaxValue;
+    private float _desertMinY = float.MinValue;
+    private float _desertMaxY = float.MaxValue;
 
     // 快取的 FallingBackground 邊界清單
     private List<Bounds> _fallingBoundsList = new List<Bounds>();
@@ -261,6 +269,7 @@ public class CameraTargetXFollower : MonoBehaviour
         if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
         if (Instance == null) return;
 
+        Instance.RefreshRuinPanels();
         Instance.isOverridden = true;
         Instance.overrideTarget = customFocusTarget;
         Instance.overrideOrthoSize = customOrthoSize ?? -1f;
@@ -338,6 +347,10 @@ public class CameraTargetXFollower : MonoBehaviour
         float sMinX = float.MaxValue, sMaxX = float.MinValue;
         float rMinX = float.MaxValue, rMaxX = float.MinValue;
         float dMinX = float.MaxValue, dMaxX = float.MinValue;
+        float uMinY = float.MaxValue, uMaxY = float.MinValue;
+        float sMinY = float.MaxValue, sMaxY = float.MinValue;
+        float rMinY = float.MaxValue, rMaxY = float.MinValue;
+        float dMinY = float.MaxValue, dMaxY = float.MinValue;
 
         _fallingBoundsList.Clear();
 
@@ -366,6 +379,8 @@ public class CameraTargetXFollower : MonoBehaviour
                 {
                     dMinX = Mathf.Min(dMinX, b.min.x);
                     dMaxX = Mathf.Max(dMaxX, b.max.x);
+                    dMinY = Mathf.Min(dMinY, b.min.y);
+                    dMaxY = Mathf.Max(dMaxY, b.max.y);
                 }
                 else
                 {
@@ -373,16 +388,22 @@ public class CameraTargetXFollower : MonoBehaviour
                     {
                         uMinX = Mathf.Min(uMinX, b.min.x);
                         uMaxX = Mathf.Max(uMaxX, b.max.x);
+                        uMinY = Mathf.Min(uMinY, b.min.y);
+                        uMaxY = Mathf.Max(uMaxY, b.max.y);
                     }
                     else if (b.center.y > ruinedZoneThresholdY)
                     {
                         sMinX = Mathf.Min(sMinX, b.min.x);
                         sMaxX = Mathf.Max(sMaxX, b.max.x);
+                        sMinY = Mathf.Min(sMinY, b.min.y);
+                        sMaxY = Mathf.Max(sMaxY, b.max.y);
                     }
                     else
                     {
                         rMinX = Mathf.Min(rMinX, b.min.x);
                         rMaxX = Mathf.Max(rMaxX, b.max.x);
+                        rMinY = Mathf.Min(rMinY, b.min.y);
+                        rMaxY = Mathf.Max(rMaxY, b.max.y);
                     }
                 }
             }
@@ -410,6 +431,8 @@ public class CameraTargetXFollower : MonoBehaviour
                 {
                     dMinX = Mathf.Min(dMinX, b.min.x);
                     dMaxX = Mathf.Max(dMaxX, b.max.x);
+                    dMinY = Mathf.Min(dMinY, b.min.y);
+                    dMaxY = Mathf.Max(dMaxY, b.max.y);
                 }
                 else
                 {
@@ -417,16 +440,22 @@ public class CameraTargetXFollower : MonoBehaviour
                     {
                         uMinX = Mathf.Min(uMinX, b.min.x);
                         uMaxX = Mathf.Max(uMaxX, b.max.x);
+                        uMinY = Mathf.Min(uMinY, b.min.y);
+                        uMaxY = Mathf.Max(uMaxY, b.max.y);
                     }
                     else if (b.center.y > ruinedZoneThresholdY)
                     {
                         sMinX = Mathf.Min(sMinX, b.min.x);
                         sMaxX = Mathf.Max(sMaxX, b.max.x);
+                        sMinY = Mathf.Min(sMinY, b.min.y);
+                        sMaxY = Mathf.Max(sMaxY, b.max.y);
                     }
                     else
                     {
                         rMinX = Mathf.Min(rMinX, b.min.x);
                         rMaxX = Mathf.Max(rMaxX, b.max.x);
+                        rMinY = Mathf.Min(rMinY, b.min.y);
+                        rMaxY = Mathf.Max(rMaxY, b.max.y);
                     }
                 }
             }
@@ -436,6 +465,10 @@ public class CameraTargetXFollower : MonoBehaviour
         if (sMinX < sMaxX) { _skyMinX = sMinX; _skyMaxX = sMaxX; }
         if (rMinX < rMaxX) { _ruinMinX = rMinX; _ruinMaxX = rMaxX; }
         if (dMinX < dMaxX) { _desertMinX = dMinX; _desertMaxX = dMaxX; }
+        if (uMinY < uMaxY) { _upperMinY = uMinY; _upperMaxY = uMaxY; }
+        if (sMinY < sMaxY) { _skyMinY = sMinY; _skyMaxY = sMaxY; }
+        if (rMinY < rMaxY) { _ruinMinY = rMinY; _ruinMaxY = rMaxY; }
+        if (dMinY < dMaxY) { _desertMinY = dMinY; _desertMaxY = dMaxY; }
 
         Debug.Log($"【相機邊界自動合併】\n" +
                   $" - 城堡高空層整排邊界 X: [{_upperMinX:F1} ~ {_upperMaxX:F1}]\n" +
@@ -633,8 +666,12 @@ public class CameraTargetXFollower : MonoBehaviour
             case CameraMode.CinematicOverride:
                 StepBoulderWeightOffset(false);   // ★1001 演出模式：下沉量平滑歸零，絕不疊在特寫上
                 Vector3 overridePos = overrideTarget.position;
-                transform.position = new Vector3(overridePos.x, overridePos.y, 0f);
-                if (overrideOrthoSize > 0f) ApplyOrthoSize(overrideOrthoSize);
+                float cinematicOrtho = overrideOrthoSize > 0f ? overrideOrthoSize : currentOrthoSize;
+                cinematicOrtho = FitOrthoToBackground(cinematicOrtho, overridePos);   // 放大倍率不能大過背景
+                if (overrideOrthoSize > 0f) ApplyOrthoSize(cinematicOrtho);
+                float cinematicX = GetClampedX(overridePos.x, cinematicOrtho, overridePos.y);
+                float cinematicY = GetClampedY(overridePos.y, cinematicOrtho, overridePos);
+                transform.position = new Vector3(cinematicX, cinematicY, 0f);
                 break;
 
             case CameraMode.Falling:
@@ -926,6 +963,137 @@ public class CameraTargetXFollower : MonoBehaviour
         #endif
 
         return finalCameraX;
+    }
+
+    // 廢墟背景面板（tag = RuinedBackground 的 SpriteRenderer）。只在特寫開始時掃一次場景，之後每幀只讀 bounds，
+    // 因為背景會被 Parallax 移動，bounds 必須即時讀。
+    // 刻意「只認 RuinedBackground」：tag 是 Background 的雲、視差層、遠景不是鏡頭該貼合的邊界，
+    // 把它們算進去會讓上限被撐高，鏡頭就會追著光球飄出真正的背景。
+    private readonly List<SpriteRenderer> _ruinPanels = new List<SpriteRenderer>();
+
+    private void RefreshRuinPanels()
+    {
+        _ruinPanels.Clear();
+        SpriteRenderer[] srs = Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
+        foreach (var sr in srs)
+        {
+            if (sr == null || !sr.enabled || !sr.gameObject.CompareTag("RuinedBackground")) continue;
+            Bounds b = sr.bounds;
+            if (b.size.x < 0.5f || b.size.y < 0.5f) continue;
+            _ruinPanels.Add(sr);
+        }
+    }
+
+    /// <summary>
+    /// 鏡頭視野（以 focusPos 為中心、半寬 halfWidth）碰到的廢墟背景面板，取「交集」的上下緣。
+    /// 用交集而不是聯集：面板交界處若有一塊比較矮，鏡頭就以矮的為準，永遠不會拍到沒有背景的地方。
+    /// </summary>
+    private bool TryGetRuinPanelVerticalBounds(Vector3 focusPos, float halfWidth, out float minY, out float maxY)
+    {
+        minY = float.MinValue;
+        maxY = float.MaxValue;
+        if (_ruinPanels.Count == 0) RefreshRuinPanels();
+
+        float viewMinX = focusPos.x - halfWidth;
+        float viewMaxX = focusPos.x + halfWidth;
+        bool found = false;
+
+        for (int i = 0; i < _ruinPanels.Count; i++)
+        {
+            SpriteRenderer sr = _ruinPanels[i];
+            if (sr == null || !sr.enabled) continue;
+            Bounds b = sr.bounds;
+            if (b.max.x < viewMinX || b.min.x > viewMaxX) continue;
+
+            minY = Mathf.Max(minY, b.min.y);
+            maxY = Mathf.Min(maxY, b.max.y);
+            found = true;
+        }
+
+        return found;
+    }
+
+    /// <summary>特寫的鏡頭大小不能大過背景本身：視野比背景還高就沒有任何位置不穿圖，所以自動縮到剛好貼合。</summary>
+    private float FitOrthoToBackground(float requestedOrtho, Vector3 focusPos)
+    {
+        if (!enableHorizontalBoundaryClamp || isDesertScene) return requestedOrtho;
+        if (GetCurrentZone(focusPos.y) != BackgroundZone.Ruins) return requestedOrtho;
+
+        float aspect = (_mainCam != null && _mainCam.aspect > 0.1f) ? _mainCam.aspect : (16f / 9f);
+        if (!TryGetRuinPanelVerticalBounds(focusPos, requestedOrtho * aspect, out float minY, out float maxY)) return requestedOrtho;
+        if (minY >= maxY) return requestedOrtho;
+
+        return Mathf.Max(1f, Mathf.Min(requestedOrtho, (maxY - minY) * 0.5f));
+    }
+
+    private float ClampCameraYToBounds(float rawY, float orthoSize, float minBoundY, float maxBoundY)
+    {
+        float minCamY = minBoundY + orthoSize;
+        float maxCamY = maxBoundY - orthoSize;
+        return minCamY <= maxCamY
+            ? Mathf.Clamp(rawY, minCamY, maxCamY)
+            : (minBoundY + maxBoundY) * 0.5f;
+    }
+
+    private float GetClampedY(float rawY, float orthoSize, Vector3 targetPosition)
+    {
+        if (!enableHorizontalBoundaryClamp) return rawY;
+
+        float minBoundY = float.MinValue;
+        float maxBoundY = float.MaxValue;
+        BackgroundZone zone = GetCurrentZone(targetPosition.y);
+        ZoneBoundaryBackgrounds explicitBounds = GetExplicitBoundaryFor(zone);
+
+        if (zone == BackgroundZone.Ruins && !isDesertScene)
+        {
+            float aspect = (_mainCam != null && _mainCam.aspect > 0.1f) ? _mainCam.aspect : (16f / 9f);
+            if (TryGetRuinPanelVerticalBounds(targetPosition, orthoSize * aspect, out minBoundY, out maxBoundY)
+                && minBoundY < maxBoundY)
+            {
+                return ClampCameraYToBounds(rawY, orthoSize, minBoundY, maxBoundY);
+            }
+            minBoundY = float.MinValue;
+            maxBoundY = float.MaxValue;
+        }
+
+        if (explicitBounds != null)
+        {
+            Bounds b = explicitBounds.leftMost.bounds;
+            b.Encapsulate(explicitBounds.rightMost.bounds);
+            minBoundY = b.min.y;
+            maxBoundY = b.max.y;
+        }
+        else if (isDesertScene)
+        {
+            minBoundY = _desertMinY;
+            maxBoundY = _desertMaxY;
+        }
+        else
+        {
+            switch (zone)
+            {
+                case BackgroundZone.UpperCastle:
+                    minBoundY = _upperMinY;
+                    maxBoundY = _upperMaxY;
+                    break;
+                case BackgroundZone.Sky:
+                    minBoundY = _skyMinY;
+                    maxBoundY = _skyMaxY;
+                    break;
+                case BackgroundZone.Ruins:
+                    minBoundY = _ruinMinY;
+                    maxBoundY = _ruinMaxY;
+                    break;
+            }
+        }
+
+        if (minBoundY >= maxBoundY || minBoundY <= float.MinValue + 100f)
+        {
+            CalculateUnifiedBackgroundBounds();
+            return rawY;
+        }
+
+        return ClampCameraYToBounds(rawY, orthoSize, minBoundY, maxBoundY);
     }
 
     private void ApplyOrthoSize(float size)
