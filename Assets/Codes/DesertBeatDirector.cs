@@ -178,6 +178,21 @@ public class DesertBeatDirector : MonoBehaviour
     public float pushBackAheadMin = 1.6f;
     public float pushBackAheadMax = 3.2f;
 
+    [Header("★1010 取消護盾後減鳥（02 #36「攻擊頻率真的過不去再減鳥數」）")]
+    [Tooltip("勾著＝拍三（沒有掩體那段）的攻擊鳥每 Beat3 Keep Every 隻留一隻，鳥群增援也減少。\n" +
+             "原本拍三 60 隻，每隻被發現時約四成機率再多生最多 3 隻增援；沒有護盾、被啄一次就死，太密。取消勾選＝回到原本的數量")]
+    public bool reduceBirdsNoShield = true;
+    [Tooltip("拍三每幾隻攻擊鳥留一隻（2＝減半）")]
+    [Range(1, 4)] public int beat3KeepEvery = 2;
+    [Tooltip("減鳥時，增援機率最多這麼多（原本 0.35，會再乘鳥群強度）")]
+    [Range(0f, 1f)] public float reducedReinforcementChance = 0.2f;
+    [Tooltip("減鳥時，她靠近時額外增援最多幾隻（原本 2）")]
+    [Range(0, 6)] public int reducedNearExtraCopies = 1;
+
+    /// <summary>程式層級開關（測試時切換改動前後用；重新進荒原才生效）。</summary>
+    public static bool ReduceBirdsEnabled = true;
+    private bool ReduceBirds => reduceBirdsNoShield && ReduceBirdsEnabled;
+
     [Header("★1016 鳥群強度與增援")]
     [Tooltip("整體鳥群壓力倍率。1＝基準；提高會讓增援數量與增援機率變高，並讓下降/對準速度略快。")]
     [Range(0.5f, 3f)] public float birdAttackIntensity = 1.2f;
@@ -405,6 +420,12 @@ public class DesertBeatDirector : MonoBehaviour
         IndividualBirdEnemy.ReinforcementAttackDelayMax = Mathf.Max(0f, birdReinforcementAttackDelayMax);
         IndividualBirdEnemy.ReinforcementActiveLimit = Mathf.Max(0, birdMaxActiveReinforcements);
         IndividualBirdEnemy.DespawnBehindPlayerDistance = Mathf.Max(0f, birdDespawnBehindPlayerDistance);
+
+        if (ReduceBirds)   // ★1010 取消護盾後減鳥：增援也少一點
+        {
+            IndividualBirdEnemy.ReinforcementChance = Mathf.Min(IndividualBirdEnemy.ReinforcementChance, reducedReinforcementChance);
+            IndividualBirdEnemy.ReinforcementNearExtraCopies = Mathf.Min(IndividualBirdEnemy.ReinforcementNearExtraCopies, reducedNearExtraCopies);
+        }
     }
 
     private void ApplyBirds(System.Text.StringBuilder log)
@@ -426,6 +447,7 @@ public class DesertBeatDirector : MonoBehaviour
         float demoX = ResolveDemoDiveX();
         int removed1 = 0, thinned = 0, beat2Kept = 0, staggered = 0, removed4 = 0;
         int beat2Index = 0, beat3Index = 0;
+        int beat3Seen = 0, thinned3 = 0;   // ★1010 取消護盾後減鳥
         IndividualBirdEnemy demoBird = null;
         IndividualBirdEnemy demoNearest = null;
         float demoNearestDist = float.MaxValue;
@@ -486,6 +508,13 @@ public class DesertBeatDirector : MonoBehaviour
 
             if (x < beat3End)
             {
+                // ★1010 取消護盾後減鳥：拍三每 beat3KeepEvery 隻留一隻（留下的照舊三隻一組錯開前搖）
+                if (ReduceBirds && beat3KeepEvery > 1 && (beat3Seen++ % beat3KeepEvery) != 0)
+                {
+                    Destroy(b.gameObject);
+                    thinned3++;
+                    continue;
+                }
                 if (beat3StaggerWarnings)
                 {
                     b.warningDuration = beat3WarningBase + (beat3Index % 3) * beat3WarningStep;
@@ -520,7 +549,9 @@ public class DesertBeatDirector : MonoBehaviour
 
         log.Append(" 鳥 ").Append(birds.Count).Append(" 隻（拍一移除 ").Append(removed1)
            .Append("、拍二留 ").Append(beat2Kept).Append(" 去 ").Append(thinned)
-           .Append("、拍三錯開 ").Append(staggered).Append("、拍四移除 ").Append(removed4)
+           .Append("、拍三錯開 ").Append(staggered)
+           .Append(ReduceBirds ? "（減鳥去 " + thinned3 + "，每 " + beat3KeepEvery + " 隻留 1；增援機率≤" + reducedReinforcementChance.ToString("F2") + "、近身增援≤" + reducedNearExtraCopies + "）" : "（沒減鳥）")
+           .Append("、拍四移除 ").Append(removed4)
            .Append("、示範俯衝 ").Append(demoBird != null ? demoBird.name : "無")
            .Append("、強度x").Append(birdAttackIntensity.ToString("F1"))
            .Append("、增援").Append(enableBirdReinforcements ? "開" : "關")
