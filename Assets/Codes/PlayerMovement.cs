@@ -223,6 +223,15 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool isWindSuctionActive = false;
     [HideInInspector] public float windSuctionTargetX = 0f;
     [HideInInspector] public float windSuctionSpeed = 3.0f;
+    /// <summary>★1011 牽引走路時，按 A／D 也不改面向（台階走兩步用：面向一直朝著走的方向）。StopWindSuction 會關掉。</summary>
+    [HideInInspector] public bool windSuctionIgnoreInputFacing = false;
+
+    // ★1011 跳躍封鎖：每個來源各用一個旗標，互相不會蓋掉對方。場景載入時各自負責放開。
+    /// <summary>最後一階台階走兩步的期間不能跳（TeleportTrigger 管）。</summary>
+    public static bool JumpBlockedByStair = false;
+    /// <summary>廢墟：石牆砸碎後推巨石被狼追的階段不能跳（RuinsChaseNoJump 管）。</summary>
+    public static bool JumpBlockedByRuinsChase = false;
+    public static bool IsJumpBlocked => JumpBlockedByStair || JumpBlockedByRuinsChase;
 
     public void StartWindSuction(float targetX, float speed)
     {
@@ -237,6 +246,7 @@ public class PlayerMovement : MonoBehaviour
     public void StopWindSuction()
     {
         isWindSuctionActive = false;
+        windSuctionIgnoreInputFacing = false;
     }
 
     [Header("攝影機緩衝與防震設定 (取代原本的 Y 軸鎖死)")]
@@ -283,6 +293,10 @@ public class PlayerMovement : MonoBehaviour
     
     [Tooltip("角色離開地面後，延遲幾秒才允許播放 Falling 動畫 (避免走過小顛簸時一直閃爍掉落動畫)")]
     public float fallAnimationDelay = 0.15f;
+
+    [Header("★1011 廢墟墜落特寫還給玩家")]
+    [Tooltip("落地後，鏡頭從光球特寫慢慢移回玩家身上要幾秒（0＝瞬間切回）")]
+    public float ruinsIntroHandBackSeconds = 1.0f;
     
     private float currentAirTime = 0f;
 
@@ -473,6 +487,8 @@ public class PlayerMovement : MonoBehaviour
         }
         
         // 強制重置所有狀態，避免卡死
+        JumpBlockedByStair = false;       // ★1011 static 會跨場景／跨播放留著，進場景先放開
+        JumpBlockedByRuinsChase = false;
         freezeHorizontal = false; 
         isStrictLockingX = false;
         isCutsceneFrozen = false; // 確保起始未被鎖定
@@ -584,8 +600,8 @@ public class PlayerMovement : MonoBehaviour
             }
 
             // 玩家按鍵時優先面向玩家按鍵方向，沒按時面向吸入方向
-            if (rawInput > 0.1f) facingDirection = Vector3.right;
-            else if (rawInput < -0.1f) facingDirection = Vector3.left;
+            if (!windSuctionIgnoreInputFacing && rawInput > 0.1f) facingDirection = Vector3.right;
+            else if (!windSuctionIgnoreInputFacing && rawInput < -0.1f) facingDirection = Vector3.left;
             else if (moveInput > 0.05f) facingDirection = Vector3.right;
             else if (moveInput < -0.05f) facingDirection = Vector3.left;
         }
@@ -1174,7 +1190,7 @@ public class PlayerMovement : MonoBehaviour
                 + " x=" + transform.position.x.ToString("F1"));
         }
 
-        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded)
+        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked)
         {
             // 陸地標準跳躍
             isJumping = true;
@@ -1764,6 +1780,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UnlockFallingControl(string reason)
     {
+        bool wasRuinsLanding = _waitingForRuinsLanding;   // ★1011 先記下來，下面會清掉
         freezeHorizontal = false;
         isStrictLockingX = false;
         _fallingBGEntered = false;
@@ -1779,12 +1796,15 @@ public class PlayerMovement : MonoBehaviour
             StopCoroutine(_ruinsIntroLightGuardCoroutine);
             _ruinsIntroLightGuardCoroutine = null;
         }
-        CameraTargetXFollower.ClearCameraOverride();
+        // ★1011 光球特寫還給玩家：慢慢過去，不是瞬間切
+        CameraTargetXFollower.ClearCameraOverrideSmooth(ruinsIntroHandBackSeconds);
 
         PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
-        if (respawnSystem != null)
+        if (respawnSystem != null && wasRuinsLanding)
         {
-            respawnSystem.SetSafeGroundPosition(this.transform.position);
+            // ★1011 只有「天上掉到廢墟」那次落地才當存檔點，而且不能把已經走到的廢墟存檔點倒退回去
+            //   （原本任何解除鎖定都會把重生點改成當下位置，會蓋掉企劃放的重生點，之後死掉就被送到奇怪的地方）
+            respawnSystem.TrySetLandingCheckpoint(this.transform.position);
         }
 
         SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);

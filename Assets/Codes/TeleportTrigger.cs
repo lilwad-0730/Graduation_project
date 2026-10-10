@@ -16,6 +16,12 @@ public class TeleportTrigger : MonoBehaviour
     [Tooltip("傳送的目的地 Transform (Castle Destination)")]
     public Transform destination;
 
+    [Tooltip("★1011 傳送落點再往後（左）挪幾米。負數＝往左／往後，正數＝往右／往前")]
+    public float destinationOffsetX = -3f;
+
+    /// <summary>實際傳送落點＝目的地加上 destinationOffsetX。</summary>
+    private Vector3 DestPos => destination.position + Vector3.right * destinationOffsetX;
+
     [Tooltip("傳送時是否將玩家速度歸零，避免帶著原本跑跳的慣性衝出平台")]
     public bool resetVelocity = true;
 
@@ -72,8 +78,16 @@ public class TeleportTrigger : MonoBehaviour
     [Tooltip("傳送後，光絮要切換到哪一個路徑點 (Waypoint) 的索引？設為 -1 代表自動搜尋最靠近傳送點的 Waypoint")]
     public int targetWaypointIndex = -1;
 
+    [Tooltip("★1011 踩上去先確認站穩的最長時間（秒）。這段時間操作還在玩家手上，站不穩就放棄、不鎖她")]
+    public float confirmWindow = 0.6f;
+    [Tooltip("★1011 衝上來的速度慢慢降到走路速度要花幾秒（不急煞）")]
+    public float slowdownSeconds = 0.4f;
+    [Tooltip("★1011 走完後等她站穩的最長時間（秒）。超時就取消這次轉場、把操作還給玩家")]
+    public float settleTimeout = 2f;
+
     private bool _isTeleporting = false;
     private bool _teleportTriggered = false;
+    private float _retryAfter = 0f;
     private PlayerMovement _cachedPlayer;
 
     private static Canvas _whiteFadeCanvas;
@@ -257,6 +271,7 @@ public class TeleportTrigger : MonoBehaviour
     private void HandleTeleport(GameObject targetObj)
     {
         if (_isTeleporting || _teleportTriggered || targetObj == null) return;
+        if (Time.time < _retryAfter) return;
 
         // 偵測是否為玩家
         PlayerMovement player = targetObj.GetComponent<PlayerMovement>()
@@ -270,6 +285,14 @@ public class TeleportTrigger : MonoBehaviour
 
         if (player != null && destination != null)
         {
+            // ★1011 只有「真的站在台階頂面」才開始。碰到台階側面、剛擦到邊緣、在空中都不算，也不鎖她。
+            //   實機 log：x 32.25（碰撞盒剛好只有邊緣踩在台階上）被鎖住，之後 5 秒都判不到站穩，整個人定在那邊、按跳躍也沒用。
+            if (walkBeforeTeleport > 0.01f)
+            {
+                Rigidbody prb = player.GetComponent<Rigidbody>();
+                if (!IsStandingOnStair(player, FindPlayerCollider(player), GetStairBounds(), prb)) return;
+            }
+
             _isTeleporting = true;
             _teleportTriggered = true;
 
@@ -297,7 +320,12 @@ public class TeleportTrigger : MonoBehaviour
     }
 
     /// <summary>
-    /// ★1009 踩上最後一階：等她站穩（最多 0.6 秒），她自己往前走 walkBeforeTeleport 米（不超過階梯右緣），再接原本的白色傳送。
+    /// ★1009 踩上最後一階：她自己往前走 walkBeforeTeleport 米（不超過階梯右緣），再接原本的白色傳送。
+    /// ★1011 改成不急煞、不先鎖：
+    ///   1. 踩上來先確認站穩（confirmWindow 內），這段操作還在玩家手上；站不穩就放棄，什麼都沒鎖。
+    ///   2. 確認後才開始走，速度從她衝上來的速度慢慢降到 walkSpeed，不是瞬間歸零再起步。
+    ///   3. 走的時候不能跳、按左右鍵也不會改面向（面向一直朝前走的方向）。
+    ///   4. 走完確認站穩（最多 settleTimeout 秒），站不穩就取消、操作馬上還給玩家，不會定在那邊。
     /// 走路借用 PlayerMovement 的風暴牽引（StartWindSuction：朝目標 x 用指定速度走、動畫照走），走完就關掉。
     /// </summary>
     private IEnumerator WalkThenTeleport(PlayerMovement player)
@@ -306,73 +334,96 @@ public class TeleportTrigger : MonoBehaviour
         Bounds stair = GetStairBounds();
         Collider playerCol = FindPlayerCollider(player);
 
-        // 先鎖操作、等她真的落在台階頂面（重力照常，所以在台階上跳起來會先落下，不會在半空中被傳走）
+        // 1) 先確認站穩（不鎖）
         float t = 0f;
         float stable = 0f;
-        player.isCutsceneFrozen = true;
-        while (t < approachTimeout)
-        {
-            t += Time.deltaTime;
-            if (IsStandingOnStair(player, playerCol, stair, rb))
-            {
-                stable += Time.deltaTime;
-                if (stable >= groundedConfirmSeconds) break;
-            }
-            else stable = 0f;
-            yield return null;
-        }
-        if (stable < groundedConfirmSeconds)
-        {
-            Debug.LogWarning($"⚠️【階梯轉場】'{name}' 在 {approachTimeout:F1}s 內沒能站穩在台階上，取消本次轉場並恢復操作。");
-            player.isCutsceneFrozen = false;
-            _isTeleporting = false;
-            _teleportTriggered = false;
-            yield break;
-        }
-
-        float rightLimit = GetRightEdgeX() - bypassOffsetX - 0.6f;   // 不走出階梯
-        float startX = player.transform.position.x;
-        float targetX = Mathf.Min(startX + walkBeforeTeleport, rightLimit);
-        if (targetX > startX + 0.2f)
-        {
-            player.StartWindSuction(targetX, Mathf.Max(0.5f, walkSpeed));
-            t = 0f;
-            while (t < walkMaxSeconds && Mathf.Abs(player.transform.position.x - targetX) > 0.08f)
-            {
-                t += Time.deltaTime;
-                yield return null;
-            }
-            player.StopWindSuction();
-        }
-
-        // 走完再確認一次還站在台階上、而且穩了（走路中被擠下去或彈起就等它落回來）
-        t = 0f;
-        stable = 0f;
-        player.isCutsceneFrozen = true;
-        while (t < approachTimeout && stable < groundedConfirmSeconds)
+        while (t < confirmWindow)
         {
             t += Time.deltaTime;
             stable = IsStandingOnStair(player, playerCol, stair, rb) ? stable + Time.deltaTime : 0f;
+            if (stable >= groundedConfirmSeconds) break;
             yield return null;
         }
         if (stable < groundedConfirmSeconds)
         {
-            Debug.LogWarning($"⚠️【階梯轉場】'{name}' 走完後沒能站穩在台階上，取消本次轉場並恢復操作。");
-            player.isCutsceneFrozen = false;
-            _isTeleporting = false;
-            _teleportTriggered = false;
+            CancelWalk(player, false, "沒站穩就離開台階了（沒有鎖她）");
             yield break;
         }
 
-        // 接原本的傳送：凍結、速度歸零、白色轉場
-        player.isCutsceneFrozen = true;
-        if (rb != null && !rb.isKinematic)
+        float startX = player.transform.position.x;
+        try
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            // 2) 走兩步
+            float rightLimit = GetRightEdgeX() - bypassOffsetX - 0.6f;   // 不走出階梯
+            float targetX = Mathf.Min(startX + walkBeforeTeleport, rightLimit);
+            if (targetX > startX + 0.2f)
+            {
+                float arriveSpeed = rb != null ? Mathf.Abs(rb.linearVelocity.x) : 0f;
+                float startSpeed = Mathf.Max(walkSpeed, arriveSpeed);
+                player.StartWindSuction(targetX, startSpeed);
+                player.windSuctionIgnoreInputFacing = true;
+                PlayerMovement.JumpBlockedByStair = true;
+
+                t = 0f;
+                while (t < walkMaxSeconds && Mathf.Abs(player.transform.position.x - targetX) > 0.08f)
+                {
+                    t += Time.deltaTime;
+                    player.windSuctionSpeed = Mathf.Lerp(startSpeed, Mathf.Max(0.5f, walkSpeed), Mathf.Clamp01(t / Mathf.Max(0.05f, slowdownSeconds)));
+                    yield return null;
+                }
+                player.StopWindSuction();
+            }
+
+            // 3) 走完再確認一次還站在台階上、而且穩了（走路中被擠下去或彈起就等它落回來）
+            t = 0f;
+            stable = 0f;
+            player.isCutsceneFrozen = true;
+            while (t < settleTimeout && stable < groundedConfirmSeconds)
+            {
+                t += Time.deltaTime;
+                stable = IsStandingOnStair(player, playerCol, stair, rb) ? stable + Time.deltaTime : 0f;
+                yield return null;
+            }
+            if (stable < groundedConfirmSeconds)
+            {
+                CancelWalk(player, true, "走完後沒能站穩在台階上");
+                yield break;
+            }
+
+            // 4) 接原本的傳送：凍結、速度歸零、白色轉場
+            player.isCutsceneFrozen = true;
+            if (rb != null && !rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            Debug.Log($"✨【階梯白色轉場】她在最後一階走了 {player.transform.position.x - startX:F1} 米，開始白色過渡至 '{destination.name}'");
+            yield return WhiteFadeTeleportRoutine(player, rb);
         }
-        Debug.Log($"✨【階梯白色轉場】她在最後一階走了 {player.transform.position.x - startX:F1} 米，開始白色過渡至 '{destination.name}'");
-        yield return WhiteFadeTeleportRoutine(player, rb);
+        finally
+        {
+            PlayerMovement.JumpBlockedByStair = false;
+            if (player != null)
+            {
+                player.StopWindSuction();
+            }
+        }
+    }
+
+    /// <summary>取消這次轉場：把操作還給玩家，稍等一下才可以再觸發（避免站在台階上馬上又被抓回去）。</summary>
+    private void CancelWalk(PlayerMovement player, bool warn, string reason)
+    {
+        if (player != null)
+        {
+            player.StopWindSuction();
+            player.isCutsceneFrozen = false;
+        }
+        PlayerMovement.JumpBlockedByStair = false;
+        _isTeleporting = false;
+        _teleportTriggered = false;
+        _retryAfter = Time.time + 0.4f;
+        string msg = $"【階梯轉場】'{name}' 取消本次轉場：{reason}，操作還給玩家。";
+        if (warn) Debug.LogWarning("⚠️" + msg); else Debug.Log(msg);
     }
 
     private Bounds GetStairBounds()
@@ -404,8 +455,9 @@ public class TeleportTrigger : MonoBehaviour
         if (!player.isGrounded) return false;
         if (rb != null && !rb.isKinematic && Mathf.Abs(rb.linearVelocity.y) > 0.3f) return false;
 
-        float x = player.transform.position.x;
-        if (x < stair.min.x - 0.2f || x > stair.max.x + 0.2f) return false;
+        // ★1011 用碰撞盒中心的 x（她的碰撞盒往右偏 0.3 米，原點 x 會比身體靠左，站在左緣會被誤判成沒踩上）
+        float x = playerCol != null ? playerCol.bounds.center.x : player.transform.position.x;
+        if (x < stair.min.x - 0.1f || x > stair.max.x + 0.1f) return false;
 
         float feetY = playerCol != null ? playerCol.bounds.min.y : player.transform.position.y;
         return feetY >= stair.max.y - 0.5f && feetY <= stair.max.y + 1.0f;
@@ -425,7 +477,7 @@ public class TeleportTrigger : MonoBehaviour
         GuidanceLight targetLight = guidanceLight != null ? guidanceLight : Object.FindFirstObjectByType<GuidanceLight>();
         if (targetLight != null)
         {
-            Vector3 lightDest = destination.position + Vector3.up * 1.5f;
+            Vector3 lightDest = DestPos + Vector3.up * 1.5f;
             targetLight.TeleportLight(lightDest, targetWaypointIndex);
         }
 
@@ -438,7 +490,7 @@ public class TeleportTrigger : MonoBehaviour
 
             if (respawnSystem != null)
             {
-                respawnSystem.SetSafeGroundPosition(destination.position);
+                respawnSystem.SetSafeGroundPosition(DestPos);
             }
         }
 
@@ -475,7 +527,7 @@ public class TeleportTrigger : MonoBehaviour
         // 執行玩家與相機座標瞬間遷移
         if (player != null)
         {
-            player.WarpTo(destination.position);
+            player.WarpTo(DestPos);
             // WarpTo 內部可能重置 isCutsceneFrozen，在此強制保持凍結直到白幕散去
             player.isCutsceneFrozen = true;
 

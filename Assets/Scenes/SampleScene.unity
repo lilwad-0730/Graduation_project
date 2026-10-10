@@ -1348,7 +1348,7 @@ Transform:
   m_GameObject: {fileID: 95971153}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -21.695354, y: 15.7407, z: 0}
+  m_LocalPosition: {x: -21.695354, y: 15.97, z: 0}
   m_LocalScale: {x: 2.273, y: 2.273, z: 2.273}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -4186,7 +4186,7 @@ Transform:
   m_GameObject: {fileID: 300032862}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -17.575352, y: -44.549297, z: 0}
+  m_LocalPosition: {x: -17.575352, y: -44.549297, z: -4}
   m_LocalScale: {x: 1.1878167, y: 0.8527913, z: 0.81218225}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4735,7 +4735,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &363246948
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4867,8 +4867,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.3113319, y: 1, z: 1}
+  m_Center: {x: 0.15566428, y: 0, z: 0}
 --- !u!23 &372272421
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -5680,8 +5680,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.9946116, y: 1, z: 1}
-  m_Center: {x: 0.0026953393, y: 0, z: -1.13796455e-11}
+  m_Size: {x: 0.9264385, y: 1, z: 1}
+  m_Center: {x: 0.03678248, y: 0, z: -3.6393347e-11}
 --- !u!23 &461997067
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -6342,7 +6342,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.301445, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.245132, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8689,7 +8689,7 @@ Transform:
   m_GameObject: {fileID: 673707660}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -21.695354, y: -33.759304, z: 0}
+  m_LocalPosition: {x: -21.695354, y: -33.530006, z: 0}
   m_LocalScale: {x: 1.468, y: 1.468, z: 1.468}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -9301,6 +9301,7 @@ MonoBehaviour:
   m_Script: {fileID: 764476860}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 2027794883}
 --- !u!65 &710415345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9349,6 +9350,7 @@ MonoBehaviour:
   m_Script: {fileID: 790408030}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9361,6 +9363,7 @@ MonoBehaviour:
   m_Script: {fileID: 1790199341}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9373,6 +9376,7 @@ MonoBehaviour:
   m_Script: {fileID: 1816474421}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgeGapFallTrigger
+  controller: {fileID: 0}
 --- !u!114 &710415350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12526,6 +12530,7 @@ MonoBehaviour:
   customFadeImage: {fileID: 0}
   customMessageText: {fileID: 0}
   customMessageCanvasGroup: {fileID: 0}
+  resetOnlyWolvesInRuins: 1
 --- !u!4 &949599341
 Transform:
   m_ObjectHideFlags: 0
@@ -21893,8 +21898,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.203212, y: 9.161363, z: 1}
-  m_Center: {x: -0.0000021129656, y: 0.020925755, z: 0}
+  m_Size: {x: 8.903102, y: 8.722749, z: 1}
+  m_Center: {x: 0.011542207, y: -0.059878565, z: 0}
 --- !u!212 &1360199457
 SpriteRenderer:
   serializedVersion: 2
@@ -22237,8 +22242,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.203212, y: 9.161363, z: 1}
-  m_Center: {x: -0.0000021129656, y: 0.020925755, z: 0}
+  m_Size: {x: 8.754786, y: 8.825043, z: 1}
+  m_Center: {x: -0.000004225931, y: -0.14723408, z: 0}
 --- !u!212 &1375842678
 SpriteRenderer:
   serializedVersion: 2
@@ -22759,6 +22764,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportTrigger
   destination: {fileID: 117614400}
+  destinationOffsetX: -3
   resetVelocity: 1
   updateRespawnPoint: 1
   walkBeforeTeleport: 1.6
@@ -22778,6 +22784,9 @@ MonoBehaviour:
   checkYUp: 20
   guidanceLight: {fileID: 0}
   targetWaypointIndex: 5
+  confirmWindow: 0.6
+  slowdownSeconds: 0.4
+  settleTimeout: 2
 --- !u!1001 &1440556828
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25462,7 +25471,7 @@ Transform:
   m_GameObject: {fileID: 1602164682}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -25.485352, y: -46.3093, z: 0}
+  m_LocalPosition: {x: -25.485352, y: -46.3093, z: -3}
   m_LocalScale: {x: 1.25, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26081,7 +26090,7 @@ Transform:
   m_GameObject: {fileID: 1634735496}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -9.9453535, y: -43.789307, z: 0}
+  m_LocalPosition: {x: -9.9453535, y: -43.789307, z: -5}
   m_LocalScale: {x: 1.5789812, y: 1.5418289, z: 1.4861}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29276,7 +29285,7 @@ Transform:
   m_GameObject: {fileID: 2036996129}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -21.695354, y: -11.219299, z: 0}
+  m_LocalPosition: {x: -21.695354, y: -10.990002, z: 0}
   m_LocalScale: {x: 1.468, y: 1.468, z: 1.468}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -29388,7 +29397,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.301445, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.245132, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -34372,9 +34381,20 @@ MonoBehaviour:
   - {fileID: 1734204752}
   - {fileID: 149181805}
   moveSpeed: 9
+  ruinsSpeedMultiplier: 1.5
+  ruinsBelowY: -60
+  timedFlightWaypointName: P14
+  timedFlightSeconds: 3
+  cameraHandBackSeconds: 1
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
   touchTriggerDistance: 1.5
+  useExtendedTouchRange: 1
+  touchRangeX: 1.5
+  touchRangeAbove: 2
+  touchRangeBelow: 1.5
+  touchBackupRangeX: 1.5
+  touchBackupMaxDeltaY: 3.5
   drawWaypointGizmos: 1
   stopDistance: 13
   resumeDistance: 6
@@ -35736,7 +35756,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.301445, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.245132, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -36036,11 +36056,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.325699
+      value: -31.2187
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.18
+      value: 17.179996
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.z

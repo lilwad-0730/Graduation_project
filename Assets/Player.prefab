@@ -172,7 +172,7 @@ MonoBehaviour:
   smoothCameraY: 1
   cameraYDamping: 0.25
   fallVelocityThreshold: -3
-  fallAnimationDelay: 1.8
+  fallAnimationDelay: 1.5
 --- !u!114 &745830173811474750
 MonoBehaviour:
   m_ObjectHideFlags: 0

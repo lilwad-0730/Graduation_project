@@ -347,6 +347,24 @@ public class PlayerRespawnSystem : MonoBehaviour
     }
 
     /// <summary>
+    /// ★1011 落地存檔點（天上掉到廢墟那次落地用）。
+    /// 目前的存檔點如果已經在同一個區域（高度差 15 米內）而且比落地點更前面（x 差 1 米以上），就不改，
+    /// 避免蓋掉企劃放的重生點。回傳是否真的採用。
+    /// </summary>
+    public bool TrySetLandingCheckpoint(Vector3 newPos)
+    {
+        bool sameArea = Mathf.Abs(_activeRespawnPos.y - newPos.y) < 15f;
+        if (sameArea && _activeRespawnPos.x > newPos.x + 1.0f)
+        {
+            Debug.Log($"【存檔點系統】落地點 {newPos} 在目前存檔點 {_activeRespawnPos} 後面，不倒退，保留原存檔點");
+            return false;
+        }
+        _activeRespawnPos = newPos;
+        Debug.Log($"【存檔點系統】落地存檔點更新至：{_activeRespawnPos}");
+        return true;
+    }
+
+    /// <summary>
     /// 帶前進保護的存檔點更新 (水下拾取物專用)。
     /// 只有比目前存檔點「離起點更遠」才會採用，玩家回頭去撿漏掉的日誌不會讓重生點倒退。
     /// 用離起點的距離判定而非單一軸向，下潛與橫移都適用。
@@ -493,6 +511,24 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
+    [Header("★1011 廢墟重生")]
+    [Tooltip("在廢墟死亡時，只重置狼（WolfEnemy／WolfSpawner），光球、石牆、巨石進度不復原。關掉＝照舊，全場景重置")]
+    public bool resetOnlyWolvesInRuins = true;
+
+    /// <summary>重生點是不是在廢墟區域裡（Area_Ruined 的範圍；找不到就用名字有 Ruin 的 GameArea）。</summary>
+    private static bool IsInRuins(Vector3 pos)
+    {
+        foreach (GameArea area in Object.FindObjectsByType<GameArea>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (area == null || !area.gameObject.name.Contains("Ruin")) continue;
+            Collider c = area.GetComponent<Collider>();
+            if (c == null) continue;
+            Bounds b = c.bounds;
+            if (pos.x >= b.min.x && pos.x <= b.max.x && pos.y >= b.min.y && pos.y <= b.max.y) return true;
+        }
+        return false;
+    }
+
     // 觸發強制傳送到「指定位置」的重生轉場
     public void TriggerRespawn(Vector3 customSpawnPos)
     {
@@ -581,9 +617,13 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // --- 呼叫全場景所有 IResettable 物件進行重置 (包含鏡牆演出、光球、黑影怪物、燭火、可破壞地板等) ---
+        // ★1011 廢墟：在企劃放的重生點重生，只重置狼（光球、石牆、巨石進度都不復原）
+        bool wolvesOnly = resetOnlyWolvesInRuins && IsInRuins(spawnPos);
+        if (wolvesOnly) Debug.Log("【重生系統】廢墟重生：只重置狼，光球與其他機關維持現狀");
         MonoBehaviour[] allScripts = Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var script in allScripts)
         {
+            if (wolvesOnly && !(script is WolfEnemy) && !(script is WolfSpawner)) continue;
             if (script is IResettable resettable && script.gameObject != this.gameObject)
             {
                 resettable.ResetToInitialState();

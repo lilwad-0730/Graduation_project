@@ -281,6 +281,86 @@ public class CameraTargetXFollower : MonoBehaviour
         Debug.Log($"🎬【Camera Override 啟用】聚焦目標: {customFocusTarget?.name}");
     }
 
+    /// <summary>
+    /// ★1011 帶過渡的 Override：鏡頭從現在的位置與大小，用 seconds 秒慢慢移到特寫目標（不是瞬間切過去）。
+    /// 風暴轉場「鏡頭漸漸放大到玩家身上」用這個。
+    /// </summary>
+    public static void SetCameraOverrideSmooth(Transform customFocusTarget, float customOrthoSize, float seconds)
+    {
+        if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
+        if (Instance == null) return;
+
+        Vector3 fromPos = Instance.transform.position;
+        float fromOrtho = Instance.CurrentOrtho();
+        SetCameraOverride(customFocusTarget, customOrthoSize);
+        Instance.BeginBlend(fromPos, fromOrtho, seconds);
+    }
+
+    /// <summary>
+    /// ★1011 帶過渡的還原：鏡頭從特寫的位置與大小，用 seconds 秒慢慢回到玩家身上（不是瞬間切過去）。
+    /// </summary>
+    public static void ClearCameraOverrideSmooth(float seconds)
+    {
+        if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
+        if (Instance == null) return;
+
+        Vector3 fromPos = Instance.transform.position;
+        float fromOrtho = Instance.CurrentOrtho();
+        ClearCameraOverride();   // 裡面會瞬間對齊玩家，下面馬上把鏡頭放回特寫的位置，再慢慢過去
+        Instance.BeginBlend(fromPos, fromOrtho, seconds);
+    }
+
+    // ── ★1011 鏡頭過渡（疊在原本各模式算出來的位置與大小上，從舊的位置慢慢混到新的）──
+    private bool _blendActive;
+    private float _blendElapsed;
+    private float _blendDuration;
+    private Vector3 _blendFromPos;
+    private float _blendFromOrtho;
+    private int _blendLastFrame = -1;
+    private float _appliedOrtho = -1f;
+
+    private float CurrentOrtho()
+    {
+        if (_mainCam == null) _mainCam = Camera.main;
+        if (_mainCam != null && _mainCam.orthographic) return _mainCam.orthographicSize;
+        return _appliedOrtho > 0f ? _appliedOrtho : currentOrthoSize;
+    }
+
+    private void BeginBlend(Vector3 fromPos, float fromOrtho, float seconds)
+    {
+        if (seconds <= 0.01f) { _blendActive = false; return; }
+        _blendActive = true;
+        _blendElapsed = 0f;
+        _blendDuration = seconds;
+        _blendFromPos = fromPos;
+        _blendFromOrtho = fromOrtho;
+        _blendLastFrame = Time.frameCount;   // 呼叫的這一幀不計時間，從舊位置開始
+
+        // 剛才 Override／還原會把鏡頭瞬間對齊到新位置，這裡馬上放回舊位置，下一幀起才慢慢混過去
+        transform.position = new Vector3(fromPos.x, fromPos.y, transform.position.z);
+        RawApplyOrtho(fromOrtho);
+        if (_mainCam == null) _mainCam = Camera.main;
+        if (_mainCam != null)
+            _mainCam.transform.position = new Vector3(fromPos.x, fromPos.y, _mainCam.transform.position.z);
+        if (_vcam != null) _vcam.PreviousStateIsValid = false;
+    }
+
+    private void StepBlend()
+    {
+        if (!_blendActive) return;
+        if (_blendLastFrame != Time.frameCount)
+        {
+            _blendLastFrame = Time.frameCount;
+            _blendElapsed += Time.unscaledDeltaTime;
+        }
+        float k = Mathf.Clamp01(_blendElapsed / Mathf.Max(0.01f, _blendDuration));
+        float e = k * k * (3f - 2f * k);   // SmoothStep：起步與收尾都柔和
+        Vector3 target = transform.position;
+        transform.position = new Vector3(Mathf.Lerp(_blendFromPos.x, target.x, e), Mathf.Lerp(_blendFromPos.y, target.y, e), target.z);
+        RawApplyOrtho(Mathf.Lerp(_blendFromOrtho, _appliedOrtho > 0f ? _appliedOrtho : currentOrthoSize, e));
+        if (k >= 1f) _blendActive = false;
+    }
+
     public static void ClearCameraOverride()
     {
         if (Instance == null) Instance = Object.FindFirstObjectByType<CameraTargetXFollower>();
@@ -626,6 +706,12 @@ public class CameraTargetXFollower : MonoBehaviour
     }
 
     void UpdatePosition()
+    {
+        UpdatePositionCore();
+        StepBlend();   // ★1011 有鏡頭過渡時，把算好的位置與大小從舊的慢慢混過去
+    }
+
+    void UpdatePositionCore()
     {
         if (targetToFollow == null)
         {
@@ -1105,6 +1191,12 @@ public class CameraTargetXFollower : MonoBehaviour
     }
 
     private void ApplyOrthoSize(float size)
+    {
+        _appliedOrtho = size;
+        RawApplyOrtho(size);
+    }
+
+    private void RawApplyOrtho(float size)
     {
         if (cameraToControl != null) _vcam = cameraToControl;
         else if (_vcam == null) _vcam = Object.FindFirstObjectByType<CinemachineCamera>();

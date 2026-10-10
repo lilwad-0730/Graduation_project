@@ -14,6 +14,17 @@ public class GuidanceLight : MonoBehaviour, IResettable
     [Header("飛行屬性")]
     [Tooltip("精靈飛行的速度")]
     public float moveSpeed = 4f;
+
+    [Header("★1011 廢墟光球飛行速度")]
+    [Tooltip("光球在廢墟（Y 低於下面那個值）時，飛行速度乘上這個倍數。1＝不加速")]
+    public float ruinsSpeedMultiplier = 1.5f;
+    [Tooltip("Y 低於這個值算廢墟")]
+    public float ruinsBelowY = -60f;
+    [Tooltip("飛往這個路徑點（名稱）時，固定花 timedFlightSeconds 秒飛到（太遠就加速，不會比原本慢）。留空＝不用")]
+    public string timedFlightWaypointName = "P14";
+    public float timedFlightSeconds = 3f;
+    [Tooltip("光球特寫結束、鏡頭回到玩家的過渡時間（秒，0＝瞬間切回）")]
+    public float cameraHandBackSeconds = 1.0f;
     [Tooltip("距離路徑點多近算抵達？")]
     public float waypointThreshold = 0.5f;
 
@@ -24,6 +35,20 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     [Tooltip("【Waypoint_Touch】玩家要靠多近才算碰到光絮 (原本寫死 1.5，現在可調)")]
     public float touchTriggerDistance = 1.5f;
+
+    [Header("★1010 碰到光球的範圍（圓＋地面／跳起的長方形＋X 備援）")]
+    [Tooltip("開啟後，除了原本的圓（量她碰撞盒最近的點），再加一個比較高的長方形範圍：站在地上、跳起來都碰得到。關掉＝只用原本的圓")]
+    public bool useExtendedTouchRange = true;
+    [Tooltip("長方形：她的碰撞盒左右邊離光球多近（米）")]
+    public float touchRangeX = 1.5f;
+    [Tooltip("長方形：光球比她頭頂高多少以內還算碰到（米，跳起來頭碰光球的範圍）")]
+    public float touchRangeAbove = 2f;
+    [Tooltip("長方形：光球比她腳底低多少以內還算碰到（米，光球貼近地面、她站在旁邊或跳過去）")]
+    public float touchRangeBelow = 1.5f;
+    [Tooltip("備援（不看碰撞盒）：她的中心 X 離光球多近（米）。碰撞盒抓不到或偏掉時還能觸發")]
+    public float touchBackupRangeX = 1.5f;
+    [Tooltip("備援：她的中心和光球的高度差不能超過多少（米）。這個限制讓不同高度的區域（例如棉花堡和廢墟）不會互相誤觸發")]
+    public float touchBackupMaxDeltaY = 3.5f;
 
     [Header("🔍 Scene 視窗可視化")]
     [Tooltip("是否在 Scene 視窗畫出每個路徑點的觸發範圍與行為標示")]
@@ -292,11 +317,10 @@ public class GuidanceLight : MonoBehaviour, IResettable
         string wpTag = currentWP.tag;
         
         float distToPlayer = Vector3.Distance(logicPosition, player.position);
-        float touchDistToPlayer = GetPlayerDistanceToVisibleLight();
         float distToWaypoint = Vector3.Distance(logicPosition, currentWP.position);
         if (_touchCooldownWaypoint != null)
         {
-            if (_touchCooldownWaypoint != currentWP || touchDistToPlayer > touchTriggerDistance + 0.25f)
+            if (_touchCooldownWaypoint != currentWP || !IsPlayerInTouchRange(touchTriggerDistance, 0.25f))
             {
                 _touchCooldownWaypoint = null;
             }
@@ -322,7 +346,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 新增規則：被玩家吸收模式 (Waypoint_Absorb)
         if (wpTag == "Waypoint_Absorb")
         {
-            if (arrivedAtWaypoint && touchDistToPlayer <= absorbTriggerDistance) // 等玩家靠近觸發吸收
+            if (arrivedAtWaypoint && IsPlayerInTouchRange(absorbTriggerDistance)) // 等玩家靠近觸發吸收
             {
                 StartAbsorbSequence(pm);
             }
@@ -330,7 +354,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         // 規則 3：玩家必須真正碰到光絮 (極短距離)，且光絮不跑
         else if (isTouchWaypoint)
         {
-            if (arrivedAtWaypoint && touchDistToPlayer <= touchTriggerDistance) // 等玩家真正碰到
+            if (arrivedAtWaypoint && IsPlayerInTouchRange(touchTriggerDistance)) // 等玩家真正碰到
             {
                 if (_touchCooldownWaypoint != currentWP)
                 {
@@ -373,8 +397,19 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     private void FlyTowards(Vector3 targetPos)
     {
-        logicPosition = Vector3.MoveTowards(logicPosition, targetPos, moveSpeed * Time.deltaTime);
+        logicPosition = Vector3.MoveTowards(logicPosition, targetPos, CurrentMoveSpeed() * Time.deltaTime);
     }
+
+    /// <summary>★1011 目前的飛行速度：在廢墟乘上倍數；正在飛往限時路徑點時用 _timedFlightSpeed。</summary>
+    private float CurrentMoveSpeed()
+    {
+        float s = moveSpeed;
+        if (ruinsSpeedMultiplier > 1f && logicPosition.y < ruinsBelowY) s *= ruinsSpeedMultiplier;
+        if (_timedFlightSpeed > s) s = _timedFlightSpeed;
+        return s;
+    }
+
+    private float _timedFlightSpeed = 0f;
 
     private void CachePlayerCollider()
     {
@@ -397,6 +432,34 @@ public class GuidanceLight : MonoBehaviour, IResettable
             return Vector3.Distance(_playerCollider.ClosestPoint(lightPos), lightPos);
         }
         return Vector3.Distance(player.position, lightPos);
+    }
+
+    /// <summary>
+    /// ★1010 她有沒有碰到光球：圓（她碰撞盒最近點 ≤ sphereRadius）、
+    /// 或長方形（左右 touchRangeX、頭頂上 touchRangeAbove、腳底下 touchRangeBelow，站地上和跳起來都涵蓋）、
+    /// 或 X 備援（中心 X 靠近光球，而且高度差不大）。margin 是三種範圍一起放大的量（放開判定用）。
+    /// 廢墟光球導演也呼叫這個，兩邊用同一套範圍。
+    /// </summary>
+    public bool IsPlayerInTouchRange(float sphereRadius, float margin = 0f)
+    {
+        if (player == null) return false;
+        if (GetPlayerDistanceToVisibleLight() <= sphereRadius + margin) return true;
+        if (!useExtendedTouchRange) return false;
+
+        Vector3 lp = transform.position;
+        if (_playerCollider != null && _playerCollider.enabled)
+        {
+            Bounds b = _playerCollider.bounds;
+            float dx = Mathf.Max(b.min.x - lp.x, lp.x - b.max.x, 0f);
+            bool inX = dx <= touchRangeX + margin;
+            bool inUp = lp.y - b.max.y <= touchRangeAbove + margin;
+            bool inDown = b.min.y - lp.y <= touchRangeBelow + margin;
+            if (inX && inUp && inDown) return true;
+        }
+
+        Vector3 pp = player.position;
+        return Mathf.Abs(pp.x - lp.x) <= touchBackupRangeX + margin
+            && Mathf.Abs(pp.y - lp.y) <= touchBackupMaxDeltaY + margin;
     }
 
     private void AdvanceWaypoint(PlayerMovement pm, bool freezePlayer, bool useCloseup)
@@ -477,7 +540,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
             if (nextWP == null) yield break;
 
             float startDistance = Vector3.Distance(logicPosition, nextWP.position);
-            float safeMoveSpeed = Mathf.Max(0.01f, moveSpeed);
+            _timedFlightSpeed = 0f;
+            if (!string.IsNullOrEmpty(timedFlightWaypointName) && nextWP.name == timedFlightWaypointName && timedFlightSeconds > 0.1f)
+            {
+                _timedFlightSpeed = startDistance / timedFlightSeconds;   // 剛好 timedFlightSeconds 秒到（路程太短就維持原速度，不會變慢）
+            }
+            float safeMoveSpeed = Mathf.Max(0.01f, CurrentMoveSpeed());
             float timeout = Mathf.Max(3f, startDistance / safeMoveSpeed + 3f);
             float timer = 0f;
 
@@ -512,7 +580,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
             // 6. 鏡頭還給玩家；等它「真的」回到玩家身上，才解鎖操作
             if (_usingCameraTargetOverride)
             {
-                CameraTargetXFollower.ClearCameraOverride();
+                CameraTargetXFollower.ClearCameraOverrideSmooth(cameraHandBackSeconds);   // ★1011 慢慢回到玩家，不瞬間切
                 _usingCameraTargetOverride = false;
             }
             else if (useCloseup)
@@ -550,6 +618,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
             RestoreCutsceneCameraFollow();
             EndPlayerFlightLock();
             isLockingPlayer = false;
+            _timedFlightSpeed = 0f;   // ★1011 限時飛行結束，速度還原
             _cutsceneFlightCoroutine = null;
         }
     }

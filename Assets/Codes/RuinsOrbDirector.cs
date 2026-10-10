@@ -54,6 +54,16 @@ public class RuinsOrbDirector : MonoBehaviour
     [Tooltip("★1010 龍捲風掃過時加上 StormBoostFX（沙霧、鏡頭震、呼嘯；修毅清單待完成 8）")]
     public bool boostStormFx = true;
 
+    [Header("★1011 風暴開場：鏡頭拉近玩家、狼淡出")]
+    [Tooltip("鏡頭漸漸放大（拉近）到玩家身上要幾秒。要比『風暴掃到＋文字卡』短，在文字出現前就到位。0＝不拉近")]
+    public float stormZoomSeconds = 1.8f;
+    [Tooltip("拉近後的鏡頭大小（Orthographic Size，越小越近；廢墟平常約 11）")]
+    public float stormZoomOrtho = 7.5f;
+    [Tooltip("狼淡出消失要幾秒（稍快）")]
+    public float wolfFadeSeconds = 0.6f;
+    [Tooltip("開場（拉近＋狼淡出）先演這麼久，龍捲風才從左邊出現")]
+    public float stormLeadSeconds = 0.9f;
+
     public bool logEvents = true;
 
     private enum Stage { Idle, WaitLever, Releasing, WaitStorm, Storm }
@@ -216,7 +226,7 @@ public class RuinsOrbDirector : MonoBehaviour
                 if (_leverWp != null)
                 {
                     // 修毅的光球停在 P13（不是飛行途中）、她走到光球旁 → 放巨石；光球接著照修毅的設定飛往 P14（鏡頭跟著）
-                    if (OrbAt(_leverWp) && PlayerToOrb() <= touchDistance) StartCoroutine(ReleaseRoutine());
+                    if (OrbAt(_leverWp) && PlayerTouchesOrb()) StartCoroutine(ReleaseRoutine());
                     // 保險：光球已經往 P14 去了，巨石卻還沒放 → 馬上放（不然門破不了、光球在前面，卡關）
                     else if (OrbPastLever())
                     {
@@ -239,7 +249,7 @@ public class RuinsOrbDirector : MonoBehaviour
                     _orb.TeleportToWaypointName(stormWaypointName);
                     if (logEvents) Debug.Log("【廢墟光球】她沒碰 " + leverWaypointName + " 的光球就往前走了：光球直接到 " + stormWaypointName + " 等她");
                 }
-                bool touched = _stormWp != null && OrbAt(_stormWp) && PlayerToOrb() <= touchDistance;
+                bool touched = _stormWp != null && OrbAt(_stormWp) && PlayerTouchesOrb();
                 bool passed = p.x >= stormPos.x - 1f && Mathf.Abs(p.y - stormPos.y) < 8f;
                 if ((touched || passed) && !BoulderChallengeController.IsFailing && !_pm.isCutsceneFrozen) StartCoroutine(StormRoutine());
                 break;
@@ -261,6 +271,16 @@ public class RuinsOrbDirector : MonoBehaviour
     /// ★1010 實機：原本量她的腳底（transform）到光球，她跳起來用頭碰光球時，修毅的「碰到」（量她身上最近的點，1.5）先成立，
     /// 光球飛走了這裡還沒到 3 → 巨石沒放下、光球已在 P14，卡關。改成跟修毅同一種量法。
     /// </summary>
+    /// <summary>
+    /// ★1010 碰到光球：用修毅 GuidanceLight 同一套範圍（圓＋地面／跳起的長方形＋X 備援，高度差有上限），
+    /// 圓用 touchDistance（比修毅的 1.5 大），長方形和備援兩邊一樣，所以放巨石不會比光球起飛晚。
+    /// </summary>
+    private bool PlayerTouchesOrb()
+    {
+        if (_orb == null) return false;
+        return _orb.IsPlayerInTouchRange(touchDistance) || PlayerToOrb() <= touchDistance;
+    }
+
     private float PlayerToOrb()
     {
         Vector3 b = _orb.transform.position;
@@ -329,6 +349,8 @@ public class RuinsOrbDirector : MonoBehaviour
         Rigidbody prb = _pm.GetComponent<Rigidbody>();
         if (prb != null && !prb.isKinematic) { prb.linearVelocity = Vector3.zero; prb.angularVelocity = Vector3.zero; }
         FreezeWolves();
+        if (stormZoomSeconds > 0.05f) CameraTargetXFollower.SetCameraOverrideSmooth(_pm.transform, stormZoomOrtho, stormZoomSeconds);   // ★1011 鏡頭漸漸放大到玩家身上
+        StartCoroutine(FadeOutWolves(wolfFadeSeconds));   // ★1011 狼稍快地隱形消失
         if (_rock != null) { if (!_rock.isKinematic) { _rock.linearVelocity = Vector3.zero; _rock.angularVelocity = Vector3.zero; } _rock.isKinematic = true; }
 
         Flare(40);
@@ -342,6 +364,8 @@ public class RuinsOrbDirector : MonoBehaviour
             fx = StormBoostFX.Ensure();
             fx.SetManual(0.45f, +1f, StormBoostFX.RuinsDustColor);   // 龍捲風還在畫面外：天色先暗、風吼起來
         }
+
+        if (stormLeadSeconds > 0f) yield return new WaitForSeconds(stormLeadSeconds);   // ★1011 先讓拉近與狼淡出演一下，龍捲風再進來
 
         Camera cam = Camera.main;
         if (_tornado != null && cam != null)
@@ -406,6 +430,33 @@ public class RuinsOrbDirector : MonoBehaviour
         if (!string.IsNullOrEmpty(spawn)) PlayerRespawnSystem.QueueNextSceneSpawn(spawn);
         if (logEvents) Debug.Log("【廢墟光球】風暴轉場完成，載入 " + next);
         SceneManager.LoadScene(next);
+    }
+
+    /// <summary>★1011 狼淡出（只改圖片透明度），淡完關掉。咬在她身上的也一起消失。</summary>
+    private IEnumerator FadeOutWolves(float seconds)
+    {
+        var wolves = FindObjectsByType<WolfEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var srs = new System.Collections.Generic.List<SpriteRenderer>();
+        foreach (WolfEnemy w in wolves) srs.AddRange(w.GetComponentsInChildren<SpriteRenderer>());
+        float[] startA = new float[srs.Count];
+        for (int i = 0; i < srs.Count; i++) startA[i] = srs[i] != null ? srs[i].color.a : 0f;
+
+        seconds = Mathf.Max(0.05f, seconds);
+        float t = 0f;
+        while (t < seconds)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / seconds);
+            for (int i = 0; i < srs.Count; i++)
+            {
+                if (srs[i] == null) continue;
+                Color c = srs[i].color;
+                c.a = Mathf.Lerp(startA[i], 0f, k);
+                srs[i].color = c;
+            }
+            yield return null;
+        }
+        foreach (WolfEnemy w in wolves) if (w != null) w.gameObject.SetActive(false);
     }
 
     private void FreezeWolves()
