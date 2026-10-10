@@ -382,7 +382,32 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("俯衝命中玩家的距離 (公尺)。原本固定 1.1；稍微加大就是「剛好又稍微多一點打到」")]
     public float hitRadius = 1.1f;
 
+    [Header("★1010 用鳥的姿勢預告（取代紅線，02 #39；DesertBeatDirector 會統一覆蓋）")]
+    [Tooltip("前搖時：先往上一提（蓄力）、身體張大、頭對準落點（showAttackAngleCue），下墜前抖一下。關掉＝只有轉頭")]
+    public bool poseCue = true;
+    [Tooltip("前搖往上提多高（公尺）")]
+    public float poseRiseHeight = 0.9f;
+    [Tooltip("前搖前段多少比例用來往上提（之後停在高處對準）")]
+    [Range(0.1f, 0.9f)] public float poseRiseShare = 0.4f;
+    [Tooltip("身體張大到幾倍")]
+    public float posePuffScale = 1.3f;
+    [Tooltip("下墜前抖幾秒")]
+    public float poseShakeSeconds = 0.35f;
+    [Tooltip("抖動幅度（公尺）")]
+    public float poseShakeAmount = 0.08f;
+
+    [Header("★1010 逼她往回走（1008 會議 荒原 a.II；DesertBeatDirector 會統一覆蓋）")]
+    [Tooltip("開啟＝攻擊只落在她「前方」（關卡往右走的方向）或她身上，永遠不落在她身後：往前走會撞上，往回走才安全。\n" +
+             "・她往回走：落在她前方（她剛走過的地方）\n・她停著：pushBackAheadChance 比例落在她前方一兩步擋路，其餘打她\n・她往前走：照原本預判攔截，寬鬆的那些也不落在身後")]
+    public bool pushBackMode = false;
+    [Range(0f, 1f)] public float pushBackAheadChance = 0.5f;
+    public float pushBackAheadMin = 1.6f;
+    public float pushBackAheadMax = 3.2f;
+    [Tooltip("關卡前進方向（+1＝往右）")]
+    public float levelForwardX = 1f;
+
     private int _predictCount = 0;
+    private int _pushBackSeed = 0;   // ★1010 逼退落點的穩定亂數種子（每隻鳥一個）
     private Vector3 _diveStartPos;
     private bool _dbgPrecise = true;
     private float _dbgOffset = 0f;
@@ -984,9 +1009,28 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         float alignStartTime = Time.time;
         string alignEndReason = aligned ? "已在落點上方" : "";
         if (!aligned) BirdAttackScheduler.Log("ALIGN-START", this, $"BirdX={transform.position.x:F1} LockX={alignTargetX:F1} Distance={alignDist:F1}m AlignSpeed={diveAlignSpeed:F1}");
+        // ★1010 姿勢預告的起點（紅線取消後，靠這個看出「牠要下來了、會落在哪」）
+        Vector3 poseBaseScale = transform.localScale;
+        float poseLift = 0f;
+        Vector3 poseJitter = Vector3.zero;
         while (warnT < realWarnTime || !aligned)
         {
             warnT += Time.deltaTime;
+            if (poseCue)
+            {
+                transform.position -= poseJitter;   // 上一幀的抖動先扣回
+                poseJitter = Vector3.zero;
+                float k = Mathf.Clamp01(warnT / realWarnTime);
+                float rise = poseRiseHeight * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k / Mathf.Max(0.05f, poseRiseShare)));
+                transform.position += Vector3.up * (rise - poseLift);
+                poseLift = rise;
+                transform.localScale = poseBaseScale * Mathf.Lerp(1f, posePuffScale, Mathf.SmoothStep(0f, 1f, k));
+                if (aligned && realWarnTime - warnT <= poseShakeSeconds)
+                {
+                    poseJitter = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * poseShakeAmount;
+                    transform.position += poseJitter;
+                }
+            }
             if (!aligned)
             {
                 // 平滑加速到 diveAlignSpeed，不瞬移
@@ -1010,6 +1054,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
             if (showAttackTelegraph) UpdateTelegraphLine();
             yield return null;
+        }
+        if (poseCue)
+        {
+            transform.position -= poseJitter;          // ★1010 下墜：抖動收掉、身體收回原本大小（「收翅俯衝」）
+            transform.localScale = poseBaseScale;
         }
         SetTelegraphVisible(false);   // 既有紅線：沒開（showAttackTelegraph=false）時這行只是保險；任何路徑都不會殘留
         if (alignDist >= 0.05f) BirdAttackScheduler.Log("ALIGN-DONE", this, $"結果={alignEndReason} 花了{Time.time - alignStartTime:F1}s 最終X誤差={Mathf.Abs(alignTargetX - transform.position.x):F2}m");
@@ -1481,6 +1530,24 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (_playerRb != null) playerVx = _playerRb.linearVelocity.x;
         else if (_playerMove != null) playerVx = _playerMove.CommandedHorizontalSpeed;
 
+        // ★1010 逼她往回走：落點永遠在她前方或她身上，不打她的退路
+        if (pushBackMode)
+        {
+            float fwd = levelForwardX >= 0f ? 1f : -1f;
+            _predictCount++;
+            if (_pushBackSeed == 0) _pushBackSeed = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this) | 1;
+            float a1 = StableHash01(_pushBackSeed * 37 + _predictCount * 13 + 3);
+            float a2 = StableHash01(_pushBackSeed * 97 + _predictCount * 53 + 11);
+            float ahead = Mathf.Lerp(pushBackAheadMin, pushBackAheadMax, a2);
+            if (playerVx * fwd <= -0.2f) { _dbgPrecise = false; _dbgOffset = fwd * ahead; return playerPos.x + fwd * ahead; }   // 她在往回走：落在她剛走過的地方
+            if (Mathf.Abs(playerVx) < 0.2f)
+            {
+                bool block = a1 < Mathf.Clamp01(pushBackAheadChance);
+                _dbgPrecise = !block; _dbgOffset = block ? fwd * ahead : 0f;
+                return block ? playerPos.x + fwd * ahead : playerPos.x;   // 她停著：一部分落在前方一兩步擋路
+            }
+        }
+
         // 幾乎沒在動就不預判，直接打當下位置（避免站著不動時攻擊點亂跑）
         if (Mathf.Abs(playerVx) < 0.2f) return playerPos.x;
 
@@ -1499,7 +1566,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             // ★1015 到達時間要照新的移動方式算：前搖期間水平對準（對準較久就延長，所以是 max）＋ 垂直下降到玩家高度。
             // 公式結構（預判時間 = 到達時間，落點 = 玩家位置 + 速度 × 預判時間）完全沒變，只是「到達時間」改吃新的移動模型。
             float alignTime = Mathf.Abs(transform.position.x - predictedX) / Mathf.Max(0.1f, diveAlignSpeed);
-            float descendTime = Mathf.Max(0f, transform.position.y - playerPos.y) / Mathf.Max(0.1f, diveDescentSpeed);
+            float descendTime = Mathf.Max(0f, transform.position.y + (poseCue ? poseRiseHeight : 0f) - playerPos.y) / Mathf.Max(0.1f, diveDescentSpeed);   // ★1010 前搖會先往上提
             travelTimeGuess = descendTime;
             predictionTime = Mathf.Clamp((Mathf.Max(warnTime, alignTime) + travelTimeGuess) * predictionTimeMultiplier,
                                          minimumPredictionTime, maximumPredictionTime);
@@ -1517,6 +1584,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         float offset = precise
             ? predictionPreciseOffset
             : Mathf.Lerp(predictionLooseMin, predictionLooseMax, u2);
+        if (pushBackMode && playerVx * levelForwardX > 0f) offset = Mathf.Max(0f, offset);   // ★1010 往前走時，寬鬆的攻擊也不落在她身後
         float finalLead = Mathf.Clamp(lead + sgn * offset, -predictionDistanceLimit - Mathf.Abs(predictionLooseMax), predictionDistanceLimit + Mathf.Abs(predictionLooseMax));
         _dbgPredT = predictionTime;
         _dbgPredLead = finalLead;

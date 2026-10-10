@@ -165,6 +165,19 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("是否顯示既有的紅色攻擊輔助線。先暫時打開方便測試；之後角度提示穩定後可關掉。")]
     public bool birdShowTelegraph = true;
 
+    [Header("★1010 1008 會議：鳥群（02 #39；會議 荒原 a.II、a.III）")]
+    [Tooltip("取消紅色攻擊線（02 #39 定案），改用鳥的姿勢預告。勾著時上面的 Bird Show Telegraph 不管怎麼設都不顯示；取消勾選＝照 Bird Show Telegraph")]
+    public bool cancelRedLine = true;
+    [Tooltip("用鳥的姿勢預告攻擊：前搖時先往上一提、身體張大、頭對準落點，下墜前抖一下（IndividualBirdEnemy.poseCue）")]
+    public bool birdPoseCue = true;
+    [Tooltip("逼她往回走（會議 a.II「不得不往回走的感覺要加強」）：攻擊只落在她前方或她身上、不落在身後。\n往前走會撞上，往回走才安全（IndividualBirdEnemy.pushBackMode）")]
+    public bool birdPushBack = true;
+    [Tooltip("她停著時，這個比例的攻擊落在她前方一兩步擋路（其餘打她）")]
+    [Range(0f, 1f)] public float pushBackAheadChance = 0.5f;
+    [Tooltip("擋路的落點離她多遠（公尺），最近／最遠。最近值比命中距離（Bird Hit Radius）大一點＝擦身而過")]
+    public float pushBackAheadMin = 1.6f;
+    public float pushBackAheadMax = 3.2f;
+
     [Header("★1016 鳥群強度與增援")]
     [Tooltip("整體鳥群壓力倍率。1＝基準；提高會讓增援數量與增援機率變高，並讓下降/對準速度略快。")]
     [Range(0.5f, 3f)] public float birdAttackIntensity = 1.2f;
@@ -435,7 +448,13 @@ public class DesertBeatDirector : MonoBehaviour
             float speedBoost = Mathf.Lerp(1f, 1.15f, Mathf.Clamp01(birdAttackIntensity - 1f));
             if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed * speedBoost;
             if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed * speedBoost;
-            b.showAttackTelegraph = birdShowTelegraph;
+            b.showAttackTelegraph = birdShowTelegraph && !cancelRedLine;   // ★1010 02 #39 取消紅線
+            b.poseCue = birdPoseCue;
+            if (birdPoseCue) b.showAttackAngleCue = true;
+            b.pushBackMode = birdPushBack;
+            b.pushBackAheadChance = pushBackAheadChance;
+            b.pushBackAheadMin = pushBackAheadMin;
+            b.pushBackAheadMax = pushBackAheadMax;
 
             if (x < beat1End)
             {
@@ -505,7 +524,11 @@ public class DesertBeatDirector : MonoBehaviour
            .Append("、示範俯衝 ").Append(demoBird != null ? demoBird.name : "無")
            .Append("、強度x").Append(birdAttackIntensity.ToString("F1"))
            .Append("、增援").Append(enableBirdReinforcements ? "開" : "關")
-           .Append("、通過退場").Append(birdDespawnBehindPlayerDistance.ToString("F0")).Append("m）；");
+           .Append("、通過退場").Append(birdDespawnBehindPlayerDistance.ToString("F0")).Append("m")
+           .Append("、紅線").Append(birdShowTelegraph && !cancelRedLine ? "開" : "關")              // ★1010
+           .Append("、姿勢預告").Append(birdPoseCue ? "開" : "關")
+           .Append("、逼她往回走").Append(birdPushBack ? "開（停著時 " + Mathf.RoundToInt(pushBackAheadChance * 100f) + "% 落在前方 " + pushBackAheadMin.ToString("F1") + "～" + pushBackAheadMax.ToString("F1") + "m）" : "關")
+           .Append("）；");
 
         // ★1006 鳥的分類（一次講清楚哪些是會攻擊的鳥、哪些是裝飾）
         int totalComps = FindObjectsByType<IndividualBirdEnemy>(FindObjectsSortMode.None).Length;
