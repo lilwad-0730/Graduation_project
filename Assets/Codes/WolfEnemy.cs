@@ -428,10 +428,11 @@ public class WolfEnemy : MonoBehaviour, IResettable
             CachePlayerColliders();
         }
 
-        // 自動校準追擊速度（若場景或 Prefab 留有舊數值，自動升級為具備強烈壓迫感的數值）
-        if (nearChaseSpeed < 6.2f) nearChaseSpeed = 6.8f;
-        if (cruiseChaseSpeed < 8.0f) cruiseChaseSpeed = 9.0f;
-        if (maxCatchUpSpeed < 11.0f) maxCatchUpSpeed = 12.5f;
+        // 追擊速度只在「沒填」（<=0）時補預設。
+        // 原本這裡會把 Inspector 調低的值強制拉回 6.8／9／12.5，導致怎麼調慢都沒用，所以拿掉。
+        if (nearChaseSpeed <= 0f) nearChaseSpeed = 6.8f;
+        if (cruiseChaseSpeed <= 0f) cruiseChaseSpeed = 9.0f;
+        if (maxCatchUpSpeed <= 0f) maxCatchUpSpeed = 12.5f;
     }
 
     /// <summary>

@@ -159,9 +159,9 @@ public class DesertBeatDirector : MonoBehaviour
 
     [Header("★1015 垂直慢速墜落（開局統一覆蓋每隻鳥）")]
     [Tooltip("下降階段垂直速度 (公尺/秒)。0＝不覆蓋。3＝慢速彈幕，想更慢 2.5、更快 4")]
-    public float birdDescentSpeed = 3.6f;
+    public float birdDescentSpeed = 7f;
     [Tooltip("下降前水平對準的最高速度 (公尺/秒)。0＝不覆蓋。不建議超過 10")]
-    public float birdAlignSpeed = 8.5f;
+    public float birdAlignSpeed = 14f;
     [Tooltip("是否顯示既有的紅色攻擊輔助線。先暫時打開方便測試；之後角度提示穩定後可關掉。")]
     public bool birdShowTelegraph = true;
 
@@ -296,8 +296,8 @@ public class DesertBeatDirector : MonoBehaviour
             requestKeepRangeMultiplier = 3f;
             birdMaxPredictionTime = 5f;
             birdPredictionDistanceLimit = 30f;
-            birdDescentSpeed = 3.6f;
-            birdAlignSpeed = 8.5f;
+            birdDescentSpeed = 7f;
+            birdAlignSpeed = 14f;
             birdShowTelegraph = true;
             birdAttackIntensity = 1.2f;
             enableBirdReinforcements = true;

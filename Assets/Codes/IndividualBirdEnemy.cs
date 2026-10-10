@@ -148,6 +148,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("鳥轉向攻擊角度的平滑速度。")]
     [Range(1f, 30f)] public float attackAngleCueTurnSpeed = 10f;
 
+    [Header("偵測後排隊中的提示")]
+    [Tooltip("偵測到玩家、等排程器放行的這段時間（Pending），鳥不再只是原地盤旋：改成轉向玩家＋換成警戒動畫，讓玩家看得出牠已經盯上了。\n放行後才鎖定真正落點。關閉＝排隊中照舊盤旋。")]
+    public bool pendingFaceTarget = true;
+
+    private bool FacingTargetWhilePending
+    {
+        get { return pendingFaceTarget && currentState == BirdState.Pending && playerTrans != null && overrideTarget == null; }
+    }
+
     private LineRenderer _telegraphLine;
     private Vector3 _lockedDiveTarget;
     private bool _hasLockedDiveTarget;
@@ -479,7 +488,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     {
         if (removeFromQueue) BirdAttackScheduler.Remove(this);
         _requestQueued = false;
-        if (currentState == BirdState.Pending) currentState = BirdState.Idle;
+        if (currentState == BirdState.Pending)
+        {
+            currentState = BirdState.Idle;
+            if (pendingFaceTarget) PlayAnim(idleAnimName);
+        }
     }
 
     /// <summary>吹風中或沙塵前兆中（荒原的 Wind Phase）。沿用 WindGustSystem 既有狀態，不另做一套。</summary>
@@ -691,7 +704,18 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         Vector3 nextPathPoint = GetParametricHoverPosition(originalPosition, t + 0.12f);
         Vector3 flightDir = (nextPathPoint - transform.position).normalized;
 
-        if (flightDir.sqrMagnitude > 0.001f)
+        if (FacingTargetWhilePending)
+        {
+            // 排隊中：頭對著玩家那一側（跟前搖姿態同一套朝向公式），不再跟著 8 字軌跡轉
+            Vector3 aim = playerTrans.position - transform.position;
+            aim.z = 0f;
+            if (aim.sqrMagnitude > 0.001f)
+            {
+                Quaternion aimRot = Quaternion.LookRotation(aim.normalized, Vector3.up) * Quaternion.Euler(modelRotationOffset);
+                transform.rotation = Quaternion.Slerp(transform.rotation, aimRot, Time.deltaTime * attackAngleCueTurnSpeed);
+            }
+        }
+        else if (flightDir.sqrMagnitude > 0.001f)
         {
             // 5. 迎風自然側傾角 (Banking Tilt)：在 8 字兩端迴轉處側傾最明顯
             float turnRate = Mathf.Cos(t);
@@ -831,6 +855,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             currentState = BirdState.Pending;
             _requestQueued = true;
+            if (pendingFaceTarget) PlayAnim(warningAnimName);   // 偵測到了：換警戒動畫，不再看起來像沒反應
             float d = Mathf.Abs(transform.position.x - playerTrans.position.x);
             // 由 BirdAttackTriggerZone／TriggerAllBirdsAttack 直接呼叫的屬於強制需求，插隊
             BirdAttackScheduler.Enqueue(this, !autoDetectPlayer || triggerMode == BirdTriggerMode.TriggerZoneOrCollisionOnly, d);
@@ -1034,7 +1059,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (!aligned)
             {
                 // 平滑加速到 diveAlignSpeed，不瞬移
-                alignV = Mathf.MoveTowards(alignV, diveAlignSpeed, 14f * Time.deltaTime);
+                alignV = Mathf.MoveTowards(alignV, diveAlignSpeed, Mathf.Max(14f, diveAlignSpeed * 2.5f) * Time.deltaTime);   // 加速度跟著最高速走，快的設定也不會拖很久才加速上去
                 float dxAlign = alignTargetX - transform.position.x;
                 float stepAlign = Mathf.Min(Mathf.Abs(dxAlign), alignV * Time.deltaTime);
                 Vector3 alignDir = new Vector3(Mathf.Sign(dxAlign), 0f, 0f);

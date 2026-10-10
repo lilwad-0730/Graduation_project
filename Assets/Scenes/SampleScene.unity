@@ -6342,7 +6342,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.259754, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.301445, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7913,6 +7913,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PolygonToMeshCollider
   depth: 3
   autoGenerate: 0
+  generateIfNoCollider: 1
 --- !u!60 &640705775
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -11949,10 +11950,10 @@ MonoBehaviour:
   nearDistance: 4
   nearChaseSpeed: 6.8
   cruiseDistance: 9
-  cruiseChaseSpeed: 9
+  cruiseChaseSpeed: 6.5
   maxCatchUpDistance: 18
-  maxCatchUpSpeed: 12.5
-  acceleration: 40
+  maxCatchUpSpeed: 9
+  acceleration: 15
   braking: 60
   bodyMass: 12
   autoFixRigidbodySettings: 1
@@ -11968,11 +11969,18 @@ MonoBehaviour:
   attachedGroundFollowYSpeed: 30
   attachedGroundSkin: 0.02
   attachedGroundMaxSnapDown: 0.75
-  slopeChaseMultiplier: 1.25
+  slopeChaseMultiplier: 1.1
   enableStuckRecovery: 1
   stuckSeconds: 0.3
   stuckLiftHeight: 0.15
   spawnAttachImmunityTime: 1
+  biteAndRetreat: 1
+  biteHoldSeconds: 0.4
+  biteRetreatSeconds: 0.9
+  biteRetreatSpeed: 7
+  biteCooldownSeconds: 2.2
+  preventStandOnWolf: 1
+  pauseWhilePlayerFrozen: 1
   aggroHowlSFX: {fileID: 8300000, guid: 5937e8be9ba85834fb3c92f279be3791, type: 3}
   runSFX: {fileID: 8300000, guid: 9464670882dcbdc4c8500ffd0c575b54, type: 3}
   soundVolume: 0.85
@@ -20488,6 +20496,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PolygonToMeshCollider
   depth: 3
   autoGenerate: 0
+  generateIfNoCollider: 1
 --- !u!60 &1270508896
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -22752,6 +22761,11 @@ MonoBehaviour:
   destination: {fileID: 117614400}
   resetVelocity: 1
   updateRespawnPoint: 1
+  walkBeforeTeleport: 1.6
+  walkSpeed: 2.2
+  walkMaxSeconds: 1.5
+  groundedConfirmSeconds: 0.12
+  approachTimeout: 5
   transitionColor: {r: 1, g: 1, b: 1, a: 1}
   whiteFadeInDuration: 0.12
   whiteHoldDuration: 0.08
@@ -23887,6 +23901,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PolygonToMeshCollider
   depth: 3
   autoGenerate: 0
+  generateIfNoCollider: 1
 --- !u!60 &1494157904
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -24766,6 +24781,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PolygonToMeshCollider
   depth: 3
   autoGenerate: 1
+  generateIfNoCollider: 1
 --- !u!60 &1547049910
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -29372,7 +29388,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55.259754, y: 4.58, z: -10}
+  m_LocalPosition: {x: -55.301445, y: 4.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35310,6 +35326,7 @@ MonoBehaviour:
   targetRock: {fileID: 1472103423}
   interactKey: 101
   triggerOnEnter: 0
+  alwaysPullable: 1
   lockByGuidanceLight: 1
   targetGuidanceLight: {fileID: 0}
   requiredWaypointsCount: 10
@@ -35719,7 +35736,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -55.259754, y: 4.58, z: 0}
+  m_LocalPosition: {x: -55.301445, y: 4.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -35775,6 +35792,7 @@ MonoBehaviour:
   currentMode: 0
   fallingCameraYOffset: 0
   fallingFollowSpeed: 18
+  fallingEntryDepth: 4
   enableBoulderCameraWeightFeedback: 1
   boulderCameraDownOffset: 0.6
   boulderCameraSinkSpeed: 2.5
@@ -36018,11 +36036,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -31.24648
+      value: -31.325699
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.179996
+      value: 17.18
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.z
