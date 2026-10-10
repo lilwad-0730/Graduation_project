@@ -29,6 +29,10 @@ public class TeleportTrigger : MonoBehaviour
     public float walkSpeed = 2.2f;
     [Tooltip("最多走幾秒（被擋住也會照常傳送）")]
     public float walkMaxSeconds = 1.5f;
+    [Tooltip("站穩在台階頂面要持續幾秒才算確定（避免剛好踩到的那一瞬間就轉場）")]
+    public float groundedConfirmSeconds = 0.12f;
+    [Tooltip("等她落到台階上＋站穩的保險時間（秒）。超時還沒站上台階（例如被擠下去）就取消這次轉場、把操作還給玩家，可重踩")]
+    public float approachTimeout = 5f;
 
     [Header("🌫️ 夢幻白色轉場設定")]
     [Tooltip("轉場過渡顏色 (天空場景預設純白，營造夢幻明亮氛圍)")]
@@ -299,9 +303,32 @@ public class TeleportTrigger : MonoBehaviour
     private IEnumerator WalkThenTeleport(PlayerMovement player)
     {
         Rigidbody rb = player.GetComponent<Rigidbody>();
+        Bounds stair = GetStairBounds();
+        Collider playerCol = FindPlayerCollider(player);
 
+        // 先鎖操作、等她真的落在台階頂面（重力照常，所以在台階上跳起來會先落下，不會在半空中被傳走）
         float t = 0f;
-        while (t < 0.6f && !player.isGrounded) { t += Time.deltaTime; yield return null; }
+        float stable = 0f;
+        player.isCutsceneFrozen = true;
+        while (t < approachTimeout)
+        {
+            t += Time.deltaTime;
+            if (IsStandingOnStair(player, playerCol, stair, rb))
+            {
+                stable += Time.deltaTime;
+                if (stable >= groundedConfirmSeconds) break;
+            }
+            else stable = 0f;
+            yield return null;
+        }
+        if (stable < groundedConfirmSeconds)
+        {
+            Debug.LogWarning($"⚠️【階梯轉場】'{name}' 在 {approachTimeout:F1}s 內沒能站穩在台階上，取消本次轉場並恢復操作。");
+            player.isCutsceneFrozen = false;
+            _isTeleporting = false;
+            _teleportTriggered = false;
+            yield break;
+        }
 
         float rightLimit = GetRightEdgeX() - bypassOffsetX - 0.6f;   // 不走出階梯
         float startX = player.transform.position.x;
@@ -318,6 +345,25 @@ public class TeleportTrigger : MonoBehaviour
             player.StopWindSuction();
         }
 
+        // 走完再確認一次還站在台階上、而且穩了（走路中被擠下去或彈起就等它落回來）
+        t = 0f;
+        stable = 0f;
+        player.isCutsceneFrozen = true;
+        while (t < approachTimeout && stable < groundedConfirmSeconds)
+        {
+            t += Time.deltaTime;
+            stable = IsStandingOnStair(player, playerCol, stair, rb) ? stable + Time.deltaTime : 0f;
+            yield return null;
+        }
+        if (stable < groundedConfirmSeconds)
+        {
+            Debug.LogWarning($"⚠️【階梯轉場】'{name}' 走完後沒能站穩在台階上，取消本次轉場並恢復操作。");
+            player.isCutsceneFrozen = false;
+            _isTeleporting = false;
+            _teleportTriggered = false;
+            yield break;
+        }
+
         // 接原本的傳送：凍結、速度歸零、白色轉場
         player.isCutsceneFrozen = true;
         if (rb != null && !rb.isKinematic)
@@ -327,6 +373,42 @@ public class TeleportTrigger : MonoBehaviour
         }
         Debug.Log($"✨【階梯白色轉場】她在最後一階走了 {player.transform.position.x - startX:F1} 米，開始白色過渡至 '{destination.name}'");
         yield return WhiteFadeTeleportRoutine(player, rb);
+    }
+
+    private Bounds GetStairBounds()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null) return col.bounds;
+
+        Collider2D col2d = GetComponent<Collider2D>();
+        if (col2d != null) return col2d.bounds;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) return sr.bounds;
+
+        return new Bounds(transform.position, transform.lossyScale);
+    }
+
+    private static Collider FindPlayerCollider(PlayerMovement player)
+    {
+        foreach (Collider c in player.GetComponentsInChildren<Collider>())
+        {
+            if (c != null && c.enabled && !c.isTrigger) return c;
+        }
+        return null;
+    }
+
+    /// <summary>落地、垂直速度趨近 0、水平在台階範圍內、腳底高度貼著台階頂面，才算「站在台階上」。</summary>
+    private bool IsStandingOnStair(PlayerMovement player, Collider playerCol, Bounds stair, Rigidbody rb)
+    {
+        if (!player.isGrounded) return false;
+        if (rb != null && !rb.isKinematic && Mathf.Abs(rb.linearVelocity.y) > 0.3f) return false;
+
+        float x = player.transform.position.x;
+        if (x < stair.min.x - 0.2f || x > stair.max.x + 0.2f) return false;
+
+        float feetY = playerCol != null ? playerCol.bounds.min.y : player.transform.position.y;
+        return feetY >= stair.max.y - 0.5f && feetY <= stair.max.y + 1.0f;
     }
 
     private IEnumerator WhiteFadeTeleportRoutine(PlayerMovement player, Rigidbody rb)
