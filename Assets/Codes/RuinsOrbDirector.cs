@@ -15,6 +15,8 @@ using UnityEngine.SceneManagement;
 ///          她、狼群、巨石停住，龍捲風從畫面左邊掃過來，掃到她就接文字卡（M2）、黑幕、進荒原。
 ///   ・保險：她放下巨石後沒碰光球就往右走（光球還停在 P13），走遠了光球直接傳到 P14 等她；
 ///          她走到 P14 時光球不在，也先傳過去再叫風暴。
+///          ★1010 實機補：光球已經往 P14 去、巨石卻還沒放（例如她跳起來碰光球，修毅的光球先飛走）→ 馬上補放，不會卡關。
+///          「碰到」的量法改成跟修毅一樣（她身上最靠近光球的點）。
 ///   ・重生：巨石已經放下（推巨石失敗，BoulderChallengeController 重置後巨石仍是放開的）→ 光球直接在 P14 等，不用再飛一次；
 ///          還沒放下就死 → 照修毅的 GuidanceLight 重置（回最近的路徑點）。
 ///   ・拿掉的（10-09 版有、10-10 起交給修毅）：落地時這支自己放光球、帶路到拉桿、追著她跑。
@@ -33,8 +35,8 @@ public class RuinsOrbDirector : MonoBehaviour
     public string leverWaypointName = "P13";
     [Tooltip("斜坡頂的路徑點：光球停在這裡時，她碰到就叫風暴")]
     public string stormWaypointName = "P14";
-    [Tooltip("她離光球多近算碰到（修毅的 GuidanceLight 自己用 touchTriggerDistance 判定飛行，這裡只判定放巨石／叫風暴）")]
-    public float touchDistance = 3f;
+    [Tooltip("她離光球多近算碰到（量法跟修毅的 GuidanceLight 一樣：她身上最靠近光球的點到光球。要比修毅的 touchTriggerDistance 1.5 大一點，才會比光球起飛早或同時）")]
+    public float touchDistance = 2f;
     [Tooltip("光球離路徑點多近算「停在那裡」")]
     public float atWaypointTolerance = 2.5f;
     [Tooltip("巨石放下後光球還停在 P13、她已經往右走了這麼遠：光球直接傳到 P14 等她")]
@@ -68,6 +70,7 @@ public class RuinsOrbDirector : MonoBehaviour
     private Renderer[] _tornadoRenderers = new Renderer[0];
 
     private Transform _leverWp, _stormWp;
+    private Collider _pcol;
     private bool _pendingReset;
     private readonly System.Collections.Generic.List<Behaviour> _frozen = new System.Collections.Generic.List<Behaviour>();
     private UnityEngine.UI.Image _fade;
@@ -95,6 +98,13 @@ public class RuinsOrbDirector : MonoBehaviour
     private void Start()
     {
         _pm = FindAnyObjectByType<PlayerMovement>();
+        if (_pm != null)
+        {
+            // 跟修毅的 GuidanceLight.CachePlayerCollider 一樣找她的碰撞體
+            _pcol = _pm.GetComponent<Collider>();
+            if (_pcol == null) _pcol = _pm.GetComponentInChildren<Collider>();
+            if (_pcol == null) _pcol = _pm.GetComponentInParent<Collider>();
+        }
         _orb = FindAnyObjectByType<GuidanceLight>();
         _lever = FindAnyObjectByType<LeverSystem>();
         _rock = _lever != null ? _lever.targetRock : null;
@@ -207,6 +217,12 @@ public class RuinsOrbDirector : MonoBehaviour
                 {
                     // 修毅的光球停在 P13（不是飛行途中）、她走到光球旁 → 放巨石；光球接著照修毅的設定飛往 P14（鏡頭跟著）
                     if (OrbAt(_leverWp) && PlayerToOrb() <= touchDistance) StartCoroutine(ReleaseRoutine());
+                    // 保險：光球已經往 P14 去了，巨石卻還沒放 → 馬上放（不然門破不了、光球在前面，卡關）
+                    else if (OrbPastLever())
+                    {
+                        if (logEvents) Debug.Log("【廢墟光球】光球已離開 " + leverWaypointName + " 往 " + stormWaypointName + " 去，巨石還沒放：補放");
+                        StartCoroutine(ReleaseRoutine());
+                    }
                 }
                 else if (_lever != null && Vector2.Distance(p, _lever.transform.position) <= leverFallbackDistance)
                 {
@@ -241,10 +257,23 @@ public class RuinsOrbDirector : MonoBehaviour
         return d.magnitude <= atWaypointTolerance;
     }
 
+    /// <summary>
+    /// ★1010 實機：原本量她的腳底（transform）到光球，她跳起來用頭碰光球時，修毅的「碰到」（量她身上最近的點，1.5）先成立，
+    /// 光球飛走了這裡還沒到 3 → 巨石沒放下、光球已在 P14，卡關。改成跟修毅同一種量法。
+    /// </summary>
     private float PlayerToOrb()
     {
-        Vector3 a = _pm.transform.position, b = _orb.transform.position;
+        Vector3 b = _orb.transform.position;
+        Vector3 a = (_pcol != null && _pcol.enabled && _pcol.gameObject.activeInHierarchy) ? _pcol.ClosestPoint(b) : _pm.transform.position;
         return Vector2.Distance(new Vector2(a.x, a.y), new Vector2(b.x, b.y));
+    }
+
+    /// <summary>光球已經離開 P13 往 P14 那邊去了（她碰到光球、修毅的光球先飛了；或重生後光球回到 P14）。</summary>
+    private bool OrbPastLever()
+    {
+        if (_leverWp == null || _orb == null || !_orb.isActiveAndEnabled) return false;
+        float dir = (_stormWp != null && _stormWp.position.x < _leverWp.position.x) ? -1f : 1f;   // P14 在 P13 的哪一邊
+        return (_orb.transform.position.x - _leverWp.position.x) * dir > atWaypointTolerance;
     }
 
     private Vector3 StormPoint()
