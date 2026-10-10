@@ -228,6 +228,28 @@ public class WolfEnemy : MonoBehaviour, IResettable
     public float spawnAttachImmunityTime = 1.0f;
     private float enableTime = -999f;
 
+    [Header("★1010 咬一口就退後、不能被踩（02 #35；1008 會議 廢墟 c.II、c.III）")]
+    [Tooltip("咬一口就鬆口往後退，過一下才回來再咬（不咬住不放）。死亡改成累計口數，見 PlayerMovement.countBitesCumulative。\n取消＝回到原本「咬住不放」")]
+    public bool biteAndRetreat = true;
+    [Tooltip("咬住的那一下維持幾秒（看得出「被咬了」）")]
+    public float biteHoldSeconds = 0.4f;
+    [Tooltip("鬆口後往後退幾秒（跟 123 回看一樣倒退走）")]
+    public float biteRetreatSeconds = 0.9f;
+    [Tooltip("鬆口後的退後速度（米／秒）")]
+    public float biteRetreatSpeed = 7f;
+    [Tooltip("鬆口後多久才能再咬（含退後時間）。這段時間她可以穿過這隻狼")]
+    public float biteCooldownSeconds = 2.2f;
+    [Tooltip("不能被踩：她站到狼背上時，狼能咬就咬；不能咬（剛咬完、剛出生）就讓她穿過去落到地上")]
+    public bool preventStandOnWolf = true;
+    [Tooltip("她被演出定住時（光球帶路飛行、風暴），狼不追、不咬（不然鏡頭跟著光球走，她在畫面外被咬死）")]
+    public bool pauseWhilePlayerFrozen = true;
+
+    private float _biteReadyTime = -999f;
+    private float _biteRetreatUntil = -999f;
+    private bool _ignoringPlayer;
+    private float _ignorePlayerUntil = -999f;
+    private Collider[] _playerCols = new Collider[0];
+
     // ★1003 地面接觸與卡住偵測
     private float _lastGroundContactTime = -999f;
     private Vector3 _stuckLastPos;
@@ -403,6 +425,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
         {
             player = pObj.transform;
             playerMovement = pObj.GetComponent<PlayerMovement>();
+            CachePlayerColliders();
         }
 
         // 自動校準追擊速度（若場景或 Prefab 留有舊數值，自動升級為具備強烈壓迫感的數值）
@@ -439,7 +462,10 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     void Update()
     {
-        if (IsAttackGloballyPaused())
+        // ★1010 咬完退後／踩到背上時暫時穿過她，時間到就恢復碰撞
+        if (_ignoringPlayer && Time.time >= _ignorePlayerUntil && !ChallengeFailHalt) SetIgnorePlayer(false, 0f);
+
+        if (IsPausedForPlayer())
         {
             StopActiveChaseMotion();
             return;
@@ -494,7 +520,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     private void FixedUpdate()
     {
         if (rb == null || rb.isKinematic) return;
-        if (IsAttackGloballyPaused())
+        if (IsPausedForPlayer())
         {
             _hasTargetSpeed = false;
             _targetSpeedX = 0f;
@@ -592,6 +618,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
     // ★1003 記錄「最近一次踩到真實地面」的時間（法線朝上的接觸才算），給斜坡下壓補償判斷真的有沒有浮空
     private void OnCollisionStay(Collision collision)
     {
+        if (collision.gameObject.CompareTag("Player")) { HandlePlayerContactStay(collision); return; }   // ★1010
         if (collision.collider == null || !IsRealGround(collision.collider)) return;
         for (int i = 0; i < collision.contactCount; i++)
         {
@@ -811,7 +838,14 @@ public class WolfEnemy : MonoBehaviour, IResettable
         _dbgDistance = realDistance;
         _dbgRetreating = isPlayerFacingWolf;
 
-        if (isPlayerFacingWolf)
+        if (Time.time < _biteRetreatUntil)
+        {
+            // ★1010 剛咬完一口：往後退（倒退走），不管她有沒有回頭
+            currentSpeed = -Mathf.Abs(biteRetreatSpeed);
+            _dbgRetreating = true;
+            _smoothedOverlapIntensity = Mathf.MoveTowards(_smoothedOverlapIntensity, 0f, desyncTransitionSpeed * Time.deltaTime);
+        }
+        else if (isPlayerFacingWolf)
         {
             currentSpeed = -ComputeRetreatMagnitude(realDistance);
             // 123 木頭人退後狀態下平滑淡出去同步
@@ -1206,26 +1240,118 @@ public class WolfEnemy : MonoBehaviour, IResettable
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (isStunned || isAttached || ChallengeFailHalt || IsAttackGloballyPaused() || Time.time < enableTime + spawnAttachImmunityTime) return;
+        if (!CanBiteNow()) return;
 
         if (collision.gameObject.CompareTag("Player"))
         {
-            if (rb != null)
-            {
-                Vector3 hv = rb.linearVelocity;
-                rb.linearVelocity = new Vector3(0f, Mathf.Min(hv.y, 0f), 0f);
-                rb.angularVelocity = Vector3.zero;
-            }
-            _targetSpeedX = 0f;
-            _hasTargetSpeed = false;
-
-            if (ScreenFeedbackManager.Instance != null)
-            {
-                ScreenFeedbackManager.Instance.TriggerHitFeedback();
-            }
-
-            AttachToPlayer();
+            TryBite();
         }
+    }
+
+    /// <summary>★1010 現在能不能咬：沒在咬、沒硬直、沒暫停、出生保護過了、咬完的冷卻過了。</summary>
+    private bool CanBiteNow()
+    {
+        return !isStunned && !isAttached && !ChallengeFailHalt && !IsPausedForPlayer()
+               && Time.time >= enableTime + spawnAttachImmunityTime
+               && Time.time >= _biteReadyTime;
+    }
+
+    /// <summary>咬下去（原本 OnCollisionEnter 裡的那段，原樣搬出來給 Enter／Stay 共用）。</summary>
+    private void TryBite()
+    {
+        if (rb != null)
+        {
+            Vector3 hv = rb.linearVelocity;
+            rb.linearVelocity = new Vector3(0f, Mathf.Min(hv.y, 0f), 0f);
+            rb.angularVelocity = Vector3.zero;
+        }
+        _targetSpeedX = 0f;
+        _hasTargetSpeed = false;
+
+        if (ScreenFeedbackManager.Instance != null)
+        {
+            ScreenFeedbackManager.Instance.TriggerHitFeedback();
+        }
+
+        AttachToPlayer();
+    }
+
+    /// <summary>
+    /// ★1010 她一直碰著這隻狼：能咬就咬（原本只在剛碰到的那一下判定，碰著的時候冷卻剛好過了也不咬）；
+    /// 不能咬、而且她的腳在狼身體一半以上（踩在狼背上）→ 暫時穿過去，讓她落到地上（不能踩著狼走）。
+    /// </summary>
+    private void HandlePlayerContactStay(Collision collision)
+    {
+        if (isAttached) return;
+        if (CanBiteNow()) { TryBite(); return; }
+        if (!preventStandOnWolf || col == null || collision.collider == null) return;
+        if (collision.collider.bounds.min.y >= col.bounds.center.y) SetIgnorePlayer(true, 0.6f);
+    }
+
+    /// <summary>★1010 她被演出定住（isCutsceneFrozen）時也算暫停：光球帶路飛行時鏡頭不在她身上，不能讓狼在畫面外咬她。</summary>
+    private bool IsPausedForPlayer()
+    {
+        if (IsAttackGloballyPaused()) return true;
+        return pauseWhilePlayerFrozen && playerMovement != null && playerMovement.isCutsceneFrozen;
+    }
+
+    private void CachePlayerColliders()
+    {
+        if (player == null) { _playerCols = new Collider[0]; return; }
+        List<Collider> list = new List<Collider>();
+        foreach (Collider c in player.GetComponentsInChildren<Collider>(true))
+            if (c != null && !c.isTrigger) list.Add(c);
+        _playerCols = list.ToArray();
+    }
+
+    /// <summary>★1010 暫時跟她互相穿過（咬完退後、她踩到背上）；seconds 到了由 Update 恢復。</summary>
+    private void SetIgnorePlayer(bool on, float seconds)
+    {
+        if (col == null) return;
+        if (on && _playerCols.Length == 0) CachePlayerColliders();
+        foreach (Collider pc in _playerCols)
+            if (pc != null) Physics.IgnoreCollision(col, pc, on);
+        _ignoringPlayer = on;
+        _ignorePlayerUntil = on ? Mathf.Max(_ignorePlayerUntil, Time.time + Mathf.Max(0f, seconds)) : -999f;
+    }
+
+    /// <summary>★1010 咬住 biteHoldSeconds 秒就鬆口退後。咬死的那一口（重生開始）或演出中就不鬆，交給重生重置。</summary>
+    private IEnumerator BiteThenRetreat()
+    {
+        float t = 0f;
+        while (t < biteHoldSeconds)
+        {
+            if (!isAttached) yield break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+        if (!isAttached) yield break;
+        if (PlayerRespawnSystem.IsAnyRespawning || IsAttackGloballyPaused()) yield break;
+        ReleaseBite();
+    }
+
+    private void ReleaseBite()
+    {
+        isAttached = false;
+        if (player != null && transform.parent == player) transform.SetParent(_initialParent);
+        transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
+
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        if (col != null) col.isTrigger = false;
+
+        SetIgnorePlayer(true, biteCooldownSeconds);   // 退後這段她可以穿過去，不會站到牠背上
+        if (playerMovement != null) playerMovement.RemoveWolf();
+
+        _biteRetreatUntil = Time.time + Mathf.Max(0f, biteRetreatSeconds);
+        _biteReadyTime = Time.time + Mathf.Max(biteRetreatSeconds, biteCooldownSeconds);
+        isChasing = true;
+        _aggroLocked = true;
+        if (_targetPlayer == null) _targetPlayer = player;
     }
 
     private static bool IsAttackGloballyPaused()
@@ -1285,6 +1411,8 @@ public class WolfEnemy : MonoBehaviour, IResettable
         {
             playerMovement.AddWolf();
         }
+
+        if (biteAndRetreat && isAttached) StartCoroutine(BiteThenRetreat());   // ★1010 咬一口就鬆口退後
     }
 
     private void CacheAttachedFollowOffset()
@@ -1358,6 +1486,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
         isAttached = false;
         isChasing = false;
         isStunned = false;
+        _biteReadyTime = -999f;          // ★1010
+        _biteRetreatUntil = -999f;
+        if (_ignoringPlayer) SetIgnorePlayer(false, 0f);
 
         _aggroLocked = false;
         _targetPlayer = null;

@@ -165,6 +165,7 @@ public class FirstWolfDeathStory : MonoBehaviour
     private bool _wasFailing = false;      // ★1007 巨石挑戰失敗的開始（第一隻狼咬到）
     private Texture2D _failCapture;        // ★1007 失敗那一刻先截好的畫面（D 版格 1）
     private int _prevAttached = 0;         // ★1007 上一幀身上咬著幾隻狼（重生偵測晚一幀時用）
+    private int _prevBites;   // ★1010 累計口數（狼咬一口就退後，死的那一刻身上不一定還咬著）
     private bool _testNext = false;        // ★1007 測試：下一次重生當成被狼群追擊而死
     private string _why = "";
 
@@ -221,7 +222,7 @@ public class FirstWolfDeathStory : MonoBehaviour
         bool now = PlayerRespawnSystem.IsAnyRespawning;
         if (now && !_wasRespawning) OnRespawnStarted();
         _wasRespawning = now;
-        if (_pm != null) _prevAttached = _pm.attachedWolvesCount;
+        if (_pm != null) { _prevAttached = _pm.attachedWolvesCount; _prevBites = _pm.WolfBiteCountForDeath; }
     }
 
     private void OnRespawnStarted()
@@ -243,13 +244,14 @@ public class FirstWolfDeathStory : MonoBehaviour
         // ★1007 被狼群追擊而死：咬滿死亡門檻（wolvesToRespawn；原本拿減速分母 maxWolvesToStop＝6 判斷，永遠達不到）、
         //   巨石挑戰中被第一隻狼咬到而失敗、或在廢墟死掉時身上還咬著狼
         int attached = Mathf.Max(_pm.attachedWolvesCount, _prevAttached);
+        int bites = Mathf.Max(_pm.WolfBiteCountForDeath, _prevBites);   // ★1010 02 #35：咬三口死（累計），不是同時咬住三隻
         int killW = Mathf.Max(1, _pm.WolfKillThreshold);   // ★1008 跟 PlayerMovement 同一個門檻（在場的狼全部咬上來也算）
         bool inRuins = _pm.transform.position.y < ruinsBelowY;
-        bool bitten = attached >= killW;
+        bool bitten = bites >= killW;
         bool boulderFail = BoulderChallengeController.IsFailing;
         bool dragged = inRuins && attached > 0;
         bool wolfDeath = _testNext || bitten || boulderFail || dragged;
-        _why = _testNext ? "測試" : bitten ? "被狼咬滿 " + attached + " 隻" : boulderFail ? "巨石挑戰中被狼咬到" : dragged ? "死的時候身上咬著 " + attached + " 隻狼" : "";
+        _why = _testNext ? "測試" : bitten ? "被狼咬滿 " + bites + " 口" : boulderFail ? "巨石挑戰中被狼咬到" : dragged ? "死的時候身上咬著 " + attached + " 隻狼" : "";
         _testNext = false;
 
         // ★1006 影片：廢墟第一次死亡（被狼咬滿，或在廢墟高度死掉）

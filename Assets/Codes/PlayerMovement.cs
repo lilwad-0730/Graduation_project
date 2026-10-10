@@ -112,6 +112,16 @@ public class PlayerMovement : MonoBehaviour
     [Range(1, 6)]
     public int packKillMinWolves = 2;
 
+    [Tooltip("★1010 02 #35「狼咬三次就死」：這一條命累計被咬幾口（咬完鬆口也算）達到 Wolves To Respawn 就死，重生後歸零。\n" +
+             "狼現在咬一口就退後（WolfEnemy.biteAndRetreat），不會一直掛在身上，所以要算累計口數。取消＝回到「同時咬住幾隻才死」")]
+    public bool countBitesCumulative = true;
+
+    /// <summary>★1010 這一條命累計被咬了幾口（重生、傳送 WarpTo 歸零）。</summary>
+    public int BitesTaken { get; private set; }
+
+    /// <summary>★1010 判斷「咬滿」用的數：累計口數（countBitesCumulative）或同時咬住的隻數。FirstWolfDeathStory 也用這個。</summary>
+    public int WolfBiteCountForDeath => countBitesCumulative ? BitesTaken : attachedWolvesCount;
+
     [Header("🐺 狼咬住的向下拖曳負載（只作用在斜坡上）")]
     [Tooltip("每一隻咬住的狼，沿坡面往下拖曳的速度 (公尺/秒)。設 0 ＝ 整個機制關閉，行為完全回到修改前。\n" +
              "為什麼不用 AddForce：斜坡分支會關掉重力並且每幀整個覆寫 rb.linearVelocity，\n" +
@@ -467,6 +477,7 @@ public class PlayerMovement : MonoBehaviour
         isStrictLockingX = false;
         isCutsceneFrozen = false; // 確保起始未被鎖定
         attachedWolvesCount = 0;
+        BitesTaken = 0;   // ★1010
         currentSpeed = baseSpeed;
         _lastFramePos = transform.position;
         currentSwimStamina = maxSwimStamina;
@@ -1308,19 +1319,21 @@ public class PlayerMovement : MonoBehaviour
     public void AddWolf()
     {
         attachedWolvesCount++;
+        BitesTaken++;   // ★1010 累計口數
         CalculateSpeed();
 
         int maxW = Mathf.Max(1, Mathf.RoundToInt(maxWolvesToStop));
         int killW = WolfKillThreshold;   // ★1001 死亡門檻改用獨立欄位；★1008 在場的狼全部咬上來也算（見 WolfKillThreshold）
         float pct = baseSpeed > 0.001f ? (currentSpeed / baseSpeed) * 100f : 0f;
-        Debug.Log($"狼咬！目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}／重生門檻 {killW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
+        Debug.Log($"狼咬！第 {BitesTaken} 口（{(countBitesCumulative ? "累計口數" : "同時咬住")}算死，門檻 {killW}），目前身上有 {attachedWolvesCount} 隻狼（減速分母 {maxW}），玩家速度：{currentSpeed:F2} ({pct:F0}%)");
 
         // ★1002 巨石挑戰進行中：第一隻咬到只啟動巨石壓迫，狼咬計數仍繼續累積。
         //   控制器沒設定好、或挑戰還沒開始（石頭還沒解鎖）時，仍完全走原本狼咬流程。
         if (BoulderChallengeController.NotifyWolfBite(this)) return;
 
         // 咬滿就死。TriggerRespawn 內部有 _isRespawning 防重入，不會重複觸發，這裡不另外做旗標。
-        if (respawnWhenMaxWolves && attachedWolvesCount >= killW)
+        // ★1010 改看 WolfBiteCountForDeath：預設是累計口數（咬三口死），不是同時咬住的隻數
+        if (respawnWhenMaxWolves && WolfBiteCountForDeath >= killW)
         {
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
             if (respawnSystem == null) respawnSystem = GetComponentInParent<PlayerRespawnSystem>();
@@ -1638,6 +1651,7 @@ public class PlayerMovement : MonoBehaviour
 
         // 重置身上所有被狼咬住的計數，並恢復速度
         attachedWolvesCount = 0;
+        BitesTaken = 0;   // ★1010 重生／傳送：累計口數歸零
         CalculateSpeed();
         _smoothYVelocity = 0f; // 重置 Y 軸平滑速度快取
         
