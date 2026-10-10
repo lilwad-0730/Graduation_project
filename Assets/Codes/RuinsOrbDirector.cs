@@ -5,54 +5,42 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// ★1009 廢墟的光球（1008 會議：廢墟 b、e；02 補十五 #34「去掉拉桿，光球放下巨石」、#37「風暴改由光球觸發，由左到右掃過」）。
 ///
-/// 改動前：
-///   ・光球（FairyLight 的 GuidanceLight）只有棉花堡的路徑點，跳下廢墟後留在天上，廢墟裡看不到光球。
-///   ・巨石要走到石階上的拉桿（LeverSystem）按 E 才掉下來。
-///   ・走上斜坡碰到 Tornado_FollowTrigger，龍捲風就黏在鏡頭中間一路跟著（留存）；走到 Storm_TransitionTrigger 才被吸進去轉場。
-/// 改動後（這支一手包辦，不改場景、不改 LeverSystem／StormSceneTransition／TornadoFollowCamera）：
-///   1. 落地後光球出現在她前方 landAheadX 米，帶她往原本拉桿的位置走（她落後太多就停下來等；她跑到前面，光球就加快趕過去）。
-///   2. 拉桿藏起來（看不到、碰不到、不會出「按下 E」）；光球停在拉桿上方，她走近，光球一亮，巨石掉下來（等於拉桿放開巨石）。
-///   3. 光球飛到斜坡上 stormOrbX 的位置等她；她推到那裡碰到光球：她、狼群、巨石都停住，
-///      龍捲風從畫面左邊出現、往右掃，掃到她之後接原本的文字卡（M2）、黑幕、載入荒原（設定照 StormSceneTransition 上的）。
-///      原本的兩個風暴觸發區關掉，龍捲風不再跟著鏡頭；斜坡上原本站著的龍捲風先藏起來（聲音留著），叫風暴時才從左邊出現。
-///   重生：還沒放下巨石就死 → 光球回到她前面重新帶路；推巨石失敗（巨石重置後仍是放開的）→ 光球留在斜坡上等。
-/// 整包關掉：RuinsOrbDirector.Enabled = false（回到拉桿與原本的風暴）。
+/// ★1010 改成「以修毅為準」（M 10-10：重疊的只留修毅的；巨石與風暴保留這支）：
+///   ・光球怎麼走、鏡頭怎麼跟，全照修毅的 GuidanceLight 與路徑點：
+///       P12（墜落時就在她前方，落地後碰到）→ 鏡頭跟著光球飛到 P13（原本拉桿旁）
+///       P13 碰到 → 鏡頭跟著光球飛到 P14（斜坡頂）
+///   ・這支只多做兩件事，不搬光球、不搶鏡頭：
+///       1. 拉桿藏起來；她在 P13 碰到光球（光球停在 P13 時她走到 touchDistance 內），光球一亮，巨石掉下來（等於拉桿放開巨石）。
+///       2. 原本的兩個風暴觸發區關掉、斜坡上的龍捲風先藏起來；她推巨石上坡、在 P14 碰到光球（或走過 P14）：
+///          她、狼群、巨石停住，龍捲風從畫面左邊掃過來，掃到她就接文字卡（M2）、黑幕、進荒原。
+///   ・保險：她放下巨石後沒碰光球就往右走（光球還停在 P13），走遠了光球直接傳到 P14 等她；
+///          她走到 P14 時光球不在，也先傳過去再叫風暴。
+///   ・重生：巨石已經放下（推巨石失敗，BoulderChallengeController 重置後巨石仍是放開的）→ 光球直接在 P14 等，不用再飛一次；
+///          還沒放下就死 → 照修毅的 GuidanceLight 重置（回最近的路徑點）。
+///   ・拿掉的（10-09 版有、10-10 起交給修毅）：落地時這支自己放光球、帶路到拉桿、追著她跑。
 ///
-/// ★1010 跟修毅 10-10（d0f715a）合併：墜落時 PlayerMovement 先把光球傳到 P12、鏡頭特寫光球，落到廢墟地板才放開；
-/// 這支等墜落鎖放開才接手，光球已經在她前方（P12）就從那裡帶路。修毅加的 P13、P14 在這支開著時用不到。
+/// 整包關掉：RuinsOrbDirector.Enabled = false（回到拉桿與原本的風暴）。
 /// </summary>
 [DisallowMultipleComponent]
 public class RuinsOrbDirector : MonoBehaviour
 {
     public static bool Enabled = true;
 
-    [Header("位置")]
+    [Header("位置（路徑點名稱照修毅的場景）")]
     [Tooltip("她低於這個高度＝在廢墟")]
     public float ruinsBelowY = -60f;
-    [Tooltip("落地後光球出現在她前方幾米")]
-    public float landAheadX = 9f;
-    [Tooltip("★1010 落地時光球如果已經在廢墟、在她前方（修毅的 P12：墜落時鏡頭特寫的那顆），就從那裡開始帶路，不另外放")]
-    public bool startFromCurrentOrb = true;
-    [Tooltip("光球離地多高")]
-    public float orbHeight = 2.2f;
-    [Tooltip("光球停在原本拉桿位置的上方多少")]
-    public float leverOrbOffsetY = 1.4f;
-    [Tooltip("斜坡上叫風暴的位置（x）。原本龍捲風跟隨區在 192～239、轉場在 249")]
-    public float stormOrbX = 238f;
-    public float stormOrbHeight = 2.5f;
-
-    [Header("帶路")]
-    public float orbSpeed = 7f;
-    [Tooltip("她離光球超過這個距離，光球停下來等")]
-    public float leadStopDistance = 13f;
-    [Tooltip("停下來等之後，她走到這個距離內光球才繼續")]
-    public float leadResumeDistance = 7f;
-    [Tooltip("放下巨石後，光球飛往斜坡的速度")]
-    public float toStormSpeed = 12f;
-    [Tooltip("她離光球多近算碰到")]
+    [Tooltip("原本拉桿旁的路徑點：光球停在這裡時，她碰到就放下巨石")]
+    public string leverWaypointName = "P13";
+    [Tooltip("斜坡頂的路徑點：光球停在這裡時，她碰到就叫風暴")]
+    public string stormWaypointName = "P14";
+    [Tooltip("她離光球多近算碰到（修毅的 GuidanceLight 自己用 touchTriggerDistance 判定飛行，這裡只判定放巨石／叫風暴）")]
     public float touchDistance = 3f;
-    public float bobHeight = 0.3f;
-    public float bobSpeed = 3f;
+    [Tooltip("光球離路徑點多近算「停在那裡」")]
+    public float atWaypointTolerance = 2.5f;
+    [Tooltip("巨石放下後光球還停在 P13、她已經往右走了這麼遠：光球直接傳到 P14 等她")]
+    public float skipToStormIfPastLeverBy = 22f;
+    [Tooltip("找不到 P13 時：她走到原本拉桿這麼近就放下巨石（光球不在也放，免得卡關）")]
+    public float leverFallbackDistance = 2.5f;
 
     [Header("風暴")]
     [Tooltip("龍捲風由左往右掃的速度（米／秒）")]
@@ -61,10 +49,12 @@ public class RuinsOrbDirector : MonoBehaviour
     public float sweepStartMargin = 6f;
     [Tooltip("掃到她之後，罩著她多久才接文字卡")]
     public float sweepHoldSeconds = 1.2f;
+    [Tooltip("★1010 龍捲風掃過時加上 StormBoostFX（沙霧、鏡頭震、呼嘯；修毅清單待完成 8）")]
+    public bool boostStormFx = true;
 
     public bool logEvents = true;
 
-    private enum Stage { Idle, Lead, WaitRelease, Releasing, ToStorm, WaitStorm, Storm }
+    private enum Stage { Idle, WaitLever, Releasing, WaitStorm, Storm }
     private Stage _stage = Stage.Idle;
 
     private PlayerMovement _pm;
@@ -77,10 +67,7 @@ public class RuinsOrbDirector : MonoBehaviour
     private ParticleSystem[] _orbFx = new ParticleSystem[0];
     private Renderer[] _tornadoRenderers = new Renderer[0];
 
-    private Vector3 _r2, _r3;
-    private bool _r3Ready;
-    private Vector3 _orbPos;
-    private bool _waiting;
+    private Transform _leverWp, _stormWp;
     private bool _pendingReset;
     private readonly System.Collections.Generic.List<Behaviour> _frozen = new System.Collections.Generic.List<Behaviour>();
     private UnityEngine.UI.Image _fade;
@@ -117,18 +104,32 @@ public class RuinsOrbDirector : MonoBehaviour
             foreach (TornadoFollowCamera t in _storm.backgroundTornadoes) if (t != null) { _tornado = t; break; }
         if (_tornado == null && _encounter != null) _tornado = _encounter.targetTornado;
         if (_tornado == null) _tornado = FindAnyObjectByType<TornadoFollowCamera>();
-        if (_orb != null) _orbFx = _orb.GetComponentsInChildren<ParticleSystem>(true);
+        if (_orb != null)
+        {
+            _orbFx = _orb.GetComponentsInChildren<ParticleSystem>(true);
+            _leverWp = FindWaypoint(leverWaypointName);
+            _stormWp = FindWaypoint(stormWaypointName);
+        }
 
         HideLever();
         DisableOldStormTriggers();
         HideTornado();
         PlayerRespawnSystem.OnResettablesReset += OnResettablesReset;
-        if (logEvents) Debug.Log("【廢墟光球】拉桿已藏起來、原本的風暴觸發區已關；廢墟改由光球帶路、放巨石、叫風暴");
+        if (logEvents)
+            Debug.Log("【廢墟光球】拉桿已藏起來、原本的風暴觸發區已關；光球照修毅的路徑點走，在 " + leverWaypointName + (_leverWp != null ? "" : "（找不到，改用拉桿位置）") +
+                      " 碰到放巨石、在 " + stormWaypointName + (_stormWp != null ? "" : "（找不到，改用斜坡頂附近）") + " 碰到叫風暴");
     }
 
     private void OnDestroy()
     {
         PlayerRespawnSystem.OnResettablesReset -= OnResettablesReset;
+    }
+
+    private Transform FindWaypoint(string wpName)
+    {
+        if (_orb == null || _orb.waypoints == null || string.IsNullOrEmpty(wpName)) return null;
+        foreach (Transform w in _orb.waypoints) if (w != null && w.name == wpName) return w;
+        return null;
     }
 
     /// <summary>拉桿看不到、碰不到（LeverSystem 本身留著：重生時它負責把巨石放回原位）。</summary>
@@ -192,87 +193,78 @@ public class RuinsOrbDirector : MonoBehaviour
 
         if (_stage == Stage.Idle)
         {
-            // ★1010 等墜落鎖真的放開（修毅的 PlayerMovement 要落到廢墟地板才放）再接手，不跟墜落中的光球特寫搶
-            if (inRuins && _pm.isGrounded && !_pm.freezeHorizontal && !PlayerRespawnSystem.IsAnyRespawning) BeginRuins();
+            if (inRuins && !PlayerRespawnSystem.IsAnyRespawning) BeginRuins();
             return;
         }
         if (p.y > ruinsBelowY + 30f) { EndRuins(); return; }   // 測試時把她放回棉花堡
+        if (PlayerRespawnSystem.IsAnyRespawning) return;
 
-        float dt = Time.deltaTime;
-        float dist = Vector2.Distance(new Vector2(_orbPos.x, _orbPos.y), new Vector2(p.x, p.y));
         switch (_stage)
         {
-            case Stage.Lead:
+            case Stage.WaitLever:
+                if (RockReleased) { _stage = Stage.WaitStorm; break; }   // 巨石已經放開了（其他路徑），直接等風暴
+                if (_leverWp != null)
+                {
+                    // 修毅的光球停在 P13（不是飛行途中）、她走到光球旁 → 放巨石；光球接著照修毅的設定飛往 P14（鏡頭跟著）
+                    if (OrbAt(_leverWp) && PlayerToOrb() <= touchDistance) StartCoroutine(ReleaseRoutine());
+                }
+                else if (_lever != null && Vector2.Distance(p, _lever.transform.position) <= leverFallbackDistance)
+                {
+                    StartCoroutine(ReleaseRoutine());
+                }
+                break;
+
+            case Stage.WaitStorm:
             {
-                bool ahead = p.x > _orbPos.x + 1f;   // 她跑到光球前面了：光球不等她，加快趕去原本拉桿的位置
-                if (ahead) _waiting = false;
-                else if (!_waiting && dist > leadStopDistance) _waiting = true;
-                else if (_waiting && dist <= leadResumeDistance) _waiting = false;
-                if (!_waiting) _orbPos = Vector3.MoveTowards(_orbPos, _r2, (ahead ? toStormSpeed : orbSpeed) * dt);
-                if ((_orbPos - _r2).sqrMagnitude < 0.0025f) _stage = Stage.WaitRelease;
+                Vector3 stormPos = StormPoint();
+                // 巨石放下了，她卻沒碰光球就往右走：光球直接到 P14 等（不再飛一次）
+                if (_leverWp != null && _stormWp != null && OrbAt(_leverWp) && !_pm.isCutsceneFrozen && p.x > _leverWp.position.x + skipToStormIfPastLeverBy)
+                {
+                    _orb.TeleportToWaypointName(stormWaypointName);
+                    if (logEvents) Debug.Log("【廢墟光球】她沒碰 " + leverWaypointName + " 的光球就往前走了：光球直接到 " + stormWaypointName + " 等她");
+                }
+                bool touched = _stormWp != null && OrbAt(_stormWp) && PlayerToOrb() <= touchDistance;
+                bool passed = p.x >= stormPos.x - 1f && Mathf.Abs(p.y - stormPos.y) < 8f;
+                if ((touched || passed) && !BoulderChallengeController.IsFailing && !_pm.isCutsceneFrozen) StartCoroutine(StormRoutine());
                 break;
             }
-            case Stage.WaitRelease:
-                if (dist <= touchDistance && !PlayerRespawnSystem.IsAnyRespawning) StartCoroutine(ReleaseRoutine());
-                break;
-            case Stage.ToStorm:
-                _orbPos = Vector3.MoveTowards(_orbPos, _r3, toStormSpeed * dt);
-                if ((_orbPos - _r3).sqrMagnitude < 0.0025f) _stage = Stage.WaitStorm;
-                break;
-            case Stage.WaitStorm:
-                bool reached = dist <= touchDistance || (p.x >= _r3.x - 1f && Mathf.Abs(p.y - _r3.y) < 8f);
-                if (reached && !PlayerRespawnSystem.IsAnyRespawning && !BoulderChallengeController.IsFailing) StartCoroutine(StormRoutine());
-                break;
         }
-        ApplyOrb();
-    }
-
-    private void ApplyOrb()
-    {
-        if (_orb == null) return;
-        _orb.transform.position = new Vector3(_orbPos.x, _orbPos.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight, _orbPos.z);
     }
 
     private bool RockReleased => _rock != null && !_rock.isKinematic;
 
+    /// <summary>光球（修毅的 GuidanceLight）停在這個路徑點上：在容許範圍內，而且她沒有被光球飛行鎖住（飛行途中不算）。</summary>
+    private bool OrbAt(Transform wp)
+    {
+        if (wp == null || _orb == null || !_orb.isActiveAndEnabled) return false;
+        Vector2 d = (Vector2)(_orb.transform.position - wp.position);
+        return d.magnitude <= atWaypointTolerance;
+    }
+
+    private float PlayerToOrb()
+    {
+        Vector3 a = _pm.transform.position, b = _orb.transform.position;
+        return Vector2.Distance(new Vector2(a.x, a.y), new Vector2(b.x, b.y));
+    }
+
+    private Vector3 StormPoint()
+    {
+        if (_stormWp != null) return _stormWp.position;
+        if (_storm != null) return _storm.transform.position + Vector3.left * 6f;
+        return _pm.transform.position + Vector3.right * 1000f;
+    }
+
     private void BeginRuins()
     {
-        _orb.enabled = false;   // GuidanceLight 停手；廢墟由這裡帶（它的重生重置照常會被呼叫，下面再放回來）
-        _r2 = _lever != null ? _lever.transform.position + Vector3.up * leverOrbOffsetY : _pm.transform.position + Vector3.right * 40f;
-        if (RockReleased)
-        {
-            EnsureStormPoint();
-            _orbPos = _r3;
-            _stage = Stage.WaitStorm;
-        }
-        else
-        {
-            Vector3 p = _pm.transform.position;
-            Vector3 cur = _orb.transform.position;
-            if (startFromCurrentOrb && cur.y < ruinsBelowY + 20f && cur.x > p.x + 2f && cur.x < _r2.x - 2f)
-            {
-                _orbPos = new Vector3(cur.x, cur.y, 0f);   // ★1010 光球已經在前方（P12），從那裡帶路
-                _waiting = true;
-                _stage = Stage.Lead;
-            }
-            else
-            {
-                float x = p.x < _r2.x - 2f ? Mathf.Min(p.x + landAheadX, _r2.x - 2f) : _r2.x;
-                _orbPos = x >= _r2.x ? _r2 : new Vector3(x, GroundY(x, p.y) + orbHeight, 0f);
-                _waiting = true;
-                _stage = x >= _r2.x ? Stage.WaitRelease : Stage.Lead;
-            }
-        }
-        ApplyOrb();
-        Flare(25);
-        if (logEvents) Debug.Log("【廢墟光球】她落地了：光球出現在 " + _orbPos.ToString("F1") + "，往原本拉桿的位置 " + _r2.ToString("F1") + " 帶路");
+        _stage = RockReleased ? Stage.WaitStorm : Stage.WaitLever;
+        if (logEvents) Debug.Log("【廢墟光球】她到廢墟了：光球照修毅的路徑點走（" + (RockReleased ? "巨石已放下，等她到 " + stormWaypointName : "在 " + leverWaypointName + " 碰到就放巨石") + "）");
     }
 
     private void EndRuins()
     {
         StopAllCoroutines();
         _stage = Stage.Idle;
-        if (_orb != null) _orb.enabled = true;
+        if (_orb != null && !_orb.enabled) _orb.enabled = true;
     }
 
     // ── 放下巨石 ─────────────────────────────────────────────
@@ -282,34 +274,26 @@ public class RuinsOrbDirector : MonoBehaviour
         Flare(40);
         PlayOrbSfx();
         yield return new WaitForSeconds(0.35f);
-        if (_rock != null)
+        if (_rock != null && _rock.isKinematic)
         {
             _rock.isKinematic = false;
             _rock.linearVelocity = Vector3.zero;
             RollingRockVisual v = _rock.GetComponent<RollingRockVisual>();
             if (v != null) v.enabled = true;
         }
-        if (logEvents) Debug.Log("【廢墟光球】她碰到光球：巨石放下（取代拉桿）");
-        float t = 0f;
-        while (t < 1.0f) { t += Time.deltaTime; ApplyOrb(); yield return null; }   // 停一下，讓她看見巨石掉下來
-        EnsureStormPoint();
-        _stage = Stage.ToStorm;
-    }
-
-    private void EnsureStormPoint()
-    {
-        if (_r3Ready) return;
-        float y = GroundY(stormOrbX, -60f);
-        _r3 = new Vector3(stormOrbX, y + stormOrbHeight, 0f);
-        _r3Ready = true;
-        if (logEvents) Debug.Log("【廢墟光球】斜坡上等她叫風暴的位置：" + _r3.ToString("F1"));
+        if (logEvents) Debug.Log("【廢墟光球】她在 " + leverWaypointName + " 碰到光球：巨石放下（取代拉桿）；光球照修毅的設定飛往 " + stormWaypointName);
+        _stage = Stage.WaitStorm;
     }
 
     // ── 風暴 ─────────────────────────────────────────────────
     private IEnumerator StormRoutine()
     {
         _stage = Stage.Storm;
-        if (logEvents) Debug.Log("【廢墟光球】她在斜坡上碰到光球：叫風暴，龍捲風由左往右掃過");
+        if (logEvents) Debug.Log("【廢墟光球】她在斜坡頂碰到光球：叫風暴，龍捲風由左往右掃過");
+
+        // 光球停在原地（之後淡掉）；修毅的 GuidanceLight 不再動它
+        if (_stormWp != null && !OrbAt(_stormWp)) _orb.TeleportToWaypointName(stormWaypointName);
+        _orb.enabled = false;
 
         // 她、狼群、巨石都停住
         _pm.isCutsceneFrozen = true;
@@ -323,6 +307,13 @@ public class RuinsOrbDirector : MonoBehaviour
         if (_storm != null && _storm.stormVortexSFX != null)
             AudioSource.PlayClipAtPoint(_storm.stormVortexSFX, _pm.transform.position, AudioManager.ScaleSfx(_storm.sfxVolume));
 
+        StormBoostFX fx = null;
+        if (boostStormFx && StormBoostFX.Enabled)
+        {
+            fx = StormBoostFX.Ensure();
+            fx.SetManual(0.45f, +1f, StormBoostFX.RuinsDustColor);   // 龍捲風還在畫面外：天色先暗、風吼起來
+        }
+
         Camera cam = Camera.main;
         if (_tornado != null && cam != null)
         {
@@ -333,7 +324,9 @@ public class RuinsOrbDirector : MonoBehaviour
             float y0 = cam.transform.position.y + _tornado.offsetY;
             tt.position = new Vector3(cam.transform.position.x - halfW - sweepStartMargin, y0, _tornado.fixedZ);
             ShowTornado();
+            if (fx != null) fx.Hit(0.8f);   // 龍捲風出現在畫面左邊的那一下
             float targetX = _pm.transform.position.x;
+            float startX = tt.position.x;
             float guard = 0f;
             while (tt.position.x < targetX && guard < 10f)
             {
@@ -342,8 +335,10 @@ public class RuinsOrbDirector : MonoBehaviour
                 float camY = cam.transform.position.y + _tornado.offsetY;
                 tt.position = new Vector3(tt.position.x + sweepSpeed * dt, Mathf.Lerp(tt.position.y, camY, dt * 6f), _tornado.fixedZ);
                 FadeOrb(1f - Mathf.Clamp01((tt.position.x - (targetX - halfW)) / halfW));
+                if (fx != null) fx.SetManual(Mathf.Lerp(0.45f, 1f, Mathf.InverseLerp(startX, targetX, tt.position.x)), +1f, StormBoostFX.RuinsDustColor);
                 yield return null;
             }
+            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, sweepHoldSeconds + 8f); fx.Hit(1f); }   // 掃到她（罩到文字卡、黑幕）
             float h = 0f;
             while (h < sweepHoldSeconds)
             {
@@ -355,6 +350,7 @@ public class RuinsOrbDirector : MonoBehaviour
         }
         else
         {
+            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, sweepHoldSeconds + 8f); fx.Hit(1f); }
             yield return new WaitForSeconds(sweepHoldSeconds);
         }
         FadeOrb(0f);
@@ -409,7 +405,7 @@ public class RuinsOrbDirector : MonoBehaviour
     }
 
     // ── 重生 ─────────────────────────────────────────────────
-    /// <summary>全場景 IResettable 跑完之後（GuidanceLight 的重置會把光球拉回棉花堡），下一幀等她傳到存檔點再放回廢墟。</summary>
+    /// <summary>全場景 IResettable 跑完之後（GuidanceLight 自己會回到離重生點最近的路徑點），下一幀等她傳到存檔點再決定。</summary>
     private void OnResettablesReset()
     {
         if (_stage == Stage.Idle || _stage == Stage.Storm) return;
@@ -424,42 +420,20 @@ public class RuinsOrbDirector : MonoBehaviour
         if (p.y > ruinsBelowY) { EndRuins(); return; }
         if (RockReleased)
         {
-            // 推巨石失敗：巨石重置後仍是放開的（BoulderChallengeController 的 unlockBoulderAfterReset）→ 光球在斜坡上等
-            EnsureStormPoint();
-            _orbPos = _r3;
+            // 推巨石失敗：巨石重置後仍是放開的（BoulderChallengeController 的 unlockBoulderAfterReset）→ 光球直接在 P14 等，不用再飛一次
+            if (_stormWp != null) _orb.TeleportToWaypointName(stormWaypointName);
             _stage = Stage.WaitStorm;
         }
         else
         {
-            // 還沒放下巨石就死（拉桿的重置會把巨石放回原位）→ 光球回到她前面重新帶路
-            float x = p.x < _r2.x - 2f ? Mathf.Min(p.x + landAheadX, _r2.x - 2f) : _r2.x;
-            _orbPos = x >= _r2.x ? _r2 : new Vector3(x, GroundY(x, p.y) + orbHeight, 0f);
-            _waiting = true;
-            _stage = x >= _r2.x ? Stage.WaitRelease : Stage.Lead;
+            // 還沒放下巨石就死（拉桿的重置會把巨石放回原位）→ 照修毅的 GuidanceLight 重置，光球回最近的路徑點
+            _stage = Stage.WaitLever;
         }
         FadeOrb(1f);
-        ApplyOrb();
-        if (logEvents) Debug.Log("【廢墟光球】重生後光球放在 " + _orbPos.ToString("F1") + "（" + (RockReleased ? "巨石已放下，斜坡上等" : "重新帶路") + "）");
+        if (logEvents) Debug.Log("【廢墟光球】重生：" + (RockReleased ? "巨石已放下，光球在 " + stormWaypointName + " 等" : "巨石還沒放下，光球照修毅的重置（最近的路徑點）"));
     }
 
     // ── 小工具 ───────────────────────────────────────────────
-    /// <summary>x 這一點的地面高度：從上往下打射線，略過觸發區與會動的東西（她、狼、巨石）。</summary>
-    private float GroundY(float x, float nearY)
-    {
-        RaycastHit[] hits = Physics.RaycastAll(new Vector3(x, -40f, 0f), Vector3.down, 160f, ~0, QueryTriggerInteraction.Ignore);
-        float best = float.NegativeInfinity;
-        foreach (RaycastHit h in hits)
-        {
-            Collider c = h.collider;
-            if (c == null) continue;
-            if (c.attachedRigidbody != null && !c.attachedRigidbody.isKinematic) continue;
-            if (c.GetComponentInParent<PlayerMovement>() != null || c.GetComponentInParent<WolfEnemy>() != null) continue;
-            if (c.GetComponentInParent<GameArea>() != null) continue;
-            if (h.point.y > best) best = h.point.y;
-        }
-        return float.IsNegativeInfinity(best) ? nearY : best;
-    }
-
     private void Flare(int count)
     {
         foreach (ParticleSystem ps in _orbFx) if (ps != null) ps.Emit(count);
