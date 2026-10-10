@@ -28,7 +28,7 @@ public class StormBoostFX : MonoBehaviour
 
     [Header("畫面")]
     [Range(0f, 1f)] public float hazeMaxAlpha = 0.24f;
-    [Range(0f, 1f)] public float streakMaxAlpha = 0.5f;
+    [Range(0f, 1f)] public float streakMaxAlpha = 0.38f;
     [Range(0f, 1f)] public float vignetteMaxAlpha = 0.5f;
     [Range(0f, 1f)] public float hitFlashAlpha = 0.3f;
     [Tooltip("風紋每秒捲過幾個畫面寬")]
@@ -349,18 +349,20 @@ public class StormBoostFX : MonoBehaviour
     }
 
     // ── 程式畫的貼圖 ─────────────────────────────────────────
+    /// <summary>★1010 實機：原本 512×128、風紋 40～280 格，拉滿畫面變成又粗又長的橫線（像掃描線）；
+    /// 改 1024×512、風紋 16～96 格（畫面上約 30～180 像素），細而短、數量多，看起來才像一道道被吹過去的沙。</summary>
     private static Texture2D MakeStreakTexture()
     {
-        const int W = 512, H = 128;
+        const int W = 1024, H = 512;
         float[] a = new float[W * H];
         System.Random r = new System.Random(1010);
-        for (int s = 0; s < 110; s++)
+        for (int s = 0; s < 650; s++)
         {
             int y = r.Next(H);
-            int len = 40 + r.Next(240);
+            int len = 16 + r.Next(80);
             int x0 = r.Next(W);
-            float k = 0.25f + 0.75f * (float)r.NextDouble();
-            int thick = r.NextDouble() < 0.3 ? 2 : 1;
+            float k = 0.2f + 0.8f * (float)r.NextDouble();
+            int thick = r.NextDouble() < 0.2 ? 2 : 1;
             for (int i = 0; i < len; i++)
             {
                 float u = i / (float)len;
