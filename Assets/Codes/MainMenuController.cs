@@ -234,8 +234,13 @@ public class MainMenuController : MonoBehaviour
             Vector3 probe = new Vector3(wp.x, wp.y, b.center.z);
             if (b.Contains(probe))
             {
-                float area = b.size.x * b.size.y;
-                if (area < bestArea) { bestArea = area; best = go; }
+                // 範圍有重疊時，選「點離自己中心最近」的那個（用範圍大小正規化）。
+                // 不能比面積：四個按鈕大小幾乎一樣，面積相同時會固定選到清單裡排最前面的，
+                // 結果點「設定」跑出「開始」、點「製作名單」跑出「設定」……整排往上錯一格。
+                float nx = (probe.x - b.center.x) / Mathf.Max(0.001f, b.extents.x);
+                float ny = (probe.y - b.center.y) / Mathf.Max(0.001f, b.extents.y);
+                float score = nx * nx + ny * ny;
+                if (score < bestArea) { bestArea = score; best = go; }
             }
             else
             {
@@ -277,13 +282,14 @@ public class MainMenuController : MonoBehaviour
     {
         b = default;
         bool has = false;
-        SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
-        if (sr != null) { b = sr.bounds; has = true; }
+        // 有碰撞框就用碰撞框（美術畫的點擊範圍，剛好框住按鈕）；沒有才用圖片範圍。
+        // 圖片本身帶透明邊，範圍會比按鈕大、跟隔壁按鈕重疊。
         Collider2D c2 = go.GetComponent<Collider2D>();
-        if (c2 != null)
+        if (c2 != null && c2.enabled) { b = c2.bounds; has = true; }
+        else
         {
-            if (has) b.Encapsulate(c2.bounds);
-            else { b = c2.bounds; has = true; }
+            SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+            if (sr != null) { b = sr.bounds; has = true; }
         }
         return has;
     }

@@ -158,15 +158,23 @@ public class RollingRockVisual : MonoBehaviour
         if (visualTransform == null || visualTransform == transform) return;
 
         Vector3 target = Vector3.zero;
-        if (slopePushVisualPull > 0.001f && !IsRollingBack && _pusher != null && IsBeingPushedByPlayer
-            && TryGetGroundNormal(out Vector3 n))
+
+        // ★1012 下滾（Rollback）時也要補償：石頭往下滾、押著玩家走，接觸的幾何跟上坡推石一模一樣
+        //   （圓碰到她碰撞框的頂部角，身體跟石頭之間留下一大塊空隙）。
+        //   原本下滾時補償直接關掉（!IsRollingBack），所以下滾時石頭看起來離她背後很遠。
+        //   下滾期間只要最近 0.35 秒內有碰到她，就用同一套補償（只動外觀，物理完全不動）。
+        bool pushedUp = !IsRollingBack && _pusher != null && IsBeingPushedByPlayer;
+        bool carriedDown = IsRollingBack && _rollbackPlayerRb != null && Time.time - _rollbackPlayerContactTime < 0.35f;
+        Transform other = pushedUp ? _pusher.transform : (carriedDown ? _rollbackPlayerRb.transform : null);
+
+        if (slopePushVisualPull > 0.001f && other != null && TryGetGroundNormal(out Vector3 n))
         {
             float angle = Vector3.Angle(Vector3.up, n);
             if (angle > 5f)
             {
                 // 沿坡面、朝玩家那一側（她在下坡側）
                 Vector3 tangent = new Vector3(n.y, -n.x, 0f).normalized;
-                float towardPlayer = Mathf.Sign(_pusher.transform.position.x - transform.position.x);
+                float towardPlayer = Mathf.Sign(other.position.x - transform.position.x);
                 if (Mathf.Sign(tangent.x) != towardPlayer) tangent = -tangent;
                 target = tangent * slopePushVisualPull * Mathf.Clamp01(angle / 35f);
             }
