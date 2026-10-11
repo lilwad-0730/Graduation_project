@@ -39,7 +39,7 @@ public class UpperCastleBalloonField : MonoBehaviour
     public float cardScreenMargin = 0.6f;
 
     [Header("音效")]
-    [Tooltip("吸收氣球時的嬰兒笑聲。目前是程式合成的暫代音檔，之後可以直接換成真的嬰兒笑聲")]
+    [Tooltip("吸收氣球時的嬰兒笑聲。目前是「嬰兒笑聲.mp3」裁出第 1.3~2.1 秒（第二段起伏），整理過頻率與音量、加了很淡的殘響")]
     public AudioClip laughClip;
     [Range(0f, 1f)] public float laughVolume = 0.9f;
     [Tooltip("每次笑聲音高隨機的幅度（±），避免連續吸收聽起來一模一樣")]

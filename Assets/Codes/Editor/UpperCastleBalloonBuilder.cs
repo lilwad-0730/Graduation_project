@@ -21,7 +21,7 @@ public static class UpperCastleBalloonBuilder
 {
     const string RootName = "UpperCastle_Balloons";
     const string SpriteDir = "Assets/Sprites/UpperCastleBalloons";
-    const string LaughPath = "Assets/Music/棉花堡/嬰兒笑聲_合成.wav";
+    const string LaughPath = "Assets/Music/棉花堡/嬰兒笑聲_吸收.wav";   // 由「嬰兒笑聲.mp3」裁 1.3~2.1 秒＋整理＋淡淡殘響而來
     const string FontPath = "Assets/TextMesh Pro/Msjh_SDF.asset";
 
     static readonly string[] ColorNames = { "peach", "rose", "butter", "sky", "lavender", "mint" };
