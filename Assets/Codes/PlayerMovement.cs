@@ -408,6 +408,13 @@ public class PlayerMovement : MonoBehaviour
              "必須大於 1，否則物理推玩家出石頭的速度會輸給下沉速度，玩家會陷進石頭裡穿出去")]
     public float underwaterDepenetrationFactor = 2.0f;
 
+    [Tooltip("underwater 以外的場景：前方障礙物在這個距離內就停止往它推擠 (防止強風/推力把玩家頂進石柱造成抖動)")]
+    public float landObstacleLookahead = 0.25f;
+
+    [Tooltip("只在 underwater 場景使用的前方障礙物偵測距離 (其餘場景一律用 Land Obstacle Lookahead)。\n" +
+             "設得太大時，玩家會在離石頭還有一段距離的地方就被擋下來，看起來像隔著一道空氣牆")]
+    public float underwaterObstacleLookahead = 0f;
+
     [HideInInspector] public float currentSwimStamina;
     [HideInInspector] public bool isSwimExhausted = false;
     private float exhaustionTimer = 0f;
@@ -1612,7 +1619,10 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 dir = directionX < 0f ? Vector3.left : Vector3.right;
         float normalSignNeeded = directionX < 0f ? 1f : -1f;
-        float rayLen = b.extents.x + 0.25f;
+        // 只有 underwater 場景用較短的偵測距離 (石頭密集，0.25 會讓玩家像被空氣牆擋住)；其餘場景維持原本的距離
+        bool isUnderwaterScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+            .IndexOf("underwater", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        float rayLen = b.extents.x + (isUnderwaterScene ? underwaterObstacleLookahead : landObstacleLookahead);
 
         // 多點高度取樣：石柱造型不規則，只掃兩點很容易剛好射空
         float[] heights = { -0.45f, -0.15f, 0.15f, 0.45f };
