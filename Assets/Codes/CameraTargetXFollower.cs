@@ -335,6 +335,27 @@ public class CameraTargetXFollower : MonoBehaviour
         return _appliedOrtho > 0f ? _appliedOrtho : currentOrthoSize;
     }
 
+    [Header("★1012 鏡頭模式切換／墜落")]
+    [Tooltip("鏡頭模式切換時，從舊畫面慢慢混到新畫面的最短秒數（0＝瞬間切）")]
+    public float modeSwitchBlendSeconds = 0.6f;
+    [Tooltip("墜落模式 Y 軸跟隨的平滑時間（秒）。越小越緊跟；高速下掉時鏡頭會落後約 速度×這個值 公尺")]
+    public float fallingSmoothTime = 0.08f;
+
+    private float _fallCamVel;
+    private int _fallCamFrame = -1;
+
+    [Tooltip("模式切換前後鏡頭距離超過這個值（公尺）就當成傳送／跳關，直接切，不混。混的話鏡頭會從舊地方慢慢掃過去，看起來像畫面亂跳")]
+    public float modeSwitchBlendMaxDistance = 18f;
+
+    private void BeginModeSwitchBlend(Vector3 fromPos, float fromOrtho)
+    {
+        if (modeSwitchBlendSeconds <= 0.01f) return;
+        float dist = Vector2.Distance(fromPos, transform.position);
+        if (dist > modeSwitchBlendMaxDistance) return;   // ★1012 傳送（例如跳崖白霧轉場搬到 100 多米外）要直接切過去
+        float dur = Mathf.Min(blendMaxSeconds, Mathf.Max(modeSwitchBlendSeconds, dist / Mathf.Max(1f, blendMaxSpeed)));
+        BeginBlend(fromPos, fromOrtho, dur);
+    }
+
     private void BeginBlend(Vector3 fromPos, float fromOrtho, float seconds)
     {
         if (seconds <= 0.01f) { _blendActive = false; return; }
@@ -763,15 +784,22 @@ public class CameraTargetXFollower : MonoBehaviour
         {
             currentMode = targetMode;
 
+            // ★1012 鏡頭模式切換（例如墜落通道 → 廢墟）原本是瞬間對齊，畫面會跳一下。
+            //   記下切換前的位置與大小，切換完再用 BeginBlend 慢慢混過去（混的過程每幀都夾背景範圍，不會破圖）。
+            Vector3 switchFromPos = transform.position;
+            float switchFromOrtho = CurrentOrtho();
+
             if (targetMode == CameraMode.Mario)
             {
                 ReacquireMarioCamera(playerPos);
+                BeginModeSwitchBlend(switchFromPos, switchFromOrtho);
                 return;
             }
             else if (targetMode == CameraMode.Falling)
             {
                 if (_vcam != null) _vcam.PreviousStateIsValid = false;
                 ApplyFallingModePosition(activeFallingBounds.Value, playerPos, true);
+                BeginModeSwitchBlend(switchFromPos, switchFromOrtho);
                 return;
             }
         }
@@ -852,13 +880,15 @@ public class CameraTargetXFollower : MonoBehaviour
         float shaftHalfWidth = fb.extents.x;
         float desiredOrtho = Mathf.Clamp(shaftHalfWidth / aspect, 10f, 18f);
 
+        bool firstCallThisFrame = _fallCamFrame != Time.frameCount;   // UpdatePosition 一幀會跑兩次（Update＋LateUpdate），平滑只推進一次
         if (instant || !Application.isPlaying)
         {
             currentOrthoSize = desiredOrtho;
+            _fallCamVel = 0f;
         }
-        else
+        else if (firstCallThisFrame)
         {
-            currentOrthoSize = Mathf.Lerp(currentOrthoSize, desiredOrtho, Time.deltaTime * 6f);
+            currentOrthoSize = Mathf.Lerp(currentOrthoSize, desiredOrtho, 1f - Mathf.Exp(-6f * Time.deltaTime));
         }
 
         float targetY = playerPos.y + fallingCameraYOffset;
@@ -881,9 +911,13 @@ public class CameraTargetXFollower : MonoBehaviour
         }
         else
         {
-            float verticalDiff = Mathf.Abs(playerPos.y - currentTargetY);
-            float currentSpeed = (verticalDiff > 4f) ? 28f : fallingFollowSpeed;
-            currentTargetY = Mathf.Lerp(currentTargetY, targetY, Time.deltaTime * currentSpeed);
+            // ★1012 原本「差距 >4 米就換成 28、否則 18」的追法，高速下掉時差距在 4 米上下來回跨過門檻，
+            //   追的速度一直切換，鏡頭一頓一頓。改成 SmoothDamp：單一連續的追法，沒有門檻，落後量穩定。
+            if (firstCallThisFrame)
+            {
+                currentTargetY = Mathf.SmoothDamp(currentTargetY, targetY, ref _fallCamVel, Mathf.Max(0.01f, fallingSmoothTime), Mathf.Infinity, Time.deltaTime);
+                _fallCamFrame = Time.frameCount;
+            }
         }
 
         transform.position = new Vector3(camX, currentTargetY, 0f);

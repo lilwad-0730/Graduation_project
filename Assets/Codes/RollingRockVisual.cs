@@ -149,9 +149,25 @@ public class RollingRockVisual : MonoBehaviour
     public float slopePushVisualPull = 0.7f;
 
     [Tooltip("補償量追上目標的平滑速度")]
-    public float slopePushVisualSmooth = 8f;
+    public float slopePushVisualSmooth = 12f;
+
+    [Header("★1012 視覺貼合（量真正的外觀空隙）")]
+    [Tooltip("打勾＝量石頭外觀到玩家身體外觀的實際空隙，補到剛好貼住；取消＝只用上面的固定補償量")]
+    public bool measureVisualGap = true;
+    [Tooltip("貼合後石頭外觀跟玩家身體的距離（公尺）。0＝剛好碰到，負數＝稍微蓋進去一點，正數＝留一點縫")]
+    public float visualGapTarget = 0.05f;
+    [Tooltip("最多往玩家方向拉多遠（公尺）。只動外觀，物理不動")]
+    public float visualTouchMaxPull = 2.4f;
+
+    [Tooltip("玩家身體（看得到的角色）的中心，相對玩家原點（pivot）的位置（公尺）。用來算「石頭外觀離身體還有多遠」。\n" +
+             "不用渲染器範圍：玩家根物件是不等比例縮放（1.59×1.78×3.15），渲染器範圍會被放得很大，量出來的空隙永遠是 0")]
+    public Vector2 bodyCenterOffset = new Vector2(-0.15f, -0.15f);
+    [Tooltip("玩家身體的半寬、半高（公尺）。角色外觀大約 1.6 寬 × 3.4 高，所以預設 0.8、1.7；想讓石頭更貼就調大、想留縫就調小")]
+    public Vector2 bodyHalfSize = new Vector2(0.8f, 1.7f);
 
     private Vector3 _visualPullWorld = Vector3.zero;
+    private Transform _lastPlayerTouch;       // ★1012 最近碰到的玩家（任何狀態）
+    private float _lastPlayerTouchTime = -999f;
 
     private void UpdateSlopePushVisualPull()
     {
@@ -163,20 +179,47 @@ public class RollingRockVisual : MonoBehaviour
         //   （圓碰到她碰撞框的頂部角，身體跟石頭之間留下一大塊空隙）。
         //   原本下滾時補償直接關掉（!IsRollingBack），所以下滾時石頭看起來離她背後很遠。
         //   下滾期間只要最近 0.35 秒內有碰到她，就用同一套補償（只動外觀，物理完全不動）。
+        // ★1012 再多一種：玩家「回頭」（不推了）、石頭自己順坡滾下來貼著她的那一段。
+        //   這一段既不是在推（IsBeingPushedByPlayer＝false）也不是失敗下滾（IsRollingBack＝false），
+        //   補償被歸零，石頭外觀瞬間退回碰撞球的位置，看起來離她背後很遠。
+        //   現在只要最近 0.35 秒內有碰到玩家（不管是推、下滾、還是回頭被追上），就用同一套補償。
         bool pushedUp = !IsRollingBack && _pusher != null && IsBeingPushedByPlayer;
         bool carriedDown = IsRollingBack && _rollbackPlayerRb != null && Time.time - _rollbackPlayerContactTime < 0.35f;
-        Transform other = pushedUp ? _pusher.transform : (carriedDown ? _rollbackPlayerRb.transform : null);
+        bool touchingPlayer = _lastPlayerTouch != null && Time.time - _lastPlayerTouchTime < 0.35f;
+        Transform other = pushedUp ? _pusher.transform : (carriedDown ? _rollbackPlayerRb.transform : (touchingPlayer ? _lastPlayerTouch : null));
 
-        if (slopePushVisualPull > 0.001f && other != null && TryGetGroundNormal(out Vector3 n))
+        if (slopePushVisualPull > 0.001f && other != null)
         {
-            float angle = Vector3.Angle(Vector3.up, n);
-            if (angle > 5f)
+            if (measureVisualGap)
             {
-                // 沿坡面、朝玩家那一側（她在下坡側）
-                Vector3 tangent = new Vector3(n.y, -n.x, 0f).normalized;
-                float towardPlayer = Mathf.Sign(other.position.x - transform.position.x);
-                if (Mathf.Sign(tangent.x) != towardPlayer) tangent = -tangent;
-                target = tangent * slopePushVisualPull * Mathf.Clamp01(angle / 35f);
+                // ★1012 量真正的外觀空隙，補到石頭外觀剛好貼住玩家身體（不管坡度、不管哪個狀態、不需要地面法線）。
+                //   原本固定補 slopePushVisualPull 公尺，補多補少都是猜的；改用渲染器範圍量又會被不等比例縮放放大成永遠 0。
+                //   現在用固定的身體範圍（bodyCenterOffset／bodyHalfSize，可在 Inspector 調）。
+                Vector3 bodyCenter = other.position + new Vector3(bodyCenterOffset.x, bodyCenterOffset.y, 0f);
+                Bounds body = new Bounds(bodyCenter, new Vector3(bodyHalfSize.x * 2f, bodyHalfSize.y * 2f, 2f));
+                Vector3 c = transform.position;               // 碰撞球位置（不含視覺補償）
+                c.z = body.center.z;
+                Vector3 toBody = body.ClosestPoint(c) - c;
+                toBody.z = 0f;
+                float dist = toBody.magnitude;
+                if (dist > 0.0001f)
+                {
+                    float gap = dist - radius;                 // 外觀空隙：圓邊到身體邊
+                    float amount = Mathf.Clamp(gap - visualGapTarget, 0f, visualTouchMaxPull);
+                    target = (toBody / dist) * amount;
+                }
+            }
+            else if (TryGetGroundNormal(out Vector3 n))
+            {
+                float angle = Vector3.Angle(Vector3.up, n);
+                if (angle > 5f)
+                {
+                    // 沿坡面、朝玩家那一側（她在下坡側）
+                    Vector3 tangent = new Vector3(n.y, -n.x, 0f).normalized;
+                    float towardPlayer = Mathf.Sign(other.position.x - transform.position.x);
+                    if (Mathf.Sign(tangent.x) != towardPlayer) tangent = -tangent;
+                    target = tangent * slopePushVisualPull * Mathf.Clamp01(angle / 35f);
+                }
             }
         }
 
@@ -571,6 +614,7 @@ public class RollingRockVisual : MonoBehaviour
         {
             PlayerMovement pm = collision.gameObject.GetComponent<PlayerMovement>();
             if (pm == null) pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
+            if (pm != null) { _lastPlayerTouch = pm.transform; _lastPlayerTouchTime = Time.time; }   // ★1012 視覺補償用
             // 編輯器內推石時一律記錄（0.5 秒一行，只在玩家按著前進時），不需要先去 Inspector 勾；打包後不會有
             if ((debugPushGapLog || Application.isEditor) && pm != null && !IsRollingBack && Mathf.Abs(pm.CurrentMoveInput) > 0.05f) LogPushGap(collision, pm);
             if (pm != null && rb != null && !rb.isKinematic)

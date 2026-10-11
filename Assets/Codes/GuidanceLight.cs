@@ -40,15 +40,15 @@ public class GuidanceLight : MonoBehaviour, IResettable
     [Tooltip("開啟後，除了原本的圓（量她碰撞盒最近的點），再加一個比較高的長方形範圍：站在地上、跳起來都碰得到。關掉＝只用原本的圓")]
     public bool useExtendedTouchRange = true;
     [Tooltip("長方形：她的碰撞盒左右邊離光球多近（米）")]
-    public float touchRangeX = 1.5f;
+    public float touchZoneX = 2.2f;
     [Tooltip("長方形：光球比她頭頂高多少以內還算碰到（米，跳起來頭碰光球的範圍）")]
-    public float touchRangeAbove = 2f;
+    public float touchZoneAbove = 3.8f;
     [Tooltip("長方形：光球比她腳底低多少以內還算碰到（米，光球貼近地面、她站在旁邊或跳過去）")]
-    public float touchRangeBelow = 1.5f;
+    public float touchZoneBelow = 2f;
     [Tooltip("備援（不看碰撞盒）：她的中心 X 離光球多近（米）。碰撞盒抓不到或偏掉時還能觸發")]
-    public float touchBackupRangeX = 1.5f;
+    public float touchBackupX = 1.8f;
     [Tooltip("備援：她的中心和光球的高度差不能超過多少（米）。這個限制讓不同高度的區域（例如棉花堡和廢墟）不會互相誤觸發")]
-    public float touchBackupMaxDeltaY = 3.5f;
+    public float touchBackupMaxDy = 5.2f;
 
     [Header("🔍 Scene 視窗可視化")]
     [Tooltip("是否在 Scene 視窗畫出每個路徑點的觸發範圍與行為標示")]
@@ -358,6 +358,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
             {
                 if (_touchCooldownWaypoint != currentWP)
                 {
+                    Debug.Log($"【光球】碰到 {currentWP.name}：玩家 ({player.position.x:F1}, {player.position.y:F1})、光球 ({transform.position.x:F1}, {transform.position.y:F1})");
                     AdvanceWaypoint(pm, true, useCloseup);
                 }
             }
@@ -436,7 +437,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     /// <summary>
     /// ★1010 她有沒有碰到光球：圓（她碰撞盒最近點 ≤ sphereRadius）、
-    /// 或長方形（左右 touchRangeX、頭頂上 touchRangeAbove、腳底下 touchRangeBelow，站地上和跳起來都涵蓋）、
+    /// 或長方形（左右 touchZoneX、頭頂上 touchZoneAbove、腳底下 touchZoneBelow，站地上和跳起來都涵蓋）、
     /// 或 X 備援（中心 X 靠近光球，而且高度差不大）。margin 是三種範圍一起放大的量（放開判定用）。
     /// 廢墟光球導演也呼叫這個，兩邊用同一套範圍。
     /// </summary>
@@ -451,15 +452,15 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             Bounds b = _playerCollider.bounds;
             float dx = Mathf.Max(b.min.x - lp.x, lp.x - b.max.x, 0f);
-            bool inX = dx <= touchRangeX + margin;
-            bool inUp = lp.y - b.max.y <= touchRangeAbove + margin;
-            bool inDown = b.min.y - lp.y <= touchRangeBelow + margin;
+            bool inX = dx <= touchZoneX + margin;
+            bool inUp = lp.y - b.max.y <= touchZoneAbove + margin;
+            bool inDown = b.min.y - lp.y <= touchZoneBelow + margin;
             if (inX && inUp && inDown) return true;
         }
 
         Vector3 pp = player.position;
-        return Mathf.Abs(pp.x - lp.x) <= touchBackupRangeX + margin
-            && Mathf.Abs(pp.y - lp.y) <= touchBackupMaxDeltaY + margin;
+        return Mathf.Abs(pp.x - lp.x) <= touchBackupX + margin
+            && Mathf.Abs(pp.y - lp.y) <= touchBackupMaxDy + margin;
     }
 
     private void AdvanceWaypoint(PlayerMovement pm, bool freezePlayer, bool useCloseup)

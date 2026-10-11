@@ -332,9 +332,98 @@ public class PlayerMovement : MonoBehaviour
         return t;
     }
 
+    // ════════════════════════════════════════════════════════
+    // ★1012 天空掉到廢墟：固定速度曲線（每次掉下去的時間都一樣）
+    // 原本是物理自由落體：起始速度取決於「傳送當下」與「碰到墜落通道那一刻」誰先誰後
+    // （SkyDive 給 -10，FallingBackground 又取 Min(目前, -8)），再加上剛體阻力 0.5、重力每個固定步長積分，
+    // 每次的終端速度與抵達時間都有落差；而且 Update 裡「位移超過 5 米＝瞬間移動」的判斷在
+    // 高速下掉時，只要卡一幀（>0.25 秒）就會誤判成傳送、把墜落鎖解掉。
+    // 做法：墜落期間速度完全由這裡決定——固定起始速度 → 固定加速度 → 固定終端速度，
+    // 接近地面時固定放慢到落地速度；關掉重力與阻力、打開內插，畫面才不會一格一格跳。
+    // ════════════════════════════════════════════════════════
+    [Header("★1012 廢墟墜落（固定速度曲線）")]
+    [Tooltip("天空掉到廢墟那段用固定速度曲線，每次墜落時間一樣。關掉＝回到原本的物理自由落體")]
+    public bool controlledRuinsFall = true;
+    [Tooltip("起始向下速度（米／秒），跟 SkyDiveTeleportTrigger 的 initialDownwardSpeed 對齊")]
+    public float ruinsFallStartSpeed = 10f;
+    [Tooltip("終端速度（米／秒）")]
+    public float ruinsFallTerminalSpeed = 20f;
+    [Tooltip("加速度（米／秒²）")]
+    public float ruinsFallAcceleration = 14f;
+    [Tooltip("離地面這麼近（米）開始放慢，落地才不會砸")]
+    public float ruinsFallBrakeDistance = 9f;
+    [Tooltip("落地前的速度（米／秒）")]
+    public float ruinsFallLandingSpeed = 6f;
+
+    private bool _controlledFall;
+    private float _controlledFallVy;
+    private float _savedDamping;
+    private RigidbodyInterpolation _savedInterpolation;
+    private bool _savedUseGravity = true;
+
+    private void BeginControlledFall()
+    {
+        if (!controlledRuinsFall || rb == null || rb.isKinematic || _controlledFall) return;
+        _controlledFall = true;
+        _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed);
+        _savedDamping = rb.linearDamping;
+        _savedInterpolation = rb.interpolation;
+        _savedUseGravity = rb.useGravity;
+        rb.linearDamping = 0f;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;   // 渲染時內插，高速下掉才平順
+        rb.useGravity = false;
+        rb.linearVelocity = new Vector3(0f, _controlledFallVy, 0f);
+        Debug.Log($"【墜落】開始固定速度墜落：起始 {ruinsFallStartSpeed:F0} → 終端 {ruinsFallTerminalSpeed:F0} 米／秒，位置 {transform.position.ToString("F1")}");
+    }
+
+    private void EndControlledFall(string why)
+    {
+        if (!_controlledFall) return;
+        _controlledFall = false;
+        if (rb != null)
+        {
+            rb.linearDamping = _savedDamping;
+            rb.interpolation = _savedInterpolation;
+            rb.useGravity = true;
+        }
+        Debug.Log($"【墜落】結束固定速度墜落（{why}），位置 {transform.position.ToString("F1")}");
+    }
+
+    private void ControlledFallStep()
+    {
+        if (rb == null || rb.isKinematic) { EndControlledFall("剛體不可用"); return; }
+        // 墜落旗標被別的流程清掉了（重生、傳送…）就交還物理
+        if (!_waitingForRuinsLanding) { EndControlledFall("墜落旗標已解除"); return; }
+
+        float dt = Time.fixedDeltaTime;
+        float target = -Mathf.Abs(ruinsFallTerminalSpeed);
+
+        // 離地面近就固定放慢到落地速度
+        Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
+        if (col != null)
+        {
+            Bounds b = col.bounds;
+            float reach = ruinsFallBrakeDistance + b.extents.y + 0.5f;
+            if (Physics.Raycast(b.center, Vector3.down, out RaycastHit hit, reach, ~0, QueryTriggerInteraction.Ignore)
+                && hit.collider != col && !hit.collider.transform.IsChildOf(transform))
+            {
+                float dist = Mathf.Max(0f, hit.distance - b.extents.y);
+                float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
+                target = -Mathf.Lerp(Mathf.Abs(ruinsFallLandingSpeed), Mathf.Abs(ruinsFallTerminalSpeed), k);
+            }
+        }
+
+        float rate = target < _controlledFallVy ? ruinsFallAcceleration : ruinsFallAcceleration * 2.5f;   // 加速慢慢來、減速稍快
+        _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
+        rb.useGravity = false;
+        rb.linearVelocity = new Vector3(0f, _controlledFallVy, 0f);
+    }
+
     [Header("★1011 廢墟墜落特寫還給玩家")]
     [Tooltip("落地後，鏡頭從光球特寫慢慢移回玩家身上要幾秒（0＝瞬間切回）")]
     public float ruinsIntroHandBackSeconds = 1.0f;
+    [Tooltip("★1012 墜落中鏡頭從玩家移到光球特寫的過渡時間（秒）")]
+    public float ruinsIntroCloseupBlendSeconds = 1.0f;
     
     private float currentAirTime = 0f;
 
@@ -585,7 +674,7 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         // 【防卡死】偵測瞬間移動 (例如：重生系統觸發)
         // ==========================================
-        if (Vector3.Distance(transform.position, _lastFramePos) > 5f)
+        if (!_controlledFall && Vector3.Distance(transform.position, _lastFramePos) > 5f)   // ★1012 高速墜落一幀就可能 >5 米，不是傳送
         {
             Debug.Log("【重生防卡死】偵測到玩家瞬間移動，強制解除所有 X 軸與墜落鎖定！");
             freezeHorizontal = false;
@@ -1733,6 +1822,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     public void WarpTo(Vector3 position)
     {
+        EndControlledFall("被傳送");   // ★1012 重生／傳送一律把物理還給剛體
         transform.position = position;
         if (rb != null)
         {
@@ -1803,6 +1893,7 @@ public class PlayerMovement : MonoBehaviour
             float currentDownSpeed = rb.linearVelocity.y;
             float targetDownSpeed = Mathf.Min(currentDownSpeed, -8f); // 至少維持 -8f 以上的向下加速衝力，絕不減速！
             rb.linearVelocity = new Vector3(0f, targetDownSpeed, 0f);
+            BeginControlledFall();   // ★1012 之後的速度完全由固定曲線決定
 
             // 關閉重生系統，避免掉落出畫面後被傳送回去
             PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
@@ -1860,6 +1951,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UnlockFallingControl(string reason)
     {
+        EndControlledFall("玩家已著地");   // ★1012
         bool wasRuinsLanding = _waitingForRuinsLanding;   // ★1011 先記下來，下面會清掉
         freezeHorizontal = false;
         isStrictLockingX = false;
@@ -1935,7 +2027,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (focus != null)
         {
-            CameraTargetXFollower.SetCameraOverride(focus, ruinsIntroCloseupLensSize);
+            // ★1012 鏡頭從跟著玩家慢慢移到光球特寫（不是瞬間切過去）
+            CameraTargetXFollower.SetCameraOverrideSmooth(focus, ruinsIntroCloseupLensSize, ruinsIntroCloseupBlendSeconds);
         }
         else
         {
@@ -2004,6 +2097,8 @@ public class PlayerMovement : MonoBehaviour
     // ==========================================
     private void FixedUpdate()
     {
+        if (_controlledFall) { ControlledFallStep(); return; }   // ★1012 墜落期間速度由固定曲線決定
+
         if (isUnderwater && rb != null && !rb.isKinematic)
         {
             // 確保重力開啟
