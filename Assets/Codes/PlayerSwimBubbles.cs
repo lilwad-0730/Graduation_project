@@ -19,8 +19,14 @@ public class PlayerSwimBubbles : MonoBehaviour
     public Vector2Int bubblesPerSpawn = new Vector2Int(2, 3);
     [Tooltip("氣泡大小 (最小; 最大，世界單位直徑)")]
     public Vector2 bubbleSize = new Vector2(0.12f, 0.4f);
-    [Tooltip("以主角中心為準，生成位置的左右/上下隨機散佈範圍")]
+    [Tooltip("生成位置相對主角中心的偏移 (X 左右、Y 上下、Z 前後；例如 Y 調大可讓氣泡從頭部附近冒出)")]
+    public Vector3 spawnOffset = Vector3.zero;
+    [Tooltip("勾選後 X 偏移會跟著主角面向翻轉 (正值 = 主角前方)")]
+    public bool offsetFollowsFacing = true;
+    [Tooltip("以主角中心 (加上偏移後) 為準，生成位置的左右/上下隨機散佈範圍")]
     public Vector2 spawnSpread = new Vector2(0.35f, 0.3f);
+    [Tooltip("同一次冒出的氣泡之間，生成高度 (Y) 至少相差這麼多，避免並排在同一高度")]
+    public float minVerticalGap = 0.3f;
     [Tooltip("生成位置的前後 (Z) 隨機範圍 (負值 = 朝鏡頭)")]
     public Vector2 depthRange = new Vector2(-0.4f, 0.2f);
 
@@ -134,8 +140,21 @@ public class PlayerSwimBubbles : MonoBehaviour
         if (!EnsureResources()) return;
 
         Vector3 center = (_col != null) ? _col.bounds.center : transform.position;
+        Vector3 offset = spawnOffset;
+        if (offsetFollowsFacing && _player != null && _player.FacingDirection.x < 0f) offset.x = -offset.x;
+        center += offset;
         float endY = transform.position.y + riseHeight;
         int count = Random.Range(bubblesPerSpawn.x, bubblesPerSpawn.y + 1);
+
+        // 讓同一批氣泡上下錯開：每顆比前一顆至少高 minVerticalGap，整批以主角中心為準上下置中
+        float[] yOffsets = new float[count];
+        float stackHeight = 0f;
+        for (int i = 1; i < count; i++)
+        {
+            stackHeight += minVerticalGap + Random.Range(0f, minVerticalGap * 0.5f);
+            yOffsets[i] = stackHeight;
+        }
+        float stackBase = Random.Range(-spawnSpread.y, spawnSpread.y) - stackHeight * 0.5f;
 
         for (int i = 0; i < count; i++)
         {
@@ -153,7 +172,7 @@ public class PlayerSwimBubbles : MonoBehaviour
                 material = mat,
                 origin = center + new Vector3(
                     Random.Range(-spawnSpread.x, spawnSpread.x),
-                    Random.Range(-spawnSpread.y, spawnSpread.y),
+                    stackBase + yOffsets[i],
                     Random.Range(depthRange.x, depthRange.y)),
                 endY = endY,
                 speed = Random.Range(riseSpeed.x, riseSpeed.y),
