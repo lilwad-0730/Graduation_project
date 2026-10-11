@@ -8,6 +8,9 @@ public class PlayerMovement : MonoBehaviour
     public float baseSpeed = 5f;       
     [Tooltip("抓取/拉動物件 (LeftShift) 的偵測距離 (可在 Inspector 自由調整)")]
     public float pullRange = 2.5f;
+    [Tooltip("往後拉動物件時的速度倍率：數值越小拉得越慢、物件感覺越重（1 = 不額外減速）")]
+    [Range(0.1f, 1f)]
+    public float pullSpeedMultiplier = 0.65f;
     [Tooltip("跳躍高度：數值越大跳越高（預設 5）")]
     public float jumpForce = 5f;
     
@@ -668,8 +671,10 @@ public class PlayerMovement : MonoBehaviour
 
                 moveInput = (actuallyFreeze || isCutsceneFrozen || IsHardCutsceneLocked) ? 0f : rawInput;
 
-                if (moveInput > 0.1f && !isStrictLockingX) facingDirection = Vector3.right;
-                if (moveInput < -0.1f && !isStrictLockingX) facingDirection = Vector3.left;
+                // 抓取物件中 (LeftShift) 鎖定面向：往後拉時保持面向物件倒退走，不轉身
+                bool isHoldingObject = pulledObject != null;
+                if (moveInput > 0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.right;
+                if (moveInput < -0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.left;
             }
         }
 
@@ -1038,6 +1043,12 @@ public class PlayerMovement : MonoBehaviour
             else
             {
                 finalSpeed = finalSpeed / 2f; // 備用方案
+            }
+
+            // 往後拉 (移動方向與面向相反) 時額外減速，凸顯物件重量
+            if (Mathf.Abs(moveInput) > 0.05f && moveInput * facingDirection.x < 0f)
+            {
+                finalSpeed *= pullSpeedMultiplier;
             }
         }
 
