@@ -432,7 +432,9 @@ public class EndCredits : MonoBehaviour
             {
                 yield return Wait(endingTailHold);
                 FinalEndingCleanup();
-                SceneManager.LoadScene(sceneAfterCredits);
+                // ★1011 回主選單統一走 GameFlow（會把這一輪留下來的狀態全部清掉，遊戲才能循環）
+                if (sceneAfterCredits == GameFlow.MenuSceneName) GameFlow.ReturnToMainMenu("結局名單結束");
+                else SceneManager.LoadScene(sceneAfterCredits);
                 yield break;
             }
         }

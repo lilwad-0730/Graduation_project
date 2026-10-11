@@ -30,6 +30,18 @@ public static class PlayerCutsceneHold
     private static float _savedAnimSpeed = 1f;
     private static bool _animFrozen;
 
+    /// <summary>
+    /// ★1011 一輪結束／回主選單時整個清掉（玩家物件換場景會被銷毀，沒有人會再呼叫 Release，計數就永遠不歸零）。
+    /// 不動任何物件的狀態——舊玩家已經不在了，沒有東西需要還原。
+    /// </summary>
+    public static void ResetAll()
+    {
+        _count = 0;
+        _animFrozen = false;
+        _savedAnimSpeed = 1f;
+        _pm = null; _rb = null; _anim = null;
+    }
+
     /// <summary>目前有沒有人抓著玩家。</summary>
     public static bool IsHeld => _count > 0;
 

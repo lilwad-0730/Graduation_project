@@ -34,6 +34,11 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
     public float noProgressSeconds = 2.5f;
     [Tooltip("C：這段時間內移動少於幾公尺算沒移動")]
     public float noProgressDistance = 0.3f;
+    [Header("★1011 被夾住（四面都貼著東西）快速救援")]
+    [Tooltip("上下左右四個方向都貼著碰撞體、又按著方向鍵沒移動，這麼多秒就救。比 noProgressSeconds 短：四面都擋住＝真的出不去，不用再等 2.5 秒")]
+    public float pinnedNoProgressSeconds = 0.8f;
+    [Tooltip("判斷『貼著』的距離（公尺）")]
+    public float pinnedProbeDistance = 0.12f;
     [Tooltip("記錄安全位置的間隔（秒）")]
     public float safeRecordInterval = 0.25f;
     [Tooltip("救援時退回幾秒前的安全位置（太近的話她還按著方向鍵會馬上又穿進去）")]
@@ -200,11 +205,18 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
             _noProgressTime = 0f;
         }
 
+        // ★1011 四面都被擋住＝真的被夾住（不是只有往牆的方向被擋，還有別的方向可以游走），不用等滿 noProgressSeconds
+        bool pinned = false;
+        string blockedSides = "";
+        if (around != null && pressing && _noProgressTime >= pinnedNoProgressSeconds)
+            pinned = IsPinnedOnAllSides(out blockedSides);
+
         string reason = null;
         Collider rock = null;
         if (_embeddedTime >= embeddedSeconds) { reason = $"身體插在石頭裡超過 {embeddedSeconds} 秒"; rock = embedded; }
         else if (_shellCount >= 2) { reason = "被包在石頭殼裡面"; rock = shell; }
-        else if (_noProgressTime >= noProgressSeconds) { reason = $"在石頭範圍內按著方向鍵 {noProgressSeconds} 秒沒移動"; rock = around; }
+        else if (pinned) { reason = $"上下左右四面都被擋住（被夾住），按著方向鍵 {_noProgressTime:F1} 秒沒移動"; rock = around; }
+        else if (_noProgressTime >= noProgressSeconds) { reason = $"在石頭範圍內按著方向鍵 {noProgressSeconds} 秒沒移動（還有別的方向可以走：{DescribeFreeSides()}）"; rock = around; }
 
         if (reason != null)
         {
@@ -265,6 +277,46 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
             }
         }
         return false;
+    }
+
+    private static readonly Vector3[] SideDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right };
+    private static readonly string[] SideNames = { "上", "下", "左", "右" };
+    private string _lastFreeSides = "";
+
+    /// <summary>
+    /// ★1011 上、下、左、右四個方向，玩家的碰撞盒往外 pinnedProbeDistance 公尺內是不是都有東西（非觸發、不是自己）。
+    /// 四面都有＝被夾住，按什麼方向都出不去。同時記下哪幾面是空的（寫進救援 log 用）。
+    /// </summary>
+    private bool IsPinnedOnAllSides(out string blocked)
+    {
+        Bounds b = _playerCollider.bounds;
+        Vector3 half = b.extents - Vector3.one * 0.02f;
+        half.x = Mathf.Max(0.05f, half.x); half.y = Mathf.Max(0.05f, half.y); half.z = Mathf.Max(0.05f, half.z);
+
+        int blockedCount = 0;
+        blocked = "";
+        string free = "";
+        for (int i = 0; i < SideDirs.Length; i++)
+        {
+            bool hit = false;
+            foreach (RaycastHit h in Physics.BoxCastAll(b.center, half, SideDirs[i], Quaternion.identity, pinnedProbeDistance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (h.collider == null || h.collider == _playerCollider || h.collider.transform.IsChildOf(transform)) continue;
+                hit = true;
+                break;
+            }
+            if (hit) { blockedCount++; blocked += SideNames[i]; }
+            else free += SideNames[i];
+        }
+        _lastFreeSides = free;
+        return blockedCount == SideDirs.Length;
+    }
+
+    private string DescribeFreeSides()
+    {
+        // 沒有量過（還沒到 pinned 檢查時間）就現在量一次，只為了寫進 log
+        IsPinnedOnAllSides(out _);
+        return string.IsNullOrEmpty(_lastFreeSides) ? "無" : _lastFreeSides;
     }
 
     /// <summary>玩家中心落在哪一顆石頭的範圍（外框）內。</summary>
@@ -339,7 +391,17 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
 
     private void Rescue(Collider rock, string reason)
     {
-        string rockName = rock != null ? rock.gameObject.name : "未知";
+        // 碰撞是掛在 RockPlaneCollider 子物件上的，名字都一樣，真正要找的是它的父物件（石頭本體）
+        string rockName = "未知";
+        string rockInfo = "";
+        if (rock != null)
+        {
+            Transform rt = rock.transform;
+            string parentName = rt.parent != null ? rt.parent.name : "（無父物件）";
+            rockName = rock.gameObject.name + "（石頭本體：" + parentName + "）";
+            Bounds rb2 = rock.bounds;
+            rockInfo = $"  石頭位置：{rt.position}　範圍 x {rb2.min.x:F1}~{rb2.max.x:F1}、y {rb2.min.y:F1}~{rb2.max.y:F1}\n";
+        }
         Vector3 current = transform.position;
         string context = $"  原因：{reason}\n" +
                          $"  卡住位置：{current}\n" +
@@ -347,7 +409,8 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
                          $"  按鍵：{(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) ? "上 " : "")}" +
                          $"{(Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? "下 " : "")}" +
                          $"{(Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) ? "左 " : "")}" +
-                         $"{(Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) ? "右" : "")}";
+                         $"{(Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) ? "右" : "")}\n" +
+                         rockInfo;
 
         bool rescuedRecently = Time.time - _lastRescueTime < 3f;
         _lastRescueTime = Time.time;
@@ -366,7 +429,7 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
                 transform.position = target;
                 if (_rb != null) { _rb.position = target; _rb.linearVelocity = Vector3.zero; }
             }
-            Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，已放回較早的有效安全位置。\n" +
+            Debug.LogWarning($"[卡石救援] 玩家卡在石頭「{rockName}」，已放回較早的有效安全位置。\n" +
                            $"  救援位置：{target}\n" +
                            $"  救援距離：{moved:F2}m（門檻 {rescueMinDistance:F2}m）\n" +
                            $"{context}");

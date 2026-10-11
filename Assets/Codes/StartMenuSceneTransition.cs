@@ -27,6 +27,7 @@ public sealed class StartMenuSceneTransition : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (MainMenuController.OwnsClicks) return;   // ★1011 點擊由 MainMenuController 統一偵測
         BeginTransition();
     }
 
@@ -53,27 +54,21 @@ public sealed class StartMenuSceneTransition : MonoBehaviour
         }
 
         transitionRequested = true;
-        PrepareNewGameRun();
+        GameFlow.StartNewRun();   // ★1011 新的一輪：上一輪留下來的狀態統一在這裡清掉
 
         Collider2D buttonCollider = GetComponent<Collider2D>();
         if (buttonCollider != null)
             buttonCollider.enabled = false;
 
         transitioner.LoadScene(targetSceneName, transitionEffect);
-    }
 
-    private static void PrepareNewGameRun()
-    {
-        Time.timeScale = 1f;
-        BookTransitionManager.ResetTransientState();
-        EndCredits.EndingMode = false;
-        PlayerRespawnSystem.IsAnyRespawning = false;
-        MirrorWallAbsorbCutscene.IsAnyCutsceneRunning = false;
-
-        StoryCardPlayer storyCardPlayer = FindAnyObjectByType<StoryCardPlayer>();
-        if (storyCardPlayer != null)
+        // ★1011 轉場器如果正「卡在轉場中」會直接忽略這次呼叫，按鈕卻已經被關掉＝永遠按不動。
+        //   沒有真的開始轉場就把按鈕還原，讓玩家可以再按一次。
+        if (!transitioner.IsTransitioning)
         {
-            storyCardPlayer.ReleaseCurtain();
+            Debug.LogWarning("[StartMenuSceneTransition] 轉場器沒有開始轉場（可能被忽略），按鈕還原，可以再按一次。", this);
+            transitionRequested = false;
+            if (buttonCollider != null) buttonCollider.enabled = true;
         }
     }
 }

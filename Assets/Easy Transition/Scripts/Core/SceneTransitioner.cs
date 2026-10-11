@@ -135,9 +135,35 @@ namespace PixeLadder.EasyTransition
             StartTransitionRoutine(null, -1, onMidPoint, effect);
         }
 
+        // ★1011 防呆：轉場被打斷（例如直接 LoadScene、timeScale 卡 0）時，IsTransitioning 會永遠是 true，
+        //   之後所有 LoadScene 都被這行吃掉＝「按鈕按了沒反應」。超過 stuckTimeoutSeconds 就當作卡死，強制放行。
+        private float transitionStartRealtime = -999f;
+        private const float StuckTimeoutSeconds = 20f;
+
+        /// <summary>★1011 強制結束目前的轉場狀態（回主選單時呼叫）：停掉協程、蓋住畫面的圖關掉、不再擋點擊。</summary>
+        public void ForceReset()
+        {
+            StopAllCoroutines();
+            IsTransitioning = false;
+            if (transitionImageInstance != null) transitionImageInstance.gameObject.SetActive(false);
+            if (canvasGroup != null) canvasGroup.blocksRaycasts = false;
+        }
+
+        /// <summary>★1011 轉場已經進行超過 minAgeSeconds 秒還沒結束，才強制重置（正常的轉場收尾不會被打斷）。</summary>
+        public void ResetIfStuck(float minAgeSeconds)
+        {
+            if (IsTransitioning && Time.unscaledTime - transitionStartRealtime > minAgeSeconds) ForceReset();
+        }
+
         private void StartTransitionRoutine(string sceneName, int sceneIndex, Action midPointAction, TransitionEffect effect)
         {
-            if (IsTransitioning) return;
+            if (IsTransitioning)
+            {
+                if (Time.unscaledTime - transitionStartRealtime < StuckTimeoutSeconds) return;
+                Debug.LogWarning("[SceneTransitioner] 上一次轉場超過 " + StuckTimeoutSeconds + " 秒還沒結束，判定卡死，強制重置後繼續。", this);
+                ForceReset();
+            }
+            transitionStartRealtime = Time.unscaledTime;
 
             TransitionEffect usedEffect = effect != null ? effect : defaultTransition;
             if (usedEffect == null)

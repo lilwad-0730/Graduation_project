@@ -110,9 +110,33 @@ public class SceneTransitionController : MonoBehaviour
         }
     }
 
+    private float _transitionStartRealtime = -999f;
+    private const float StuckTimeoutSeconds = 20f;
+
+    /// <summary>★1011 強制結束轉場狀態（回主選單時呼叫）：碎片收起來、不再擋住新的轉場。</summary>
+    public void ForceReset()
+    {
+        StopAllCoroutines();
+        _isTransitioning = false;
+        HideShards();
+    }
+
+    /// <summary>★1011 轉場已經進行超過 minAgeSeconds 秒還沒結束，才強制重置（正常的轉場收尾不會被打斷）。</summary>
+    public void ResetIfStuck(float minAgeSeconds)
+    {
+        if (_isTransitioning && Time.unscaledTime - _transitionStartRealtime > minAgeSeconds) ForceReset();
+    }
+
     public void TransitionToScene(string targetSceneName)
     {
-        if (_isTransitioning) return;
+        if (_isTransitioning)
+        {
+            // ★1011 轉場被打斷（直接 LoadScene 等）會讓這個旗標永遠是 true，之後所有轉場都被吃掉。超時就強制放行。
+            if (Time.unscaledTime - _transitionStartRealtime < StuckTimeoutSeconds) return;
+            Debug.LogWarning("[SceneTransitionController] 上一次轉場超過 " + StuckTimeoutSeconds + " 秒還沒結束，判定卡死，強制重置後繼續。");
+            ForceReset();
+        }
+        _transitionStartRealtime = Time.unscaledTime;
 
         if (string.IsNullOrWhiteSpace(targetSceneName))
         {

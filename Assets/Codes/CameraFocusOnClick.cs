@@ -10,6 +10,13 @@ public sealed class CameraFocusOnClick : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
+        if (MainMenuController.OwnsClicks) return;   // ★1011 點擊由 MainMenuController 統一偵測
+        Focus();
+    }
+
+    /// <summary>★1011 把鏡頭移到 focusTarget。滑鼠點擊與鍵盤操作（MainMenuController）都走這一個。</summary>
+    public void Focus()
+    {
         if (targetCamera == null || focusTarget == null)
         {
             return;

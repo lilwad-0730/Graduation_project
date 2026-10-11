@@ -294,6 +294,41 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("角色離開地面後，延遲幾秒才允許播放 Falling 動畫 (避免走過小顛簸時一直閃爍掉落動畫)")]
     public float fallAnimationDelay = 0.15f;
 
+    [Tooltip("★1011 跳起來之後，落下動畫要比『一般跳躍從起跳到落地的時間』再晚幾秒才出現（這個時間由跳躍力、重力、阻力自動算出來）。0＝不特別延後，照 fallAnimationDelay")]
+    public float jumpFallAnimExtraDelay = 0.3f;
+
+    [Tooltip("★1011 落下動畫的條件要連續成立多久才切過去（秒，防止速度在門檻上下抖動時閃一下）")]
+    public float fallAnimDebounceSeconds = 0.1f;
+    [Tooltip("★1011 進入／離開落下動畫的淡入淡出時間（秒，0＝硬切）")]
+    public float fallAnimBlendSeconds = 0.12f;
+    private float _fallCandidateTime = 0f;
+
+    // 一般（平地）跳躍的滯空時間：用跳躍力、重力、剛體阻力模擬出來，數值沒變就不重算
+    private float _cachedJumpAirTime;
+    private float _cachedJumpKeyForce = -1f, _cachedJumpKeyGravity = -1f, _cachedJumpKeyDamping = -1f;
+
+    private float GetExpectedJumpAirTime()
+    {
+        float g = Mathf.Abs(Physics.gravity.y);
+        float damping = rb != null ? rb.linearDamping : 0f;
+        if (Mathf.Approximately(_cachedJumpKeyForce, jumpForce) && Mathf.Approximately(_cachedJumpKeyGravity, g) && Mathf.Approximately(_cachedJumpKeyDamping, damping))
+            return _cachedJumpAirTime;
+
+        float dt = Mathf.Max(0.005f, Time.fixedDeltaTime);
+        float v = jumpForce, y = 0f, t = 0f;
+        for (int i = 0; i < 1000; i++)
+        {
+            v -= g * dt;
+            v *= Mathf.Clamp01(1f - damping * dt);
+            y += v * dt;
+            t += dt;
+            if (i > 2 && y <= 0f) break;
+        }
+        _cachedJumpKeyForce = jumpForce; _cachedJumpKeyGravity = g; _cachedJumpKeyDamping = damping;
+        _cachedJumpAirTime = t;
+        return t;
+    }
+
     [Header("★1011 廢墟墜落特寫還給玩家")]
     [Tooltip("落地後，鏡頭從光球特寫慢慢移回玩家身上要幾秒（0＝瞬間切回）")]
     public float ruinsIntroHandBackSeconds = 1.0f;
@@ -859,7 +894,20 @@ public class PlayerMovement : MonoBehaviour
             string targetAnim = "Idle";
 
             // 判斷是否應該播放墜落動畫 (加入了延遲時間與掉落速度的容錯閥值)
-            bool isFalling = !isGrounded && (currentAirTime >= fallAnimationDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
+            // ★1011 跳起來的那一段（isJumping）：落下動畫要比「一般跳躍從起跳到落地的時間」再晚一點才出現，
+            //   所以普通跳躍落地前不會突然切成落下動畫；從高處掉下去、滯空更久時才會播。
+            //   沒跳（走下平台邊緣）照 fallAnimationDelay。
+            float fallDelay = fallAnimationDelay;
+            if (isJumping && jumpFallAnimExtraDelay > 0f)
+            {
+                fallDelay = Mathf.Max(fallDelay, GetExpectedJumpAirTime() + jumpFallAnimExtraDelay);
+            }
+            bool rawFalling = !isGrounded && (currentAirTime >= fallDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
+
+            // ★1011 防抖：條件要連續成立 fallAnimDebounceSeconds 秒才真的切成落下動畫（速度剛好在門檻上下抖動時不會閃一下）；
+            //   一落地（或條件消失）馬上放掉，落地不拖。
+            _fallCandidateTime = rawFalling ? _fallCandidateTime + Time.deltaTime : 0f;
+            bool isFalling = rawFalling && _fallCandidateTime >= fallAnimDebounceSeconds;
 
             // 判斷是否有水平速度或輸入
             bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
@@ -925,7 +973,18 @@ public class PlayerMovement : MonoBehaviour
             {
                 try
                 {
-                    animator.Play(targetAnim);
+                    // ★1011 進出落下動畫用淡入淡出（原本是硬切，姿勢瞬間跳一下，看起來像抽筋）；其他動畫維持原本的直接切換
+                    bool involvesFalling = targetAnim == "Falling" || currentAnimState == "Falling";
+                    if (involvesFalling && fallAnimBlendSeconds > 0.001f)
+                    {
+                        if (targetAnim == "Falling")
+                            Debug.Log("【落下動畫】開始：滯空 " + currentAirTime.ToString("F2") + " 秒、垂直速度 " + rb.linearVelocity.y.ToString("F1") + "、起跳過=" + isJumping + "、位置 " + transform.position.ToString("F1"));
+                        animator.CrossFadeInFixedTime(targetAnim, fallAnimBlendSeconds, 0);
+                    }
+                    else
+                    {
+                        animator.Play(targetAnim);
+                    }
                     currentAnimState = targetAnim;
                 }
                 catch (System.Exception e)

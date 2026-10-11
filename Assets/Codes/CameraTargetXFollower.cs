@@ -307,10 +307,19 @@ public class CameraTargetXFollower : MonoBehaviour
         Vector3 fromPos = Instance.transform.position;
         float fromOrtho = Instance.CurrentOrtho();
         ClearCameraOverride();   // 裡面會瞬間對齊玩家，下面馬上把鏡頭放回特寫的位置，再慢慢過去
-        Instance.BeginBlend(fromPos, fromOrtho, seconds);
+
+        // 距離很遠（例如光球飛到 P14 再回玩家，上百米）時拉長時間，鏡頭掃過去的速度不超過 blendMaxSpeed
+        float dist = Vector2.Distance(fromPos, Instance.transform.position);
+        float dur = Mathf.Min(blendMaxSeconds, Mathf.Max(seconds, dist / Mathf.Max(1f, blendMaxSpeed)));
+        Instance.BeginBlend(fromPos, fromOrtho, dur);
     }
 
     // ── ★1011 鏡頭過渡（疊在原本各模式算出來的位置與大小上，從舊的位置慢慢混到新的）──
+    /// <summary>過渡時鏡頭移動速度上限（米／秒）。距離遠就自動拉長過渡時間。</summary>
+    public static float blendMaxSpeed = 45f;
+    /// <summary>過渡時間上限（秒）。</summary>
+    public static float blendMaxSeconds = 3f;
+
     private bool _blendActive;
     private float _blendElapsed;
     private float _blendDuration;
@@ -356,8 +365,20 @@ public class CameraTargetXFollower : MonoBehaviour
         float k = Mathf.Clamp01(_blendElapsed / Mathf.Max(0.01f, _blendDuration));
         float e = k * k * (3f - 2f * k);   // SmoothStep：起步與收尾都柔和
         Vector3 target = transform.position;
-        transform.position = new Vector3(Mathf.Lerp(_blendFromPos.x, target.x, e), Mathf.Lerp(_blendFromPos.y, target.y, e), target.z);
-        RawApplyOrtho(Mathf.Lerp(_blendFromOrtho, _appliedOrtho > 0f ? _appliedOrtho : currentOrthoSize, e));
+        float ortho = Mathf.Lerp(_blendFromOrtho, _appliedOrtho > 0f ? _appliedOrtho : currentOrthoSize, e);
+        float bx = Mathf.Lerp(_blendFromPos.x, target.x, e);
+        float by = Mathf.Lerp(_blendFromPos.y, target.y, e);
+        // ★過渡中途的位置不是「兩端點各自夾過」就保證安全（背景面板高低不同，中間可能露出背景外面＝破圖）。
+        //   每一幀都用目前的大小與位置再夾一次背景範圍。
+        if (enableHorizontalBoundaryClamp && k < 1f)
+        {
+            Vector3 mid = new Vector3(bx, by, 0f);
+            ortho = FitOrthoToBackground(ortho, mid);
+            bx = GetClampedX(bx, ortho, by);
+            by = GetClampedY(by, ortho, new Vector3(bx, by, 0f));
+        }
+        transform.position = new Vector3(bx, by, target.z);
+        RawApplyOrtho(ortho);
         if (k >= 1f) _blendActive = false;
     }
 

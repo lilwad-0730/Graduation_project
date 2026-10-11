@@ -10,16 +10,19 @@ public sealed class QuitGameOnClick : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (MainMenuController.OwnsClicks) return;   // ★1011 點擊由 MainMenuController 統一偵測
+        Activate();
+    }
+
+    /// <summary>★1011 離開遊戲。滑鼠點擊與鍵盤操作（MainMenuController）都走這一個。</summary>
+    public void Activate()
+    {
         if (quitPanel != null)
         {
             quitPanel.OpenPanel();
             return;
         }
 
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        GameFlow.QuitApplication();
     }
 }
