@@ -102,6 +102,11 @@ public class UpperCastleFloorController : MonoBehaviour
 
     private void OnValidate()
     {
+#if UNITY_EDITOR
+        // ★打包期間 Unity 會對場景物件跑 OnValidate；這裡會新增元件、改 Tag、建物件，
+        //   在打包寫場景資料的過程中動場景，輸出的場景檔可能壞掉（exe 讀 level1 時報 corrupted）。打包時不動。
+        if (UnityEditor.BuildPipeline.isBuildingPlayer) return;
+#endif
         EnsureAllColliders();
     }
 
