@@ -193,7 +193,16 @@ public class WaterOasisTransition : MonoBehaviour, IResettable
 
         string targetScene = nextSceneName.Trim();
         Debug.Log($"【綠洲轉場】下沉完畢，開始載入場景: '{targetScene}'，目標出生點物件為：'{targetSpawnPointName}'");
-        SceneManager.LoadScene(targetScene);
+        // ★改用非同步載入：水下場景很大（上百顆石頭、近 300MB 貼圖），同步載入會讓視窗整個卡住、
+        //   Windows 跳出「沒有回應」（exe 才會發生，編輯器裡資源已在記憶體所以沒感覺）。
+        //   非同步載入時視窗持續有回應，畫面維持全黑直到新場景好。
+        AsyncOperation load = SceneManager.LoadSceneAsync(targetScene);
+        if (load == null)
+        {
+            SceneManager.LoadScene(targetScene);
+            yield break;
+        }
+        while (!load.isDone) yield return null;
     }
 
     private void CreateFadeImage()
