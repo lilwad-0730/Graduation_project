@@ -302,7 +302,9 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         // 6. 載入場景
         try
         {
-            SceneManager.LoadScene(targetScene);
+            // ★非同步載入，避免大場景（水下）同步載入時視窗卡死、跳「沒有回應」；畫面此時已是全黑
+            AsyncOperation load = SceneManager.LoadSceneAsync(targetScene);
+            if (load == null) SceneManager.LoadScene(targetScene);
         }
         catch (System.Exception ex)
         {
