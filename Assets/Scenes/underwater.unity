@@ -5517,7 +5517,7 @@ MonoBehaviour:
   sfxVolume: 0.85
   sfxCooldown: 15
   autoCreateSilhouetteIfEmpty: 1
-  standinScale: {x: 9.2, y: 2.9, z: 2.9}
+  standinScale: {x: 16.64, y: 5.2, z: 5.2}
 --- !u!4 &336913238
 Transform:
   m_ObjectHideFlags: 0
