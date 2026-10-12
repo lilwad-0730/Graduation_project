@@ -5502,7 +5502,7 @@ MonoBehaviour:
   - {fileID: 1863569188}
   - {fileID: 495227859}
   reachDistance: 2.5
-  waypointWaitTime: 0.5
+  waypointWaitTime: 0
   strictProximityLock: 1
   playerProximityRadius: 25
   depthBiasWeight: 5

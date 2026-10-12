@@ -56,6 +56,16 @@ public class BackgroundShadowCreature : MonoBehaviour
     [Range(0.5f, 6f)]
     public float turnSpeed = 1.8f;
 
+    [Tooltip("★轉向用多久（秒）。它不會翻面，而是像真的生物一樣身體慢慢轉過去（先對著鏡頭／背對鏡頭再轉到另一邊）。越大越緩")]
+    [Range(0.4f, 4f)]
+    public float turnSmoothSeconds = 1.6f;
+
+    [Tooltip("轉向的最大角速度（度/秒），避免巨獸轉太急")]
+    public float maxTurnDegPerSecond = 60f;
+
+    [Tooltip("上下俯仰的最大角度（度）")]
+    public float maxPitchDeg = 28f;
+
     [Tooltip("固定景深 Z 座標 (確保位於背景層，建議 6 ~ 18)")]
     public float fixedZ = 10f;
 
@@ -84,6 +94,11 @@ public class BackgroundShadowCreature : MonoBehaviour
     [Tooltip("佔位黑影的長度與大小")]
     public Vector3 standinScale = new Vector3(16.64f, 5.2f, 5.2f);
 
+    private float _yaw;            // 0＝朝 +X，180＝朝 -X；轉向時從中間 90（對著／背著鏡頭）轉過去，不會翻面
+    private float _yawVel;
+    private float _pitch;
+    private float _pitchVel;
+    private bool _headingInited;
     private int _currentWaypointIndex = 0;
     private int _pingPongDirection = 1;
     private bool _isWaiting = false;
@@ -153,8 +168,32 @@ public class BackgroundShadowCreature : MonoBehaviour
             {
                 moveDir.Normalize();
 
-                Quaternion targetRot = Quaternion.LookRotation(moveDir, Vector3.up);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * turnSpeed);
+                // ── 朝向：目標在左或右決定要朝 +X 還是 -X（有遲滯，避免目標剛好在正上下方時左右猶豫）──
+                if (!_headingInited)
+                {
+                    _yaw = moveDir.x >= 0f ? 0f : 180f;
+                    _headingInited = true;
+                }
+                float yawGoal = _yaw >= 90f ? 180f : 0f;
+                if (_yaw < 90f && moveDir.x < -0.25f) yawGoal = 180f;
+                else if (_yaw >= 90f && moveDir.x > 0.25f) yawGoal = 0f;
+                else yawGoal = (_yaw >= 90f) ? 180f : 0f;
+
+                // 平滑轉向（SmoothDamp：起轉、收尾都柔和；角度不繞圈，永遠經過 90 度那一側）
+                _yaw = Mathf.SmoothDamp(_yaw, yawGoal, ref _yawVel, turnSmoothSeconds, maxTurnDegPerSecond);
+
+                float pitchGoal = Mathf.Clamp(Mathf.Atan2(moveDir.y, Mathf.Max(0.5f, Mathf.Abs(moveDir.x) * 4f)) * Mathf.Rad2Deg, -maxPitchDeg, maxPitchDeg);
+                _pitch = Mathf.SmoothDamp(_pitch, pitchGoal, ref _pitchVel, turnSmoothSeconds * 0.8f, 40f);
+
+                // 模型朝 +Z：yaw = 90 − 朝向角；仰角往上時 X 軸旋轉為負
+                transform.rotation = Quaternion.Euler(-_pitch, 90f - _yaw, 0f);
+
+                // ── 前進：順著「現在的朝向」游，不再直接朝目標硬衝（轉向中會自然劃出弧線）──
+                float yr = _yaw * Mathf.Deg2Rad;
+                Vector3 heading = new Vector3(Mathf.Cos(yr), Mathf.Tan(_pitch * Mathf.Deg2Rad) * Mathf.Abs(Mathf.Cos(yr)), 0f);
+                Vector3 swim = heading * swimSpeed;
+                // 往目標靠的修正量，避免只順著朝向游而偏離路徑點太遠
+                swim += (Vector3)new Vector3(0f, moveDir.y * swimSpeed * 0.35f, 0f);
 
                 float waveOffset = 0f;
                 if (enableWaveMotion)
@@ -163,14 +202,15 @@ public class BackgroundShadowCreature : MonoBehaviour
                     waveOffset = Mathf.Sin(_waveTimer) * waveAmplitude;
                 }
 
-                Vector3 stepMove = moveDir * (swimSpeed * Time.deltaTime);
-                Vector3 nextPos = currentPos + stepMove;
+                Vector3 nextPos = currentPos + swim * Time.deltaTime;
                 nextPos.y += waveOffset * Time.deltaTime;
                 nextPos.z = fixedZ;
                 transform.position = nextPos;
             }
 
-            if (distToTarget <= reachDistance)
+            // 巨獸身體長，到點的判定隨身長放大，才不會繞著小點打轉、看起來猶豫
+            float reach = Mathf.Max(reachDistance, _eelLength * 0.35f);
+            if (distToTarget <= reach)
             {
                 StartCoroutine(WaypointReachedRoutine());
             }
@@ -273,6 +313,10 @@ public class BackgroundShadowCreature : MonoBehaviour
                 Transform wp = waypoints[wpIdx];
                 float depthFactor = (maxY - wp.position.y) / yRange; // 越深越大
                 float w = 1.0f + depthFactor * depthBiasWeight;
+                // 優先挑「前方」的點，少回頭；回頭的機率壓低，避免走到一半又掉頭、看起來猶豫
+                float dx = wp.position.x - transform.position.x;
+                bool ahead = (_yaw < 90f) ? dx >= 0f : dx <= 0f;
+                if (!ahead) w *= 0.12f;
                 weights[k] = w;
                 totalWeight += w;
             }
@@ -354,8 +398,10 @@ public class BackgroundShadowCreature : MonoBehaviour
         _eelLength = Mathf.Max(2f, standinScale.x);
         float maxHalfHeight = Mathf.Max(0.35f, standinScale.y * 0.45f);
 
+        // ★立體身體（橢圓截面的管狀）：轉向時身體會真的轉過去，不會像一張紙片翻面
         int segs = 36;
-        Vector3[] verts = new Vector3[(segs + 1) * 2];
+        const int ring = 10;
+        Vector3[] verts = new Vector3[(segs + 1) * ring];
         for (int i = 0; i <= segs; i++)
         {
             float t = i / (float)segs;                                           // 0 = 頭, 1 = 尾
@@ -371,19 +417,27 @@ public class BackgroundShadowCreature : MonoBehaviour
             // 背鰭帶：從前段一路延伸到尾巴的薄鰭（鰻魚的招牌輪廓）
             float fin = maxHalfHeight * 0.35f * Mathf.Sin(Mathf.Clamp01((t - 0.15f) / 0.80f) * Mathf.PI);
 
-            verts[i * 2]     = new Vector3(0f, h + fin, z);   // 背側（含鰭）
-            verts[i * 2 + 1] = new Vector3(0f, -h, z);        // 腹側
+            for (int k = 0; k < ring; k++)
+            {
+                float a = k / (float)ring * Mathf.PI * 2f;
+                float sa = Mathf.Sin(a);
+                float x = Mathf.Cos(a) * h * 0.85f;                          // 身體寬度
+                float y = sa * h + (sa > 0f ? fin * sa * sa * sa : 0f);      // 背側帶鰭
+                verts[i * ring + k] = new Vector3(x, y, z);
+            }
         }
 
-        int[] tris = new int[segs * 6 * 2]; // 正反兩面都建，左右轉向時都看得到
+        int[] tris = new int[segs * ring * 6];
         int ti = 0;
         for (int i = 0; i < segs; i++)
         {
-            int a = i * 2, b = i * 2 + 1, c2 = (i + 1) * 2, d = (i + 1) * 2 + 1;
-            tris[ti++] = a; tris[ti++] = c2; tris[ti++] = b;
-            tris[ti++] = b; tris[ti++] = c2; tris[ti++] = d;
-            tris[ti++] = a; tris[ti++] = b; tris[ti++] = c2;   // 反面
-            tris[ti++] = b; tris[ti++] = d; tris[ti++] = c2;
+            for (int k = 0; k < ring; k++)
+            {
+                int k2 = (k + 1) % ring;
+                int a = i * ring + k, b = i * ring + k2, c2 = (i + 1) * ring + k, d = (i + 1) * ring + k2;
+                tris[ti++] = a; tris[ti++] = c2; tris[ti++] = b;
+                tris[ti++] = b; tris[ti++] = c2; tris[ti++] = d;
+            }
         }
 
         Mesh mesh = new Mesh();
@@ -392,7 +446,7 @@ public class BackgroundShadowCreature : MonoBehaviour
         mesh.triangles = tris;
         mesh.RecalculateNormals();
         mesh.MarkDynamic();   // UpdateEelUndulation 每幀改頂點，提示驅動用動態頂點緩衝區
-        mesh.bounds = new Bounds(Vector3.zero, new Vector3(4f, maxHalfHeight * 8f + 4f, _eelLength + 4f)); // 撐大避免擺動時被視錐剔除
+        mesh.bounds = new Bounds(Vector3.zero, new Vector3(maxHalfHeight * 4f + 4f, maxHalfHeight * 8f + 4f, _eelLength + 4f)); // 撐大避免擺動時被視錐剔除
 
         _eelMeshFilter = standinObj.AddComponent<MeshFilter>();
         _eelMeshFilter.sharedMesh = mesh;
@@ -407,6 +461,7 @@ public class BackgroundShadowCreature : MonoBehaviour
         {
             Material shadowMat = new Material(sh);
             shadowMat.color = new Color(0.04f, 0.08f, 0.16f, 0.85f);
+            if (shadowMat.HasProperty("_Cull")) shadowMat.SetFloat("_Cull", 0f);   // 雙面都畫，不挑三角形方向
             mr.material = shadowMat;
         }
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
