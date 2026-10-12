@@ -478,7 +478,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("隱形水下游泳體力與適時斷開機制 (Underwater Stamina & Limit)")]
     [Tooltip("連續向上游泳的最大隱形體力上限 (秒，預設 3.0)。控制按住 W 最多能連續向上游多久")]
-    public float maxSwimStamina = 3.0f;
+    public float maxSwimStamina = 4.0f;
 
     [Tooltip("隱形體力恢復速率 (倍率，預設 1.5)。當放開按鍵或著地時體力恢復速度")]
     public float swimStaminaRegenRate = 1.5f;
@@ -488,6 +488,27 @@ public class PlayerMovement : MonoBehaviour
 
     [Tooltip("連續向上游泳的推進速度 (預設 4.0f)")]
     public float underwaterSwimUpSpeed = 4.0f;
+
+    [Tooltip("往上游的加速度（速度已經向上時）")]
+    public float underwaterSwimUpAccel = 14f;
+
+    [Tooltip("正在下沉時按上，先把下沉煞住用的加速度。越大越『一按就往上』")]
+    public float underwaterSwimUpBrakeAccel = 40f;
+
+    [Header("★1013 光球帶路時的水中定位（別沉太多游不回來）")]
+    [Tooltip("光球帶路鎖住玩家時，下沉速度上限（公尺/秒）")]
+    public float floatHoldSinkSpeed = 0.3f;
+    [Tooltip("光球帶路鎖住玩家期間，最多允許比一開始再往下多少公尺")]
+    public float floatHoldMaxSink = 0.6f;
+    private bool _floatHold;
+    private float _floatHoldStartY;
+
+    /// <summary>光球演出開始／結束時呼叫：水中時讓她幾乎原地漂浮。</summary>
+    public void SetFloatHold(bool on)
+    {
+        _floatHold = on;
+        _floatHoldStartY = transform.position.y;
+    }
 
     [Header("穿模防護 (Depenetration)")]
     [Tooltip("陸地用的推出速度。壓低是為了消除斜坡夾角的抖動，不要隨意調高")]
@@ -1335,6 +1356,12 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        // ★1013 力竭提示：黑圈邊緣亮一小圈紅
+        if (UnderwaterSuffocationEffect.Instance != null)
+        {
+            UnderwaterSuffocationEffect.Instance.SetSwimExhausted(isUnderwater && isSwimExhausted);
+        }
+
         // 陸地跳躍 (非水下、非演出中、非重生中)
         bool _jumpPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
 
@@ -2132,7 +2159,9 @@ public class PlayerMovement : MonoBehaviour
             if (isPressingSwimUp && !isSwimExhausted)
             {
                 // 按住 W / Space / 上方向鍵 向上游泳推進
-                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
+                // ★1013 往下沉時按上：先用大加速度把下沉煞住（立刻有反應），過了 0 再用一般加速度加速到巡航速度
+                float upAccel = vel.y < 0f ? underwaterSwimUpBrakeAccel : underwaterSwimUpAccel;
+                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * upAccel);
             }
             else if (isPressingSwimDown)
             {
@@ -2178,6 +2207,13 @@ public class PlayerMovement : MonoBehaviour
                 {
                     rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 }
+            }
+
+            // ★1013 光球帶路：幾乎原地漂浮，下沉有速度與總深度上限
+            if (_floatHold)
+            {
+                if (vel.y < -floatHoldSinkSpeed) vel.y = -floatHoldSinkSpeed;
+                if (_floatHoldStartY - transform.position.y >= floatHoldMaxSink && vel.y < 0f) vel.y = 0f;
             }
 
             rb.linearVelocity = vel;

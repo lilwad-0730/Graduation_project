@@ -26,8 +26,12 @@ public class StoryCardNoteHook : MonoBehaviour
     public static int PickedCount => _picked;
 
     /// <summary>進入有日誌的關卡時歸零（同一輪重生不會歸零）。</summary>
-    public static void ResetCount() { _picked = 0; }
+    public static void ResetCount() { _picked = 0; _hasLastFirePos = false; }
     private bool _fired;
+
+    // 同一張日誌有外層＋內層兩份腳本，用位置去重：離上次出卡點 2.5 公尺內視為同一張
+    private static Vector3 _lastFirePos;
+    private static bool _hasLastFirePos;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -37,6 +41,9 @@ public class StoryCardNoteHook : MonoBehaviour
         if (!IsPlayer(other)) return;
 
         _fired = true;
+        if (_hasLastFirePos && (transform.position - _lastFirePos).sqrMagnitude < 2.5f * 2.5f) return;
+        _lastFirePos = transform.position;
+        _hasLastFirePos = true;
         if (_picked >= maxDiaries) return;
 
         _picked++;

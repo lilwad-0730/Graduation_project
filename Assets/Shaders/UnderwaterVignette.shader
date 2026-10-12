@@ -9,6 +9,7 @@ Shader "Custom/UnderwaterVignette"
         _Radius   ("Clear Radius (1=透明 0=全黑)", Range(0,1))  = 0.8
         _Softness ("Edge Softness",               Range(0,1))   = 0.35
         _Intensity("Max Opacity",                 Range(0,1))   = 1.0
+        _Band     ("Fade-out Band (0=不收尾，維持原本行為)", Float) = 0
     }
 
     SubShader
@@ -40,6 +41,7 @@ Shader "Custom/UnderwaterVignette"
             float  _Radius;
             float  _Softness;
             float  _Intensity;
+            float  _Band;
 
             v2f vert(appdata v)
             {
@@ -59,6 +61,9 @@ Shader "Custom/UnderwaterVignette"
                 // 平滑漸變：從 _Radius 到 _Radius+_Softness 過渡
                 float alpha = smoothstep(_Radius, _Radius + _Softness, dist);
                 alpha = saturate(alpha) * _Intensity;
+                // 環帶模式：過了漸變區再往外就淡出，只留一圈細環（力竭紅圈用）
+                if (_Band > 0.0001)
+                    alpha *= 1.0 - smoothstep(_Radius + _Softness, _Radius + _Softness + _Band, dist);
 
                 return fixed4(_Color.rgb, alpha);
             }

@@ -237,6 +237,21 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("懲罰期間玩家跳躍力倍率")]
     public float fearJumpMultiplier = 0.65f;
 
+    [Header("★1013 最後一根燭火：突然衝刺嚇人（不攻擊）")]
+    [Tooltip("只剩最後一根燭火，而且「主角」離它這麼近（公尺）時，怪物開始把距離追回來")]
+    public float finaleDashTriggerDistance = 22f;
+    [Tooltip("距離拉很開時的最高追趕速度（公尺/秒）。主角約 5，設 7 左右是慢慢逼近；越接近目標距離會自動越慢")]
+    public float finaleDashSpeed = 7f;
+    [Tooltip("追趕速度每秒最多增加多少（公尺/秒²）。越小起速越緩，沒有暴衝感")]
+    public float finaleAccel = 1.5f;
+    private float _finaleSpeed = -1f;
+    [Tooltip("追到主角身後多遠停下來（公尺）。要大於 attackTriggerDistance 以外都安全；這段期間不會攻擊、也不會減速主角")]
+    public float finaleStopDistance = 4f;
+    [Tooltip("離目標距離多遠以內開始減速收尾（公尺）")]
+    public float finaleEaseDistance = 20f;
+    private bool _finaleDash;
+    private bool _vanishDone;
+
     [Header("重生系統參考")]
     [Tooltip("留空時自動尋找場景中的 PlayerRespawnSystem")]
     public PlayerRespawnSystem respawnSystem;
@@ -615,6 +630,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 break;
 
             case MonsterState.Chasing:
+                if (!_finaleDash) TryStartFinaleDash();
                 MoveTowardPlayer(chaseSpeed);
                 // ★演出還沒收尾（鏡頭還在飛回來、主角還被凍住）時不准抓人
                 if (!_revealActive) CheckCatch();
@@ -659,6 +675,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void CheckCollisionCatch(GameObject go)
     {
         if (_revealActive) return;   // ★登場運鏡期間主角是凍住的，不能被吃
+        if (_finaleDash) return;     // ★最後衝刺只嚇人，不攻擊
         if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
         if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
         {
@@ -719,6 +736,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (_candlesCollected >= _totalCandles)
         {
             Debug.Log("【影子怪物】全部燭火收集完畢！怪物開始消失...");
+            _finaleDash = false;
+            _vanishDone = false;
             if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
             _stateCoroutine = StartCoroutine(VanishSequence());
 
@@ -741,6 +760,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _endingFired = true;
 
         if (_pm != null) _pm.isCutsceneFrozen = true;
+
+        // ★先讓怪物縮小消失演完，再轉場（最多等 6 秒保底，避免卡死）
+        float waited = 0f;
+        while (!_vanishDone && waited < 6f)
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
 
         if (StoryCardPlayer.Instance != null && !string.IsNullOrEmpty(endingCardId)
             && StoryCardPlayer.Instance.HasCard(endingCardId))
@@ -1272,6 +1299,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _currentScaleMultiplier = minScaleMultiplier;
         ApplyCurrentScale();
         currentState = MonsterState.Dormant;
+        _vanishDone = true;
         Debug.Log("【影子怪物】玩家收集所有燭火，怪物消散！");
     }
 
@@ -1458,9 +1486,57 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         return _smoothedChaseSpeed;
     }
 
+    /// <summary>只剩最後一根燭火、怪物快到它時，進入衝刺嚇人模式。</summary>
+    private void TryStartFinaleDash()
+    {
+        if (_revealActive || player == null || candles == null || _totalCandles <= 0) return;
+        if (_candlesCollected != _totalCandles - 1) return;
+
+        CandleCollectible remaining = null;
+        foreach (var c in candles)
+        {
+            if (c != null && !c.isCollected) { remaining = c; break; }
+        }
+        if (remaining == null) return;
+
+        // 用「主角離最後一根燭火多遠」判斷：玩家走到最後一段，怪物才把距離追回來。
+        // 不用「怪物離燭火多遠」，因為剛吃到倒數第二根時怪物就在附近，會一吃完立刻暴衝。
+        float mx = transform.position.x;
+        float cx = remaining.transform.position.x;
+        if (Mathf.Abs(player.position.x - cx) > finaleDashTriggerDistance) return;
+        if (player.position.x < mx) return;
+
+        _finaleDash = true;
+        _finaleSpeed = -1f;
+        if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;   // 別讓主角停在被減速的狀態
+        Debug.Log($"【影子怪物】主角接近最後一根燭火，怪物開始追回距離到主角身後 {finaleStopDistance} 公尺（不攻擊）。");
+    }
+
+    private void FinaleDashMove()
+    {
+        float dir = player.position.x >= transform.position.x ? 1f : -1f;
+        float targetX = player.position.x - dir * finaleStopDistance;
+        float gap = Mathf.Abs(targetX - transform.position.x);
+        float playerSpeed = (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f;
+        // 落後越多越快，越接近越緩：從「比主角快一點」平滑加到 finaleDashSpeed，不會突然暴衝
+        float k = Mathf.Clamp01(gap / Mathf.Max(1f, finaleEaseDistance));
+        float want = gap > 0.3f ? Mathf.Lerp(playerSpeed * 1.0f, Mathf.Max(finaleDashSpeed, playerSpeed * 1.05f), k) : playerSpeed;
+        if (_finaleSpeed < 0f) _finaleSpeed = _smoothedChaseSpeed > 0f ? _smoothedChaseSpeed : playerSpeed * 0.98f;
+        _finaleSpeed = Mathf.MoveTowards(_finaleSpeed, want, Mathf.Max(0.1f, finaleAccel) * Time.deltaTime);   // 速度只能慢慢升降
+        float spd = _finaleSpeed;
+        PlayAnimationByName(runAnimationName);
+
+        float newX = Mathf.MoveTowards(transform.position.x, targetX, spd * Time.deltaTime);
+        transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+
+        if (player.position.x > transform.position.x + 0.2f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        else if (player.position.x < transform.position.x - 0.2f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+    }
+
     private void MoveTowardPlayer(float speed)
     {
         if (player == null) return;
+        if (_finaleDash) { FinaleDashMove(); return; }
 
         if (_animator != null && _animator.cullingMode != AnimatorCullingMode.AlwaysAnimate)
             _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -1576,6 +1652,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void CheckCatch()
     {
         if (player == null || currentState == MonsterState.Devouring) return;
+        if (_finaleDash) return;   // ★最後衝刺只嚇人，不攻擊
 
         float xDist = Mathf.Abs(transform.position.x - player.position.x);
 
@@ -1940,6 +2017,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _stateCoroutine = null;
         _hitShrinkCoroutine = null;
         _isHitShrinking = false;
+        _finaleDash = false;
         _currentAnimName = "";
         _chaseTimer = 0f;  // 重置追逐計時，確保下次出場先播 walk4
 

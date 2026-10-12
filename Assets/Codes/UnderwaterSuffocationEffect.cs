@@ -35,7 +35,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
 
     [Header("【Note Paper 緩解設定】")]
     [Tooltip("每次吃到 Note Paper，圓心半徑恢復量（0.2 = 緩解約 20% 的暗化面積）")]
-    public float reliefAmount = 0.2f;
+    public float reliefAmount = 0.15f;
 
     [Tooltip("緩解時半徑恢復速度（每秒，預設 0.5）")]
     public float reliefSpeed = 0.5f;
@@ -126,6 +126,67 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
 
     // 公開查詢
     public float CurrentRadius        => currentRadius;
+
+    [Header("★1013 快窒息：黑圈邊緣泛紅")]
+    [Tooltip("危險程度（0=剛換氣、1=快溺斃）超過這個值才開始泛紅")]
+    [Range(0f, 1f)] public float redStartDanger = 0.5f;
+    [Tooltip("泛紅用的暗紅色")]
+    public Color dangerColor = new Color(0.40f, 0.02f, 0.04f, 1f);
+    [Tooltip("泛紅最多蓋到幾成（0~1），別太滿才不會變成血屏")]
+    [Range(0f, 1f)] public float maxRedMix = 0.8f;
+    [Tooltip("危險時紅色跟著心跳微微明暗的幅度")]
+    [Range(0f, 0.5f)] public float redPulseAmount = 0.15f;
+
+    [Header("★1013 往上游力竭提示：黑圈邊緣內側的警示紅光")]
+    [Tooltip("警示光的顏色（偏暗的血紅，疊在深色邊緣上會有警示感）")]
+    public Color exhaustRingColor = new Color(0.78f, 0.1f, 0.12f, 1f);
+    [Tooltip("紅光往圈內暈開的寬度（螢幕比例）")]
+    public float exhaustRingWidth = 0.32f;
+    [Tooltip("紅光往黑暗側收尾的寬度（螢幕比例）")]
+    public float exhaustRingOutward = 0.06f;
+    [Tooltip("紅光峰值離「窒息半徑」的距離。窒息半徑是柔邊的起點，肉眼看到的黑邊在它外面一點，調這個讓紅光貼住看到的黑邊")]
+    public float exhaustRingOffset = 0.17f;
+    [Tooltip("紅光最亮的不透明度")]
+    [Range(0f, 1f)] public float exhaustRingOpacity = 0.45f;
+    [Tooltip("紅光心跳的速度（每秒幾下）")]
+    public float exhaustRingBeatsPerSecond = 1.6f;
+    private Material matRing;
+    private float _exhaustTarget;
+    private float _exhaustShown;
+
+    /// <summary>PlayerMovement 回報：現在往上游是否力竭（紅圈亮起）。</summary>
+    public void SetSwimExhausted(bool on) { _exhaustTarget = on ? 1f : 0f; }
+
+    /// <summary>照目前速度算，還剩幾秒會溺斃重生（含最後的緩衝）。還沒開始縮圈時回傳很大的數。</summary>
+    public float SecondsUntilDeath
+    {
+        get
+        {
+            if (!enableSuffocationDeath || !effectEnabled || !delayDone) return 9999f;
+            float rate = darknessIncreaseRate;
+            if (breathSecondsToDeath > 0.5f) rate = Mathf.Max(0.0001f, (startRadius - deathRadius) / breathSecondsToDeath);
+            return Mathf.Max(0f, (currentRadius - deathRadius) / rate) + deathGraceSeconds;
+        }
+    }
+
+    /// <summary>0=剛換完氣，1=氣快用完。給光球等提示用。</summary>
+    public float Danger01
+    {
+        get
+        {
+            float span = Mathf.Max(0.01f, startRadius - deathRadius);
+            return Mathf.Clamp01(1f - (currentRadius - deathRadius) / span);
+        }
+    }
+
+    private Color CurrentVignetteColor()
+    {
+        float d = Danger01;
+        if (d <= redStartDanger) return vignetteColor;
+        float t = Mathf.SmoothStep(0f, 1f, (d - redStartDanger) / Mathf.Max(0.01f, 1f - redStartDanger)) * maxRedMix;
+        float beat = 1f + Mathf.Sin(Time.time * Mathf.Lerp(3f, 7f, d)) * redPulseAmount * t;
+        return Color.Lerp(vignetteColor, dangerColor, Mathf.Clamp01(t * beat));
+    }
     public bool  IsAtMaxDarkness      => currentRadius <= maxDarknessRadius + 0.01f;
 
     // Singleton
@@ -142,6 +203,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         delayDone     = (startDelay <= 0f);
 
         AdjustSceneWaterSortingOrder();
+        if (GetComponent<UnderwaterBreathGuide>() == null) gameObject.AddComponent<UnderwaterBreathGuide>();   // ★1013 快窒息時鏡頭特寫引導
         SetupOverlayCanvas();
         LoadShader();
         CreateAllLayers();
@@ -340,12 +402,31 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         if (matMain == null) return;
 
         float r = currentRadius;
+        Color vc = CurrentVignetteColor();
+
+        // 力竭紅圈：貼在黑圈內緣，比主層早一點點開始漸變，被主層的黑蓋住外側，只露出內側一小圈紅
+        if (matRing != null)
+        {
+            _exhaustShown = Mathf.MoveTowards(_exhaustShown, _exhaustTarget, Time.unscaledDeltaTime * 5f);
+            // 心跳：咚—咚（一強一弱）
+            float ph = Mathf.Repeat(Time.time * exhaustRingBeatsPerSecond, 1f);
+            float b1 = Mathf.Exp(-Mathf.Pow((ph - 0.05f) * 9f, 2f));
+            float b2 = 0.6f * Mathf.Exp(-Mathf.Pow((ph - 0.30f) * 9f, 2f));
+            float pulse = 0.65f + 0.35f * Mathf.Clamp01(b1 + b2);
+            float w = Mathf.Max(0.02f, exhaustRingWidth);
+            float peak = r + exhaustRingOffset;
+            matRing.SetFloat("_Radius",    Mathf.Max(0f, peak - w));
+            matRing.SetFloat("_Softness",  w);
+            matRing.SetFloat("_Band",      Mathf.Max(0.02f, exhaustRingOutward));
+            matRing.SetFloat("_Intensity", exhaustRingOpacity * _exhaustShown * pulse);
+            matRing.SetColor("_Color",     exhaustRingColor);
+        }
 
         // 主層：核心暗區（緊貼 currentRadius）
         matMain.SetFloat("_Radius",    r);
         matMain.SetFloat("_Softness",  mainSoftness);
         matMain.SetFloat("_Intensity", maxDarknessIntensity);
-        matMain.SetColor("_Color",     vignetteColor);
+        matMain.SetColor("_Color",     vc);
 
         // 中暈層：半徑多加 blurSpread * 0.5，軟化寬度更大
         if (matMid != null)
@@ -353,7 +434,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
             matMid.SetFloat("_Radius",    r + blurSpread * 0.5f);
             matMid.SetFloat("_Softness",  mainSoftness + 0.12f);
             matMid.SetFloat("_Intensity", midGlowOpacity * maxDarknessIntensity);
-            matMid.SetColor("_Color",     vignetteColor);
+            matMid.SetColor("_Color",     vc);
         }
 
         // 外暈層：半徑多加 blurSpread，非常軟的寬過渡，最低不透明度
@@ -362,7 +443,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
             matOuter.SetFloat("_Radius",    r + blurSpread);
             matOuter.SetFloat("_Softness",  mainSoftness + 0.28f);
             matOuter.SetFloat("_Intensity", outerGlowOpacity * maxDarknessIntensity);
-            matOuter.SetColor("_Color",     vignetteColor);
+            matOuter.SetColor("_Color",     vc);
         }
     }
 
@@ -421,6 +502,10 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         matMain   = new Material(vignetteShader);
         imgMain   = CreateFullscreenLayer("Vignette_Main",  matMain);
 
+        // 力竭警示光：疊在黑圈之上，才不會被黑蓋住
+        matRing   = new Material(vignetteShader);
+        CreateFullscreenLayer("Vignette_ExhaustRing", matRing);
+
         // 閃光層（最上）
         GameObject flashObj = new GameObject("Vignette_Flash");
         flashObj.transform.SetParent(overlayCanvas.transform, false);
@@ -459,6 +544,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         if (Instance == this) Instance = null;
         if (matMain  != null) Destroy(matMain);
         if (matMid   != null) Destroy(matMid);
+        if (matRing != null) Destroy(matRing);
         if (matOuter != null) Destroy(matOuter);
         if (overlayCanvas != null && overlayCanvas.gameObject != null)
         {

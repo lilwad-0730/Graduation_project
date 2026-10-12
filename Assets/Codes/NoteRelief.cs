@@ -124,6 +124,9 @@ public class NoteRelief : MonoBehaviour
         Absorb();
     }
 
+    /// <summary>給 CollectibleNote 呼叫：紙被撿到＝吸收（紙本身的觸發盒才準，外層容器不再有大盒子）。</summary>
+    public void AbsorbFromNote() { Absorb(); }
+
     private void Absorb()
     {
         if (consumed) return;

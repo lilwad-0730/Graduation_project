@@ -187,7 +187,24 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         bool pressing = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) ||
                         Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow) ||
                         Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow);
+        // ★1012 只在「真的需要救」的時候計時：
+        //   ・四面都被擋住（被夾住）：按什麼都出不去
+        //   ・按著的方向是空的、卻動不了：碰撞把她卡住（不是牆）
+        //   只是頂著牆（按的方向被擋、別的方向其實是空的）不算——她按另一個方向就走得出來。
+        //   原本「在石頭範圍內按著任何方向鍵 2.5 秒沒移動」就救，頂著牆走路也會被當成卡住，
+        //   而且身邊沒有 1 米外的安全點時還會直接走重生，等於撞牆就死。
+        bool countsAsStuck = false;
         if (around != null && pressing)
+        {
+            bool pinnedNow = IsPinnedOnAllSides(out _);
+            bool pressUp = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+            bool pressDown = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
+            bool pressLeft = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+            bool pressRight = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+            bool pressingFreeSide = (pressUp && _sideFree[0]) || (pressDown && _sideFree[1]) || (pressLeft && _sideFree[2]) || (pressRight && _sideFree[3]);
+            countsAsStuck = pinnedNow || pressingFreeSide;
+        }
+        if (countsAsStuck)
         {
             if (Vector3.Distance(transform.position, _noProgressAnchor) > noProgressDistance)
             {
@@ -206,10 +223,8 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         }
 
         // ★1011 四面都被擋住＝真的被夾住（不是只有往牆的方向被擋，還有別的方向可以游走），不用等滿 noProgressSeconds
-        bool pinned = false;
-        string blockedSides = "";
-        if (around != null && pressing && _noProgressTime >= pinnedNoProgressSeconds)
-            pinned = IsPinnedOnAllSides(out blockedSides);
+        bool pinned = countsAsStuck && _noProgressTime >= pinnedNoProgressSeconds
+                      && !_sideFree[0] && !_sideFree[1] && !_sideFree[2] && !_sideFree[3];
 
         string reason = null;
         Collider rock = null;
@@ -259,16 +274,19 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
     /// 卡住期間記下來的那一串近距離點會被逐一跳過，一路退到真正還游得動的位置。
     /// farthest 是掃過的候選裡最遠的距離，只在找不到時拿來寫 Log（找到時會提早 break，不完整也用不到）。
     /// </summary>
+    private Vector3 _farthestSafePos;
+
     private bool TryPickSafePosition(Vector3 current, out Vector3 target, out float distance, out float farthest)
     {
         target = current;
         distance = 0f;
         farthest = 0f;
+        _farthestSafePos = current;
 
         for (int i = _safePositions.Count - 1; i >= 0; i--)
         {
             float d = Vector3.Distance(current, _safePositions[i]);
-            if (d > farthest) farthest = d;
+            if (d > farthest) { farthest = d; _farthestSafePos = _safePositions[i]; }
             if (d >= rescueMinDistance)
             {
                 target = _safePositions[i];
@@ -282,6 +300,7 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
     private static readonly Vector3[] SideDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right };
     private static readonly string[] SideNames = { "上", "下", "左", "右" };
     private string _lastFreeSides = "";
+    private readonly bool[] _sideFree = new bool[4];   // 上、下、左、右：true＝這一面是空的
 
     /// <summary>
     /// ★1011 上、下、左、右四個方向，玩家的碰撞盒往外 pinnedProbeDistance 公尺內是不是都有東西（非觸發、不是自己）。
@@ -305,6 +324,7 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
                 hit = true;
                 break;
             }
+            _sideFree[i] = !hit;
             if (hit) { blockedCount++; blocked += SideNames[i]; }
             else free += SideNames[i];
         }
@@ -419,6 +439,9 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         //   C 條件卡住期間記下來的那一串，距離都小於 noProgressDistance(0.3)，會被全部跳過。
         int sampleCount = _safePositions.Count;
         bool found = TryPickSafePosition(current, out Vector3 target, out float moved, out float farthest);
+        // ★1012 沒有「夠遠」的安全點時，只要最遠的那個也有 0.4 米，就先用它——放回去總比直接走重生（黑幕＋回存檔點）好。
+        //   實際發生過：安全點最遠只有 0.98 米（門檻 1.0），結果為了差 2 公分走了整套重生。
+        if (!found && farthest >= 0.4f) { found = true; target = _farthestSafePos; moved = farthest; }
 
         if (!rescuedRecently && found)
         {

@@ -14,11 +14,17 @@ public class CollectibleNote : MonoBehaviour
     [Range(0.1f, 1f)]
     public float colliderSizeMultiplier = 1f;
 
+    [Header("★1013 水下提示")]
+    [Tooltip("水下場景裡，日誌四周加一圈暖黃奶油色的微光（跟冰冷水底對比，代表安心）")]
+    public bool warmGlow = true;
+
     private bool _isCollected = false;
+    public bool IsCollected => _isCollected;
 
     void Start()
     {
         FitColliderToSprite();
+        if (warmGlow) UnderwaterHintGlow.AddNoteGlow(gameObject);
     }
 
     /// <summary>
@@ -27,6 +33,9 @@ public class CollectibleNote : MonoBehaviour
     public void FitColliderToSprite()
     {
         BoxCollider box = GetComponent<BoxCollider>();
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        // 沒有圖片的外層容器（_Parent）不補預設 1x1x1 的觸發盒，免得比紙大一圈、提早觸發
+        if (box == null && (sr == null || sr.sprite == null)) return;
         if (box == null)
         {
             box = gameObject.AddComponent<BoxCollider>();
@@ -34,7 +43,6 @@ public class CollectibleNote : MonoBehaviour
 
         box.isTrigger = true;
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null && sr.sprite != null)
         {
             // 將碰撞箱的中心與 X/Y 大小完全貼合圖片邊界
@@ -86,6 +94,10 @@ public class CollectibleNote : MonoBehaviour
         if (_isCollected) return;
         _isCollected = true;
         UnderwaterCheckpoint.MarkHere(this, "撿到日誌 " + gameObject.name);
+
+        // ★1013 窒息黑圈放大：外層容器沒有觸發盒了，改由紙被撿到時通知
+        NoteRelief relief = GetComponentInParent<NoteRelief>();
+        if (relief != null) relief.AbsorbFromNote();
 
         StartCoroutine(ShrinkAndDestroyRoutine());
     }

@@ -82,7 +82,7 @@ public class BackgroundShadowCreature : MonoBehaviour
     [Tooltip("若本物件底下沒有任何子模型，是否自動生成臨時暗黑巨影佔位體？")]
     public bool autoCreateSilhouetteIfEmpty = true;
     [Tooltip("佔位黑影的長度與大小")]
-    public Vector3 standinScale = new Vector3(8f, 2.5f, 2.5f);
+    public Vector3 standinScale = new Vector3(9.2f, 2.9f, 2.9f);
 
     private int _currentWaypointIndex = 0;
     private int _pingPongDirection = 1;

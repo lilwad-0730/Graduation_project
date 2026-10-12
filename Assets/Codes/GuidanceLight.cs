@@ -97,6 +97,9 @@ public class GuidanceLight : MonoBehaviour, IResettable
     // 狀態屬性，便於外部偵測
     public bool IsAbsorbing { get; private set; } = false;
 
+    /// <summary>光球正在演出（帶路飛行或吸收）時為 true，別的系統不要搶鏡頭。</summary>
+    public bool IsBusy => IsAbsorbing || _cutsceneFlightCoroutine != null;
+
     // 吸收完成的事件委派，供後續加成效果偵測
     public event System.Action OnAbsorbed;
 
@@ -207,6 +210,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
         _flightLockedPlayer = pm;
         _flightLockedPlayer.isCutsceneFrozen = true;
+        _flightLockedPlayer.SetFloatHold(true);
 
         _flightLockedRb = pm.GetComponent<Rigidbody>();
         if (_flightLockedRb == null) _flightLockedRb = pm.GetComponentInParent<Rigidbody>();
@@ -234,6 +238,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
         if (_flightLockedPlayer != null)
         {
+            _flightLockedPlayer.SetFloatHold(false);
             if (!PlayerCutsceneHold.IsHeld) _flightLockedPlayer.isCutsceneFrozen = false;
         }
 
@@ -243,6 +248,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     void Start()
     {
+        // ★1013 水下快窒息時，光球跟著心跳脈動（只有場景有窒息黑圈才加）
+        if (GetComponent<OrbDangerPulse>() == null && FindFirstObjectByType<UnderwaterSuffocationEffect>() != null)
+        {
+            gameObject.AddComponent<OrbDangerPulse>();
+        }
         logicPosition = transform.position;
         if (player == null)
         {
@@ -359,6 +369,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
                 if (_touchCooldownWaypoint != currentWP)
                 {
                     Debug.Log($"【光球】碰到 {currentWP.name}：玩家 ({player.position.x:F1}, {player.position.y:F1})、光球 ({transform.position.x:F1}, {transform.position.y:F1})");
+                    if (_cutsceneFlightCoroutine == null) GiveOrbBreath();   // ★1013
                     AdvanceWaypoint(pm, true, useCloseup);
                 }
             }
@@ -368,6 +379,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             if (arrivedAtWaypoint && distToPlayer <= waitPlayerTriggerDistance) // 使用專屬的等待距離！
             {
+                if (_cutsceneFlightCoroutine == null) GiveOrbBreath();   // ★1013 水下：碰到光球＝喘一口氣（只在剛碰到的那一次）
                 AdvanceWaypoint(pm, true, false);
             }
         }
@@ -735,6 +747,22 @@ public class GuidanceLight : MonoBehaviour, IResettable
             else if (player != null) _cutsceneVcam.Follow = player;
             _cutsceneVcam = null;
         }
+    }
+
+    [Header("★1013 水下：碰到光球＝喘一口氣")]
+    [Tooltip("水下碰到光球時，讓窒息黑圈（呼吸光圈）往外擴回一些，給玩家喘息空間；日誌（NoteRelief）也是同一套")]
+    public bool orbRelievesBreath = true;
+    [Tooltip("黑圈擴回多少（半徑）。0.2＝跟日誌一樣；吸收光絮（Waypoint_Absorb）是 0.45。同時也會播日誌的緩解音效與螢幕閃光")]
+    public float orbBreathAmount = 0.15f;
+
+    /// <summary>水下：玩家碰到光球，把呼吸光圈補回 orbBreathAmount。沒有窒息效果（不是水下）就什麼都不做。</summary>
+    private void GiveOrbBreath()
+    {
+        if (!orbRelievesBreath || orbBreathAmount <= 0.001f) return;
+        UnderwaterSuffocationEffect fx = UnderwaterSuffocationEffect.Instance;
+        if (fx == null) return;
+        fx.RestoreBreath(orbBreathAmount);
+        Debug.Log("【光球】水下碰到光球：窒息黑圈擴回 " + orbBreathAmount.ToString("F2") + "（目前半徑 " + fx.CurrentRadius.ToString("F2") + "）");
     }
 
     private void StartAbsorbSequence(PlayerMovement pm)
