@@ -1,0 +1,1755 @@
+fileFormatVersion: 2
+guid: 2975ffe0dd80660479e6e750f66e75ae
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -755841280682110421
+    second: stair remake._0
+  - first:
+      213: -8679077687466981635
+    second: stair remake._1
+  - first:
+      213: -4922065713134760053
+    second: stair remake._2
+  - first:
+      213: -1916582354492707688
+    second: stair remake._3
+  - first:
+      213: -4420759816304020417
+    second: stair remake._4
+  - first:
+      213: -2453447145235255423
+    second: stair remake._5
+  - first:
+      213: 3382337279384489006
+    second: stair remake._6
+  - first:
+      213: 6498155610729005461
+    second: stair remake._7
+  - first:
+      213: 7773618975021158013
+    second: stair remake._8
+  - first:
+      213: -312817533741264811
+    second: stair remake._9
+  - first:
+      213: -8589811792490166087
+    second: stair remake._10
+  - first:
+      213: 3918268238127883952
+    second: stair remake._11
+  - first:
+      213: -5304929952922216705
+    second: stair remake._12
+  - first:
+      213: 5162454927502333147
+    second: stair remake._13
+  - first:
+      213: -6125875449563697878
+    second: stair remake._14
+  - first:
+      213: 6145759102623692379
+    second: stair remake._15
+  - first:
+      213: 8841965906953794261
+    second: stair remake._16
+  - first:
+      213: -5977148069104670537
+    second: stair remake._17
+  - first:
+      213: -6808141961242151649
+    second: stair remake._18
+  - first:
+      213: -7588391443075541409
+    second: stair remake._19
+  - first:
+      213: -2673477444079900854
+    second: stair remake._20
+  - first:
+      213: -4588166768911103328
+    second: stair remake._21
+  - first:
+      213: 6890013348343063339
+    second: stair remake._22
+  - first:
+      213: -2710105627702252443
+    second: stair remake._23
+  - first:
+      213: -5448765073320796463
+    second: stair remake._24
+  - first:
+      213: -5692838147156791447
+    second: stair remake._25
+  - first:
+      213: -5588655543688101129
+    second: stair remake._26
+  - first:
+      213: -4757429685702879066
+    second: stair remake._27
+  - first:
+      213: -8429831601392284098
+    second: stair remake._28
+  - first:
+      213: 1795926579630086418
+    second: stair remake._29
+  - first:
+      213: -7548031309398772055
+    second: stair remake._30
+  - first:
+      213: -6538830842787240988
+    second: stair remake._31
+  - first:
+      213: -1612283679417462237
+    second: stair remake._32
+  - first:
+      213: 2911414223093359929
+    second: stair remake._33
+  - first:
+      213: -4737809552504509567
+    second: stair remake._34
+  - first:
+      213: -6288185107400724363
+    second: stair remake._35
+  - first:
+      213: 977776170358427477
+    second: stair remake._36
+  - first:
+      213: -848161287702020085
+    second: stair remake._37
+  - first:
+      213: -5431802641662975731
+    second: stair remake._38
+  - first:
+      213: 9146081409526344400
+    second: stair remake._39
+  - first:
+      213: -8142076819552180461
+    second: stair remake._40
+  - first:
+      213: 8119117903765722172
+    second: stair remake._41
+  - first:
+      213: 8523031156132906446
+    second: stair remake._42
+  - first:
+      213: 5144141595170666869
+    second: stair remake._43
+  - first:
+      213: 6525723877254396284
+    second: stair remake._44
+  - first:
+      213: -368606218550022388
+    second: stair remake._45
+  - first:
+      213: 8567190971628434962
+    second: stair remake._46
+  - first:
+      213: -7318169820859625409
+    second: stair remake._47
+  - first:
+      213: 5449669625883369469
+    second: stair remake._48
+  - first:
+      213: 7680380585847108739
+    second: stair remake._49
+  - first:
+      213: -3083945750303758085
+    second: stair remake._50
+  - first:
+      213: -6098514496105609270
+    second: stair remake._51
+  - first:
+      213: -7391135928771002128
+    second: stair remake._52
+  - first:
+      213: -3656959133371114335
+    second: stair remake._53
+  - first:
+      213: 883172987847861106
+    second: stair remake._54
+  - first:
+      213: 635717959266955671
+    second: stair remake._55
+  - first:
+      213: 9069692891176302904
+    second: stair remake._56
+  - first:
+      213: -1704108441615429350
+    second: stair remake._57
+  - first:
+      213: 1577150000939741885
+    second: stair remake._58
+  - first:
+      213: 1969215440219418261
+    second: stair remake._59
+  - first:
+      213: 8386069816264309503
+    second: stair remake._60
+  - first:
+      213: -7961333779147700705
+    second: stair remake._61
+  - first:
+      213: 6151914686195811789
+    second: stair remake._62
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: stair remake._0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1774
+        height: 835
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b22dd5e1c56b285f0800000000000000
+      internalID: -755841280682110421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._1
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 805
+        width: 88
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df60384b3d8bd8780800000000000000
+      internalID: -8679077687466981635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._2
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 809
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8f0977ef4f41bbb0800000000000000
+      internalID: -4922065713134760053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._3
+      rect:
+        serializedVersion: 2
+        x: 1076
+        y: 803
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89c2ea9c08ee665e0800000000000000
+      internalID: -1916582354492707688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._4
+      rect:
+        serializedVersion: 2
+        x: 1297
+        y: 805
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f34b0e78e5e46a2c0800000000000000
+      internalID: -4420759816304020417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._5
+      rect:
+        serializedVersion: 2
+        x: 1320
+        y: 811
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18f6e0102da93fdd0800000000000000
+      internalID: -2453447145235255423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._6
+      rect:
+        serializedVersion: 2
+        x: 1411
+        y: 789
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2c0640d5d970fe20800000000000000
+      internalID: 3382337279384489006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._7
+      rect:
+        serializedVersion: 2
+        x: 1580
+        y: 789
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 591c6b869161e2a50800000000000000
+      internalID: 6498155610729005461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._8
+      rect:
+        serializedVersion: 2
+        x: 1627
+        y: 773
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7e4f59754171eb60800000000000000
+      internalID: 7773618975021158013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._9
+      rect:
+        serializedVersion: 2
+        x: 1635
+        y: 773
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55096d54c16a8abf0800000000000000
+      internalID: -312817533741264811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._10
+      rect:
+        serializedVersion: 2
+        x: 474
+        y: 747
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b8892d7fabdac880800000000000000
+      internalID: -8589811792490166087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._11
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 741
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b6ee44e33c706630800000000000000
+      internalID: 3918268238127883952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._12
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 734
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff6ddb5805a1166b0800000000000000
+      internalID: -5304929952922216705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._13
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 727
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd4ddba9769b4a740800000000000000
+      internalID: 5162454927502333147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._14
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 731
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2d28722cb48cfaa0800000000000000
+      internalID: -6125875449563697878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._15
+      rect:
+        serializedVersion: 2
+        x: 415
+        y: 723
+        width: 36
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b56320b975f1a4550800000000000000
+      internalID: 6145759102623692379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._16
+      rect:
+        serializedVersion: 2
+        x: 474
+        y: 725
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d278184529f4ba70800000000000000
+      internalID: 8841965906953794261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._17
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 725
+        width: 17
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b8aa1bdf77ec0da0800000000000000
+      internalID: -5977148069104670537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._18
+      rect:
+        serializedVersion: 2
+        x: 685
+        y: 727
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f15fab315fe9481a0800000000000000
+      internalID: -6808141961242151649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._19
+      rect:
+        serializedVersion: 2
+        x: 1080
+        y: 727
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f565ed2003e90b690800000000000000
+      internalID: -7588391443075541409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._20
+      rect:
+        serializedVersion: 2
+        x: 1119
+        y: 733
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a472996ed66e5ead0800000000000000
+      internalID: -2673477444079900854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._21
+      rect:
+        serializedVersion: 2
+        x: 1123
+        y: 680
+        width: 94
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0aa4dc002ae8350c0800000000000000
+      internalID: -4588166768911103328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._22
+      rect:
+        serializedVersion: 2
+        x: 1234
+        y: 727
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2320bda2ae3e9f50800000000000000
+      internalID: 6890013348343063339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._23
+      rect:
+        serializedVersion: 2
+        x: 1240
+        y: 727
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56c25055a45c36ad0800000000000000
+      internalID: -2710105627702252443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._24
+      rect:
+        serializedVersion: 2
+        x: 1347
+        y: 721
+        width: 15
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1de982cd8091264b0800000000000000
+      internalID: -5448765073320796463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._25
+      rect:
+        serializedVersion: 2
+        x: 1361
+        y: 732
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96f2deafdd9fef0b0800000000000000
+      internalID: -5692838147156791447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._26
+      rect:
+        serializedVersion: 2
+        x: 1395
+        y: 726
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f2047a946b1172b0800000000000000
+      internalID: -5588655543688101129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._27
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 701
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a818c328e63afdb0800000000000000
+      internalID: -4757429685702879066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._28
+      rect:
+        serializedVersion: 2
+        x: 1306
+        y: 707
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3e86aa52d8330b80800000000000000
+      internalID: -8429831601392284098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._29
+      rect:
+        serializedVersion: 2
+        x: 1320
+        y: 709
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 219988d75b96ce810800000000000000
+      internalID: 1795926579630086418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._30
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 711
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a672c9e381004790800000000000000
+      internalID: -7548031309398772055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._31
+      rect:
+        serializedVersion: 2
+        x: 1506
+        y: 698
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e36c412ef76145a0800000000000000
+      internalID: -6538830842787240988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._32
+      rect:
+        serializedVersion: 2
+        x: 393
+        y: 684
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 322992b298400a9e0800000000000000
+      internalID: -1612283679417462237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._33
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 684
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 935ef718fcb676820800000000000000
+      internalID: 2911414223093359929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._34
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 684
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18b2481605bef3eb0800000000000000
+      internalID: -4737809552504509567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._35
+      rect:
+        serializedVersion: 2
+        x: 578
+        y: 686
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5707a7706f0ebb8a0800000000000000
+      internalID: -6288185107400724363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._36
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 682
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55f4e081f32c19d00800000000000000
+      internalID: 977776170358427477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._37
+      rect:
+        serializedVersion: 2
+        x: 1068
+        y: 686
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0088467dc9ba34f0800000000000000
+      internalID: -848161287702020085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._38
+      rect:
+        serializedVersion: 2
+        x: 1095
+        y: 684
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0166adb64c5e94b0800000000000000
+      internalID: -5431802641662975731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._39
+      rect:
+        serializedVersion: 2
+        x: 1266
+        y: 686
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0da2f9d75986dee70800000000000000
+      internalID: 9146081409526344400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._40
+      rect:
+        serializedVersion: 2
+        x: 1272
+        y: 680
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31766ac6548810f80800000000000000
+      internalID: -8142076819552180461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._41
+      rect:
+        serializedVersion: 2
+        x: 1328
+        y: 668
+        width: 30
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c34587f67b6eca070800000000000000
+      internalID: 8119117903765722172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._42
+      rect:
+        serializedVersion: 2
+        x: 1387
+        y: 688
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec583e6fda3e74670800000000000000
+      internalID: 8523031156132906446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._43
+      rect:
+        serializedVersion: 2
+        x: 1393
+        y: 684
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5797576a689a36740800000000000000
+      internalID: 5144141595170666869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._44
+      rect:
+        serializedVersion: 2
+        x: 1427
+        y: 688
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c797806aa47009a50800000000000000
+      internalID: 6525723877254396284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._45
+      rect:
+        serializedVersion: 2
+        x: 1433
+        y: 678
+        width: 42
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0f6351e89272eaf0800000000000000
+      internalID: -368606218550022388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._46
+      rect:
+        serializedVersion: 2
+        x: 1474
+        y: 684
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 216b8da3cc6c4e670800000000000000
+      internalID: 8567190971628434962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._47
+      rect:
+        serializedVersion: 2
+        x: 1183
+        y: 647
+        width: 18
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f309dad3253a07a90800000000000000
+      internalID: -7318169820859625409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._48
+      rect:
+        serializedVersion: 2
+        x: 1191
+        y: 667
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dff9302b6ad11ab40800000000000000
+      internalID: 5449669625883369469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._49
+      rect:
+        serializedVersion: 2
+        x: 1445
+        y: 662
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 384393f4371369a60800000000000000
+      internalID: 7680380585847108739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._50
+      rect:
+        serializedVersion: 2
+        x: 1078
+        y: 633
+        width: 12
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf8a196fdaf9335d0800000000000000
+      internalID: -3083945750303758085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._51
+      rect:
+        serializedVersion: 2
+        x: 1199
+        y: 650
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac70e0a8069bd5ba0800000000000000
+      internalID: -6098514496105609270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._52
+      rect:
+        serializedVersion: 2
+        x: 1256
+        y: 636
+        width: 21
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f04afe58096d6990800000000000000
+      internalID: -7391135928771002128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._53
+      rect:
+        serializedVersion: 2
+        x: 1371
+        y: 646
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ac5b492b0fdf3dc0800000000000000
+      internalID: -3656959133371114335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._54
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 626
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27364e73729a14c00800000000000000
+      internalID: 883172987847861106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._55
+      rect:
+        serializedVersion: 2
+        x: 1089
+        y: 636
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7917173ad1682d800800000000000000
+      internalID: 635717959266955671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._56
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 637
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 839f27891a50edd70800000000000000
+      internalID: 9069692891176302904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._57
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 120
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1194cea66ac958e0800000000000000
+      internalID: -1704108441615429350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._58
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 108
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db2358bd19923e510800000000000000
+      internalID: 1577150000939741885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._59
+      rect:
+        serializedVersion: 2
+        x: 1675
+        y: 114
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59e2e70720f045b10800000000000000
+      internalID: 1969215440219418261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._60
+      rect:
+        serializedVersion: 2
+        x: 1351
+        y: 98
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ffa3f0c011e416470800000000000000
+      internalID: 8386069816264309503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._61
+      rect:
+        serializedVersion: 2
+        x: 1425
+        y: 87
+        width: 11
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f16459bdb19a38190800000000000000
+      internalID: -7961333779147700705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stair remake._62
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 47
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc5c53710ddff5550800000000000000
+      internalID: 6151914686195811789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      stair remake._0: -755841280682110421
+      stair remake._1: -8679077687466981635
+      stair remake._10: -8589811792490166087
+      stair remake._11: 3918268238127883952
+      stair remake._12: -5304929952922216705
+      stair remake._13: 5162454927502333147
+      stair remake._14: -6125875449563697878
+      stair remake._15: 6145759102623692379
+      stair remake._16: 8841965906953794261
+      stair remake._17: -5977148069104670537
+      stair remake._18: -6808141961242151649
+      stair remake._19: -7588391443075541409
+      stair remake._2: -4922065713134760053
+      stair remake._20: -2673477444079900854
+      stair remake._21: -4588166768911103328
+      stair remake._22: 6890013348343063339
+      stair remake._23: -2710105627702252443
+      stair remake._24: -5448765073320796463
+      stair remake._25: -5692838147156791447
+      stair remake._26: -5588655543688101129
+      stair remake._27: -4757429685702879066
+      stair remake._28: -8429831601392284098
+      stair remake._29: 1795926579630086418
+      stair remake._3: -1916582354492707688
+      stair remake._30: -7548031309398772055
+      stair remake._31: -6538830842787240988
+      stair remake._32: -1612283679417462237
+      stair remake._33: 2911414223093359929
+      stair remake._34: -4737809552504509567
+      stair remake._35: -6288185107400724363
+      stair remake._36: 977776170358427477
+      stair remake._37: -848161287702020085
+      stair remake._38: -5431802641662975731
+      stair remake._39: 9146081409526344400
+      stair remake._4: -4420759816304020417
+      stair remake._40: -8142076819552180461
+      stair remake._41: 8119117903765722172
+      stair remake._42: 8523031156132906446
+      stair remake._43: 5144141595170666869
+      stair remake._44: 6525723877254396284
+      stair remake._45: -368606218550022388
+      stair remake._46: 8567190971628434962
+      stair remake._47: -7318169820859625409
+      stair remake._48: 5449669625883369469
+      stair remake._49: 7680380585847108739
+      stair remake._5: -2453447145235255423
+      stair remake._50: -3083945750303758085
+      stair remake._51: -6098514496105609270
+      stair remake._52: -7391135928771002128
+      stair remake._53: -3656959133371114335
+      stair remake._54: 883172987847861106
+      stair remake._55: 635717959266955671
+      stair remake._56: 9069692891176302904
+      stair remake._57: -1704108441615429350
+      stair remake._58: 1577150000939741885
+      stair remake._59: 1969215440219418261
+      stair remake._6: 3382337279384489006
+      stair remake._60: 8386069816264309503
+      stair remake._61: -7961333779147700705
+      stair remake._62: 6151914686195811789
+      stair remake._7: 6498155610729005461
+      stair remake._8: 7773618975021158013
+      stair remake._9: -312817533741264811
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
