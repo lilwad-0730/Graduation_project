@@ -94,6 +94,7 @@ public class CollectibleNote : MonoBehaviour
         if (_isCollected) return;
         _isCollected = true;
         UnderwaterCheckpoint.MarkHere(this, "撿到日誌 " + gameObject.name);
+        UnderwaterMemoryPulseDirector.NotifyNoteCollected(transform.position);
 
         // ★1013 窒息黑圈放大：外層容器沒有觸發盒了，改由紙被撿到時通知
         NoteRelief relief = GetComponentInParent<NoteRelief>();

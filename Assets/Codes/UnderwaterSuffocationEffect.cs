@@ -310,6 +310,16 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         reliefCoroutine = StartCoroutine(ReliefSequence(amount));
     }
 
+    /// <summary>記憶回聲／水壓反撲：直接消耗一小段可見光圈，但不跳過原本的溺斃緩衝。</summary>
+    public void SpendBreath(float amount)
+    {
+        if (amount <= 0f || !effectEnabled) return;
+        float radiusFloor = enableSuffocationDeath ? Mathf.Min(maxDarknessRadius, deathRadius) : maxDarknessRadius;
+        currentRadius = Mathf.Max(radiusFloor, currentRadius - amount);
+        _deathTimer = 0f;
+        UpdateLayerMaterials();
+    }
+
     /// <summary>強制重置（重生或場景重開用）</summary>
     public void ResetEffect()
     {
