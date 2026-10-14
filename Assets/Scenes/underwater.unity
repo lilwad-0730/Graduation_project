@@ -5836,7 +5836,7 @@ MonoBehaviour:
   underwaterHorizontalSpeedMultiplier: 0.45
   allowContinuousSwimming: 1
   swimCooldown: 0.18
-  swimHoldRepeatInterval: 0.52
+  swimHoldRepeatInterval: 0.6
   underwaterSwimUpTiltAngle: 18
   enableDepthBuoyancyPhysics: 1
   neutralBuoyancyY: -5

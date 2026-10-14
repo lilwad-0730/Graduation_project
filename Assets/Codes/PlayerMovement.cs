@@ -484,7 +484,7 @@ public class PlayerMovement : MonoBehaviour
     public float swimCooldown = 0.18f;
 
     [Tooltip("按住往上鍵不放時，每隔幾秒自動再划一下 (划一下 → 停頓 → 再划一下)，直到體力耗盡；耗盡後要放開再按才會繼續")]
-    public float swimHoldRepeatInterval = 0.52f;
+    public float swimHoldRepeatInterval = 0.6f;
     private float lastSwimTime = -999f;
     private bool isTriggerUnderwater = false;
     private HorizontalMovingPlatform activeMovingPlatform;
