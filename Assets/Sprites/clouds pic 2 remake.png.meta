@@ -1,0 +1,1053 @@
+fileFormatVersion: 2
+guid: 42c149bfd7858964097febd39087aa8a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1738276901096679982
+    second: clouds pic 2 remake_0
+  - first:
+      213: -3341459682106364235
+    second: clouds pic 2 remake_1
+  - first:
+      213: -1530486663431064540
+    second: clouds pic 2 remake_2
+  - first:
+      213: -7063696627297267560
+    second: clouds pic 2 remake_3
+  - first:
+      213: -356183292902049547
+    second: clouds pic 2 remake_4
+  - first:
+      213: 6025208521034730349
+    second: clouds pic 2 remake_5
+  - first:
+      213: -742104943087219419
+    second: clouds pic 2 remake_6
+  - first:
+      213: -6197890672603829271
+    second: clouds pic 2 remake_7
+  - first:
+      213: -805325485710627591
+    second: clouds pic 2 remake_8
+  - first:
+      213: -7532784051760108887
+    second: clouds pic 2 remake_9
+  - first:
+      213: 59219922733416019
+    second: clouds pic 2 remake_10
+  - first:
+      213: 4288468067704515194
+    second: clouds pic 2 remake_11
+  - first:
+      213: 6368744684147969117
+    second: clouds pic 2 remake_12
+  - first:
+      213: 2676256297559496905
+    second: clouds pic 2 remake_13
+  - first:
+      213: -1355891974514325213
+    second: clouds pic 2 remake_14
+  - first:
+      213: -5973404450571816528
+    second: clouds pic 2 remake_15
+  - first:
+      213: 5399791874518493779
+    second: clouds pic 2 remake_16
+  - first:
+      213: -1102603466208943427
+    second: clouds pic 2 remake_17
+  - first:
+      213: -135403147874845508
+    second: clouds pic 2 remake_18
+  - first:
+      213: -1665350801900993616
+    second: clouds pic 2 remake_19
+  - first:
+      213: 4927635946775220166
+    second: clouds pic 2 remake_20
+  - first:
+      213: -3599298527758804317
+    second: clouds pic 2 remake_21
+  - first:
+      213: 803268970778047453
+    second: clouds pic 2 remake_22
+  - first:
+      213: -3032159418023502854
+    second: clouds pic 2 remake_23
+  - first:
+      213: 7292509003154425055
+    second: clouds pic 2 remake_24
+  - first:
+      213: 5175199659442071080
+    second: clouds pic 2 remake_25
+  - first:
+      213: -7630756936460453945
+    second: clouds pic 2 remake_26
+  - first:
+      213: 1122952320062725538
+    second: clouds pic 2 remake_27
+  - first:
+      213: 4265079893205046767
+    second: clouds pic 2 remake_28
+  - first:
+      213: 6881036793012886612
+    second: clouds pic 2 remake_29
+  - first:
+      213: 795572165710284029
+    second: clouds pic 2 remake_30
+  - first:
+      213: -497854304094257124
+    second: clouds pic 2 remake_31
+  - first:
+      213: -8075488610359197230
+    second: clouds pic 2 remake_32
+  - first:
+      213: 1620583464917968715
+    second: clouds pic 2 remake_33
+  - first:
+      213: -5493700326093362450
+    second: clouds pic 2 remake_34
+  - first:
+      213: 3845082165612242791
+    second: clouds pic 2 remake_35
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: clouds pic 2 remake_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1653
+        height: 925
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2a622bb1a99f1810800000000000000
+      internalID: 1738276901096679982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_1
+      rect:
+        serializedVersion: 2
+        x: 1246
+        y: 916
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bea2c87f10c0a1d0800000000000000
+      internalID: -3341459682106364235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 573
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 424f7bc0d7e92cae0800000000000000
+      internalID: -1530486663431064540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 572
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89052d0b755b8fd90800000000000000
+      internalID: -7063696627297267560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_4
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 577
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f8f4a7ae259e0bf0800000000000000
+      internalID: -356183292902049547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_5
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 541
+        width: 23
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6b8ee91a37dd9350800000000000000
+      internalID: 6025208521034730349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_6
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 536
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52d89317c7383b5f0800000000000000
+      internalID: -742104943087219419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_7
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 504
+        width: 28
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ebedb6654bacf9a0800000000000000
+      internalID: -6197890672603829271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_8
+      rect:
+        serializedVersion: 2
+        x: 1545
+        y: 526
+        width: 32
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fc26afccb8e2d4f0800000000000000
+      internalID: -805325485710627591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_9
+      rect:
+        serializedVersion: 2
+        x: 1567
+        y: 518
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9aa6c19b0dc267790800000000000000
+      internalID: -7532784051760108887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_10
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 484
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35eb62ab43462d000800000000000000
+      internalID: 59219922733416019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_11
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 478
+        width: 18
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7a222e7cf2b38b30800000000000000
+      internalID: 4288468067704515194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_12
+      rect:
+        serializedVersion: 2
+        x: 1565
+        y: 492
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5c0cc31c83526850800000000000000
+      internalID: 6368744684147969117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_13
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 467
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c89fe75ce8f32520800000000000000
+      internalID: 2676256297559496905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_14
+      rect:
+        serializedVersion: 2
+        x: 1549
+        y: 453
+        width: 16
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3294549de67ee2de0800000000000000
+      internalID: -1355891974514325213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_15
+      rect:
+        serializedVersion: 2
+        x: 1553
+        y: 450
+        width: 26
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b1fde7fc443a1da0800000000000000
+      internalID: -5973404450571816528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_16
+      rect:
+        serializedVersion: 2
+        x: 1563
+        y: 411
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35a27bdb91aefea40800000000000000
+      internalID: 5399791874518493779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_17
+      rect:
+        serializedVersion: 2
+        x: 1563
+        y: 394
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db260844df3c2b0f0800000000000000
+      internalID: -1102603466208943427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_18
+      rect:
+        serializedVersion: 2
+        x: 1565
+        y: 370
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbc337ded83fe1ef0800000000000000
+      internalID: -135403147874845508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_19
+      rect:
+        serializedVersion: 2
+        x: 1570
+        y: 372
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b38742e44c73e8e0800000000000000
+      internalID: -1665350801900993616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_20
+      rect:
+        serializedVersion: 2
+        x: 1555
+        y: 362
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6cf8bfd29ca726440800000000000000
+      internalID: 4927635946775220166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 265
+        width: 5
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aa99541f09bc0ec0800000000000000
+      internalID: -3599298527758804317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_22
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 208
+        width: 13
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd3b15e7fd8c52b00800000000000000
+      internalID: 803268970778047453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_23
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 211
+        width: 25
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afb9a5a031b9be5d0800000000000000
+      internalID: -3032159418023502854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_24
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 168
+        width: 17
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd48b5e0d42343560800000000000000
+      internalID: 7292509003154425055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_25
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 168
+        width: 15
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82664cebba002d740800000000000000
+      internalID: 5175199659442071080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_26
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 175
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c73deaeefa1a1690800000000000000
+      internalID: -7630756936460453945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_27
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 175
+        width: 14
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ad1a097f27859f00800000000000000
+      internalID: 1122952320062725538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_28
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 148
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe5d525c09b903b30800000000000000
+      internalID: 4265079893205046767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_29
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 139
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45c1de5818a5e7f50800000000000000
+      internalID: 6881036793012886612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_30
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 137
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df4895a6ba07a0b00800000000000000
+      internalID: 795572165710284029
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_31
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 112
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c10009ee5244719f0800000000000000
+      internalID: -497854304094257124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_32
+      rect:
+        serializedVersion: 2
+        x: 1648
+        y: 121
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d1c3d705e91eef80800000000000000
+      internalID: -8075488610359197230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_33
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 104
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b47ae4b33187d7610800000000000000
+      internalID: 1620583464917968715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_34
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 101
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eeae1c809a472c3b0800000000000000
+      internalID: -5493700326093362450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: clouds pic 2 remake_35
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 100
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 767e1858bd97c5530800000000000000
+      internalID: 3845082165612242791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      clouds pic 2 remake_0: 1738276901096679982
+      clouds pic 2 remake_1: -3341459682106364235
+      clouds pic 2 remake_10: 59219922733416019
+      clouds pic 2 remake_11: 4288468067704515194
+      clouds pic 2 remake_12: 6368744684147969117
+      clouds pic 2 remake_13: 2676256297559496905
+      clouds pic 2 remake_14: -1355891974514325213
+      clouds pic 2 remake_15: -5973404450571816528
+      clouds pic 2 remake_16: 5399791874518493779
+      clouds pic 2 remake_17: -1102603466208943427
+      clouds pic 2 remake_18: -135403147874845508
+      clouds pic 2 remake_19: -1665350801900993616
+      clouds pic 2 remake_2: -1530486663431064540
+      clouds pic 2 remake_20: 4927635946775220166
+      clouds pic 2 remake_21: -3599298527758804317
+      clouds pic 2 remake_22: 803268970778047453
+      clouds pic 2 remake_23: -3032159418023502854
+      clouds pic 2 remake_24: 7292509003154425055
+      clouds pic 2 remake_25: 5175199659442071080
+      clouds pic 2 remake_26: -7630756936460453945
+      clouds pic 2 remake_27: 1122952320062725538
+      clouds pic 2 remake_28: 4265079893205046767
+      clouds pic 2 remake_29: 6881036793012886612
+      clouds pic 2 remake_3: -7063696627297267560
+      clouds pic 2 remake_30: 795572165710284029
+      clouds pic 2 remake_31: -497854304094257124
+      clouds pic 2 remake_32: -8075488610359197230
+      clouds pic 2 remake_33: 1620583464917968715
+      clouds pic 2 remake_34: -5493700326093362450
+      clouds pic 2 remake_35: 3845082165612242791
+      clouds pic 2 remake_4: -356183292902049547
+      clouds pic 2 remake_5: 6025208521034730349
+      clouds pic 2 remake_6: -742104943087219419
+      clouds pic 2 remake_7: -6197890672603829271
+      clouds pic 2 remake_8: -805325485710627591
+      clouds pic 2 remake_9: -7532784051760108887
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
