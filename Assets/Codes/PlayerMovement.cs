@@ -459,10 +459,10 @@ public class PlayerMovement : MonoBehaviour
     public bool allowContinuousSwimming = true;
 
     [Tooltip("連點往上鍵時，兩次划水的最短間隔 (秒)")]
-    public float swimCooldown = 0.25f;
+    public float swimCooldown = 0.18f;
 
     [Tooltip("按住往上鍵不放時，每隔幾秒自動再划一下 (划一下 → 停頓 → 再划一下)，直到體力耗盡；耗盡後要放開再按才會繼續")]
-    public float swimHoldRepeatInterval = 0.7f;
+    public float swimHoldRepeatInterval = 0.36f;
     private float lastSwimTime = -999f;
     private bool isTriggerUnderwater = false;
     private HorizontalMovingPlatform activeMovingPlatform;
@@ -485,7 +485,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("隱形水下游泳體力與適時斷開機制 (Underwater Stamina & Limit)")]
     [Tooltip("連續向上游泳的最大隱形體力上限 (秒，預設 3.0)。控制按住 W 最多能連續向上游多久")]
-    public float maxSwimStamina = 4.0f;
+    public float maxSwimStamina = 5.0f;
 
     [Tooltip("隱形體力恢復速率 (倍率，預設 1.5)。當放開按鍵或著地時體力恢復速度")]
     public float swimStaminaRegenRate = 1.5f;
@@ -495,10 +495,10 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("★1014 瑪利歐式划水 (Swim Stroke)")]
     [Tooltip("每按一下往上鍵 (W / Space / ↑) 往上升的高度 (單位)。按住不會持續上升，要再按一次才會再划一下；兩次划水的最短間隔見 Swim Cooldown")]
-    public float swimStrokeHeight = 1.3f;
+    public float swimStrokeHeight = 1.6f;
 
     [Tooltip("每划一下消耗的隱形體力 (秒，體力上限見 Max Swim Stamina)")]
-    public float swimStrokeStaminaCost = 0.7f;
+    public float swimStrokeStaminaCost = 0.4f;
 
     [Tooltip("放開往上鍵且停止划水多久之後，體力開始回復 (秒)。按住往上鍵時不回復")]
     public float swimStaminaRegenDelay = 0.5f;
@@ -514,6 +514,7 @@ public class PlayerMovement : MonoBehaviour
     public float underwaterDiveAccel = 12f;
 
     private bool _swimStrokeQueued;
+    private float _lastSwimWantTime = -99f;
     private bool _swimHoldBlocked;   // 按住划水到力竭後，要放開往上鍵才會恢復按住連划
 
     [Header("★1013 光球帶路時的水中定位（別沉太多游不回來）")]
@@ -1388,7 +1389,12 @@ public class PlayerMovement : MonoBehaviour
         // ★1013 力竭提示：黑圈邊緣亮一小圈紅
         if (UnderwaterSuffocationEffect.Instance != null)
         {
-            UnderwaterSuffocationEffect.Instance.SetSwimExhausted(isUnderwater && isSwimExhausted);
+            // ★1015 紅光只在「力竭、而且她還想往上游」時亮（按著或剛按過往上鍵）。
+            //   以前力竭一發生就亮，划到一半紅光突然冒出來，看起來像無緣無故的警示。
+            bool wantsUp = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+            if (wantsUp) _lastSwimWantTime = Time.time;
+            bool tryingWhileExhausted = isUnderwater && isSwimExhausted && (Time.time - _lastSwimWantTime) < 0.4f;
+            UnderwaterSuffocationEffect.Instance.SetSwimExhausted(tryingWhileExhausted);
         }
 
         // 陸地跳躍 (非水下、非演出中、非重生中)

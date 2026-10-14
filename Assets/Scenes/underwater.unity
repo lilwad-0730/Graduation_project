@@ -7334,18 +7334,18 @@ MonoBehaviour:
   underwaterVerticalDrag: 2
   underwaterHorizontalSpeedMultiplier: 0.45
   allowContinuousSwimming: 1
-  swimCooldown: 0.25
-  swimHoldRepeatInterval: 0.7
+  swimCooldown: 0.18
+  swimHoldRepeatInterval: 0.36
   underwaterSwimUpTiltAngle: 18
   enableDepthBuoyancyPhysics: 1
   neutralBuoyancyY: -5
   depthCompressionRate: 0.2
   maxNegativeBuoyancyExtraForce: 8
-  maxSwimStamina: 4
+  maxSwimStamina: 5
   swimStaminaRegenRate: 1.5
   swimExhaustionCooldown: 1
-  swimStrokeHeight: 1.3
-  swimStrokeStaminaCost: 0.7
+  swimStrokeHeight: 1.6
+  swimStrokeStaminaCost: 0.4
   swimStaminaRegenDelay: 0.5
   underwaterDiveSpeed: 4.5
   underwaterDiveFallMultiplier: 1.733
