@@ -19,6 +19,8 @@ public class UpperCastleBalloon : MonoBehaviour
     public SpriteRenderer body;
     public SpriteRenderer stringRenderer;
     public SpriteRenderer glow;
+    [Tooltip("★1015 外圈大光暈（比 Glow 更大更淡，慢慢呼吸，讓玩家遠遠就看到這顆可以碰）")]
+    public SpriteRenderer halo;
 
     [Header("飄動")]
     public float bobAmplitude = 0.35f;
@@ -46,12 +48,14 @@ public class UpperCastleBalloon : MonoBehaviour
     private float _attractX;
     private bool _popped;
     private float _glowBaseAlpha = 0.4f;
+    private float _haloBaseAlpha = 0.2f;
 
     private void Start()
     {
         _home = transform.position;
         _phase = Random.value * 100f;
         if (glow != null) _glowBaseAlpha = glow.color.a > 0.01f ? glow.color.a : 0.4f;
+        if (halo != null) _haloBaseAlpha = halo.color.a > 0.01f ? halo.color.a : 0.2f;
     }
 
     private void Update()
@@ -90,6 +94,13 @@ public class UpperCastleBalloon : MonoBehaviour
             c.a = _glowBaseAlpha * (0.65f + 0.35f * Mathf.Sin(t * glowPulseSpeed));
             glow.color = c;
         }
+        if (halo != null)
+        {
+            // 外圈比內圈慢半拍、一起一伏，像呼吸
+            Color c = halo.color;
+            c.a = _haloBaseAlpha * (0.55f + 0.45f * Mathf.Sin(t * glowPulseSpeed * 0.7f + 1.3f));
+            halo.color = c;
+        }
 
         // 觸碰：主角碰撞體的邊緣到氣球中心的距離（忽略 Z，這是 2.5D）
         if (hasPlayer)
@@ -119,6 +130,7 @@ public class UpperCastleBalloon : MonoBehaviour
         Color bodyC = body != null ? body.color : Color.white;
         Color strC = stringRenderer != null ? stringRenderer.color : Color.white;
         Color glowC = glow != null ? glow.color : Color.white;
+        Color haloC = halo != null ? halo.color : Color.white;
 
         while (t < dur)
         {
@@ -130,6 +142,7 @@ public class UpperCastleBalloon : MonoBehaviour
             if (body != null) { Color c = bodyC; c.a *= a; body.color = c; }
             if (stringRenderer != null) { Color c = strC; c.a *= a; stringRenderer.color = c; }
             if (glow != null) { Color c = glowC; c.a = Mathf.Lerp(glowC.a, 0f, e); glow.color = c; }
+            if (halo != null) { Color c = haloC; c.a = Mathf.Lerp(haloC.a, 0f, e); halo.color = c; }
             yield return null;
         }
         gameObject.SetActive(false);
