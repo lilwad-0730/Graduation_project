@@ -18783,41 +18783,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101326896}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1113833006 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
-  m_PrefabInstance: {fileID: 6395066460506978885}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1113833015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1113833006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d542f840ff75e64d9335d6444d406c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CloudStepFluffVFX
-  fluffMaterial: {fileID: 2100000, guid: 5b7b3a0aab6217342a25f9651f5a97d2, type: 2}
-  cloudNameKeywords:
-  - CloudPlatform
-  cloudTopTolerance: 0.5
-  burstCount: 12
-  minAirTime: 0.12
-  spawnHalfWidth: 0.6
-  feetOffset: {x: 0, y: 0.45, z: 0}
-  depthRange: {x: -0.6, y: 0.3}
-  burstSpeed: {x: 1.46, y: 2.2}
-  drag: 3.5
-  gravityModifier: 0.13
-  turbulence: 0.15
-  particleSize: {x: 1.2, y: 2.4}
-  particleLifetime: {x: 1.4, y: 2.2}
-  fluffColor: {r: 0.72, g: 0.83, b: 1, a: 1}
-  sortingOrder: 25
-  sortDepthOffset: -1
 --- !u!1 &1123297170
 GameObject:
   m_ObjectHideFlags: 0
@@ -36222,7 +36187,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.028748
+      value: -0.92
       objectReference: {fileID: 0}
     - target: {fileID: 7682668383081482100, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -36259,10 +36224,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4560934038298106848, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1113833015}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
 --- !u!1001 &9110000000000000021
 PrefabInstance:

@@ -304,6 +304,10 @@ public class PlayerMovement : MonoBehaviour
     public float fallAnimDebounceSeconds = 0.1f;
     [Tooltip("★1011 進入／離開落下動畫的淡入淡出時間（秒，0＝硬切）")]
     public float fallAnimBlendSeconds = 0.12f;
+    [Tooltip("★1014 水下放開方向鍵：游泳 (身體平躺) → 踩水 (身體直立) 的淡入淡出時間 (秒)。越大身體抬起來越慢")]
+    public float swimToTreadBlendSeconds = 0.8f;
+    [Tooltip("★1014 水下開始移動：踩水 → 游泳 的淡入淡出時間 (秒)")]
+    public float treadToSwimBlendSeconds = 0.3f;
     private float _fallCandidateTime = 0f;
 
     // 一般（平地）跳躍的滯空時間：用跳躍力、重力、剛體阻力模擬出來，數值沒變就不重算
@@ -454,8 +458,11 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("是否允許在水中未著地時連按 W 向上撥水游泳")]
     public bool allowContinuousSwimming = true;
 
-    [Tooltip("撥水游泳冷卻時間 (秒)")]
+    [Tooltip("連點往上鍵時，兩次划水的最短間隔 (秒)")]
     public float swimCooldown = 0.25f;
+
+    [Tooltip("按住往上鍵不放時，每隔幾秒自動再划一下 (划一下 → 停頓 → 再划一下)，直到體力耗盡；耗盡後要放開再按才會繼續")]
+    public float swimHoldRepeatInterval = 0.7f;
     private float lastSwimTime = -999f;
     private bool isTriggerUnderwater = false;
     private HorizontalMovingPlatform activeMovingPlatform;
@@ -486,14 +493,28 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("體力耗盡力竭冷卻時間 (秒，預設 1.0)。體力扣完斷開推力後，需冷卻多久才能再次向上游泳")]
     public float swimExhaustionCooldown = 1.0f;
 
-    [Tooltip("連續向上游泳的推進速度 (預設 4.0f)")]
-    public float underwaterSwimUpSpeed = 4.0f;
+    [Header("★1014 瑪利歐式划水 (Swim Stroke)")]
+    [Tooltip("每按一下往上鍵 (W / Space / ↑) 往上升的高度 (單位)。按住不會持續上升，要再按一次才會再划一下；兩次划水的最短間隔見 Swim Cooldown")]
+    public float swimStrokeHeight = 1.3f;
 
-    [Tooltip("往上游的加速度（速度已經向上時）")]
-    public float underwaterSwimUpAccel = 14f;
+    [Tooltip("每划一下消耗的隱形體力 (秒，體力上限見 Max Swim Stamina)")]
+    public float swimStrokeStaminaCost = 0.7f;
 
-    [Tooltip("正在下沉時按上，先把下沉煞住用的加速度。越大越『一按就往上』")]
-    public float underwaterSwimUpBrakeAccel = 40f;
+    [Tooltip("放開往上鍵且停止划水多久之後，體力開始回復 (秒)。按住往上鍵時不回復")]
+    public float swimStaminaRegenDelay = 0.5f;
+
+    [Tooltip("按 S / ↓ 主動下潛的最低速度 (單位/秒)")]
+    [UnityEngine.Serialization.FormerlySerializedAs("underwaterSwimUpSpeed")]
+    public float underwaterDiveSpeed = 4.0f;
+
+    [Tooltip("按 S / ↓ 下潛時，速度至少是當下自然下沉上限的幾倍 (確保任何深度按 S 都比不按沉得快)")]
+    public float underwaterDiveFallMultiplier = 2.6f;
+
+    [Tooltip("按 S / ↓ 下潛的加速度")]
+    public float underwaterDiveAccel = 12f;
+
+    private bool _swimStrokeQueued;
+    private bool _swimHoldBlocked;   // 按住划水到力竭後，要放開往上鍵才會恢復按住連划
 
     [Header("★1013 光球帶路時的水中定位（別沉太多游不回來）")]
     [Tooltip("光球帶路鎖住玩家時，下沉速度上限（公尺/秒）")]
@@ -995,7 +1016,8 @@ public class PlayerMovement : MonoBehaviour
                     baseRotation = Quaternion.Euler(0f, 0f, _slopeVisualAngle) * baseRotation;
                 }
 
-                bool isSwimmingUpward = isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || rb.linearVelocity.y > 0.3f);
+                // ★1014 划水式游泳：按住不代表在往上，只看實際是否正在上升
+                bool isSwimmingUpward = isUnderwater && rb.linearVelocity.y > 0.3f;
 
                 if (isSwimmingUpward)
                 {
@@ -1097,7 +1119,16 @@ public class PlayerMovement : MonoBehaviour
                 {
                     // ★1011 進出落下動畫用淡入淡出（原本是硬切，姿勢瞬間跳一下，看起來像抽筋）；其他動畫維持原本的直接切換
                     bool involvesFalling = targetAnim == "Falling" || currentAnimState == "Falling";
-                    if (involvesFalling && fallAnimBlendSeconds > 0.001f)
+                    // ★1014 水下 游泳 ↔ 踩水 也用淡入淡出：放開方向鍵時身體從平躺 (~73°) 慢慢抬回直立踩水 (~34°)，不再像兩張 GIF 硬切
+                    float swimBlend = 0f;
+                    if (currentAnimState == "Swimming" && targetAnim == "Treading Water") swimBlend = swimToTreadBlendSeconds;
+                    else if (currentAnimState == "Treading Water" && targetAnim == "Swimming") swimBlend = treadToSwimBlendSeconds;
+
+                    if (swimBlend > 0.001f)
+                    {
+                        animator.CrossFadeInFixedTime(targetAnim, swimBlend, 0);
+                    }
+                    else if (involvesFalling && fallAnimBlendSeconds > 0.001f)
                     {
                         if (targetAnim == "Falling")
                             Debug.Log("【落下動畫】開始：滯空 " + currentAirTime.ToString("F2") + " 秒、垂直速度 " + rb.linearVelocity.y.ToString("F1") + "、起跳過=" + isJumping + "、位置 " + transform.position.ToString("F1"));
@@ -1321,39 +1352,37 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 水下隱形體力扣除與回復邏輯
-        bool isPressingSwimUp = !IsControlLocked && isUnderwater && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
-
-        if (isPressingSwimUp && !isSwimExhausted)
+        // ★1014 水下划水 (實際推進在 FixedUpdate)：
+        //   按一下 → 划一下；按住 → 每隔 swimHoldRepeatInterval 自動再划一下，直到體力耗盡
+        bool swimUpDown = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow);
+        bool swimUpHeld = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+        if (!swimUpHeld) _swimHoldBlocked = false;
+        if (!IsControlLocked && isUnderwater)
         {
-            currentSwimStamina -= Time.deltaTime;
-            isSwimming = true;
-
-            if (currentSwimStamina <= 0f)
+            if (swimUpDown)
             {
-                currentSwimStamina = 0f;
-                isSwimExhausted = true;
-                exhaustionTimer = swimExhaustionCooldown;
-                Debug.Log("【水下體力機制】連續向上游泳體力耗盡，適時斷開向上推進！");
+                _swimStrokeQueued = true;
+                _swimHoldBlocked = false;
+            }
+            else if (swimUpHeld && !_swimHoldBlocked && Time.time - lastSwimTime >= swimHoldRepeatInterval)
+            {
+                _swimStrokeQueued = true;
             }
         }
-        else
-        {
-            if (isSwimExhausted)
-            {
-                exhaustionTimer -= Time.deltaTime;
-                if (exhaustionTimer <= 0f)
-                {
-                    isSwimExhausted = false;
-                    Debug.Log("【水下體力機制】力竭冷卻結束，恢復向上游泳機能！");
-                }
-            }
 
-            // 放開按鍵或著地時，隱形體力逐漸自動恢復
-            if (isGrounded || !isPressingSwimUp)
+        // 水下隱形體力：每划一下扣一次 (在 FixedUpdate 划出去時扣)，停止划水一段時間後才回復
+        if (isSwimExhausted)
+        {
+            exhaustionTimer -= Time.deltaTime;
+            if (exhaustionTimer <= 0f)
             {
-                currentSwimStamina = Mathf.Min(maxSwimStamina, currentSwimStamina + Time.deltaTime * swimStaminaRegenRate);
+                isSwimExhausted = false;
+                Debug.Log("【水下體力機制】力竭冷卻結束，恢復向上游泳機能！");
             }
+        }
+        else if (isGrounded || (!swimUpHeld && Time.time - lastSwimTime >= swimStaminaRegenDelay))
+        {
+            currentSwimStamina = Mathf.Min(maxSwimStamina, currentSwimStamina + Time.deltaTime * swimStaminaRegenRate);
         }
 
         // ★1013 力竭提示：黑圈邊緣亮一小圈紅
@@ -1366,7 +1395,8 @@ public class PlayerMovement : MonoBehaviour
         bool _jumpPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
 
         // ★按了跳躍卻沒起跳時，直接指名是哪個條件擋住的
-        if (_jumpPressed && (IsControlLocked || isUnderwater || !isGrounded))
+        // (水下按 W 是划水，不是跳躍，不必警告)
+        if (_jumpPressed && !isUnderwater && (IsControlLocked || !isGrounded))
         {
             // 一行寫完，Console 不用展開就看得到
             Debug.LogWarning("🚫跳不了 froz=" + (isCutsceneFrozen ? "T" : "F")
@@ -2152,61 +2182,81 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 vel = rb.linearVelocity;
 
-            // 3. 水下游泳推進與下潛控制 (W/Space 向上游，S/下方向鍵 主動下潛)
-            bool isPressingSwimUp = !IsControlLocked && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow));
-            bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+            // 水中自然下沉速度上限 (越深越快)
+            float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
+                ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
+                : underwaterMaxFallSpeed;
 
-            if (isPressingSwimUp && !isSwimExhausted)
+            // ★1014 S 下潛的目標速度：至少比自然下沉上限快 (原本固定 -4.5，深處反而比不按還慢)
+            float diveTargetSpeed = Mathf.Min(-underwaterDiveSpeed, effectiveMaxFallSpeed * underwaterDiveFallMultiplier);
+
+            // 3. 水下游泳：W/Space/↑ 划一下往上升一段 (瑪利歐式)，S/↓ 主動下潛
+            bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+            float riseDecel = underwaterVerticalDrag * 4f;   // 划水上升時的水阻減速度
+
+            bool stroke = _swimStrokeQueued;
+            _swimStrokeQueued = false;
+            if (stroke && !IsControlLocked && !isSwimExhausted && Time.time - lastSwimTime >= swimCooldown)
             {
-                // 按住 W / Space / 上方向鍵 向上游泳推進
-                // ★1013 往下沉時按上：先用大加速度把下沉煞住（立刻有反應），過了 0 再用一般加速度加速到巡航速度
-                float upAccel = vel.y < 0f ? underwaterSwimUpBrakeAccel : underwaterSwimUpAccel;
-                vel.y = Mathf.MoveTowards(vel.y, underwaterSwimUpSpeed, Time.fixedDeltaTime * upAccel);
+                // 依「要升多高」反算初速：上升時受到 水阻減速 + 物理淨重力 (重力扣掉浮力) + 剛體線性阻力 一起減速，
+                // 升到 swimStrokeHeight 剛好停住，之後自然下沉。不論原本下沉多快，划一下都直接改成往上
+                //   等減速 D 加上線性阻力 c·v (取平均 c·v0/2 近似)：v0² = 2h(D + c·v0/2)
+                //   → v0 = (c·h + √(c²h² + 8hD)) / 2
+                float netGravity = Mathf.Max(0f, gravityMagnitude - finalCounterForce / rb.mass);
+                float h = Mathf.Max(0f, swimStrokeHeight);
+                float c = rb.linearDamping;
+                float D = riseDecel + netGravity;
+                vel.y = (c * h + Mathf.Sqrt(c * c * h * h + 8f * h * D)) * 0.5f;
+                lastSwimTime = Time.time;
+                isSwimming = true;
+
+                currentSwimStamina -= swimStrokeStaminaCost;
+                if (currentSwimStamina <= 0f)
+                {
+                    currentSwimStamina = 0f;
+                    isSwimExhausted = true;
+                    exhaustionTimer = swimExhaustionCooldown;
+                    _swimHoldBlocked = true;   // 按住連划到此為止，要放開再按
+                    Debug.Log("【水下體力機制】連續划水體力耗盡，暫時無法往上划！");
+                }
             }
             else if (isPressingSwimDown)
             {
-                // 按住 S / 下方向鍵 主動向下快速下潛
-                vel.y = Mathf.MoveTowards(vel.y, -underwaterSwimUpSpeed, Time.fixedDeltaTime * 12f);
+                // 按住 S / 下方向鍵 主動下潛
+                vel.y = Mathf.MoveTowards(vel.y, diveTargetSpeed, Time.fixedDeltaTime * underwaterDiveAccel);
             }
-            else if (vel.y > 0.1f)
+            else if (vel.y > 0f)
             {
-                // 放開向上按鍵時，向上速度平滑減速 (水阻)，之後順應水中重力自然向下沉降
-                vel.y = Mathf.MoveTowards(vel.y, 0f, underwaterVerticalDrag * Time.fixedDeltaTime * 4f);
+                // 划水後的上升：水阻減速，到頂點後順應水中重力自然下沉
+                vel.y = Mathf.MoveTowards(vel.y, 0f, riseDecel * Time.fixedDeltaTime);
             }
+
+            // ★ 水下穿模修正：
+            //   maxDepenetrationVelocity 是「物理每秒最多能把玩家推出碰撞體多快」，
+            //   陸地為了消除斜坡抖動把它壓到 2.0。但水下越深沉得越快
+            //   (Y=-100 約 11.5/秒、Y=-134 約 14.9/秒；按 S 下潛還會再快)，是推出速度的 5~10 倍。
+            //   只要有一幀身體稍微陷進石頭，物理就來不及把她推出來，
+            //   於是越陷越深、直接穿過石頭掉出地圖 —— 而且越深越容易發生。
+            //   這裡讓推出速度跟著最快可能的下沉速度走，永遠贏得過下沉。
+            float fastestSink = isPressingSwimDown ? Mathf.Max(Mathf.Abs(diveTargetSpeed), Mathf.Abs(vel.y)) : Mathf.Abs(effectiveMaxFallSpeed);
+            rb.maxDepenetrationVelocity = Mathf.Max(landDepenetrationVelocity, fastestSink * underwaterDepenetrationFactor);
 
             // 4. 水中最大自然沉降速度動態限制 (當沒有按 S 主動下潛時，限制自然下沉速度)
-            if (!isPressingSwimDown)
+            if (!isPressingSwimDown && vel.y < effectiveMaxFallSpeed)
             {
-                float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
-                    ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
-                    : underwaterMaxFallSpeed;
+                vel.y = effectiveMaxFallSpeed;
+            }
 
-                if (vel.y < effectiveMaxFallSpeed)
-                {
-                    vel.y = effectiveMaxFallSpeed;
-                }
-
-                // ★ 水下穿模修正：
-                //   maxDepenetrationVelocity 是「物理每秒最多能把玩家推出碰撞體多快」，
-                //   陸地為了消除斜坡抖動把它壓到 2.0。但水下越深沉得越快
-                //   (Y=-100 約 11.5/秒、Y=-134 約 14.9/秒)，是推出速度的 5~7 倍。
-                //   只要有一幀身體稍微陷進石頭，物理就來不及把她推出來，
-                //   於是越陷越深、直接穿過石頭掉出地圖 —— 而且越深越容易發生。
-                //   這裡讓推出速度跟著沉降速度走，永遠贏得過下沉。
-                rb.maxDepenetrationVelocity = Mathf.Max(landDepenetrationVelocity,
-                                                        Mathf.Abs(effectiveMaxFallSpeed) * underwaterDepenetrationFactor);
-
-                // ★ 水下穿模修正之二：碰撞偵測改成 ContinuousSpeculative。
-                //   水下石頭全部是 MeshCollider，非凸面的 MeshCollider 是「沒有厚度的面」。
-                //   一般的 Continuous 是掃描式，玩家在深處一個物理幀就移動 0.3 單位，
-                //   掃描漏掉一次就整個人穿到面的另一邊，而且穿過去之後就再也推不回來。
-                //   Speculative 是「先預測會撞到什麼再限制這一步的位移」，
-                //   對這種無厚度的面比掃描式可靠得多。陸地維持 Continuous（Speculative
-                //   在平地接縫容易產生假碰撞、走路會頓）。
-                if (rb.collisionDetectionMode != CollisionDetectionMode.ContinuousSpeculative)
-                {
-                    rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-                }
+            // ★ 水下穿模修正之二：碰撞偵測改成 ContinuousSpeculative (按 S 下潛時更需要)。
+            //   水下石頭全部是 MeshCollider，非凸面的 MeshCollider 是「沒有厚度的面」。
+            //   一般的 Continuous 是掃描式，玩家在深處一個物理幀就移動 0.3 單位，
+            //   掃描漏掉一次就整個人穿到面的另一邊，而且穿過去之後就再也推不回來。
+            //   Speculative 是「先預測會撞到什麼再限制這一步的位移」，
+            //   對這種無厚度的面比掃描式可靠得多。陸地維持 Continuous（Speculative
+            //   在平地接縫容易產生假碰撞、走路會頓）。
+            if (rb.collisionDetectionMode != CollisionDetectionMode.ContinuousSpeculative)
+            {
+                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
             }
 
             // ★1013 光球帶路：幾乎原地漂浮，下沉有速度與總深度上限
