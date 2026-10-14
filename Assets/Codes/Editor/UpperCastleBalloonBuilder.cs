@@ -25,10 +25,11 @@ public static class UpperCastleBalloonBuilder
     const string FontPath = "Assets/TextMesh Pro/Msjh_SDF.asset";
 
     static readonly string[] ColorNames = { "peach", "rose", "butter", "sky", "lavender", "mint" };
+    // ★1015 配合棉花堡的珍珠白灰藍雲（平均色約 226,231,235）：氣球貼圖已降飽和，這裡的色調跟貼圖實際色一致
     static readonly Color[] Tints =
     {
-        new Color(1.00f, 0.77f, 0.69f), new Color(0.97f, 0.69f, 0.77f), new Color(1.00f, 0.93f, 0.67f),
-        new Color(0.69f, 0.84f, 0.94f), new Color(0.80f, 0.75f, 0.92f), new Color(0.75f, 0.90f, 0.82f),
+        new Color(0.87f, 0.78f, 0.75f), new Color(0.84f, 0.73f, 0.77f), new Color(0.89f, 0.87f, 0.76f),
+        new Color(0.74f, 0.80f, 0.84f), new Color(0.78f, 0.76f, 0.83f), new Color(0.77f, 0.84f, 0.81f),
     };
 
     // 產婦對生產的美好幻想（草稿，文字請撰稿者過目後再調整；換行是手排的）
@@ -211,12 +212,14 @@ public static class UpperCastleBalloonBuilder
     /// <summary>★1015 柔光：內圈 Glow（亮、呼吸）＋外圈 Halo（大而淡），顏色從氣球色往棉花堡的奶油暖白靠，跟場景搭。</summary>
     static void AddGlows(Transform parent, Sprite glowSprite, Color tint, float scale, out SpriteRenderer halo, out SpriteRenderer glow)
     {
-        Color warm = new Color(1f, 0.95f, 0.84f);
-        Color c = Color.Lerp(tint, warm, 0.6f);
-        halo = AddSprite(parent, "Halo", glowSprite, new Vector3(0f, 0.1f, 0f), 4, new Color(c.r, c.g, c.b, 0.2f));
-        halo.transform.localScale = Vector3.one * (8.2f / (2.56f * scale));
-        glow = AddSprite(parent, "Glow", glowSprite, new Vector3(0f, 0.1f, 0f), 5, new Color(c.r, c.g, c.b, 0.62f));
-        glow.transform.localScale = Vector3.one * (5.4f / (2.56f * scale));
+        // ★1015 背景是淺色的珍珠白，白色／淡色的光暈看不出來。光暈改用比背景「深一階、暖一點」的香檳金，
+        //   跟光球（奶油金）同一個色系，在淺色雲海上才看得到，也不會跟珍珠色氣球打架。
+        Color gold = new Color(1f, 0.80f, 0.50f);
+        Color c = Color.Lerp(gold, tint, 0.18f);
+        halo = AddSprite(parent, "Halo", glowSprite, new Vector3(0f, 0.1f, 0f), 4, new Color(c.r, c.g, c.b, 0.42f));
+        halo.transform.localScale = Vector3.one * (10.5f / (2.56f * scale));
+        glow = AddSprite(parent, "Glow", glowSprite, new Vector3(0f, 0.1f, 0f), 5, new Color(c.r, c.g, c.b, 0.95f));
+        glow.transform.localScale = Vector3.one * (6.4f / (2.56f * scale));
     }
 
     [MenuItem("Tools/棉花堡上層/移除氣球")]

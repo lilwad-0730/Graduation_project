@@ -7280,7 +7280,7 @@ MonoBehaviour:
   fadeOutDuration: 0.3
   holdDuration: 0.08
   fadeInDuration: 0.35
-  initialDownwardSpeed: -10
+  initialDownwardSpeed: -9
   transitionSFX: {fileID: 0}
   sfxVolume: 0.9
 --- !u!65 &621372500
@@ -8767,7 +8767,7 @@ MonoBehaviour:
   fadeOutDuration: 0.3
   holdDuration: 0.08
   fadeInDuration: 0.35
-  initialDownwardSpeed: -10
+  initialDownwardSpeed: -9
   transitionSFX: {fileID: 0}
   sfxVolume: 0.9
 --- !u!65 &709142094

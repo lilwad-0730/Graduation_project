@@ -5820,9 +5820,9 @@ MonoBehaviour:
   swimToTreadBlendSeconds: 0.8
   treadToSwimBlendSeconds: 0.3
   controlledRuinsFall: 1
-  ruinsFallStartSpeed: 10
-  ruinsFallTerminalSpeed: 20
-  ruinsFallAcceleration: 14
+  ruinsFallStartSpeed: 9
+  ruinsFallTerminalSpeed: 17
+  ruinsFallAcceleration: 12
   ruinsFallBrakeDistance: 9
   ruinsFallLandingSpeed: 6
   ruinsIntroHandBackSeconds: 1

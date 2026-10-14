@@ -349,11 +349,11 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("天空掉到廢墟那段用固定速度曲線，每次墜落時間一樣。關掉＝回到原本的物理自由落體")]
     public bool controlledRuinsFall = true;
     [Tooltip("起始向下速度（米／秒），跟 SkyDiveTeleportTrigger 的 initialDownwardSpeed 對齊")]
-    public float ruinsFallStartSpeed = 10f;
+    public float ruinsFallStartSpeed = 9f;
     [Tooltip("終端速度（米／秒）")]
-    public float ruinsFallTerminalSpeed = 20f;
+    public float ruinsFallTerminalSpeed = 17f;
     [Tooltip("加速度（米／秒²）")]
-    public float ruinsFallAcceleration = 14f;
+    public float ruinsFallAcceleration = 12f;
     [Tooltip("離地面這麼近（米）開始放慢，落地才不會砸")]
     public float ruinsFallBrakeDistance = 9f;
     [Tooltip("落地前的速度（米／秒）")]
@@ -364,6 +364,28 @@ public class PlayerMovement : MonoBehaviour
     private float _savedDamping;
     private RigidbodyInterpolation _savedInterpolation;
     private bool _savedUseGravity = true;
+
+    /// <summary>★1015 正在固定速度墜落中（給中途傳送用）。</summary>
+    public bool IsInControlledFall => _controlledFall;
+
+    /// <summary>
+    /// ★1015 墜落途中傳送（天空底 → 廢墟頂，白霧遮住的那一瞬間用）：
+    /// 位置與相機搬走，但固定速度曲線不中斷、橫向鎖不解開，傳過去繼續用同一條速度曲線掉到地面。
+    /// （一般的 WarpTo 會把墜落結束、速度歸零，之後變回物理自由落體，速度就不一致了。）
+    /// </summary>
+    public void RelayWarpDuringFall(Vector3 position)
+    {
+        transform.position = position;
+        if (rb != null)
+        {
+            rb.position = position;
+            rb.linearVelocity = new Vector3(0f, _controlledFall ? _controlledFallVy : rb.linearVelocity.y, 0f);
+        }
+        if (cameraTarget != null) cameraTarget.position = position;
+        _lastFramePos = position;
+        _smoothYVelocity = 0f;
+        foreach (CinemachineCamera v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None)) v.PreviousStateIsValid = false;
+    }
 
     private void BeginControlledFall()
     {

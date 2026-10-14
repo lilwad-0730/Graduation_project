@@ -27,6 +27,9 @@ public class RuinsChaseNoJump : MonoBehaviour
     /// <summary>★1015 她在這個路徑點碰到光球、巨石放下的那一刻起就不能跳（不用等石牆碎），免得跳過巨石不用推。</summary>
     public static string startWaypointName = "P13";
 
+    /// <summary>★1015 推巨石階段（碰到 P13 光球之後）：從 P13 往左這麼遠起就不能跳。她碰光球時離光球最遠約 4 米，所以不會漏。</summary>
+    public static float pushPhaseLeftMargin = 8f;
+
     /// <summary>風暴路徑點名稱（推巨石階段的終點）。</summary>
     public static string endWaypointName = "P14";
 
@@ -38,6 +41,7 @@ public class RuinsChaseNoJump : MonoBehaviour
     PlayerMovement _pm;
     Destructible _door;
     float _doorX;
+    float _leverX = float.NegativeInfinity;   // ★1015 P13 的 X
     float _startX;   // ★1015 封鎖起點：P13（她碰光球放巨石的地方）和石牆取比較左的那個
     float _endX;
     bool _active;
@@ -87,7 +91,7 @@ public class RuinsChaseNoJump : MonoBehaviour
             foreach (Transform wp in orb.waypoints)
             {
                 if (wp != null && wp.name == endWaypointName) _endX = wp.position.x;
-                if (wp != null && wp.name == startWaypointName) _startX = Mathf.Min(_startX, wp.position.x - marginBeforeDoor);
+                if (wp != null && wp.name == startWaypointName) { _leverX = wp.position.x; _startX = Mathf.Min(_startX, wp.position.x - marginBeforeDoor); }
             }
         }
     }
@@ -108,8 +112,12 @@ public class RuinsChaseNoJump : MonoBehaviour
 
         float x = _pm.transform.position.x;
         // ★1015 事件：石牆已砸碎，或是她已經在 P13 碰到光球、巨石放下（RuinsOrbDirector.PushPhase）
-        bool block = (_door.HasShattered || RuinsOrbDirector.PushPhase)
-                     && x >= _startX
+        // 推巨石階段（PushPhase）不再要求她走到 P13 右邊：她碰光球時常常還站在 P13 左邊一點，
+        // 以前要 x >= P13-1 才鎖，這段空窗她可以跳（甚至跳過巨石）。現在 P13 往左 8 米起就鎖。
+        bool pushPhase = RuinsOrbDirector.PushPhase;
+        float leftX = pushPhase && !float.IsNegativeInfinity(_leverX) ? Mathf.Min(_startX, _leverX - pushPhaseLeftMargin) : _startX;
+        bool block = (_door.HasShattered || pushPhase)
+                     && x >= leftX
                      && x < _endX
                      && !PlayerRespawnSystem.IsAnyRespawning;
 

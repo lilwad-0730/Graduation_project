@@ -30,9 +30,13 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     [Tooltip("白霧散去恢復視野時間 (秒)")]
     public float fadeInDuration = 0.35f;
 
+    [Header("🔁 墜落途中接力（天空底 → 廢墟頂）")]
+    [Tooltip("打勾＝這是『墜落途中』的第二段傳送：只有主角正在固定速度墜落時才會觸發，傳送後墜落不中斷、速度曲線照舊。\n不打勾＝原本的跳崖傳送（棉花堡跳下去那一個）")]
+    public bool keepControlledFall = false;
+
     [Header("🚀 墜落下衝物理")]
     [Tooltip("傳送後給予主角的向下初速度 (負值，預設 -10f 確保下墜感極速流暢)")]
-    public float initialDownwardSpeed = -10f;
+    public float initialDownwardSpeed = -9f;
 
     [Header("🎵 轉場音效 (可選)")]
     [Tooltip("跳入雲海瞬間播放的呼嘯風聲或破雲音效")]
@@ -48,6 +52,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     //   改成所有 SkyDive 觸發器共用一個「最近一次開始傳送的時間」：一段傳送演出沒結束前，其他觸發器一律不接。
     //   用時間而不是 bool：協程若被換場景中途砍掉，bool 會永遠卡 true，時間窗口過了就自動恢復。
     private static float _sharedTeleportStartTime = -999f;
+    private static float _lastRelayTime = -999f;   // ★1015 接力傳送一次墜落只做一次（傳送點在觸發區上方時不會無限循環）
     private float TeleportWindow => fadeOutDuration + holdDuration + fadeInDuration + 0.5f;
 
     private static Canvas _fadeCanvas;
@@ -130,6 +135,8 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
 
         if (pm != null)
         {
+            if (keepControlledFall && !pm.IsInControlledFall) return;   // ★1015 接力型只在墜落中才觸發
+            if (keepControlledFall && Time.unscaledTime - _lastRelayTime < 8f) return;
             if (targetDropPoint != null)
             {
                 _sharedTeleportStartTime = Time.unscaledTime;
@@ -146,6 +153,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     private IEnumerator SkyDiveTeleportRoutine(PlayerMovement pm)
     {
         _isTeleporting = true;
+        if (keepControlledFall) _lastRelayTime = Time.unscaledTime;
 
         // 確保轉場 UI 畫布存在
         EnsureFadeUI();
@@ -170,7 +178,9 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
 
         // 2. 盲屏瞬間：瞬移主角與重設相機
         Vector3 targetPos = targetDropPoint.position;
-        pm.WarpTo(targetPos);
+        bool relay = keepControlledFall && pm.IsInControlledFall;
+        if (relay) pm.RelayWarpDuringFall(targetPos);   // ★1015 墜落不中斷
+        else pm.WarpTo(targetPos);
 
         // 更新重生點，防止被判定墜崖
         PlayerRespawnSystem respawnSystem = pm.GetComponent<PlayerRespawnSystem>();
@@ -181,7 +191,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
 
         // 賦予順暢的向下高速下墜動量
         Rigidbody rb = pm.GetComponent<Rigidbody>();
-        if (rb != null)
+        if (rb != null && !relay)
         {
             rb.linearVelocity = new Vector3(0f, initialDownwardSpeed, 0f);
         }
