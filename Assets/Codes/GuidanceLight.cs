@@ -100,6 +100,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
     /// <summary>光球正在演出（帶路飛行或吸收）時為 true，別的系統不要搶鏡頭。</summary>
     public bool IsBusy => IsAbsorbing || _cutsceneFlightCoroutine != null;
 
+    /// <summary>
+    /// ★1015 外部演出閘門：光球被碰到、玩家被鎖住之後、真正起飛（鏡頭跟過去）之前，會先把這段演完才放行。
+    /// 廢墟用它：先讓巨石砸碎石牆演完，光球才飛去 P14。回傳 null 或沒設＝不等。
+    /// </summary>
+    public System.Func<IEnumerator> DepartureGate;
+
     // 吸收完成的事件委派，供後續加成效果偵測
     public event System.Action OnAbsorbed;
 
@@ -499,6 +505,13 @@ public class GuidanceLight : MonoBehaviour, IResettable
             // 1. 立即鎖住玩家操作，但保留重力，讓她在空中會自然落下。
             BeginPlayerFlightLock(pm);
             isLockingPlayer = true;
+
+            // ★1015 外部演出先演完（例如巨石砸石牆），光球才起飛、鏡頭才跟過去
+            if (DepartureGate != null)
+            {
+                IEnumerator gate = DepartureGate();
+                if (gate != null) yield return StartCoroutine(gate);
+            }
 
             // 2. 只有 Waypoint_TouchCloseup 才借走鏡頭；Waypoint_Touch 只讓光絮前進，不做鏡頭跟隨。
             _usingCameraTargetOverride = useCloseup && Object.FindFirstObjectByType<CameraTargetXFollower>() != null;

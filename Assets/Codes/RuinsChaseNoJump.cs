@@ -24,6 +24,9 @@ public class RuinsChaseNoJump : MonoBehaviour
     /// <summary>石牆左邊多少米開始算（石牆本體的寬度要涵蓋進來）。</summary>
     public static float marginBeforeDoor = 1f;
 
+    /// <summary>★1015 她在這個路徑點碰到光球、巨石放下的那一刻起就不能跳（不用等石牆碎），免得跳過巨石不用推。</summary>
+    public static string startWaypointName = "P13";
+
     /// <summary>風暴路徑點名稱（推巨石階段的終點）。</summary>
     public static string endWaypointName = "P14";
 
@@ -35,6 +38,7 @@ public class RuinsChaseNoJump : MonoBehaviour
     PlayerMovement _pm;
     Destructible _door;
     float _doorX;
+    float _startX;   // ★1015 封鎖起點：P13（她碰光球放巨石的地方）和石牆取比較左的那個
     float _endX;
     bool _active;
 
@@ -76,12 +80,14 @@ public class RuinsChaseNoJump : MonoBehaviour
         }
 
         _endX = _doorX + fallbackLengthAfterDoor;
+        _startX = _doorX - marginBeforeDoor;
         GuidanceLight orb = FindAnyObjectByType<GuidanceLight>();
         if (orb != null && orb.waypoints != null)
         {
             foreach (Transform wp in orb.waypoints)
             {
-                if (wp != null && wp.name == endWaypointName) { _endX = wp.position.x; break; }
+                if (wp != null && wp.name == endWaypointName) _endX = wp.position.x;
+                if (wp != null && wp.name == startWaypointName) _startX = Mathf.Min(_startX, wp.position.x - marginBeforeDoor);
             }
         }
     }
@@ -101,8 +107,9 @@ public class RuinsChaseNoJump : MonoBehaviour
         }
 
         float x = _pm.transform.position.x;
-        bool block = _door.HasShattered
-                     && x >= _doorX - marginBeforeDoor
+        // ★1015 事件：石牆已砸碎，或是她已經在 P13 碰到光球、巨石放下（RuinsOrbDirector.PushPhase）
+        bool block = (_door.HasShattered || RuinsOrbDirector.PushPhase)
+                     && x >= _startX
                      && x < _endX
                      && !PlayerRespawnSystem.IsAnyRespawning;
 

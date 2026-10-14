@@ -514,6 +514,7 @@ public class PlayerMovement : MonoBehaviour
     public float underwaterDiveAccel = 12f;
 
     private bool _swimStrokeQueued;
+    private float _lastSwimWantTime = -99f;
     private bool _swimHoldBlocked;   // 按住划水到力竭後，要放開往上鍵才會恢復按住連划
 
     [Header("★1013 光球帶路時的水中定位（別沉太多游不回來）")]
@@ -1388,7 +1389,12 @@ public class PlayerMovement : MonoBehaviour
         // ★1013 力竭提示：黑圈邊緣亮一小圈紅
         if (UnderwaterSuffocationEffect.Instance != null)
         {
-            UnderwaterSuffocationEffect.Instance.SetSwimExhausted(isUnderwater && isSwimExhausted);
+            // ★1015 紅光只在「力竭、而且她還想往上游」時亮（按著或剛按過往上鍵）。
+            //   以前力竭一發生就亮，划到一半紅光突然冒出來，看起來像無緣無故的警示。
+            bool wantsUp = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+            if (wantsUp) _lastSwimWantTime = Time.time;
+            bool tryingWhileExhausted = isUnderwater && isSwimExhausted && (Time.time - _lastSwimWantTime) < 0.4f;
+            UnderwaterSuffocationEffect.Instance.SetSwimExhausted(tryingWhileExhausted);
         }
 
         // 陸地跳躍 (非水下、非演出中、非重生中)

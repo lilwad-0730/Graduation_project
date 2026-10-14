@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Text = UnityEngine.UI.Text;
 
 /// <summary>
 /// ★1009 廢墟的光球（1008 會議：廢墟 b、e；02 補十五 #34「去掉拉桿，光球放下巨石」、#37「風暴改由光球觸發，由左到右掃過」）。
@@ -27,6 +28,9 @@ using UnityEngine.SceneManagement;
 public class RuinsOrbDirector : MonoBehaviour
 {
     public static bool Enabled = true;
+
+    /// <summary>★1015 從她在 P13 碰到光球（巨石放下）到風暴之前＝推巨石階段。這段不能跳（RuinsChaseNoJump 讀這個）。</summary>
+    public static bool PushPhase;
 
     [Header("位置（路徑點名稱照修毅的場景）")]
     [Tooltip("她低於這個高度＝在廢墟")]
@@ -64,6 +68,22 @@ public class RuinsOrbDirector : MonoBehaviour
     [Tooltip("開場（拉近＋狼淡出）先演這麼久，龍捲風才從左邊出現")]
     public float stormLeadSeconds = 0.9f;
 
+    [Header("★1015 先演完砸石牆、再讓光球飛")]
+    [Tooltip("光球要起飛時，最多等巨石砸碎石牆多久（秒）。保底，避免石牆沒碎就卡住")]
+    public float gateMaxWaitSeconds = 8f;
+    [Tooltip("石牆碎了之後，再多停多久才讓光球飛（秒），讓玩家看清楚")]
+    public float gateHoldAfterBreakSeconds = 0.8f;
+
+    [Header("★1015 保險：她跑到巨石前面（沒有推）")]
+    [Tooltip("她比巨石還右邊超過這麼遠（公尺）＝越過巨石，拉回碰光球的地方")]
+    public float passBoulderMargin = 2.5f;
+    [Tooltip("拉回之後，這麼多秒內不再檢查（避免連續被拉）")]
+    public float passGuardCooldownSeconds = 3f;
+    [TextArea]
+    [Tooltip("拉回時顯示的提示文字")]
+    public string passBoulderHint = "光球帶你來到這裡了……\n要用力把巨石往前推，才能繼續前進。";
+    public float hintSeconds = 4.5f;
+
     public bool logEvents = true;
 
     private enum Stage { Idle, WaitLever, Releasing, WaitStorm, Storm }
@@ -82,6 +102,12 @@ public class RuinsOrbDirector : MonoBehaviour
     private Transform _leverWp, _stormWp;
     private Collider _pcol;
     private bool _pendingReset;
+    private Destructible _door;
+    private bool _gateActive;
+    private bool _hasPushStartPos;
+    private Vector3 _pushStartPos;
+    private float _guardCooldownUntil;
+    private Text _hintText;
     private readonly System.Collections.Generic.List<Behaviour> _frozen = new System.Collections.Generic.List<Behaviour>();
     private UnityEngine.UI.Image _fade;
 
@@ -131,6 +157,11 @@ public class RuinsOrbDirector : MonoBehaviour
             _stormWp = FindWaypoint(stormWaypointName);
         }
 
+        RuinsDoor rd = FindAnyObjectByType<RuinsDoor>();
+        if (rd != null) _door = rd.GetComponent<Destructible>();
+        if (_orb != null) _orb.DepartureGate = DepartureGateRoutine;
+        PushPhase = false;
+
         HideLever();
         DisableOldStormTriggers();
         HideTornado();
@@ -142,6 +173,8 @@ public class RuinsOrbDirector : MonoBehaviour
 
     private void OnDestroy()
     {
+        PushPhase = false;
+        if (_orb != null) _orb.DepartureGate = null;
         PlayerRespawnSystem.OnResettablesReset -= OnResettablesReset;
     }
 
@@ -198,8 +231,9 @@ public class RuinsOrbDirector : MonoBehaviour
     // ── 每幀 ─────────────────────────────────────────────────
     private void Update()
     {
-        if (!Enabled || _pm == null || _orb == null) return;
-        if (_stage == Stage.Storm) return;
+        if (!Enabled || _pm == null || _orb == null) { PushPhase = false; return; }
+        PushPhase = _stage == Stage.Releasing || _stage == Stage.WaitStorm || _gateActive;
+        if (_stage == Stage.Storm) { PushPhase = false; return; }
 
         if (_pendingReset)
         {
@@ -249,6 +283,17 @@ public class RuinsOrbDirector : MonoBehaviour
                     _orb.TeleportToWaypointName(stormWaypointName);
                     if (logEvents) Debug.Log("【廢墟光球】她沒碰 " + leverWaypointName + " 的光球就往前走了：光球直接到 " + stormWaypointName + " 等她");
                 }
+                // ★1015 保險：她越過巨石（跑到巨石右邊）、沒有推 → 拉回碰光球的地方，並提示要推巨石
+                if (_rock != null && RockReleased && _hasPushStartPos && !_pm.isCutsceneFrozen && !BoulderChallengeController.IsFailing
+                    && Time.time >= _guardCooldownUntil && p.x > _rock.transform.position.x + passBoulderMargin && p.x < stormPos.x - 12f)
+                {
+                    _guardCooldownUntil = Time.time + passGuardCooldownSeconds;
+                    if (logEvents) Debug.Log("【廢墟光球】她越過巨石了（人 x=" + p.x.ToString("F1") + "、巨石 x=" + _rock.transform.position.x.ToString("F1") + "）：拉回碰光球的地方並提示");
+                    _pm.WarpTo(_pushStartPos);
+                    ShowHint(passBoulderHint, hintSeconds);
+                    break;
+                }
+
                 bool touched = _stormWp != null && OrbAt(_stormWp) && PlayerTouchesOrb();
                 bool passed = p.x >= stormPos.x - 1f && Mathf.Abs(p.y - stormPos.y) < 8f;
                 if ((touched || passed) && !BoulderChallengeController.IsFailing && !_pm.isCutsceneFrozen) StartCoroutine(StormRoutine());
@@ -312,6 +357,9 @@ public class RuinsOrbDirector : MonoBehaviour
     private void EndRuins()
     {
         StopAllCoroutines();
+        _gateActive = false;
+        _hasPushStartPos = false;
+        PushPhase = false;
         _stage = Stage.Idle;
         if (_orb != null && !_orb.enabled) _orb.enabled = true;
     }
@@ -320,6 +368,8 @@ public class RuinsOrbDirector : MonoBehaviour
     private IEnumerator ReleaseRoutine()
     {
         _stage = Stage.Releasing;
+        _pushStartPos = _pm.transform.position;
+        _hasPushStartPos = true;
         Flare(40);
         PlayOrbSfx();
         yield return new WaitForSeconds(0.35f);
@@ -332,6 +382,80 @@ public class RuinsOrbDirector : MonoBehaviour
         }
         if (logEvents) Debug.Log("【廢墟光球】她在 " + leverWaypointName + " 碰到光球：巨石放下（取代拉桿）；光球照修毅的設定飛往 " + stormWaypointName);
         _stage = Stage.WaitStorm;
+    }
+
+    // ── ★1015 光球起飛前的閘門：先演完巨石砸碎石牆 ──────────────
+    private IEnumerator DepartureGateRoutine()
+    {
+        if (!Enabled || _stage == Stage.Idle || _stage == Stage.Storm) yield break;
+        if (_leverWp == null || !OrbAt(_leverWp)) yield break;   // 不是從 P13 起飛，不等
+
+        _gateActive = true;
+        PushPhase = true;
+        if (_stage == Stage.WaitLever) StartCoroutine(ReleaseRoutine());   // 她碰到光球＝放巨石（已經在放就不重複）
+
+        float t = 0f;
+        while (t < gateMaxWaitSeconds && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            if (_door == null || _door.HasShattered) break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+        float h = 0f;
+        while (h < gateHoldAfterBreakSeconds && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            h += Time.deltaTime;
+            yield return null;
+        }
+        if (logEvents) Debug.Log("【廢墟光球】石牆演完了（等了 " + t.ToString("F1") + " 秒）：光球起飛，鏡頭跟過去");
+        _gateActive = false;
+    }
+
+    // ── ★1015 提示文字 ───────────────────────────────────────
+    private void ShowHint(string msg, float seconds)
+    {
+        if (_hintText == null)
+        {
+            GameObject canvasObj = new GameObject("[廢墟提示]");
+            Canvas canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 9000;
+            canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
+            GameObject go = new GameObject("Hint");
+            go.transform.SetParent(canvasObj.transform, false);
+            _hintText = go.AddComponent<Text>();
+            _hintText.font = Font.CreateDynamicFontFromOSFont(new string[] { "Microsoft JhengHei", "Microsoft YaHei", "Arial" }, 34);
+            _hintText.fontSize = 34;
+            _hintText.alignment = TextAnchor.MiddleCenter;
+            _hintText.color = new Color(1f, 0.96f, 0.85f, 0f);
+            _hintText.raycastTarget = false;
+            go.AddComponent<UnityEngine.UI.Shadow>().effectDistance = new Vector2(2f, -2f);
+            RectTransform rt = _hintText.rectTransform;
+            rt.anchorMin = new Vector2(0.1f, 0.14f);
+            rt.anchorMax = new Vector2(0.9f, 0.34f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+        }
+        _hintText.text = msg;
+        StartCoroutine(HintRoutine(seconds));
+    }
+
+    private IEnumerator HintRoutine(float seconds)
+    {
+        float fade = 0.5f;
+        float t = 0f;
+        while (t < seconds)
+        {
+            t += Time.unscaledDeltaTime;
+            float a = Mathf.Clamp01(Mathf.Min(t / fade, (seconds - t) / fade));
+            Color c = _hintText.color;
+            c.a = a;
+            _hintText.color = c;
+            yield return null;
+        }
+        Color c0 = _hintText.color;
+        c0.a = 0f;
+        _hintText.color = c0;
     }
 
     // ── 風暴 ─────────────────────────────────────────────────
