@@ -31131,7 +31131,7 @@ ParticleSystem:
         m_RotationOrder: 4
     y:
       serializedVersion: 2
-      minMaxState: 3
+      minMaxState: 0
       scalar: -0.08
       minScalar: -0.25
       maxCurve:

@@ -1695,7 +1695,12 @@ public class PlayerMovement : MonoBehaviour
         Vector3 rayOrigin = center + facingDirection * (extents.x * 0.75f);
 
         Debug.DrawRay(rayOrigin, facingDirection * pullRange, Color.red, 2f);
-        RaycastHit[] hits = Physics.SphereCastAll(rayOrigin, 0.4f, facingDirection, pullRange);
+        // ★1014 原本用半徑 0.4 的 SphereCast，只掃玩家中心那一個 z 深度。
+        //   玩家站在 z≈-0.9、箱子在 z=0 而且很薄 (±0.1)，球從箱子前面擦過去 → 抓不到，
+        //   結果 Shift 只剩「身體頂著往前推」，不能往後拉。改用涵蓋玩家整個 z 厚度的 BoxCast。
+        Vector3 halfExtents = new Vector3(0.3f, extents.y * 0.7f, Mathf.Max(0.4f, extents.z));
+        RaycastHit[] hits = Physics.BoxCastAll(rayOrigin, halfExtents, facingDirection, Quaternion.identity, pullRange);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
         foreach (RaycastHit hit in hits)
         {
             if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
