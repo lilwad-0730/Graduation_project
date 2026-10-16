@@ -8,9 +8,10 @@ using UnityEngine.SceneManagement;
 ///
 ///   F6：傳送到光球旁邊（廢墟、棉花堡、水下的光球帶路；光球在飛就等牠停）
 ///   F8：往右傳送到下一個點　　F7：往左傳送到上一個點
-///     ・星空玻璃館：每一片玻璃地板（追逐、燭火、結局照常運作，只是不用自己跳）
+///     ・星空玻璃館：每一片玻璃地板（追逐、燭火、結局照常運作，只是不用自己跳）；
+///       傳送點會避開黑影觸發區（只靠測試鍵傳送不會開追，要測追逐就自己走進觸發區）
 ///     ・水下：還沒撿的日誌紙（由左到右）；F9 傳送到通關巨石旁邊
-///     ・其他關卡：場景裡的重生點（RespawnPoint）
+///     ・其他關卡：場景裡的重生點（RespawnPoint）；棉花堡另加第三個台階（照遊戲流程傳送到上層城堡）
 ///   演出、重生、文字卡期間不傳送。
 /// </summary>
 public class TesterKeys : MonoBehaviour
@@ -79,18 +80,33 @@ public class TesterKeys : MonoBehaviour
         }
         else if (sceneName.Contains("dark glasses"))
         {
+            // 黑影觸發區：傳送點落在裡面就往右挪出去（只用測試鍵傳送不會開追；要測追逐就自己走進觸發區）
+            List<Bounds> avoid = new List<Bounds>();
+            foreach (Collider c in FindObjectsByType<Collider>())
+                if (c != null && c.isTrigger && c.enabled && c.gameObject.name.Contains("ShadowMonsterTrigger")) avoid.Add(c.bounds);
             foreach (Collider c in FindObjectsByType<Collider>())
             {
                 if (c == null || c.isTrigger || !c.enabled) continue;
                 if (!c.gameObject.name.StartsWith("glass floor")) continue;
                 Bounds b = c.bounds;
-                pts.Add(new Vector3(b.center.x, b.max.y + 1.6f, 0f));
+                float x = b.center.x;
+                foreach (Bounds a in avoid)
+                    if (x > a.min.x - 1.5f && x < a.max.x + 1.5f) x = Mathf.Min(b.max.x - 0.5f, a.max.x + 1.5f);
+                pts.Add(new Vector3(x, b.max.y + 1.6f, 0f));
             }
         }
         else
         {
             foreach (GameObject g in GameObject.FindGameObjectsWithTag("RespawnPoint"))
                 if (g != null) pts.Add(g.transform.position);
+            // 棉花堡第三個台階（TeleportTrigger）：傳到台階左端上方，照遊戲本身的流程走兩步、白光傳送到上層城堡
+            foreach (TeleportTrigger t in FindObjectsByType<TeleportTrigger>(FindObjectsInactive.Exclude))
+            {
+                if (t == null) continue;
+                Collider c = t.GetComponent<Collider>();
+                if (c != null) pts.Add(new Vector3(c.bounds.min.x + 0.6f, c.bounds.max.y + 1.6f, 0f));
+                else pts.Add(t.transform.position + Vector3.up * 1.6f);
+            }
         }
         if (pts.Count == 0) { Debug.Log("【測試鍵】這個場景沒有可傳送的點"); return; }
         pts.Sort((a, b) => a.x.CompareTo(b.x));
