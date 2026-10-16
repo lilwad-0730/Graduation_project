@@ -49,6 +49,10 @@ using UnityEngine.Video;
 /// 巨石挑戰失敗時 BoulderChallengeController 拿到的 Instance 是它：被傳送的是空物件、相機跟著它掉進虛空（藍屏）、玩家留在原地被鎖住，
 /// 黑幕只有它的 2 秒（這裡拉長的是玩家身上那個的）。PlayerRespawnSystem 1008 起 Instance 只認玩家身上的；這裡也改成認「正在重生的那個」。
 ///
+/// ★1016 命運之書（24–26 章）：有 Resources/FateBook/ruins（廢墟頁）時，第一次死亡改成「黑裡翻回廢墟頁 → 命運那格（A）上墨 → 鏡頭推進 A →
+///   這張 D 連續頁在 A 裡面播（書中書）→ 拉回整頁 → 闔上」；之後每次被狼群追擊而死，翻回同一頁在 A 的格角加一道刻痕（≤ 3 秒）。
+///   畫面在 FateBookPage、狀態在 FateBookState、廢墟其他格的觸發在 FateBookRuins；FateBookState.Enabled = false 或沒有素材＝回到上面原本的流程。
+///
 /// 場景不用改：載入有 WolfEnemy 的場景時自動掛到 Player。
 /// </summary>
 [DisallowMultipleComponent]
@@ -239,7 +243,6 @@ public class FirstWolfDeathStory : MonoBehaviour
             _rs = running;
         }
         if (_rs == null) { DropFailCapture(); return; }
-        if (onlyOnce && ShownThisRun) { DropFailCapture(); return; }
 
         // ★1007 被狼群追擊而死：咬滿死亡門檻（wolvesToRespawn；原本拿減速分母 maxWolvesToStop＝6 判斷，永遠達不到）、
         //   巨石挑戰中被第一隻狼咬到而失敗、或在廢墟死掉時身上還咬著狼
@@ -253,6 +256,14 @@ public class FirstWolfDeathStory : MonoBehaviour
         bool wolfDeath = _testNext || bitten || boulderFail || dragged;
         _why = _testNext ? "測試" : bitten ? "被狼咬滿 " + bites + " 口" : boulderFail ? "巨石挑戰中被狼咬到" : dragged ? "死的時候身上咬著 " + attached + " 隻狼" : "";
         _testNext = false;
+
+        if (onlyOnce && ShownThisRun)
+        {
+            DropFailCapture();
+            // ★1016 命運之書：第一次之後每次被狼群追擊而死，黑幕裡翻回廢墟頁，命運那格的格角多一道刻痕（≤ 3 秒）
+            if (wolfDeath) TryBookDeathAgain();
+            return;
+        }
 
         // ★1006 影片：廢墟第一次死亡（被狼咬滿，或在廢墟高度死掉）
         if (useVideo)
@@ -594,7 +605,20 @@ public class FirstWolfDeathStory : MonoBehaviour
                         float fadeIn = Mathf.Max(0f, comicFadeIn);
                         total += fadeIn;
                         startsAtDeath = false;
-                        play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, tintUse, htUse, 0.25f, 2.6f, fadeIn, !comicPlainCapture), true);
+                        // ★1016 命運之書（24–26 章）：有廢墟頁（Resources/FateBook/ruins）就「書中書」——黑裡翻回廢墟頁、命運那格（A）上墨、
+                        //   鏡頭推進 A，這張 D 連續頁在 A 裡面播，播完拉回整頁再闔上。沒有廢墟頁或整包關著＝原本的流程。
+                        FateBookPage.Set book = FateBookState.Enabled ? FateBookPage.Set.Load(FateBookRuins.PageId) : null;
+                        if (book != null && !book.layout.PanelEnabled(book.layout.firstDeathPanel)) { book.Unload(); book = null; }
+                        if (book != null)
+                        {
+                            FateBookState.AddDeath(book.Id);   // 第一次死：之後每次死在格角加刻痕
+                            total += FateBookPage.FirstDeathOverhead;
+                            float innerFade = FateBookPage.CamMove;   // D 頁在鏡頭推進 A 的同時淡進來
+                            play = FreezeRoutine(cap => BookFirstDeath(book, cap, set, ph, pm, sp, camOn, tintUse, htUse, innerFade, !comicPlainCapture), true);
+                            if (logEvents) Debug.Log("[FirstWolfDeathStory] 命運之書：D 連續頁改在廢墟頁的 A 格裡播（多 " + FateBookPage.FirstDeathOverhead.ToString("F1") + " 秒）");
+                        }
+                        else
+                            play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, tintUse, htUse, 0.25f, 2.6f, fadeIn, !comicPlainCapture), true);
                     }
                     else
                     {
@@ -639,6 +663,37 @@ public class FirstWolfDeathStory : MonoBehaviour
         if (logEvents) Debug.Log("[FirstWolfDeathStory] 廢墟第一次被狼群追擊而死（" + _why + "）：播 " + version + "（" + total.ToString("F1") + " 秒），黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
         _routine = StartCoroutine(Run(play));
         return true;
+    }
+
+    // ── ★1016 命運之書 ──────────────────────────────────────
+    /// <summary>第一次死：廢墟頁翻開 → A 上墨 → 鏡頭推進 A → D 連續頁在 A 裡播 → 拉回 → 闔上。</summary>
+    private IEnumerator BookFirstDeath(FateBookPage.Set book, Texture2D cap, RespawnComicPlayer.DPageSet set, float[] ph, float[] pm, float sp,
+                                       bool camOn, Color tint, float ht, float innerFade, bool flash)
+    {
+        yield return FateBookPage.PlayFirstDeath(UIRoot(), book,
+            root => RespawnComicPlayer.PlayDPage(root, cap, set, ph, pm, sp, camOn, tint, ht, 0.25f, 2.6f, innerFade, flash));
+        book.Unload();
+    }
+
+    /// <summary>第一次之後每次被狼群追擊而死：黑幕裡翻回廢墟頁、A 的格角加一道刻痕（≤ 3 秒）。沒有廢墟頁、A 還沒上墨、或整包關著＝照原本直接黑幕。</summary>
+    private void TryBookDeathAgain()
+    {
+        if (!FateBookState.Enabled || _rs == null || _routine != null) return;
+        FateBookPage.Set book = FateBookPage.Set.Load(FateBookRuins.PageId);
+        if (book == null) return;
+        if (!FateBookState.IsInked(book.Id, book.layout.firstDeathPanel) || !book.layout.PanelEnabled(book.layout.firstDeathPanel)) { book.Unload(); return; }
+        int n = FateBookState.AddDeath(book.Id);
+        FreezeWolves(true);
+        _originalBlackTime = _rs.blackScreenTime;
+        _rs.blackScreenTime = Mathf.Max(_originalBlackTime, FateBookPage.DeathAgainDuration + 0.3f);
+        if (logEvents) Debug.Log("[FirstWolfDeathStory] 命運之書：第 " + n + " 次死（" + _why + "），翻回廢墟頁加一道刻痕，黑幕拉長到 " + _rs.blackScreenTime.ToString("F1") + " 秒");
+        _routine = StartCoroutine(Run(AfterBlack(BookDeathAgain(book))));
+    }
+
+    private IEnumerator BookDeathAgain(FateBookPage.Set book)
+    {
+        yield return FateBookPage.PlayDeathAgain(UIRoot(), book);
+        book.Unload();
     }
 
     private static bool IsOldStripPreset(float[] tops)

@@ -1,0 +1,214 @@
+{
+ "id": "ruins",
+ "layout": "fate_book_v1",
+ "title": "命運之書・廢墟頁",
+ "designW": 1920,
+ "designH": 1080,
+ "paper": "#2C2936",
+ "pencil": "#C4C0CE",
+ "frame": "#968CA4",
+ "panels": [
+  {
+   "key": "B",
+   "x": 32,
+   "y": 32,
+   "w": 528,
+   "h": 408,
+   "trigger": "進場",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "C",
+   "x": 572,
+   "y": 32,
+   "w": 308,
+   "h": 408,
+   "trigger": "放巨石",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "H",
+   "x": 892,
+   "y": 32,
+   "w": 288,
+   "h": 408,
+   "trigger": "—",
+   "neverInk": true,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "D",
+   "x": 1192,
+   "y": 32,
+   "w": 696,
+   "h": 408,
+   "trigger": "得到點 2",
+   "neverInk": false,
+   "photo": true,
+   "pad": 18,
+   "enabled": true
+  },
+  {
+   "key": "E",
+   "x": 32,
+   "y": 452,
+   "w": 233,
+   "h": 596,
+   "trigger": "坡 1/3",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "F",
+   "x": 277,
+   "y": 452,
+   "w": 233,
+   "h": 596,
+   "trigger": "坡 2/3",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "G",
+   "x": 522,
+   "y": 452,
+   "w": 233,
+   "h": 596,
+   "trigger": "坡 3/3",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "I",
+   "x": 767,
+   "y": 452,
+   "w": 233,
+   "h": 596,
+   "trigger": "結束",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  },
+  {
+   "key": "A",
+   "x": 1012,
+   "y": 452,
+   "w": 876,
+   "h": 596,
+   "trigger": "第一次死",
+   "neverInk": false,
+   "photo": false,
+   "pad": 0,
+   "enabled": true
+  }
+ ],
+ "inkOrder": [
+  "B",
+  "D",
+  "C",
+  "E",
+  "F",
+  "G",
+  "A",
+  "I"
+ ],
+ "enterPanel": "B",
+ "firstDeathPanel": "A",
+ "endPanel": "I",
+ "tally": {
+  "panel": "A",
+  "x": 1034,
+  "y": 1022,
+  "dx": 10,
+  "len": 20,
+  "max": 12
+ },
+ "stops": [
+  {
+   "name": "enter_page",
+   "cx": 960,
+   "cy": 540,
+   "zoom": 1.0,
+   "hold": 0.6
+  },
+  {
+   "name": "enter_panel",
+   "cx": 296.0,
+   "cy": 236.0,
+   "zoom": 2.2,
+   "hold": 1.6
+  },
+  {
+   "name": "death_page",
+   "cx": 960,
+   "cy": 540,
+   "zoom": 1.0,
+   "hold": 2.0
+  },
+  {
+   "name": "death_panel",
+   "cx": 1450.0,
+   "cy": 750.0,
+   "zoom": 1.6,
+   "hold": 1.5
+  },
+  {
+   "name": "death_inner",
+   "cx": 1450.0,
+   "cy": 750.0,
+   "zoom": 2.192,
+   "hold": 0.0
+  },
+  {
+   "name": "again_panel",
+   "cx": 1450.0,
+   "cy": 750.0,
+   "zoom": 1.6,
+   "hold": 2.5
+  },
+  {
+   "name": "end_page",
+   "cx": 960,
+   "cy": 540,
+   "zoom": 1.0,
+   "hold": 0.6
+  },
+  {
+   "name": "end_panel",
+   "cx": 883.5,
+   "cy": 750.0,
+   "zoom": 1.8,
+   "hold": 1.5
+  }
+ ],
+ "ruins": {
+  "landBelowY": -60.0,
+  "landSettleSeconds": 0.6,
+  "photoPastWaypoint": "P13",
+  "photoPastMeters": 8.0,
+  "pushWaypointStart": "P13",
+  "pushWaypointEnd": "P14",
+  "pushFractions": [
+   0.33,
+   0.66,
+   0.97
+  ],
+  "nextSceneName": "desert"
+ },
+ "enabled": true
+}
