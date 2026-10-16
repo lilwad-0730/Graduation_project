@@ -252,6 +252,47 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private bool _finaleDash;
     private bool _vanishDone;
 
+    [Header("★1016 重生後：不在黑幕裡出場，等她動了才從身後出現")]
+    [Tooltip("重生點就在觸發區旁邊，重生的黑幕期間她一被放回去就踩到觸發區，怪物在黑幕裡就出場開追，畫面一亮牠已經貼上來。\n" +
+             "打開＝黑幕期間先不出場，等重生完成、她開始移動（或等 respawnAppearMaxWait 秒）才從她身後 spawnDistanceBehindPlayer 公尺出現。\n" +
+             "關掉＝原本（黑幕裡就出場）。第一次進玻璃館不受影響（照常演登場運鏡）")]
+    public bool deferActivationDuringRespawn = true;
+
+    [Tooltip("重生完成後她一直不動，最多等幾秒怪物就出場")]
+    public float respawnAppearMaxWait = 4f;
+
+    [Tooltip("她開始移動之後，再等幾秒怪物才出場（給一點起跑的空間）")]
+    public float respawnAppearDelayAfterMove = 0.6f;
+
+    [Header("★1016 追逐的耐心：她一直在往前，就只跟在身後")]
+    [Tooltip("打開＝她最近 chasePatienceSeconds 秒內有往前進，怪物最近只跟到她身後 hoverLag 公尺，不再逼近、不出爪；\n" +
+             "她停下來（或往回走）超過這個時間，怪物才逼近出爪。等移動平台（最久約 6.4 秒）、上下輸送平台都夠用。\n" +
+             "關掉＝原本（停下來等平台就會被追上）")]
+    public bool holdBackWhilePlayerProgressing = true;
+
+    [Tooltip("耐心期間怪物離她最近幾公尺（要大於 attackTriggerDistance，不然會直接出爪）")]
+    public float hoverLag = 16f;
+
+    [Tooltip("她多久沒往前進，怪物就不再等、逼近出爪（秒）")]
+    public float chasePatienceSeconds = 9f;
+
+    [Tooltip("往前超過幾公尺才算「有往前進」")]
+    public float progressStep = 0.5f;
+
+    [Header("★1016 追逐中途存檔點")]
+    [Tooltip("打開＝她站上下面這些位置之後，死掉就從那裡重生（不用從玻璃館起點重追 340 公尺），\n" +
+             "怪物等她動了再從她身後出現；已經在怪物身後、牠吃不到的燭火算牠吃過。\n" +
+             "關掉＝原本（每次都回到起點、燭火全部復原）")]
+    public bool useChaseCheckpoints = true;
+
+    [Tooltip("中途存檔點（世界座標 X, Y；Y 會由重生系統往下貼地）。預設：過了移動平台、過了上下輸送平台、翻過高台玻璃牆")]
+    public Vector2[] chaseCheckpoints = new Vector2[]
+    {
+        new Vector2(55f, -34.5f),
+        new Vector2(142.5f, -34.5f),
+        new Vector2(229.5f, -34.5f),
+    };
+
     [Header("重生系統參考")]
     [Tooltip("留空時自動尋找場景中的 PlayerRespawnSystem")]
     public PlayerRespawnSystem respawnSystem;
@@ -332,6 +373,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     /// <summary> 全域查詢：怪物登場演出中 </summary>
     public static bool IsAnyRevealRunning => Instance != null && (Instance._revealActive || Instance._revealCamTaken);
+
+    // ★1016 重生後延後出場／耐心／中途存檔點
+    private bool _activationPending = false;
+    private bool _chaseEverActivated = false;   // 這個場景裡追逐開始過（重生後要不要自己重新開追）
+    private Coroutine _deferCoroutine;
+    private int _chaseCheckpointIndex = -1;   // 已經站上的最遠一個中途存檔點（-1＝還沒有）
+    private float _progressMaxX = float.NegativeInfinity;
+    private float _lastProgressTime = 0f;
 
     // Coroutine 追蹤
     private Coroutine _stateCoroutine;
@@ -595,11 +644,43 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _endingFired = false;
         IsRevealRunning = false;
         _revealPlayed = false;
+        _chaseCheckpointIndex = -1;
 
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
         EnsureInitialized();
+    }
+
+    void OnEnable()
+    {
+        PlayerRespawnSystem.OnResettablesReset += HandleResettablesReset;
+    }
+
+    void OnDisable()
+    {
+        PlayerRespawnSystem.OnResettablesReset -= HandleResettablesReset;
+    }
+
+    /// <summary>
+    /// ★1016 重生的黑幕中、全場景重置完之後：如果追逐已經過了中途存檔點，
+    /// 她會在存檔點重生（不會踩到起點的觸發區），由這裡安排「等她動了再從身後出場」。
+    /// </summary>
+    private void HandleResettablesReset()
+    {
+        if (Instance != this) return;
+        if (currentState != MonsterState.Dormant) return;
+
+        bool fromCheckpoint = useChaseCheckpoints && _chaseCheckpointIndex >= 0;
+        // ★1016 追逐開始過之後死掉：不靠觸發區重新開追。
+        //   她如果是站在觸發區裡被抓（例如一開追就站著不動），重生點又在觸發區裡，
+        //   她從頭到尾都「在觸發區裡面」，不會再有「進入」事件，怪物就永遠不會再出現（1016 實測）。
+        if (!fromCheckpoint && !(deferActivationDuringRespawn && _chaseEverActivated)) return;
+
+        Debug.Log(fromCheckpoint
+            ? $"【影子怪物】★1016 從中途存檔點 #{_chaseCheckpointIndex + 1} 重生：等她醒來、開始移動，再從她身後出場"
+            : "【影子怪物】★1016 追逐中死掉重生：等她醒來、開始移動，再從她身後出場");
+        BeginDeferredActivation();
     }
 
     void Start()
@@ -616,6 +697,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         EnsurePlayerReference();
         UpdateGameplayCollidersPosition();
+        UpdateChaseCheckpoints();
 
         switch (currentState)
         {
@@ -691,6 +773,56 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (currentState != MonsterState.Dormant) return;
 
+        // ★1016 重生的黑幕期間（她一被放回重生點就踩到觸發區）先不出場，等她醒來、開始移動
+        if (deferActivationDuringRespawn && (PlayerRespawnSystem.IsAnyRespawning || _activationPending))
+        {
+            BeginDeferredActivation();
+            return;
+        }
+
+        ActivateChaseNow();
+    }
+
+    /// <summary>★1016 安排「重生完成 → 她開始移動（或等夠久）→ 出場」。重複呼叫只算一次。</summary>
+    private void BeginDeferredActivation()
+    {
+        if (_activationPending) return;
+        if (!isActiveAndEnabled) return;
+        _activationPending = true;
+        _deferCoroutine = StartCoroutine(DeferredActivationRoutine());
+    }
+
+    private IEnumerator DeferredActivationRoutine()
+    {
+        Debug.Log("【影子怪物】★1016 重生中：先不出場，等她醒來、開始移動");
+
+        // 1. 等重生整段演完（黑幕、甦醒、解鎖）
+        while (PlayerRespawnSystem.IsAnyRespawning) yield return null;
+
+        // 2. 等她開始移動（重生系統偵測左右移動），最多等 respawnAppearMaxWait 秒
+        float waited = 0f;
+        while (!PlayerRespawnSystem.IsPlayerMovingAfterRespawn && waited < Mathf.Max(0f, respawnAppearMaxWait))
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
+
+        // 3. 再給一點起跑的空間
+        if (respawnAppearDelayAfterMove > 0f) yield return new WaitForSeconds(respawnAppearDelayAfterMove);
+
+        _activationPending = false;
+        _deferCoroutine = null;
+        if (currentState == MonsterState.Dormant && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            ActivateChaseNow();
+        }
+    }
+
+    private void ActivateChaseNow()
+    {
+        if (currentState != MonsterState.Dormant) return;
+        _chaseEverActivated = true;
+
         // ★開場先把怪物擺到主角後方一段距離。
         //   場景裡牠只離觸發點 23 單位，而鏡頭一次就看得到 48 單位寬——
         //   等於一開始怪物就貼在臉上，沒有跑的空間。
@@ -705,8 +837,70 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             Debug.Log($"【影子怪物】開場定位：主角 x={player.position.x:F1}，怪物擺到 x={sp.x:F1}（後方 {spawnDistanceBehindPlayer} 單位）");
         }
 
+        // ★1016 從中途存檔點重生時，怪物身後（牠再也走不到）的燭火算牠吃過，
+        //   不然最後一根會被當成「沒吃齊」而進懲罰、結局永遠不會來。第一次開追時怪物身後沒有燭火，這行不影響。
+        SilentlyCollectCandlesBehind(transform.position.x - candleReachX);
+
+        // ★1016 耐心計時從開追這一刻算起
+        _progressMaxX = player != null ? player.position.x : float.NegativeInfinity;
+        _lastProgressTime = Time.time;
+
         if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
         _stateCoroutine = StartCoroutine(AppearSequence());
+    }
+
+    /// <summary>★1016 把 X 小於 limitX、還沒被吃的燭火，安靜地算成已吃（不播受擊、不觸發懲罰），並同步怪物的大小。</summary>
+    private void SilentlyCollectCandlesBehind(float limitX)
+    {
+        if (candles == null) return;
+        int added = 0;
+        foreach (var c in candles)
+        {
+            if (c == null || c.isCollected) continue;
+            if (c.transform.position.x >= limitX) continue;
+            c.MarkCollectedSilently();
+            added++;
+        }
+        if (added == 0) return;
+
+        _candlesCollected = 0;
+        foreach (var c in candles) if (c != null && c.isCollected) _candlesCollected++;
+        _currentScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+        ApplyCurrentScale();
+        Debug.Log($"【影子怪物】★1016 怪物身後的 {added} 根燭火算吃過（共 {_candlesCollected}/{_totalCandles}），大小 ×{_currentScaleMultiplier:F2}");
+    }
+
+    /// <summary>★1016 追逐中她站上中途存檔點 → 更新重生點。</summary>
+    private void UpdateChaseCheckpoints()
+    {
+        if (!useChaseCheckpoints || chaseCheckpoints == null || chaseCheckpoints.Length == 0) return;
+        if (currentState != MonsterState.Chasing && currentState != MonsterState.Appearing) return;
+        if (player == null || _pm == null || !_pm.isGrounded) return;
+        if (PlayerRespawnSystem.IsAnyRespawning) return;
+
+        float px = player.position.x;
+        for (int i = chaseCheckpoints.Length - 1; i > _chaseCheckpointIndex; i--)
+        {
+            if (px < chaseCheckpoints[i].x) continue;
+            _chaseCheckpointIndex = i;
+            Vector3 cp = new Vector3(chaseCheckpoints[i].x, chaseCheckpoints[i].y, 0f);
+            PlayerRespawnSystem rs = PlayerRespawnSystem.Instance != null ? PlayerRespawnSystem.Instance : respawnSystem;
+            if (rs != null) rs.SetSafeGroundPosition(cp);
+            Debug.Log($"🚩【影子怪物】★1016 追逐中途存檔點 #{i + 1}：重生點改到 {cp}");
+            break;
+        }
+    }
+
+    /// <summary>★1016 耐心：記錄她往前（+X）最遠到哪、最後一次往前是什麼時候。</summary>
+    private void UpdatePlayerProgress()
+    {
+        if (player == null) return;
+        float px = player.position.x;
+        if (float.IsNegativeInfinity(_progressMaxX) || px > _progressMaxX + Mathf.Max(0.05f, progressStep))
+        {
+            _progressMaxX = px;
+            _lastProgressTime = Time.time;
+        }
     }
 
     public void OnCandleCollected(CandleCollectible candle)
@@ -844,6 +1038,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         currentState = MonsterState.Chasing;
+        // ★1016 耐心從「她能動了」這一刻重新算（登場運鏡六秒期間她不能動，不能算她沒往前）
+        if (player != null) _progressMaxX = player.position.x;
+        _lastProgressTime = Time.time;
         Debug.Log("【影子怪物】登場完成，全力追逐！");
     }
 
@@ -1314,7 +1511,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     /// <summary> 真實巨爪揮擊判定演出：抬手前搖 ➔ 巨爪揮下碰撞檢測 ➔ 命中定身與震動 ➔ 轉場重生 </summary>
     private IEnumerator ClawAttackSequence()
     {
-        Debug.Log("【影子怪物】進入揮爪距離，開始抬手準備揮擊 (attack2)...");
+        Debug.Log($"【影子怪物】進入揮爪距離，開始抬手準備揮擊 (attack2)...（怪物 x={transform.position.x:F1}、主角 x={(player != null ? player.position.x : 0f):F1}）");
 
         // 1. 播放 attack2 揮爪動畫 (開始抬手前搖)
         PlayAnimationByName(attackAnimationName);
@@ -1424,7 +1621,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private void EnsurePlayerReference()
     {
-        if (player != null) return;
+        if (player != null)
+        {
+            // ★1016 場景裡 player 欄位已經拖好時，原本直接 return、_pm 永遠是 null：
+            //   怪物用的主角速度變成預設 5（實際 6）、結局時主角沒被定住。這裡補抓一次。
+            if (_pm == null)
+            {
+                _pm = player.GetComponent<PlayerMovement>();
+                if (_pm == null) _pm = player.GetComponentInChildren<PlayerMovement>();
+                if (_pm == null) _pm = player.GetComponentInParent<PlayerMovement>();
+            }
+            return;
+        }
 
         GameObject p = GameObject.FindWithTag("Player");
         if (p == null)
@@ -1603,6 +1811,21 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             CheckCatch();
             return;
+        }
+
+        // ★1016 耐心：她最近有往前進，就只跟到她身後 hoverLag 公尺（不後退，只是不再逼近）
+        if (holdBackWhilePlayerProgressing && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing))
+        {
+            UpdatePlayerProgress();
+            if (Time.time - _lastProgressTime < chasePatienceSeconds)
+            {
+                float side = player.position.x >= transform.position.x ? 1f : -1f;
+                float keep = Mathf.Max(hoverLag, attackTriggerDistance + 1f);
+                float hoverX = player.position.x - side * keep;
+                targetX = side > 0f
+                    ? Mathf.Max(transform.position.x, Mathf.Min(targetX, hoverX))
+                    : Mathf.Min(transform.position.x, Mathf.Max(targetX, hoverX));
+            }
         }
 
         float newX = Mathf.MoveTowards(transform.position.x, targetX, currentSpeed * Time.deltaTime);
@@ -2016,6 +2239,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         StopAllCoroutines();
         _stateCoroutine = null;
         _hitShrinkCoroutine = null;
+        _deferCoroutine = null;
+        _activationPending = false;   // ★1016 延後出場的等待也一起取消（重生流程會再安排）
         _isHitShrinking = false;
         _finaleDash = false;
         _currentAnimName = "";

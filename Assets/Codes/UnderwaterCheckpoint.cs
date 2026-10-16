@@ -10,6 +10,14 @@ public static class UnderwaterCheckpoint
 {
     private static PlayerRespawnSystem _respawn;
 
+    /// <summary>
+    /// ★1016 最近撿到的回憶就是重生點（不再只往「離起點更遠」的方向更新）。
+    /// 原本有前進保護：重生點只會往離起點更遠的地方移。但水下的日誌是散在上上下下的，
+    /// 先撿了深處的、再回頭撿淺處的，溺斃就回到深處、要再往上爬三十幾公尺。
+    /// true＝每撿一個就把重生點設在那裡；false＝原本的前進保護。
+    /// </summary>
+    public static bool latestPickupAlwaysWins = true;
+
     public static void MarkHere(Component near, string reason)
     {
         if (UnderwaterSuffocationEffect.Instance == null) return;   // 不是水下關
@@ -31,6 +39,14 @@ public static class UnderwaterCheckpoint
             if (_respawn == null) _respawn = Object.FindFirstObjectByType<PlayerRespawnSystem>();
         }
         if (_respawn == null) return;
+
+        if (latestPickupAlwaysWins)
+        {
+            // ★1016 最近撿到的那裡就是重生點
+            _respawn.SetSafeGroundPosition(pm.transform.position);
+            Debug.Log($"🚩【存檔點系統】水下存檔點：{reason} → 重生點設在這裡 {pm.transform.position}");
+            return;
+        }
 
         // 帶前進保護：回頭撿漏掉的日誌不會讓重生點倒退回更前面的位置
         _respawn.TrySetProgressCheckpoint(pm.transform.position, "水下存檔點：" + reason);

@@ -22,6 +22,12 @@ public class QuestClearBarrierRock : MonoBehaviour
     [Tooltip("請將場景中所有需收集的物件 (如 Note Paper、日記等) 拖入此清單")]
     public GameObject[] requiredItems;
 
+    [Header("★1016 撿到 requiredDiaryCount 張日誌也開（跟清單二擇一，先達成的算）")]
+    [Tooltip("水下場景目前是 clearByDiaryCount 關著、requiredItems 要收齊 6 樣（其中一張在左邊石牆外的窄縫、一張沒有卡），實玩要一個半小時。\n" +
+             "打開＝requiredItems 收齊，或撿到 requiredDiaryCount 張日誌卡（D1~D3，任意三張紙），哪個先達成都開巨石（企劃定案「收齊日誌 → 巨石碎開」）。\n" +
+             "關掉＝原本（只看 clearByDiaryCount 的設定）")]
+    public bool alsoClearByDiaryCount = true;
+
     [Header("🎬 鏡頭特寫演出設定")]
     [Tooltip("鏡頭由主角移向巨石的平滑過渡時間 (秒)")]
     public float cameraPanToRockDuration = 1.0f;
@@ -197,7 +203,7 @@ public class QuestClearBarrierRock : MonoBehaviour
         if (_hasTriggered) return;
 
 
-        bool byDiary = clearByDiaryCount && StoryCardNoteHook.PickedCount >= Mathf.Max(1, requiredDiaryCount);
+        bool byDiary = (clearByDiaryCount || alsoClearByDiaryCount) && StoryCardNoteHook.PickedCount >= Mathf.Max(1, requiredDiaryCount);
         bool byItems = !clearByDiaryCount && CheckAllItemsCollected();
         if (byDiary || byItems)
         {

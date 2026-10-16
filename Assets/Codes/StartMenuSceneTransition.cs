@@ -60,7 +60,23 @@ public sealed class StartMenuSceneTransition : MonoBehaviour
         if (buttonCollider != null)
             buttonCollider.enabled = false;
 
-        transitioner.LoadScene(targetSceneName, transitionEffect);
+        // ★1016 測試模式（遊戲旁邊放了 WoNiTa_TESTER.txt、裡面寫 start=場景名）：直接進指定的關卡
+        string sceneToLoad = targetSceneName;
+        string testerStart = TesterMode.StartScene;
+        if (!string.IsNullOrEmpty(testerStart))
+        {
+            if (Application.CanStreamedLevelBeLoaded(testerStart))
+            {
+                sceneToLoad = testerStart;
+                Debug.LogWarning($"[StartMenuSceneTransition] 測試模式：直接進「{testerStart}」", this);
+            }
+            else
+            {
+                Debug.LogWarning($"[StartMenuSceneTransition] 測試檔指定的場景「{testerStart}」不在打包清單裡，照常進 {targetSceneName}", this);
+            }
+        }
+
+        transitioner.LoadScene(sceneToLoad, transitionEffect);
 
         // ★1011 轉場器如果正「卡在轉場中」會直接忽略這次呼叫，按鈕卻已經被關掉＝永遠按不動。
         //   沒有真的開始轉場就把按鈕還原，讓玩家可以再按一次。

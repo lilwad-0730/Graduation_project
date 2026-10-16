@@ -35,8 +35,13 @@ public class UnderwaterBreathGuide : MonoBehaviour
     public float closeupOrthoSize = 10f;
 
     [Header("重複引導")]
-    [Tooltip("每次引導結束後，至少隔幾秒才會再引導（玩家還沒換氣、又快窒息時會一直重複）")]
-    public float repeatCooldownSeconds = 8f;
+    [Tooltip("每次引導結束後，至少隔幾秒才會再引導（玩家還沒換氣、又快窒息時會一直重複）。★1016 8 → 20")]
+    public float repeatCooldownSeconds = 20f;
+
+    [Tooltip("★1016 每口氣只引導一次：引導過之後，要等氣恢復（危險程度回到 minDanger 以下，例如碰到光球、換氣、重生）才會再引導。\n" +
+             "原本每 8 秒就再拉一次鏡頭、每次定住約 5 秒，氣快沒的時候幾乎一直被定住、很難操作。關掉＝只看 repeatCooldownSeconds")]
+    public bool oncePerBreath = true;
+    private bool _waitBreathRecover;
     [Tooltip("目標離玩家這麼近（公尺）就不拉鏡頭，因為本來就在眼前")]
     public float tooCloseToPan = 6f;
 
@@ -58,6 +63,13 @@ public class UnderwaterBreathGuide : MonoBehaviour
         if (Time.unscaledTime < _nextScan) return;
         _nextScan = Time.unscaledTime + 0.25f;
 
+        // ★1016 每口氣只引導一次：氣恢復（危險程度回到 minDanger 以下）之後才重新開放
+        if (_waitBreathRecover)
+        {
+            if (fx.Danger01 < minDanger) _waitBreathRecover = false;
+            else return;
+        }
+
         Transform target = PickTarget(out float dist);
         if (target == null) return;
 
@@ -68,6 +80,7 @@ public class UnderwaterBreathGuide : MonoBehaviour
         if (Time.time < _nextGuideTime) return;
         if (fx.Danger01 < minDanger) return;
         if (left > need) return;
+        if (oncePerBreath) _waitBreathRecover = true;
 
         _nextGuideTime = Time.time + repeatCooldownSeconds;   // 先排冷卻；引導結束後會再重排一次
         if (dist <= tooCloseToPan)

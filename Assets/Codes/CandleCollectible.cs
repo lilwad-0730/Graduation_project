@@ -164,6 +164,33 @@ public class CandleCollectible : MonoBehaviour, IResettable
         TryCollect();
     }
 
+    /// <summary>
+    /// ★1016 安靜地算成已收集：不通知怪物、不播音效特效，只把狀態設好、外觀藏起來。
+    /// 給「追逐中途存檔點重生」用：怪物身後、牠再也走不到的燭火，算牠吃過（由 ShadowMonsterController 自己同步數量與大小）。
+    /// </summary>
+    public void MarkCollectedSilently()
+    {
+        isCollected = true;
+        if (_col == null) _col = GetComponent<Collider>();
+        if (_col != null) _col.enabled = false;
+
+        CandleAuraGlow aura = GetComponent<CandleAuraGlow>();
+        if (aura != null)
+        {
+            aura.HideAura();
+        }
+        else
+        {
+            RefreshVisualComponents();
+            foreach (var renderer in _renderers)
+                if (renderer != null) renderer.enabled = false;
+            foreach (var l in _lights)
+                if (l != null) l.enabled = false;
+            foreach (var ps in _particles)
+                if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // 私有：怪物判定（多重驗證）
     // ──────────────────────────────────────────────────────────────────────────

@@ -336,7 +336,8 @@ public class MainMenuController : MonoBehaviour
         // 備用：場景裡沒有 StartMenuSceneTransition 時，直接開新局並載入第一關
         Debug.LogWarning("【主選單】找不到 StartMenuSceneTransition，改用備用路線直接載入 " + targetSceneName);
         GameFlow.StartNewRun();
-        SceneManager.LoadScene(targetSceneName);
+        string testerStart = TesterMode.StartScene;   // ★1016 測試模式指定的起始關卡（沒有就照常）
+        SceneManager.LoadScene(!string.IsNullOrEmpty(testerStart) && Application.CanStreamedLevelBeLoaded(testerStart) ? testerStart : targetSceneName);
     }
 
     private static void FocusOf(GameObject item)

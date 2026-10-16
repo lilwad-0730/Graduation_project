@@ -99,6 +99,18 @@ public class RuinsOrbDirector : MonoBehaviour
              "Play 中可以直接拉（馬上重放）；要保留就改程式裡的預設值")]
     [Range(0.3f, 1f)] public float stormSlopeFraction = 0.6f;
 
+    [Header("★1016 砸完石牆，巨石滾到推巨石的起點")]
+    [Tooltip("巨石砸碎石牆後停在牆下（x≈119.8），就在最上面那階石台旁邊：她從石台走下來會直接落在巨石頂上、被當成「越過巨石」拉回去；\n" +
+             "而且第一次推的起點（119.8）跟死掉重來的起點（Boulder Spawn 140.9）不一樣。\n" +
+             "打開＝石牆碎了、光球起飛時，巨石順勢滾過碎牆，停在 Boulder Spawn（之後第一次推跟重來一樣）。關掉＝原本（停在牆下）")]
+    public bool rollBoulderToChallengeStart = true;
+    [Tooltip("滾過去的最高速度（公尺／秒）")]
+    public float boulderRollMaxSpeed = 7f;
+    [Tooltip("快到起點時的減速度（公尺／秒²），越小越早開始慢下來")]
+    public float boulderRollDecel = 3.5f;
+    [Tooltip("最多滾幾秒；超過（被什麼卡住）就直接放到起點")]
+    public float boulderRollMaxSeconds = 8f;
+
     public bool logEvents = true;
 
     private enum Stage { Idle, WaitLever, Releasing, WaitStorm, Storm }
@@ -429,6 +441,60 @@ public class RuinsOrbDirector : MonoBehaviour
         }
         if (logEvents) Debug.Log("【廢墟光球】石牆演完了（等了 " + t.ToString("F1") + " 秒）：光球起飛，鏡頭跟過去");
         _gateActive = false;
+
+        // ★1016 巨石順勢滾過碎牆，停在推巨石的起點（Boulder Spawn）
+        if (rollBoulderToChallengeStart && _door != null && _door.HasShattered && !PlayerRespawnSystem.IsAnyRespawning)
+            StartCoroutine(RollBoulderToChallengeStartRoutine());
+    }
+
+    /// <summary>★1016 砸完石牆：巨石往右滾到 Boulder Spawn 停下（用物理滾，外觀會跟著轉）。</summary>
+    private IEnumerator RollBoulderToChallengeStartRoutine()
+    {
+        BoulderChallengeController bcc = BoulderChallengeController.Instance;
+        Transform spawn = bcc != null ? bcc.BoulderSpawnPoint : null;
+        if (_rock == null || spawn == null) yield break;
+
+        float targetX = spawn.position.x;
+        if (_rock.position.x >= targetX - 0.3f) yield break;   // 已經在起點（或更右邊）
+
+        if (_rock.isKinematic) yield break;                     // 還沒放開就不動它
+        float startX = _rock.position.x;
+        if (logEvents) Debug.Log("【廢墟光球】★1016 巨石滾過碎牆：x " + startX.ToString("F1") + " → 推巨石起點 " + targetX.ToString("F1"));
+
+        float t = 0f;
+        float maxSpeed = Mathf.Max(0.5f, boulderRollMaxSpeed);
+        float decel = Mathf.Max(0.1f, boulderRollDecel);
+        while (t < boulderRollMaxSeconds)
+        {
+            if (_rock == null || _rock.isKinematic) yield break;
+            if (PlayerRespawnSystem.IsAnyRespawning || BoulderChallengeController.IsFailing) yield break;
+            if (RollingRockVisual.ActivelyPushed != null) break;   // 她已經上來推了，交給她
+
+            float remain = targetX - _rock.position.x;
+            if (remain <= 0.05f) break;
+            float v = Mathf.Min(maxSpeed, Mathf.Sqrt(2f * decel * remain));   // 越接近越慢，剛好停在起點
+            v = Mathf.Max(v, 0.4f);
+            Vector3 vel = _rock.linearVelocity;
+            _rock.linearVelocity = new Vector3(v, Mathf.Min(vel.y, 0.5f), 0f);
+            t += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        if (_rock == null || _rock.isKinematic) yield break;
+        _rock.linearVelocity = new Vector3(0f, Mathf.Min(_rock.linearVelocity.y, 0f), 0f);
+        _rock.angularVelocity = Vector3.zero;
+
+        // 被卡住、沒滾到：直接放到起點（跟死掉重來時巨石回去的做法一樣）
+        if (RollingRockVisual.ActivelyPushed == null && Mathf.Abs(_rock.position.x - targetX) > 0.6f)
+        {
+            _rock.isKinematic = true;
+            _rock.transform.position = spawn.position;
+            _rock.position = spawn.position;
+            _rock.isKinematic = false;
+            _rock.linearVelocity = Vector3.zero;
+            _rock.angularVelocity = Vector3.zero;
+            if (logEvents) Debug.Log("【廢墟光球】★1016 巨石沒滾到（停在 x " + _rock.position.x.ToString("F1") + "），直接放到推巨石起點");
+        }
     }
 
     // ── ★1015 提示文字 ───────────────────────────────────────

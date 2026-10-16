@@ -230,7 +230,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     private void Update()
     {
         // 1. 快捷鍵切換無敵模式 (F10 或 Ctrl+G)
-        if (allowKeyboardToggle && (Input.GetKeyDown(KeyCode.F10) || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.G))))
+        //    ★1016 正式打包版只有在遊戲旁邊放了測試檔（TesterMode）才按得出來；編輯器與 Development Build 照舊
+        if (allowKeyboardToggle && TesterMode.Enabled && (Input.GetKeyDown(KeyCode.F10) || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.G))))
         {
             IsGodMode = !IsGodMode;
             Debug.LogWarning($"🛡️【無敵模式】已{(IsGodMode ? "<color=green>【開啟】</color>" : "<color=red>【關閉】</color>")}！(測試專用：免疫鳥怪撞擊與風暴石化，關卡機制正常運作)");

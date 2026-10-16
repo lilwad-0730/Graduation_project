@@ -477,6 +477,12 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("水中水平移動速度倍率 (預設 0.85f，模擬水中行走/游泳的微水阻)")]
     public float underwaterHorizontalSpeedMultiplier = 0.85f;
 
+    // ★1016 水下斜石修正：陸地的「站在斜坡上」分支會每幀把速度歸零、關掉重力，
+    //   水下站在斜的石頭上時，FixedUpdate 划水給的往上速度下一幀就被蓋掉（按 W 只抬 0.1 米），也不會往下沉。
+    //   打開＝水下不走斜坡分支，划水、下沉照水下物理；關掉＝原本。
+    [Tooltip("★1016 水下站在斜的石頭上也能划水往上、會順著水下物理下沉（關掉＝原本：斜石上定住、按 W 只抬一點點）")]
+    public bool underwaterIgnoreSlopeStick = true;
+
     [Tooltip("是否允許在水中未著地時連按 W 向上撥水游泳")]
     public bool allowContinuousSwimming = true;
 
@@ -546,6 +552,46 @@ public class PlayerMovement : MonoBehaviour
     public float floatHoldMaxSink = 0.6f;
     private bool _floatHold;
     private float _floatHoldStartY;
+
+    [Header("★1016 剛進水下／水下重生：先漂著，等她動了才開始沉")]
+    [Tooltip("一進水下關（或在水下重生）她就開始往下沉，越深沉越快；還沒搞懂怎麼游的人，想幾秒就沉了幾十公尺。\n" +
+             "打開＝進水下（或水下重生完成）後先幾乎原地漂浮，直到她按任何移動／划水鍵，或可以操作後過了 underwaterEntryFloatSeconds 秒。\n" +
+             "關掉＝原本（一進來就沉）")]
+    public bool underwaterEntryFloat = true;
+    [Tooltip("可以操作之後，最多漂幾秒就恢復下沉（秒）")]
+    public float underwaterEntryFloatSeconds = 8f;
+    private bool _entryFloat;
+    private float _entryFloatStartY;
+    private float _entryFloatRemaining;
+    private bool _entryWasUnderwater;
+
+    /// <summary>★1016 每幀更新「剛入水漂浮」：入水、水下重生完成時開始；按鍵或時間到就結束。</summary>
+    private void UpdateUnderwaterEntryFloat()
+    {
+        bool respawning = PlayerRespawnSystem.IsAnyRespawning;
+        // 剛入水：開始漂。水下重生：黑幕期間一路漂著（每幀以當下高度為基準，傳送到重生點後也不會往下掉），重生完再開始算時間
+        if (underwaterEntryFloat && isUnderwater && (!_entryWasUnderwater || respawning))
+        {
+            _entryFloat = true;
+            _entryFloatStartY = transform.position.y;
+            _entryFloatRemaining = Mathf.Max(0f, underwaterEntryFloatSeconds);
+        }
+        _entryWasUnderwater = isUnderwater;
+
+        if (!_entryFloat) return;
+        if (!underwaterEntryFloat || !isUnderwater) { _entryFloat = false; return; }
+        if (IsControlLocked || respawning) return;   // 演出、重生黑幕中不算時間
+
+        bool anyKey = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S)
+                   || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)
+                   || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow);
+        _entryFloatRemaining -= Time.deltaTime;
+        if (anyKey || _entryFloatRemaining <= 0f)
+        {
+            _entryFloat = false;
+            Debug.Log($"【水下】★1016 入水漂浮結束（{(anyKey ? "她按鍵了" : "時間到")}）：漂浮期間下沉 {(_entryFloatStartY - transform.position.y):F2} 米");
+        }
+    }
 
     /// <summary>光球演出開始／結束時呼叫：水中時讓她幾乎原地漂浮。</summary>
     public void SetFloatHold(bool on)
@@ -735,6 +781,7 @@ public class PlayerMovement : MonoBehaviour
     {
         // 刷新水下狀態 (三層判定)
         UpdateUnderwaterState();
+        UpdateUnderwaterEntryFloat();   // ★1016 剛進水下／水下重生先漂著
 
         // ==========================================
         // 【防卡死】偵測瞬間移動 (例如：重生系統觸發)
@@ -1230,7 +1277,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            bool isOnSlope = isGrounded && !isJumping && (currentSlopeAngle > 0.5f && currentSlopeAngle < 60f);
+            bool isOnSlope = isGrounded && !isJumping && (currentSlopeAngle > 0.5f && currentSlopeAngle < 60f)
+                             && !(isUnderwater && underwaterIgnoreSlopeStick);   // ★1016 水下不走斜坡定住分支
 
             // ★1001 狼拖曳負載：先歸零，只有真正走到斜坡＋有輸入那條路徑才會被填值。
             //   這樣平地、空中、水下、演出鎖定一律保證是 0，不會有殘留的 Y 漂移。
@@ -2297,6 +2345,12 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (vel.y < -floatHoldSinkSpeed) vel.y = -floatHoldSinkSpeed;
                 if (_floatHoldStartY - transform.position.y >= floatHoldMaxSink && vel.y < 0f) vel.y = 0f;
+            }
+            else if (_entryFloat)
+            {
+                // ★1016 剛入水／水下重生：同一套漂浮規則（下沉速度、總深度都有上限）
+                if (vel.y < -floatHoldSinkSpeed) vel.y = -floatHoldSinkSpeed;
+                if (_entryFloatStartY - transform.position.y >= floatHoldMaxSink && vel.y < 0f) vel.y = 0f;
             }
 
             rb.linearVelocity = vel;

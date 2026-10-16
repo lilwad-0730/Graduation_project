@@ -25,6 +25,15 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
     [Header("觸發設定")]
     [Tooltip("怪物身上的 ShadowMonsterController (留空自動在自身/父物件尋找)")]
     public ShadowMonsterController monsterController;
+
+    [Header("★1016 公平：只打碎她身後的玻璃")]
+    [Tooltip("怪物的碰撞盒左右各約 6 公尺寬，玻璃地板一片約 11 公尺：怪物還在她身後十幾公尺，就會先把她腳下那一片打碎、她直接掉下去。\n" +
+             "打開＝只打碎整片都在她身後（右緣比她的位置還後面 behindPlayerMargin 公尺）的玻璃，斷她的退路；她腳下、她前面的不碎（等她走過去再碎）。\n" +
+             "關掉＝原本（碰到就碎）")]
+    public bool onlyBreakBehindPlayer = true;
+
+    [Tooltip("玻璃右緣要比她的位置後面幾公尺才打碎")]
+    public float behindPlayerMargin = 1.0f;
     private class GlassTarget
     {
         public Transform tr;
@@ -182,16 +191,51 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             return;
         }
 
+        TryBreakGlass(other);
+    }
+
+    /// <summary>★1016 碰撞盒一直壓著還沒碎的玻璃：等那片玻璃整片落到她身後再碎（onlyBreakBehindPlayer 開著才需要）。</summary>
+    private void OnTriggerStay(Collider other)
+    {
+        if (!onlyBreakBehindPlayer) return;
+        if (!CanBreakGlass()) return;
+        TryBreakGlass(other);
+    }
+
+    private void TryBreakGlass(Collider other)
+    {
         foreach (var t in _targets)
         {
             if (t.broken || t.protectedFromBreak || t.tr == null) continue;
             if (other.transform != t.tr && !other.transform.IsChildOf(t.tr)) continue;
+
+            // ★1016 她腳下、她前面的玻璃先不碎
+            if (onlyBreakBehindPlayer && !IsBehindPlayer(t)) return;
 
             t.broken = true;
             Debug.Log($"【玻璃摧毀】怪物 BoxCollider 碰到 '{t.tr.name}'，觸發摧毀！");
             BreakTarget(t);
             return;
         }
+    }
+
+    /// <summary>★1016 這片玻璃整片都在她身後嗎（右緣 &lt; 她的 X − behindPlayerMargin）。找不到她就照原本的規則（算在身後）。</summary>
+    private bool IsBehindPlayer(GlassTarget t)
+    {
+        Transform p = monsterController != null ? monsterController.player : null;
+        if (p == null) return true;
+
+        float maxX = float.NegativeInfinity;
+        if (t.colliders != null)
+        {
+            foreach (var c in t.colliders)
+            {
+                if (c == null || !c.enabled) continue;
+                maxX = Mathf.Max(maxX, c.bounds.max.x);
+            }
+        }
+        if (float.IsNegativeInfinity(maxX)) maxX = t.tr.position.x;
+        return maxX < p.position.x - behindPlayerMargin;
     }
 
     private bool CanBreakGlass()
