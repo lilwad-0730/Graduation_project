@@ -9,7 +9,8 @@ using UnityEngine.SceneManagement;
 ///   得到點 2 D 得到點（碎音樂盒、照片）還沒接進遊戲：先用「巨石放下之後，她走過 P13（石門）再往右 photoPastMeters 米」當作拿到照片 → D 靜靜上墨（不顯示）。
 ///             之後接得到點時，直接呼叫 FateBookState.Ink("ruins", "D") 即可。
 ///   放巨石 C  巨石被放開（Rigidbody 不再 kinematic）→ C 靜靜上墨。
-///   推巨石 E F G  巨石從放開的位置到 P14 的距離走到 1/3、2/3、3/3 → 各上一格（靜靜的）。
+///   推巨石 E F G  巨石從放下後停的地方（巨石挑戰的 Boulder Spawn；沒有就從 P13）到 P14 的距離走到 1/3、2/3、3/3 → 各上一格（靜靜的）。
+///             ★1016 P14 會被 RuinsOrbDirector 往下移（執行時），這裡每幀讀 P14，跟著縮短。
 ///   第一次死 A、之後每次死的刻痕  在 FirstWolfDeathStory（重生黑幕裡播）。
 ///   結束 I    風暴轉場之後進荒原：荒原場景一載入、還在黑裡，翻回這頁推到 I 上墨、翻頁，再讓荒原開始（FateBookRuins.OnSceneLoaded）。
 ///
@@ -174,7 +175,10 @@ public class FateBookRuins : MonoBehaviour
         if (released && !_rockWasReleased)
         {
             _rockWasReleased = true;
-            _rockStartX = _wpStart != null ? Mathf.Min(_wpStart.position.x, _rock.transform.position.x) : _rock.transform.position.x;
+            // ★1016 E F G 量她推的那一段：從巨石放下後停的地方算（P14 往下移之後，從 P13 算的話巨石自己滾下來就過 1/3 了）
+            Transform rest = BoulderChallengeController.Instance != null ? BoulderChallengeController.Instance.BoulderSpawnPoint : null;
+            _rockStartX = rest != null ? rest.position.x
+                        : (_wpStart != null ? Mathf.Min(_wpStart.position.x, _rock.transform.position.x) : _rock.transform.position.x);
             if (!FateBookState.IsInked(PageId, "C") && _set.layout.PanelEnabled("C")) FateBookState.Ink(PageId, "C", "巨石放下");
         }
         if (released && _wpEnd != null)

@@ -14,6 +14,10 @@ using UnityEngine;
 ///      不重載場景。
 ///
 /// 沒設定好（沒拖 Player Spawn、找不到石頭）或挑戰還沒開始（石頭還鎖著）→ 只走原本狼咬流程。
+///
+/// ★1016 M（27 章通關檢查：坡上被咬一口巨石就倒滾，推不完）：rollbackOnlyOnDeathBite（預設開）＝推巨石期間被咬不倒滾，
+///   只算口數；咬滿死亡門檻（PlayerMovement.WolfKillThreshold，預設三口）那一口才失敗，直接照上面第 2 步的挑戰重置
+///   （玩家回 Challenge Player Spawn、巨石回 Boulder Spawn、光球在 P14 等）。關掉＝原本：坡上咬第一口就倒滾。
 /// </summary>
 public class BoulderChallengeController : MonoBehaviour
 {
@@ -61,6 +65,9 @@ public class BoulderChallengeController : MonoBehaviour
     [Tooltip("玩家腳下坡度（度）達到這個值，被狼咬到才會觸發巨石強推。低於它視為平地，只走一般狼咬。")]
     public float minSlopeAngleForPressure = 8f;
 
+    [Tooltip("★1016 M：推巨石時被咬不倒滾，只算口數；咬滿死亡門檻那一口才失敗，直接照挑戰重置（回挑戰起點、巨石回起點）。\n關掉＝原本：坡上咬第一口巨石就往下滾")]
+    public bool rollbackOnlyOnDeathBite = true;
+
     private Rigidbody _boulderRb;
     private bool _failing;
     private bool _rollbackStarted;
@@ -71,6 +78,9 @@ public class BoulderChallengeController : MonoBehaviour
 
     /// <summary>失敗流程進行中（咬到第一口 → 重置完成之前）。</summary>
     public static bool IsFailing => Instance != null && Instance._failing;
+
+    /// <summary>★1016 巨石重置的位置（坡底）。RuinsOrbDirector 用它算「坡的幾成」。</summary>
+    public Transform BoulderSpawnPoint => challengeBoulderSpawn;
 
     /// <summary>
     /// 巨石壓迫期間（咬到第一口 → 重置完成之前）不管是哪條路觸發重生（狼咬滿、備援…），
@@ -130,7 +140,8 @@ public class BoulderChallengeController : MonoBehaviour
     private bool IsChallengeRunning => _boulderRb != null && !_boulderRb.isKinematic && !PlayerRespawnSystem.IsAnyRespawning;
 
     /// <summary>
-    /// PlayerMovement.AddWolf() 呼叫。回傳值保留舊介面；現在永遠不吞狼咬，讓死亡門檻仍由 AddWolf 統一管理。
+    /// PlayerMovement.AddWolf() 呼叫。回傳 true＝吞掉這一口，AddWolf 不再走一般的咬死重生：
+    /// 只有 ★1016 rollbackOnlyOnDeathBite 開著、推巨石期間咬滿死亡門檻那一口（改走挑戰重置）。其他情況都回 false，死亡門檻照舊由 AddWolf 管。
     /// </summary>
     public static bool NotifyWolfBite(PlayerMovement pm)
     {
@@ -138,6 +149,16 @@ public class BoulderChallengeController : MonoBehaviour
         if (c == null || !c.isActiveAndEnabled || !c.IsConfigured) return false;
         if (c._failing) return false;
         if (!c.IsChallengeRunning) return false;
+
+        // ★1016 推巨石期間被咬不倒滾：還沒咬滿只算口數；咬滿那一口直接照挑戰失敗重置（不管在坡上或平地，
+        //   都回挑戰起點、巨石回起點——走一般重生的話，她會回存檔點、巨石留在半路）。
+        //   回傳 true＝吞掉這一口，AddWolf 不再走一般的咬死重生。
+        if (c.rollbackOnlyOnDeathBite && pm != null)
+        {
+            if (pm.WolfBiteCountForDeath < Mathf.Max(1, pm.WolfKillThreshold)) return false;
+            c.BeginSilentFail(pm);
+            return true;
+        }
 
         // 只有玩家站在山坡上被咬才會觸發巨石強推；平地被咬只走一般狼咬（減速、累積咬數）
         if (pm == null || !pm.isGrounded || pm.GroundSlopeAngle < c.minSlopeAngleForPressure) return false;
@@ -168,6 +189,17 @@ public class BoulderChallengeController : MonoBehaviour
         // 玩家推不動，只會被 ApplyExternalSlopePush 帶著走，動作還在。
 
         StartCoroutine(PressureRoutine());
+    }
+
+    /// <summary>★1016 咬滿死亡門檻：不倒滾，直接照挑戰失敗重置（黑屏 → 巨石回 Boulder Spawn → 玩家回 Challenge Player Spawn）。</summary>
+    private void BeginSilentFail(PlayerMovement pm)
+    {
+        _failing = true;
+        _rollbackStarted = false;
+        _exitReached = false;
+        _player = pm;
+        Debug.Log("【巨石挑戰】★1016 咬滿 " + Mathf.Max(1, pm.WolfKillThreshold) + " 口：不倒滾，直接照挑戰失敗重置（回挑戰起點、巨石回起點）。");
+        StartCoroutine(ResetRoutine());
     }
 
     private IEnumerator PressureRoutine()

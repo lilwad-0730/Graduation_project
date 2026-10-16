@@ -22,6 +22,13 @@ using Text = UnityEngine.UI.Text;
 ///          還沒放下就死 → 照修毅的 GuidanceLight 重置（回最近的路徑點）。
 ///   ・拿掉的（10-09 版有、10-10 起交給修毅）：落地時這支自己放光球、帶路到拉桿、追著她跑。
 ///
+/// ★1016 M（27 章通關檢查：斜坡推巨石推不完）：風暴維持「碰到最後的光球才出現」，但最後的光球（P14）往下移到推巨石的路的約 6 成
+///   （巨石起點 x≈141 → 原本 P14 x≈243；前約 49 米是平地、坡從 x≈190 開始，所以 6 成落在坡腳往上約 12 米）。
+///   不動場景：進場兩幀後（等碰撞體建好）把 P14 這個路徑點的位置搬到「巨石起點 → 原本 P14」水平距離的 stormSlopeFraction 處、貼著地面、
+///   離地高度跟原本一樣；光球飛過去、碰到叫風暴、重生在 P14 等，全部照舊讀這個點。moveStormWaypoint 關掉＝回到坡頂。
+///   這支是執行時自己生的（Hierarchy 的 [廢墟光球導演]）：Play 中選它拉 stormSlopeFraction 會馬上重放 P14；
+///   定好的數字要改這裡的預設值（Inspector 的改動停止 Play 就還原）。
+///
 /// 整包關掉：RuinsOrbDirector.Enabled = false（回到拉桿與原本的風暴）。
 /// </summary>
 [DisallowMultipleComponent]
@@ -83,6 +90,14 @@ public class RuinsOrbDirector : MonoBehaviour
     [Tooltip("拉回時顯示的提示文字")]
     public string passBoulderHint = "光球帶你來到這裡了……\n要用力把巨石往前推，才能繼續前進。";
     public float hintSeconds = 4.5f;
+
+    [Header("★1016 最後的光球往下移（風暴還是碰到它才來）")]
+    [Tooltip("開著＝P14 搬到推巨石的路的 stormSlopeFraction 處（不動場景，執行時搬）；關掉＝留在原本的坡頂")]
+    public bool moveStormWaypoint = true;
+    [Tooltip("從巨石起點（Boulder Spawn）到原本 P14 的比例，照水平距離算。目前場景：前約 49 米平地、坡從 x≈190 開始——\n" +
+             "0.48≈坡腳、0.6≈坡腳往上 12 米（預設，推約 61 米，原本約 102 米）、0.8≈坡的 6 成、1＝原本坡頂。太難就調小。\n" +
+             "Play 中可以直接拉（馬上重放）；要保留就改程式裡的預設值")]
+    [Range(0.3f, 1f)] public float stormSlopeFraction = 0.6f;
 
     public bool logEvents = true;
 
@@ -160,6 +175,7 @@ public class RuinsOrbDirector : MonoBehaviour
         RuinsDoor rd = FindAnyObjectByType<RuinsDoor>();
         if (rd != null) _door = rd.GetComponent<Destructible>();
         if (_orb != null) _orb.DepartureGate = DepartureGateRoutine;
+        if (_stormWp != null) StartCoroutine(RelocateStormWaypoint());   // ★1016 記下原本的 P14；moveStormWaypoint 開著就往下移
         PushPhase = false;
 
         HideLever();
@@ -234,6 +250,10 @@ public class RuinsOrbDirector : MonoBehaviour
         if (!Enabled || _pm == null || _orb == null) { PushPhase = false; return; }
         PushPhase = _stage == Stage.Releasing || _stage == Stage.WaitStorm || _gateActive;
         if (_stage == Stage.Storm) { PushPhase = false; return; }
+
+        // ★1016 Play 中改 moveStormWaypoint／stormSlopeFraction → 馬上重放 P14（試手感用；風暴開始後就不動）
+        if (_stormWpReady && (moveStormWaypoint != _stormMoveApplied || (moveStormWaypoint && !Mathf.Approximately(stormSlopeFraction, _stormFracApplied))))
+            ApplyStormWaypoint();
 
         if (_pendingReset)
         {
@@ -635,6 +655,144 @@ public class RuinsOrbDirector : MonoBehaviour
         }
         FadeOrb(1f);
         if (logEvents) Debug.Log("【廢墟光球】重生：" + (RockReleased ? "巨石已放下，光球在 " + stormWaypointName + " 等" : "巨石還沒放下，光球照修毅的重置（最近的路徑點）"));
+    }
+
+    // ── ★1016 最後的光球往下移 ───────────────────────────────
+    private Vector3 _stormWpOriginal;      // 場景裡原本的 P14（坡頂）
+    private bool _stormWpReady;            // 已經記下原本的 P14
+    private bool _stormMoveApplied;
+    private float _stormFracApplied = -1f;
+
+    /// <summary>等兩幀（坡面的碰撞體有些是 Start 才建：PolygonToMeshCollider），記下原本的 P14，再照欄位放。</summary>
+    private IEnumerator RelocateStormWaypoint()
+    {
+        yield return null;
+        yield return null;
+        if (_stormWp == null) yield break;
+        _stormWpOriginal = _stormWp.position;
+        _stormWpReady = true;
+        ApplyStormWaypoint();
+    }
+
+    /// <summary>
+    /// 照 moveStormWaypoint／stormSlopeFraction 放 P14；關掉＝放回原本的坡頂。Play 中改這兩個欄位，Update 會再叫一次（試手感用）。
+    /// 起點用巨石挑戰的 Boulder Spawn（推巨石失敗時巨石放回的地方＝坡底；沒接就找叫 ChallengeBoulderSpawn 的物件）；都找不到就用 P13 往右 25 米。
+    /// 高度：從巨石起點沿著地面走到新位置找地面（TraceGround），再加上原本 P14 離地的高度（光球一樣懸在地面上方）；找不到地面就不搬。
+    /// 光球如果正停在 P14 等，跟著傳過去。
+    /// </summary>
+    private void ApplyStormWaypoint()
+    {
+        if (!_stormWpReady || _stormWp == null) return;
+        _stormMoveApplied = moveStormWaypoint;
+        _stormFracApplied = stormSlopeFraction;
+        Vector3 end = _stormWpOriginal;
+        bool orbWaiting = OrbAt(_stormWp);
+
+        if (!moveStormWaypoint)
+        {
+            if ((_stormWp.position - end).sqrMagnitude < 0.0001f) return;
+            _stormWp.position = end;
+            if (orbWaiting) _orb.TeleportToWaypointName(stormWaypointName);
+            if (logEvents) Debug.Log("【廢墟光球】★1016 最後的光球 " + stormWaypointName + " 放回原本的坡頂 (" + end.x.ToString("F1") + ", " + end.y.ToString("F1") + ")");
+            return;
+        }
+
+        Transform startT = BoulderChallengeController.Instance != null ? BoulderChallengeController.Instance.BoulderSpawnPoint : null;
+        if (startT == null)
+        {
+            GameObject g = GameObject.Find("ChallengeBoulderSpawn");
+            if (g == null) g = GameObject.Find("ChallengePlayerSpawn");
+            if (g != null) startT = g.transform;
+        }
+        Vector3 start = startT != null ? startT.position
+                      : (_leverWp != null ? _leverWp.position + Vector3.right * 25f : end + Vector3.left * 100f);
+        if (end.x - start.x < 10f)
+        {
+            if (logEvents) Debug.LogWarning("【廢墟光球】★1016 P14 跟坡底太近（" + (end.x - start.x).ToString("F1") + " 米），不搬");
+            return;
+        }
+        float z = _pm != null ? _pm.transform.position.z : 0f;
+        float yStart = GroundBelow(start.x, start.y + 3f, z, start.y - 1f);
+        float yEnd = GroundBelow(end.x, end.y, z, end.y - 1.5f);
+        float hover = Mathf.Clamp(end.y - yEnd, 0.5f, 6f);
+        float f = Mathf.Clamp(stormSlopeFraction, 0.3f, 1f);
+        float x = Mathf.Lerp(start.x, end.x, f);
+        // 坡前有一段平地、坡腳才開始陡（不是一條直線），所以沿著地面一步步走過去找高度
+        float gy = TraceGround(start.x, yStart, x, z, out int lost, out int steps);
+        if (lost > steps / 5)
+        {
+            if ((_stormWp.position - end).sqrMagnitude > 0.0001f)
+            {
+                _stormWp.position = end;
+                if (orbWaiting) _orb.TeleportToWaypointName(stormWaypointName);
+            }
+            if (logEvents) Debug.LogWarning("【廢墟光球】★1016 沿地面找坡面失敗（" + lost + "/" + steps + " 步沒打到地面），P14 不搬，留在原本的坡頂");
+            return;
+        }
+        _stormWp.position = new Vector3(x, gy + hover, end.z);
+        if (orbWaiting) _orb.TeleportToWaypointName(stormWaypointName);
+        if (logEvents)
+            Debug.Log("【廢墟光球】★1016 最後的光球 " + stormWaypointName + " 往下移：(" + end.x.ToString("F1") + ", " + end.y.ToString("F1") + ") → (" +
+                      x.ToString("F1") + ", " + (gy + hover).ToString("F1") + ")，推的路的 " + Mathf.RoundToInt(f * 100f) + "%（從巨石起點 x " + start.x.ToString("F1") +
+                      " 起推約 " + (x - start.x).ToString("F0") + " 米，原本 " + (end.x - start.x).ToString("F0") + " 米；水平距離）；離地 " + hover.ToString("F1") + " 米");
+    }
+
+    /// <summary>
+    /// 從 (x0, y0) 沿著地面一步步走到 x1（每步約 0.5 米、每步在上一步高度上下各看 2.5 米），回傳 x1 處的地面高度。
+    /// 平地、坡腳、坡面都跟得上（坡度到約 78°），不會跳到坡上方的浮石。lost＝沒打到地面的步數（縫就沿用上一步的高度）。
+    /// </summary>
+    private float TraceGround(float x0, float y0, float x1, float z, out int lost, out int steps)
+    {
+        int mask = ~LayerMask.GetMask("Ignore Raycast");   // 跟 PlayerMovement 踩地的射線一樣
+        steps = Mathf.Max(1, Mathf.CeilToInt(Mathf.Abs(x1 - x0) / 0.5f));
+        float dx = (x1 - x0) / steps, y = y0;
+        lost = 0;
+        for (int i = 1; i <= steps; i++)
+        {
+            float x = x0 + dx * i;
+            float best = float.PositiveInfinity, ny = y;
+            foreach (float zz in new float[] { z, 0f })
+            {
+                RaycastHit[] hits = Physics.RaycastAll(new Vector3(x, y + 2.5f, zz), Vector3.down, 5f, mask, QueryTriggerInteraction.Ignore);
+                foreach (RaycastHit h in hits)
+                {
+                    if (!IsGround(h)) continue;
+                    if (h.distance < best) { best = h.distance; ny = h.point.y; }
+                }
+                if (!float.IsPositiveInfinity(best)) break;
+            }
+            if (float.IsPositiveInfinity(best)) lost++;
+            y = ny;
+        }
+        return y;
+    }
+
+    /// <summary>從 fromY 往下找最近的地面（略過她、狼、巨石、光球、觸發區）。找不到回 fallback。</summary>
+    private float GroundBelow(float x, float fromY, float z, float fallback)
+    {
+        float best = float.PositiveInfinity, y = fallback;
+        foreach (float zz in new float[] { z, 0f })
+        {
+            RaycastHit[] hits = Physics.RaycastAll(new Vector3(x, fromY, zz), Vector3.down, 60f, ~LayerMask.GetMask("Ignore Raycast"), QueryTriggerInteraction.Ignore);
+            foreach (RaycastHit h in hits)
+            {
+                if (!IsGround(h)) continue;
+                if (h.distance < best) { best = h.distance; y = h.point.y; }
+            }
+            if (!float.IsPositiveInfinity(best)) break;
+        }
+        return y;
+    }
+
+    private bool IsGround(RaycastHit h)
+    {
+        if (h.collider == null || h.normal.y < 0.25f) return false;
+        if (h.collider.GetComponentInParent<PlayerMovement>() != null) return false;
+        if (h.collider.GetComponentInParent<WolfEnemy>() != null) return false;
+        if (h.collider.GetComponentInParent<GuidanceLight>() != null) return false;
+        if (_rock != null && h.rigidbody == _rock) return false;
+        if (h.collider.GetComponentInParent<RollingRockVisual>() != null) return false;
+        return true;
     }
 
     // ── 小工具 ───────────────────────────────────────────────
