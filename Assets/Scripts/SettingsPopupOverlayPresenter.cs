@@ -161,11 +161,20 @@ public sealed class SettingsPopupOverlayPresenter : MonoBehaviour
         int requestedMinimum = Mathf.Max(MinimumOverlaySortingOrder, minimumOverlaySortingOrder);
         int highestOrder = requestedMinimum - 1;
 
+        // 轉場器（Easy Transition）的 Canvas 不算：轉場要蓋在設定畫面上面，不能被這裡往上追過去
+        PixeLadder.EasyTransition.SceneTransitioner transitioner = PixeLadder.EasyTransition.SceneTransitioner.Instance;
+        Transform transitionerRoot = transitioner != null ? transitioner.transform : null;
+
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         for (int i = 0; i < canvases.Length; i++)
         {
             Canvas canvas = canvases[i];
             if (canvas == null || canvas == overlayCanvas || !canvas.enabled || !canvas.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            if (transitionerRoot != null && canvas.transform.IsChildOf(transitionerRoot))
             {
                 continue;
             }

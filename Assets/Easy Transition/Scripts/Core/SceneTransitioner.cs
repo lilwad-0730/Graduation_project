@@ -52,6 +52,12 @@ namespace PixeLadder.EasyTransition
         /// </summary>
         public bool IsTransitioning { get; private set; }
 
+        /// <summary>★1017 Inspector 設定的 Canvas 模式（Canvas.renderMode 在還沒指定相機時會回報成 Overlay，不能拿來還原）。</summary>
+        public RenderMode ConfiguredRenderMode => canvasRenderMode;
+
+        /// <summary>★1017 Inspector 設定的 Canvas 排序。</summary>
+        public int ConfiguredSortingOrder => canvasSortingOrder;
+
         private static readonly int RectSizeID = Shader.PropertyToID("_RectSize");
 
         private void Awake()
@@ -152,8 +158,12 @@ namespace PixeLadder.EasyTransition
         /// <summary>★1011 轉場已經進行超過 minAgeSeconds 秒還沒結束，才強制重置（正常的轉場收尾不會被打斷）。</summary>
         public void ResetIfStuck(float minAgeSeconds)
         {
-            if (IsTransitioning && Time.unscaledTime - transitionStartRealtime > minAgeSeconds) ForceReset();
+            // ★1017 效果本身的長度（淡出＋中間停頓＋淡入）也要算進去，否則比較長的轉場（例如 CircleEffect 6 秒）
+            //   會在載入完、正在淡入時被誤判卡死、直接砍掉。
+            if (IsTransitioning && Time.unscaledTime - transitionStartRealtime > minAgeSeconds + currentEffectSeconds) ForceReset();
         }
+
+        private float currentEffectSeconds;
 
         private void StartTransitionRoutine(string sceneName, int sceneIndex, Action midPointAction, TransitionEffect effect)
         {
@@ -171,6 +181,8 @@ namespace PixeLadder.EasyTransition
                 Debug.LogError("[SceneTransitioner] No transition effect assigned.", this);
                 return;
             }
+
+            currentEffectSeconds = usedEffect.Duration + usedEffect.MiddleDelay;
 
             StartCoroutine(TransitionRoutine(sceneName, sceneIndex, midPointAction, usedEffect));
         }
