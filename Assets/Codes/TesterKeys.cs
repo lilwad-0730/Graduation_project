@@ -12,6 +12,10 @@ using UnityEngine.SceneManagement;
 ///       傳送點會避開黑影觸發區（只靠測試鍵傳送不會開追，要測追逐就自己走進觸發區）
 ///     ・水下：還沒撿的日誌紙（由左到右）；F9 傳送到通關巨石旁邊
 ///     ・其他關卡：場景裡的重生點（RespawnPoint）；棉花堡另加第三個台階（照遊戲流程傳送到上層城堡）
+///   F5（★1017，SampleScene）：直接到廢墟推巨石，按兩次——
+///     第一次（還不在廢墟）：傳到廢墟落地的地方（P12 左邊），照正常流程翻開命運之書、光球在 P12；
+///     第二次（已經在廢墟、巨石還沒放下）：光球放到 P13、她傳到光球旁（碰到就照正常流程放巨石、砸牆、滾到起點）。
+///   F4（★1017，SampleScene）：傳到上層城堡跳崖處上方，直接掉進跳崖觸發區（看墜落、落進廢墟那一段）。
 ///   演出、重生、文字卡期間不傳送。
 /// </summary>
 public class TesterKeys : MonoBehaviour
@@ -43,7 +47,9 @@ public class TesterKeys : MonoBehaviour
         bool prev = Input.GetKeyDown(KeyCode.F7);
         bool rock = Input.GetKeyDown(KeyCode.F9);
         bool orb = Input.GetKeyDown(KeyCode.F6);
-        if (!next && !prev && !rock && !orb) return;
+        bool ruins = Input.GetKeyDown(KeyCode.F5);
+        bool skyDive = Input.GetKeyDown(KeyCode.F4);
+        if (!next && !prev && !rock && !orb && !ruins && !skyDive) return;
 
         if (_pm == null) _pm = FindAnyObjectByType<PlayerMovement>();
         if (_pm == null) return;
@@ -58,6 +64,36 @@ public class TesterKeys : MonoBehaviour
             if (g == null || !g.isActiveAndEnabled) { Debug.Log("【測試鍵】這個場景沒有光球"); return; }
             if (g.IsBusy) { Debug.Log("【測試鍵】光球正在飛／被吸收，等牠停下來"); return; }
             Warp(g.transform.position + new Vector3(-1.2f, -0.6f, 0f), "光球旁");
+            return;
+        }
+
+        if (ruins)
+        {
+            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F5 只在 SampleScene（廢墟）有用"); return; }
+            // ★1017 第一次：還不在廢墟 → 傳到廢墟落地的地方（進廢墟時會把光球重置到 P12、翻開命運之書，照正常流程）
+            if (p.y > -60f)
+            {
+                GameObject p12 = GameObject.Find("P12");
+                Vector3 land = p12 != null ? p12.transform.position + new Vector3(-6f, 0f, 0f) : new Vector3(55f, -123f, 0f);
+                Warp(land, "廢墟落地處（再按一次 F5 到 P13）");
+                return;
+            }
+            // 第二次：已經在廢墟 → 光球放到 P13、她傳到光球旁（只在巨石還沒放下時）
+            LeverSystem lever = FindAnyObjectByType<LeverSystem>();
+            if (lever != null && lever.targetRock != null && !lever.targetRock.isKinematic) { Debug.Log("【測試鍵】巨石已經放下了，F5 不動"); return; }
+            GuidanceLight g = FindAnyObjectByType<GuidanceLight>(FindObjectsInactive.Include);
+            if (g == null || !g.TeleportToWaypointName("P13")) { Debug.Log("【測試鍵】找不到光球或 P13"); return; }
+            Warp(g.transform.position + new Vector3(-1.2f, -0.6f, 0f), "廢墟 P13 光球旁");
+            return;
+        }
+
+        if (skyDive)
+        {
+            // ★1017 上層城堡跳崖：傳到跳崖觸發區上方（P11 光球點上面一點），直接掉進去
+            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F4 只在 SampleScene（上層城堡）有用"); return; }
+            GameObject p11 = GameObject.Find("P11");
+            if (p11 == null) { Debug.Log("【測試鍵】找不到 P11"); return; }
+            Warp(p11.transform.position + new Vector3(2f, 3f, 0f), "上層城堡跳崖處");
             return;
         }
 

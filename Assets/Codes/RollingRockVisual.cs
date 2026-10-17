@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RollingRockVisual : MonoBehaviour
@@ -169,9 +170,344 @@ public class RollingRockVisual : MonoBehaviour
     private Transform _lastPlayerTouch;       // ★1012 最近碰到的玩家（任何狀態）
     private float _lastPlayerTouchTime = -999f;
 
+    // ───────── ★1017 視覺貼合改量「她畫出來的樣子」，石頭外觀沿坡面滑過去 ─────────
+    // Root Cause（M 10-17：「石球在滾落時，與玩家的背後縫隙還是非常大」）：
+    //   ★1012 量的是「直立、沒往下補」的身體方框（pivot＋bodyCenterOffset）。但她在坡上的外觀
+    //   ① 會跟著坡面傾斜（PlayerMovement 斜坡視覺貼合，最多 30°，頭往下坡那邊倒）、
+    //   ② 會往下補約 0.74 米（斜坡視覺空隙補償）、③ 左右翻面時身體中心跟著翻。
+    //   石頭外觀只貼到那個不存在的直立方框的右上角，真正畫出來的她在左下方，坡上量起來還差約 1.7 米。
+    // 修法：用她的外觀子物件（Animator 那層，傾斜／往下補／翻面都在它身上）把身體方框換算到「現在畫出來的位置」，
+    //   石頭外觀沿著腳下坡面（不是直線）往她那邊滑，滑到剛好貼住為止——沿坡面滑不會陷進或浮離坡面，平地就是水平滑，
+    //   跟原本一樣。碰撞體完全不動，推石手感、撞狼、重置都不變。
+    //   放手後（沒碰到她）石頭外觀留在剛才貼住的位置（坡上），不然一放手外觀會往上坡彈回兩米多；平地上慢慢收回。
+    [Header("★1017 視覺貼合：照她畫出來的樣子（坡上傾斜、往下補、翻面）")]
+    [Tooltip("打勾＝量她現在畫出來的身體（坡上會傾斜、往下補，左右翻面也算），石頭外觀沿著坡面滑過去剛好貼住。\n" +
+             "取消＝★1012 的量法（直立、沒往下補的方框；坡上會留一大塊縫）")]
+    public bool matchVisibleBody = true;
+    [Tooltip("沿坡面最多往她那邊滑多遠（公尺）。34.6° 坡上面向石頭約要 2.4、背對約 1.9。只動外觀，物理不動")]
+    public float slopeTouchMaxPull = 3.6f;
+    [Tooltip("沒碰到她、在平地上時，外觀收回原位的速度（公尺／秒）。坡上不收（留在貼住的位置）")]
+    public float heldPullReturnSpeed = 1.2f;
+
+    private Transform _bodyVisual;            // 她的外觀子物件（Animator）
+    private Transform _bodyVisualOwner;       // 那個外觀屬於哪個玩家根物件
+    private bool _bodyCalibrated;
+    private float _bodyCalibStable;
+    private Vector3 _bodyLocalCenter, _bodyLocalHalfX, _bodyLocalHalfY;
+    private float _heldPullAlong;             // 最近一次貼住時沿坡面滑的距離
+    private float _heldPullSignX = -1f;       // 她在石頭的哪一邊（−1＝左邊／下坡）
+    private Vector3 _lastVisualRockPos;
+    private bool _hasLastVisualRockPos;
+    private float _nextPullLog;
+    private PlayerMovement _calibPlayer;
+
+    /// <summary>
+    /// ★1017 她現在畫出來的身體方框（世界 XY）：中心、上方向（含傾斜）、半寬半高。
+    /// bodyCenterOffset／bodyHalfSize 是「平地、站直、朝右」時相對 pivot 量的；第一次在平地站穩時換算成外觀子物件的 local，
+    /// 之後外觀怎麼傾斜、往下補、翻面，都跟著外觀子物件的矩陣走。還沒換算到（一直沒在平地站穩）就回 false，改用 ★1012 的量法。
+    /// </summary>
+    private bool TryGetVisibleBody(Transform player, out Vector2 center, out Vector2 axisX, out Vector2 axisY, out float halfX, out float halfY)
+    {
+        center = axisX = axisY = Vector2.zero;
+        halfX = halfY = 0f;
+        if (player == null) return false;
+        if (_bodyVisualOwner != player)
+        {
+            _bodyVisualOwner = player;
+            _bodyCalibrated = false;
+            _bodyCalibStable = 0f;
+            _bodyVisual = null;
+            Animator a = player.GetComponentInChildren<Animator>();
+            if (a != null && a.transform != player) _bodyVisual = a.transform;
+        }
+        if (_bodyVisual == null) return false;
+        if (!_bodyCalibrated) return false;
+
+        Vector3 c = _bodyVisual.TransformPoint(_bodyLocalCenter);
+        Vector3 hy3 = _bodyVisual.TransformVector(_bodyLocalHalfY);
+        Vector3 hx3 = _bodyVisual.TransformVector(_bodyLocalHalfX);
+        Vector2 hy = new Vector2(hy3.x, hy3.y);
+        halfY = hy.magnitude;
+        if (halfY < 0.01f) return false;
+        axisY = hy / halfY;
+        axisX = new Vector2(axisY.y, -axisY.x);
+        halfX = Mathf.Abs(Vector2.Dot(new Vector2(hx3.x, hx3.y), axisX));
+        center = new Vector2(c.x, c.y);
+        return halfX > 0.01f;
+    }
+
+    /// <summary>★1017 平地、站穩、朝右、外觀已經轉正 0.5 秒：把身體方框換算成外觀子物件的 local（只做一次）。</summary>
+    private void TryCalibrateVisibleBody(PlayerMovement pm)
+    {
+        if (pm == null || _bodyCalibrated) return;
+        if (_bodyVisualOwner != pm.transform) TryGetVisibleBody(pm.transform, out _, out _, out _, out _, out _);   // 找外觀子物件
+        if (_bodyVisual == null) return;
+        bool ok = pm.isGrounded && pm.GroundSlopeAngle <= 0.5f && pm.FacingDirection.x > 0.5f
+                  && Vector3.Angle(_bodyVisual.up, Vector3.up) < 0.5f
+                  && Vector3.Angle(_bodyVisual.forward, Vector3.right) < 1f;
+        _bodyCalibStable = ok ? _bodyCalibStable + Time.deltaTime : 0f;
+        if (_bodyCalibStable < 0.5f) return;
+
+        Transform root = pm.transform;
+        _bodyLocalCenter = _bodyVisual.InverseTransformPoint(root.position + new Vector3(bodyCenterOffset.x, bodyCenterOffset.y, 0f));
+        _bodyLocalHalfX = _bodyVisual.InverseTransformVector(new Vector3(bodyHalfSize.x, 0f, 0f));
+        _bodyLocalHalfY = _bodyVisual.InverseTransformVector(new Vector3(0f, bodyHalfSize.y, 0f));
+        _bodyCalibrated = true;
+    }
+
+    /// <summary>點到「可以旋轉的方框」的距離（在方框裡＝0）。</summary>
+    private static float DistToBox(Vector2 p, Vector2 c, Vector2 ax, Vector2 ay, float hx, float hy)
+    {
+        Vector2 d = p - c;
+        float ex = Mathf.Max(0f, Mathf.Abs(Vector2.Dot(d, ax)) - hx);
+        float ey = Mathf.Max(0f, Mathf.Abs(Vector2.Dot(d, ay)) - hy);
+        return Mathf.Sqrt(ex * ex + ey * ey);
+    }
+
+    /// <summary>石頭腳下坡面的切線，朝 signX 那一邊（−1＝左）。打不到地面回 false。</summary>
+    private bool TryGetGroundTangentToward(float signX, out Vector2 dir)
+    {
+        dir = Vector2.zero;
+        if (!TryGetGroundNormal(out Vector3 n)) return false;
+        dir = new Vector2(n.y, -n.x);
+        if (dir.sqrMagnitude < 1e-6f) return false;
+        dir.Normalize();
+        if (dir.x * signX < 0f) dir = -dir;
+        return true;
+    }
+
+    /// <summary>
+    /// ★1017 外觀滑過去之後不要陷進地面（坡腳：石頭在坡上、外觀沿坡面延長線滑到平地底下）。
+    /// 從外觀中心往下打，離地面不到「半徑 ÷ cos(地面坡度)」就往上抬到剛好貼著地面。
+    /// </summary>
+    private Vector3 KeepVisualAboveGround(Vector3 pullWorld)
+    {
+        Vector3 p = transform.position + pullWorld;
+        int n = Physics.RaycastNonAlloc(p, Vector3.down, _slopeHitBuf, radius * 2f + 1f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        float ny = 1f;
+        for (int i = 0; i < n; i++)
+        {
+            Collider c = _slopeHitBuf[i].collider;
+            if (c == null || c.transform == transform || c.transform.IsChildOf(transform)) continue;
+            if (c.CompareTag("Player") || c.GetComponentInParent<PlayerMovement>() != null) continue;
+            if (c.GetComponentInParent<WolfEnemy>() != null) continue;
+            if (_slopeHitBuf[i].distance < best) { best = _slopeHitBuf[i].distance; ny = Mathf.Abs(_slopeHitBuf[i].normal.y); }
+        }
+        if (best == float.MaxValue) return pullWorld;
+        float clearance = radius / Mathf.Max(0.5f, ny);
+        if (best < clearance) pullWorld.y += clearance - best;
+        return pullWorld;
+    }
+
+    // ───────── ★1017b 她實際畫出來的輪廓（網格凸包）─────────
+    // 實機（10-17）：只用固定的身體方框，推的時候（推石動畫身體往前傾）石頭蓋到她的頭，背對石頭時背後又留約 0.9 米的縫——
+    //   方框跟不上動畫姿勢。改成每 0.05 秒把她身上的網格（SkinnedMeshRenderer）烘一次，取 XY 的凸包當輪廓，石頭外觀貼到輪廓上。
+    //   輪廓取完之後她又走的距離，用 pivot 位移補上（不會因為取樣間隔慢半拍而蓋到她）。找不到網格就退回身體方框。
+    [Tooltip("★1017 打勾＝用她身上的網格輪廓量最近的一點（推石時身體前傾、背對時的姿勢、坡上傾斜都照實際畫出來的樣子）。\n取消（或找不到網格）＝用上面的身體方框")]
+    public bool useMeshSilhouette = true;
+    [Tooltip("輪廓多久重取一次（秒）")]
+    public float silhouetteRefreshSeconds = 0.05f;
+
+    private SkinnedMeshRenderer[] _silSmrs;
+    private Transform _silOwner;
+    private Mesh _silBake;
+    private readonly List<Vector3> _silVerts = new List<Vector3>(8192);
+    private readonly List<Vector2> _silPts = new List<Vector2>(4096);
+    private readonly List<Vector2> _silHull = new List<Vector2>(256);
+    private float _silNextTime = -1f;
+    private Vector3 _silBakePivot;
+    private int _silMode;                     // 0＝還沒決定、1＝BakeMesh(縮放)＋localToWorld、2＝BakeMesh(不縮放)＋TRS(不含縮放)、-1＝都不對，不用
+    private const int SilMaxPoints = 3000;
+    private string _silInfo = "";
+
+    private static float Cross(Vector2 o, Vector2 a, Vector2 b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    private static readonly System.Comparison<Vector2> SilCmp = (a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y);
+
+    /// <summary>平面點的凸包（逆時針，Andrew 單調鏈）。pts 會被排序。</summary>
+    private static void BuildConvexHull(List<Vector2> pts, List<Vector2> hull)
+    {
+        hull.Clear();
+        int n = pts.Count;
+        if (n < 3) { hull.AddRange(pts); return; }
+        pts.Sort(SilCmp);
+        for (int i = 0; i < n; i++)
+        {
+            while (hull.Count >= 2 && Cross(hull[hull.Count - 2], hull[hull.Count - 1], pts[i]) <= 0f) hull.RemoveAt(hull.Count - 1);
+            hull.Add(pts[i]);
+        }
+        int lower = hull.Count + 1;
+        for (int i = n - 2; i >= 0; i--)
+        {
+            while (hull.Count >= lower && Cross(hull[hull.Count - 2], hull[hull.Count - 1], pts[i]) <= 0f) hull.RemoveAt(hull.Count - 1);
+            hull.Add(pts[i]);
+        }
+        hull.RemoveAt(hull.Count - 1);
+    }
+
+    /// <summary>點到凸多邊形（逆時針）的距離；在裡面＝0。</summary>
+    private static float DistToHull(Vector2 p, List<Vector2> hull)
+    {
+        int n = hull.Count;
+        bool inside = true;
+        float best = float.MaxValue;
+        for (int i = 0; i < n; i++)
+        {
+            Vector2 a = hull[i], b = hull[(i + 1) % n];
+            if (Cross(a, b, p) < 0f) inside = false;
+            Vector2 ab = b - a;
+            float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(1e-8f, ab.sqrMagnitude));
+            float d = (a + ab * t - p).sqrMagnitude;
+            if (d < best) best = d;
+        }
+        return inside ? 0f : Mathf.Sqrt(best);
+    }
+
+    /// <summary>把網格烘出來的點換到世界座標（依 _silMode）。</summary>
+    private void CollectSilhouettePoints(int mode)
+    {
+        _silPts.Clear();
+        foreach (SkinnedMeshRenderer smr in _silSmrs)
+        {
+            if (smr == null || !smr.enabled || !smr.gameObject.activeInHierarchy || smr.sharedMesh == null) continue;
+            smr.BakeMesh(_silBake, mode == 1);
+            _silBake.GetVertices(_silVerts);
+            Transform t = smr.transform;
+            Matrix4x4 m = mode == 1 ? t.localToWorldMatrix : Matrix4x4.TRS(t.position, t.rotation, Vector3.one);
+            int stride = Mathf.Max(1, _silVerts.Count / SilMaxPoints);
+            for (int i = 0; i < _silVerts.Count; i += stride)
+            {
+                Vector3 w = m.MultiplyPoint3x4(_silVerts[i]);
+                _silPts.Add(new Vector2(w.x, w.y));
+            }
+        }
+    }
+
+    /// <summary>
+    /// ★1017b 重取她的輪廓（凸包）。第一次會試兩種烘焙座標，挑「高度、腳底位置跟她的碰撞框對得上」的那一種；都對不上就不用輪廓。
+    /// </summary>
+    private bool TryUpdateSilhouette(Transform player)
+    {
+        if (!useMeshSilhouette || player == null || _silMode < 0) return false;
+        if (_silOwner != player)
+        {
+            _silOwner = player;
+            _silSmrs = player.GetComponentsInChildren<SkinnedMeshRenderer>(false);
+            _silHull.Clear();
+            _silNextTime = -1f;
+        }
+        if (_silSmrs == null || _silSmrs.Length == 0) return false;
+        if (Time.time < _silNextTime && _silHull.Count >= 3) return true;
+        _silNextTime = Time.time + Mathf.Max(0.02f, silhouetteRefreshSeconds);
+        if (_silBake == null) { _silBake = new Mesh(); _silBake.MarkDynamic(); }
+
+        if (_silMode == 0)
+        {
+            // 用碰撞框當尺：輪廓高度要在碰撞框的 0.5～1.6 倍、腳底離碰撞框底不到 1 米
+            Collider pc = null;
+            foreach (Collider c in player.GetComponents<Collider>()) if (c != null && c.enabled && !c.isTrigger) { pc = c; break; }
+            Bounds pb = pc != null ? pc.bounds : new Bounds(player.position, new Vector3(2f, 3.4f, 1f));
+            for (int mode = 1; mode <= 2 && _silMode == 0; mode++)
+            {
+                CollectSilhouettePoints(mode);
+                if (_silPts.Count < 3) continue;
+                float minY = float.MaxValue, maxY = float.MinValue, minX = float.MaxValue, maxX = float.MinValue;
+                foreach (Vector2 q in _silPts) { minY = Mathf.Min(minY, q.y); maxY = Mathf.Max(maxY, q.y); minX = Mathf.Min(minX, q.x); maxX = Mathf.Max(maxX, q.x); }
+                float h = maxY - minY;
+                bool ok = h > pb.size.y * 0.5f && h < pb.size.y * 1.6f && Mathf.Abs(minY - pb.min.y) < 1f;
+                _silInfo += $"[試座標{mode}：寬 {maxX - minX:F2} 高 {h:F2}，腳底比碰撞框底 {minY - pb.min.y:+0.00;-0.00}，點 {_silPts.Count}{(ok ? "，採用" : "")}]";
+                if (ok) _silMode = mode;
+            }
+            if (_silMode == 0) { _silMode = -1; Debug.LogWarning("【巨石外觀】★1017 她的網格輪廓對不上碰撞框，改用身體方框 " + _silInfo); return false; }
+            if (Application.isEditor || TesterMode.Enabled) Debug.Log("【巨石外觀】★1017 用她的網格輪廓量空隙 " + _silInfo);
+        }
+        else CollectSilhouettePoints(_silMode);
+
+        _silBakePivot = player.position;
+        BuildConvexHull(_silPts, _silHull);
+        return _silHull.Count >= 3;
+    }
+
+    /// <summary>
+    /// ★1017 沿腳下坡面往她那邊要滑多遠，石頭外觀才剛好貼住她畫出來的身體（visualGapTarget）。
+    /// 從 0 開始每 0.1 米往前試，找到第一次貼住的地方再細分（不會滑過頭穿過她）。
+    /// </summary>
+    private bool TryVisibleBodyPull(Transform player, out Vector2 dir, out float along)
+    {
+        dir = Vector2.zero;
+        along = 0f;
+        // ★1017b 先用她身上的網格輪廓（推的時候身體前傾、背對時的姿勢、坡上傾斜都照實際畫出來的樣子）；沒有網格才用身體方框
+        bool useHull = TryUpdateSilhouette(player);
+        Vector2 bc;
+        Vector2 ax = default, ay = default;
+        float hx = 0f, hy = 0f;
+        Vector2 hullShift = Vector2.zero;
+        if (useHull)
+        {
+            hullShift = new Vector2(player.position.x - _silBakePivot.x, player.position.y - _silBakePivot.y);   // 取輪廓之後她又走了多少
+            bc = new Vector2(player.position.x, player.position.y);
+        }
+        else if (!TryGetVisibleBody(player, out bc, out ax, out ay, out hx, out hy)) return false;
+        float BodyDist(Vector2 p) => useHull ? DistToHull(p - hullShift, _silHull) : DistToBox(p, bc, ax, ay, hx, hy);
+
+        Vector2 c0 = new Vector2(transform.position.x, transform.position.y);
+        float signX = Mathf.Sign(bc.x - c0.x);
+        if (Mathf.Approximately(signX, 0f)) signX = -1f;
+        if (!TryGetGroundTangentToward(signX, out dir))
+        {
+            Vector2 d = bc - c0;
+            if (d.sqrMagnitude < 1e-6f) return false;
+            dir = d.normalized;   // 空中：直直朝她
+        }
+
+        float maxPull = Mathf.Max(0f, slopeTouchMaxPull);
+        float gap0 = BodyDist(c0) - radius - visualGapTarget;
+        if (gap0 <= 0f) return true;   // 已經貼著（或蓋到一點）：不滑
+
+        // 每個試的位置都先「不陷進地面」再量（坡腳：石頭在坡上、她在平地，沿坡面延長線會滑到平地底下，抬起來可能蓋到她的頭）
+        Vector2 dirLocal = dir;
+        float Gap(float s)
+        {
+            Vector3 w = KeepVisualAboveGround(new Vector3(dirLocal.x, dirLocal.y, 0f) * s);
+            return BodyDist(c0 + new Vector2(w.x, w.y)) - radius - visualGapTarget;
+        }
+
+        const float step = 0.1f;
+        float prev = 0f, hit = -1f;
+        for (float s = step; s <= maxPull + 1e-4f; s += step)
+        {
+            if (Gap(s) <= 0f) { hit = s; break; }
+            prev = s;
+        }
+        if (hit < 0f) { along = maxPull; return true; }   // 滑滿也碰不到：就滑滿
+        float lo = prev, hi = hit;
+        for (int i = 0; i < 8; i++)
+        {
+            float mid = (lo + hi) * 0.5f;
+            if (Gap(mid) > 0f) lo = mid; else hi = mid;
+        }
+        along = lo;   // 取「還沒碰到」的那一邊，不會蓋到她
+        return true;
+    }
+
     private void UpdateSlopePushVisualPull()
     {
         if (visualTransform == null || visualTransform == transform) return;
+
+        // ★1017 第一次在平地站穩時換算她的身體方框；巨石被傳送（重置、滾到起點被直接放過去）時外觀直接歸位
+        if (matchVisibleBody && !_bodyCalibrated)
+        {
+            if (_calibPlayer == null) _calibPlayer = _pusher != null ? _pusher : FindAnyObjectByType<PlayerMovement>();
+            TryCalibrateVisibleBody(_calibPlayer);
+        }
+        if (_hasLastVisualRockPos && (transform.position - _lastVisualRockPos).sqrMagnitude > 4f)
+        {
+            _heldPullAlong = 0f;
+            _visualPullWorld = Vector3.zero;
+        }
+        _lastVisualRockPos = transform.position;
+        _hasLastVisualRockPos = true;
+        if (rb != null && rb.isKinematic) _heldPullAlong = 0f;
 
         Vector3 target = Vector3.zero;
 
@@ -188,7 +524,31 @@ public class RollingRockVisual : MonoBehaviour
         bool touchingPlayer = _lastPlayerTouch != null && Time.time - _lastPlayerTouchTime < 0.35f;
         Transform other = pushedUp ? _pusher.transform : (carriedDown ? _rollbackPlayerRb.transform : (touchingPlayer ? _lastPlayerTouch : null));
 
-        if (slopePushVisualPull > 0.001f && other != null)
+        bool usedVisibleBody = false;
+        if (matchVisibleBody && slopePushVisualPull > 0.001f)
+        {
+            if (other != null && TryVisibleBodyPull(other, out Vector2 pullDir, out float along))
+            {
+                // ★1017 碰到她：照她畫出來的樣子貼住，記下滑了多遠、她在哪一邊
+                target = KeepVisualAboveGround(new Vector3(pullDir.x, pullDir.y, 0f) * along);
+                _heldPullAlong = along;
+                if (Mathf.Abs(pullDir.x) > 0.01f) _heldPullSignX = Mathf.Sign(pullDir.x);
+                usedVisibleBody = true;
+            }
+            else if (other == null && _heldPullAlong > 0.001f && (_bodyCalibrated || _silMode > 0))
+            {
+                // ★1017 沒碰到她：坡上留在剛才貼住的位置（跟著現在的坡面方向）；平地慢慢收回
+                bool onSlope = TryGetGroundNormal(out Vector3 gn) && Vector3.Angle(Vector3.up, gn) >= slopeIdleMinAngle;
+                if (!onSlope) _heldPullAlong = Mathf.MoveTowards(_heldPullAlong, 0f, Mathf.Max(0.01f, heldPullReturnSpeed) * Time.deltaTime);
+                if (TryGetGroundTangentToward(_heldPullSignX, out Vector2 holdDir))
+                    target = KeepVisualAboveGround(new Vector3(holdDir.x, holdDir.y, 0f) * _heldPullAlong);
+                else
+                    target = _visualPullWorld;   // 空中：先維持
+                usedVisibleBody = true;
+            }
+        }
+
+        if (!usedVisibleBody && slopePushVisualPull > 0.001f && other != null)
         {
             if (measureVisualGap)
             {
@@ -226,6 +586,19 @@ public class RollingRockVisual : MonoBehaviour
         float t = 1f - Mathf.Exp(-Mathf.Max(0.1f, slopePushVisualSmooth) * Time.deltaTime);
         _visualPullWorld = Vector3.Lerp(_visualPullWorld, target, t);
         visualTransform.localPosition = transform.InverseTransformVector(_visualPullWorld);
+
+        // ★1017 測試模式／編輯器：每秒一行，看外觀貼合與坡上放手的狀態（正式版不印；巨石停在平地不印）
+        if (!(Application.isEditor || TesterMode.Enabled) || Time.time < _nextPullLog || rb == null || rb.isKinematic) return;
+        float ga = TryGetGroundNormal(out Vector3 lg) ? Vector3.Angle(Vector3.up, lg) : -1f;
+        bool logSlope = ga >= slopeIdleMinAngle;
+        if (IsBeingPushedByPlayer || IsRollingBack || logSlope || rb.linearVelocity.sqrMagnitude > 0.01f)
+        {
+            _nextPullLog = Time.time + 1f;
+            string idle = !logSlope ? "放手・平地" : (Time.time - _idleSince < slopeIdleHoldSeconds ? "放手・坡上停住" : "放手・坡上慢滾");
+            string state = IsRollingBack ? "失敗下滾" : (IsBeingPushedByPlayer ? "推" : (_idleSince >= 0f ? idle : "沒人推"));
+            Debug.Log($"【巨石外觀】{state} | 石頭 ({transform.position.x:F1},{transform.position.y:F1}) v=({rb.linearVelocity.x:F2},{rb.linearVelocity.y:F2}) 坡 {ga:F1}° | " +
+                      $"外觀滑 {_visualPullWorld.magnitude:F2}m（目標 {target.magnitude:F2}，{(usedVisibleBody ? (_silMode > 0 ? "照她的網格輪廓" : "照她的身體方框") : "舊量法")}，碰到她={(other != null)}，身體換算={_bodyCalibrated}）");
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -499,12 +872,92 @@ public class RollingRockVisual : MonoBehaviour
     }
     // ─────────────────────────────────────────────────────────────────────
 
+    // ───────── ★1017 坡上沒人推：先停一下、再慢慢往下滾（不再像冰面一樣整顆滑回坡底）─────────
+    // Root Cause（M 10-17：「被狼咬一口後石球被鎖住、無法再往上爬，直到被石球推到地面重新開始」
+    //   「巨石滾落的速度與狼的退後速度差不多，導致一來一往難以爬上山坡」）：
+    //   石頭是無摩擦材質（Start 的 RockNoFrictionMaterial），沒人推時 FixedUpdate 完全不管速度，
+    //   34.6° 的坡等於冰面：每秒加速約 5.5 m/s，一放手（被咬、回頭看狼）就整顆滑回坡底，
+    //   還把她一起押下去（OnCollisionStay 把石頭速度整個傳給她）；滑下來的速度跟狼回看時的退後速度（2.5～5）差不多，
+    //   她回頭嚇狼、石頭就把她推向狼，再回頭推、狼又上來，一來一往。
+    // 修法：被推過之後，沒人推時由這裡接管——坡上先停 slopeIdleHoldSeconds 秒，再以 slopeIdleRollSpeed 慢慢往下滾
+    //   （比狼退後、比她走路都慢很多）；平地上沒人推就煞停。她一推回來就照原本的推石邏輯，失敗下滾（Rollback）也照舊。
+    [Header("★1017 坡上沒人推：先停一下、再慢慢往下滾")]
+    [Tooltip("打勾＝被推過之後、沒人推時由程式控制（坡上先停、再慢慢往下滾；平地煞停）。\n取消＝原本：無摩擦，放手就順坡滑回坡底")]
+    public bool controlIdleOnSlope = true;
+    [Tooltip("放手後在坡上先停住幾秒（被咬、回頭看狼都不會馬上滑走）")]
+    public float slopeIdleHoldSeconds = 1f;
+    [Tooltip("停完之後往下滾的速度（沿坡，公尺／秒）。要比狼回看時的退後速度（2.5～5）、她走路（約 4.9）慢很多")]
+    public float slopeIdleRollSpeed = 0.8f;
+    [Tooltip("往下滾的加速度（公尺／秒²）")]
+    public float slopeIdleRollAccel = 1.5f;
+    [Tooltip("平地上沒人推時的煞車（公尺／秒²）。原本沒有摩擦，放手後會一直滑")]
+    public float idleFlatBrake = 6f;
+    [Tooltip("坡度超過這個角度才算在坡上（度）")]
+    public float slopeIdleMinAngle = 6f;
+
+    private float _idleSince = -1f;
+    private bool _everPushed;
+
+    /// <summary>石頭正下方的地面（排除自己、玩家、狼、Trigger），連距離一起。</summary>
+    private bool TryGetGroundNormalDist(out Vector3 normal, out float dist)
+    {
+        normal = Vector3.up;
+        dist = float.MaxValue;
+        int n = Physics.RaycastNonAlloc(transform.position, Vector3.down, _slopeHitBuf, radius * 2f + 1.0f, ~0, QueryTriggerInteraction.Ignore);
+        bool found = false;
+        for (int i = 0; i < n; i++)
+        {
+            Collider c = _slopeHitBuf[i].collider;
+            if (c == null || c.transform == transform || c.transform.IsChildOf(transform)) continue;
+            if (c.CompareTag("Player") || c.GetComponentInParent<PlayerMovement>() != null) continue;
+            if (c.GetComponentInParent<WolfEnemy>() != null) continue;
+            if (_slopeHitBuf[i].distance < dist)
+            {
+                dist = _slopeHitBuf[i].distance;
+                normal = new Vector3(_slopeHitBuf[i].normal.x, _slopeHitBuf[i].normal.y, 0f).normalized;
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    /// <summary>★1017 沒人推的時候（被推過之後）：坡上先停、再慢慢往下滾；平地煞停；離地交給重力。</summary>
+    private void IdleStep()
+    {
+        if (!controlIdleOnSlope || !_everPushed || rb == null || rb.isKinematic) { _idleSince = -1f; return; }
+        // 貼著地面才管（坡上正下方到地面的距離是 半徑 ÷ cos(坡度)）；離地（彈起來、掉下去）交給重力
+        if (!TryGetGroundNormalDist(out Vector3 n, out float dist) || dist > radius / Mathf.Max(0.5f, n.y) + 0.25f) { _idleSince = -1f; return; }
+        if (_idleSince < 0f) _idleSince = Time.time;
+
+        float dt = Time.fixedDeltaTime;
+        Vector3 v = rb.linearVelocity;
+        v.z = 0f;
+        if (Vector3.Angle(Vector3.up, n) >= slopeIdleMinAngle)
+        {
+            Vector3 downhill = new Vector3(n.y, -n.x, 0f);
+            if (downhill.y > 0f) downhill = -downhill;
+            downhill.Normalize();
+            bool holding = Time.time - _idleSince < slopeIdleHoldSeconds;
+            Vector3 target = holding ? Vector3.zero : downhill * Mathf.Max(0f, slopeIdleRollSpeed);
+            // 整個速度（含 y）沿坡逼近目標：加速慢（slopeIdleRollAccel）、收速度快（boulderBraking），不會飛離坡面
+            float rate = target.sqrMagnitude > v.sqrMagnitude ? slopeIdleRollAccel : Mathf.Max(slopeIdleRollAccel, boulderBraking);
+            Vector3 next = Vector3.MoveTowards(v, target, Mathf.Max(0.1f, rate) * dt);
+            rb.linearVelocity = new Vector3(next.x, next.y, 0f);
+        }
+        else
+        {
+            rb.linearVelocity = new Vector3(Mathf.MoveTowards(v.x, 0f, Mathf.Max(0.1f, idleFlatBrake) * dt), v.y, 0f);
+        }
+    }
+
     void FixedUpdate()
     {
-        if (IsRollingBack) { RollbackStep(); return; }   // ★1002 失敗下滾：整段接管，不跑玩家推石邏輯
-        if (rb == null || rb.isKinematic || _pusher == null) { SetPushedState(false); return; }
-        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; SetPushedState(false); return; }
+        if (rb != null && rb.isKinematic) _everPushed = false;   // ★1017 被收回樓頂（拉桿重置）＝重新開始，還沒被推過
+        if (IsRollingBack) { _idleSince = -1f; RollbackStep(); return; }   // ★1002 失敗下滾：整段接管，不跑玩家推石邏輯
+        if (rb == null || rb.isKinematic || _pusher == null) { SetPushedState(false); IdleStep(); return; }
+        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; SetPushedState(false); IdleStep(); return; }
         if (!_pusher.isGrounded) { SetPushedState(false); return; }   // 空中不接續推力
+        _idleSince = -1f;   // ★1017 有人在推（或剛放手 0.15 秒的緩衝內）：不算放手
 
         // 最近還在推：玩家仍往石頭那邊推、而且就在旁邊，巨石才繼續跟，別在剛分開時往回滑
         float input = _pusher.CurrentMoveInput;
@@ -637,6 +1090,7 @@ public class RollingRockVisual : MonoBehaviour
                     _pusherRb = playerRb;
                     _targetPushSpeedX = GetPushTargetSpeedX(pm, playerRb);
                     _lastPushTime = Time.time;
+                    _everPushed = true;   // ★1017 推過之後，沒人推時才由 IdleStep 接管（巨石還沒被推過＝照原本，例如剛放下、滾到起點）
                 }
                 else
                 {
