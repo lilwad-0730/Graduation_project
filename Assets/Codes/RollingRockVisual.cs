@@ -117,8 +117,59 @@ public class RollingRockVisual : MonoBehaviour
         }
     }
 
+    // ───────── ★1018 推石專用圓頭碰撞框 ─────────
+    // Root Cause（實機 log「【推石間距】」）：35° 坡上石頭碰到的是玩家方形碰撞框「頂部右上角」（相對頂部 +0.01），
+    //   圓形石頭卡在方框的尖角上，身體其他部分離石頭還有一大塊楔形空隙。方框是給踩地、咬、擋牆用的，不能隨便改形狀或轉角度。
+    // 做法：在玩家身上多加一個「圓頭膠囊」，只跟石頭碰撞；同時讓石頭忽略原本的方框。
+    //   膠囊的位置跟方框一樣、而且完全在方框裡面（寬度比方框窄、高度一樣），所以對地板、牆、狼沒有任何新增的碰撞，
+    //   只有「石頭碰到的形狀」從尖角變成圓頭，石頭可以滾得更靠近身體。關掉＝回到原本的方框。
+    [Header("★1018 推石專用圓頭碰撞框")]
+    [Tooltip("打勾＝玩家多一個只跟這顆石頭碰撞的圓頭膠囊，石頭改成不跟原本的方形碰撞框碰撞。取消＝原本的方框")]
+    public bool useRoundPushCollider = true;
+    [Tooltip("膠囊的半寬（公尺，世界尺寸）。預設 0.7，大約是她畫出來的身體半寬 0.8 再窄一點；不會超過原本方框的半寬")]
+    [Range(0.3f, 1.05f)] public float pushColliderRadius = 0.7f;
+    private bool _pushColliderReady;
+    private float _nextPushColliderTry;
+
+    private void EnsureRoundPushCollider()
+    {
+        if (!useRoundPushCollider || _pushColliderReady || Time.time < _nextPushColliderTry) return;
+        _nextPushColliderTry = Time.time + 0.5f;
+        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+        Collider rockCol = GetComponent<Collider>();
+        if (pm == null || rockCol == null) return;
+        Collider main = pm.GetComponent<Collider>();
+        BoxCollider box = main as BoxCollider;
+        if (box == null) { _pushColliderReady = true; return; }   // 玩家不是方框（沒預期的形狀）：不動
+
+        RockPushCapsuleTag tag = pm.GetComponent<RockPushCapsuleTag>();
+        if (tag == null)
+        {
+            tag = pm.gameObject.AddComponent<RockPushCapsuleTag>();
+            Vector3 ls = pm.transform.lossyScale;
+            float lx = Mathf.Max(0.0001f, Mathf.Abs(ls.x)), ly = Mathf.Max(0.0001f, Mathf.Abs(ls.y)), lz = Mathf.Max(0.0001f, Mathf.Abs(ls.z));
+            float halfWidthWorld = box.size.x * lx * 0.5f;
+            float rWorld = Mathf.Min(pushColliderRadius, halfWidthWorld * 0.98f);   // 一定在方框裡面
+            CapsuleCollider cap = pm.gameObject.AddComponent<CapsuleCollider>();
+            cap.direction = 1;                                  // 沿 Y（直立）
+            cap.center = box.center;                            // 跟方框同一個中心
+            cap.radius = rWorld / Mathf.Max(lx, lz);            // CapsuleCollider 的半徑吃 X、Z 縮放較大的那個
+            cap.height = box.size.y;                            // 高度吃 Y 縮放，跟方框同高（local 值相同）
+            cap.sharedMaterial = box.sharedMaterial;
+            cap.contactOffset = box.contactOffset;
+            tag.capsule = cap;
+        }
+        if (tag.capsule == null) { _pushColliderReady = true; return; }
+        Physics.IgnoreCollision(rockCol, box, true);            // 石頭不再碰方框，只碰膠囊
+        Physics.IgnoreCollision(rockCol, tag.capsule, false);
+        _pushColliderReady = true;
+        if (Application.isEditor || TesterMode.Enabled)
+            Debug.Log($"【巨石外觀】★1018 玩家多了推石專用圓頭膠囊：半徑(世界)≈{tag.capsule.radius * Mathf.Max(Mathf.Abs(pm.transform.lossyScale.x), Mathf.Abs(pm.transform.lossyScale.z)):F2} 高(local){tag.capsule.height:F2}，石頭已忽略原本的方框");
+    }
+
     void Update()
     {
+        EnsureRoundPushCollider();
         if (rb == null || visualTransform == null) return;
 
         // 獲取水平移動速度 (X 軸)
@@ -969,6 +1020,23 @@ public class RollingRockVisual : MonoBehaviour
         // ★0920 重量感：目標速度不再「當幀直接指定」，改成用加速度／減速度逼近。
         //   玩家停手時巨石會自己滑一小段，起步也要一點時間，質量才有存在感。
         //   垂直速度完全不碰，一律交給重力與地面。
+        // ★1018 坡上放手（轉身看狼、停手）：沿坡面煞車，不再只煞 X。
+        //   Root Cause：推的時候石頭速度是沿坡面的 (vx, vy)（35° 坡約 (4.9, 3.4)）。放手後原本只把 X 逼向 0、Y 完全不碰，
+        //   速度方向很快偏離坡面（變成幾乎直直往上），無摩擦的石頭就離開坡面彈起一小段、再落回來，
+        //   看起來就是「玩家一轉身，石頭往上反彈一下」。改成：整個速度投影到坡面切線上，沿切線逼近 0，不會離開坡面。
+        //   推的時候（stillPushing）完全照舊；平地、離地也照舊。
+        if (!stillPushing
+            && TryGetGroundNormalDist(out Vector3 gn, out float gd)
+            && gd <= radius / Mathf.Max(0.5f, gn.y) + 0.25f
+            && Vector3.Angle(Vector3.up, gn) >= slopeIdleMinAngle)
+        {
+            Vector3 tan = new Vector3(gn.y, -gn.x, 0f).normalized;
+            float vt = Vector3.Dot(rb.linearVelocity, tan);
+            vt = Mathf.MoveTowards(vt, 0f, Mathf.Max(0.1f, boulderBraking) * Time.fixedDeltaTime);
+            rb.linearVelocity = tan * vt;
+            return;
+        }
+
         float target = stillPushing ? _targetPushSpeedX : 0f;
         float current = rb.linearVelocity.x;
         rb.linearVelocity = new Vector3(ApproachPushSpeed(current, target, Time.fixedDeltaTime), rb.linearVelocity.y, 0f);
@@ -1100,4 +1168,10 @@ public class RollingRockVisual : MonoBehaviour
             }
         }
     }
+}
+
+/// <summary>★1018 標記：玩家身上已經有「推石專用圓頭膠囊」（RollingRockVisual.EnsureRoundPushCollider 加的），避免重複加。</summary>
+public class RockPushCapsuleTag : MonoBehaviour
+{
+    public CapsuleCollider capsule;
 }

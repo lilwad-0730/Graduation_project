@@ -404,7 +404,10 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         if (PlayerRespawnSystem.IsAnyRespawning) return;
 
         if (isPetrified) return;
-        
+
+        // ★1018 在空中被石化：停用移動之前先記下「她是不是離地」，後面決定要不要讓她被風吹一小段
+        bool wasAirborne = playerMovement != null && !playerMovement.isGrounded && !playerMovement.isUnderwater;
+
         isPetrified = true;
         currentPetrifyCount++;
         Debug.LogWarning($"🔊【石化系統】主角被石化！播放石化音效 (次數：{currentPetrifyCount}/{maxPetrifyCount})");
@@ -434,6 +437,13 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             else AudioSource.PlayClipAtPoint(petrifySFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
         }
 
+        // ★1018 空中被石化：變成一塊會被風吹的石頭，往下風（逆著她前進的方向）飄一小段、同時往下掉，落地就停。
+        //   原本是直接釘在半空中不動，等石化結束才掉下來，看起來很假。
+        if (wasAirborne && airbornePetrifyWindDrift && rb != null)
+        {
+            StartCoroutine(AirbornePetrifyDrift());
+        }
+
         // 檢查是否達到 3 次
         if (currentPetrifyCount >= maxPetrifyCount)
         {
@@ -442,6 +452,74 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         else
         {
             StartCoroutine(UnpetrifySequence());
+        }
+    }
+
+    [Header("★1018 空中被石化：被風吹走一小段")]
+    [Tooltip("打勾＝跳起來被石化時，不再釘在半空，而是像一塊石頭被風吹著往下風飄一小段、同時往下掉到地面。取消＝照舊（釘在原地）")]
+    public bool airbornePetrifyWindDrift = true;
+    [Tooltip("剛被石化那一刻被風吹的初速 (公尺/秒)")]
+    public float airborneDriftStartSpeed = 4f;
+    [Tooltip("風速衰減率 (每秒)。總位移 ≈ 初速 ÷ 衰減率。4 ÷ 2 ＝ 最多飄約 2 公尺")]
+    public float airborneDriftDecay = 2f;
+    [Tooltip("石頭往下掉的最高速度 (公尺/秒)")]
+    public float airborneFallMaxSpeed = 18f;
+
+    /// <summary>
+    /// ★1018 空中石化的漂移。石化時剛體是 kinematic（不吃物理），所以這裡自己每個物理步移動：
+    /// 水平＝風向 × 衰減的速度；垂直＝重力。每一步先用 SweepTest 掃，撞到東西（地面、牆、石頭）那個方向就停，不會穿進去。
+    /// 落地之後不再水平滑動。石化結束（Unpetrify）、重生、死亡任何一個發生就立刻停。
+    /// </summary>
+    private IEnumerator AirbornePetrifyDrift()
+    {
+        // 風向：優先用陣風系統（石化多半就是被風吹出來的）；沒有就往她背後
+        float dirX = 0f;
+        WindGustSystem wind = WindGustSystem.Instance;
+        if (wind != null) dirX = wind.WindDirectionX;
+        if (Mathf.Abs(dirX) < 0.01f && playerMovement != null)
+            dirX = -Mathf.Sign(Mathf.Abs(playerMovement.FacingDirection.x) > 0.01f ? playerMovement.FacingDirection.x : 1f);
+        dirX = dirX >= 0f ? 1f : -1f;
+
+        float vx = dirX * Mathf.Max(0f, airborneDriftStartSpeed);
+        float vy = 0f;
+        bool landed = false;
+        WaitForFixedUpdate wait = new WaitForFixedUpdate();
+
+        while (isPetrified && rb != null && rb.isKinematic && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            float dt = Time.fixedDeltaTime;
+            Vector3 pos = rb.position;
+
+            if (!landed)
+            {
+                vy = Mathf.Max(-airborneFallMaxSpeed, vy + Physics.gravity.y * dt);
+
+                // 垂直：先掃，撞到地面就落地
+                float dy = vy * dt;
+                if (dy < 0f && rb.SweepTest(Vector3.down, out RaycastHit downHit, -dy + 0.02f, QueryTriggerInteraction.Ignore))
+                {
+                    pos.y -= Mathf.Max(0f, downHit.distance - 0.01f);
+                    landed = true;
+                    vx = 0f;
+                }
+                else pos.y += dy;
+
+                // 水平：被牆／石頭擋住就停
+                float dx = vx * dt;
+                if (Mathf.Abs(dx) > 0.0001f)
+                {
+                    Vector3 hdir = new Vector3(Mathf.Sign(dx), 0f, 0f);
+                    if (rb.SweepTest(hdir, out RaycastHit sideHit, Mathf.Abs(dx) + 0.02f, QueryTriggerInteraction.Ignore))
+                    {
+                        pos.x += hdir.x * Mathf.Max(0f, sideHit.distance - 0.01f);
+                        vx = 0f;
+                    }
+                    else pos.x += dx;
+                }
+                vx *= Mathf.Exp(-Mathf.Max(0.1f, airborneDriftDecay) * dt);   // 指數衰減：總位移 ≈ 初速 ÷ 衰減率
+                rb.MovePosition(pos);
+            }
+            yield return wait;
         }
     }
 

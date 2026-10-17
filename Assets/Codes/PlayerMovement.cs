@@ -38,6 +38,10 @@ public class PlayerMovement : MonoBehaviour
     [Range(1f, 30f)] public float slopeVisualTiltSpeed = 10f;
     private float _slopeVisualAngle;   // 目前已套用的視覺傾角（度）
 
+    [Tooltip("★1018 上坡推石時，保留多少比例的「跟著坡面傾斜」。1＝照舊；0＝推石時身體站直（推石動畫本身就會前傾）。\n" +
+             "原因：坡面往右上升時，跟著坡面傾斜 = 頭往左（遠離石頭）倒最多 30°，3.4 米高的身體頭部離石頭多出約 1.7 米，是推坡時「石頭離身體很遠」的主要來源之一。")]
+    [Range(0f, 1f)] public float pushingSlopeTiltKeep = 0.2f;
+
     [Tooltip("★1001 斜坡視覺空隙補償：0 ＝ 完全關閉，1 ＝ 完整幾何補償（預設）。\n" +
              "成因是純幾何、不是物理穿透：剛體鎖了 FreezeRotation，碰撞盒永遠保持水平，\n" +
              "放在斜坡上時只有下坡側的底角碰得到坡面，底面中心必然懸空「半寬 × tan(坡度)」。\n" +
@@ -1078,6 +1082,8 @@ public class PlayerMovement : MonoBehaviour
                     Vector3 n = GroundNormal;
                     targetTilt = Mathf.Clamp(Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg,
                                              -maxSlopeVisualAngle, maxSlopeVisualAngle);
+                    // ★1018 正在推巨石：身體不要跟著坡面往後倒（頭離石頭遠），站直，前傾交給推石動畫
+                    if (isPushing && RollingRockVisual.ActivelyPushed != null) targetTilt *= pushingSlopeTiltKeep;
                 }
                 _slopeVisualAngle = Mathf.LerpAngle(_slopeVisualAngle, targetTilt,
                                                     1f - Mathf.Exp(-slopeVisualTiltSpeed * Time.deltaTime));

@@ -415,6 +415,55 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("關卡前進方向（+1＝往右）")]
     public float levelForwardX = 1f;
 
+    // ───────── ★1018 難度：每次攻擊的節奏隨機、定點更快、失手回頭再攻 ─────────
+    // 現況：每隻鳥每次攻擊的前搖、對準、下降速度都一樣，玩家看過一次就學會節奏；定點攻擊（鎖她當下的位置）又只是慢慢掉下來，站著側一步就躲掉。
+    // 做法：不改導演（DesertBeatDirector）統一覆蓋的基準值，只在「每次攻擊開始」時算這一次實際用的三個數字
+    //   （_atkWarn／_atkAlign／_atkDescent）：基準值 × 隨機倍率。預判的時間估算也吃這三個數字，所以落點仍然會算準。
+    [Header("★1018 難度：節奏隨機＋失手回頭再攻（DesertBeatDirector 不覆蓋這區）")]
+    [Tooltip("每次攻擊的下降／對準速度，在基準值上下隨機多少比例。0.2＝每次落在 80%～120%。0＝每次都一樣")]
+    [Range(0f, 0.5f)] public float attackSpeedJitter = 0.2f;
+    [Tooltip("每次攻擊的前搖秒數，在基準值上下隨機多少比例。0.3＝70%～130%（下限不會低於 0.7 秒，姿勢預告一定看得到）")]
+    [Range(0f, 0.6f)] public float warningJitter = 0.3f;
+    [Tooltip("「定點」攻擊（鎖她當下位置、最容易躲的那種）的下降速度額外倍率。1＝不加快")]
+    [Range(1f, 2f)] public float fixedAttackSpeedBoost = 1.3f;
+    [Tooltip("打勾＝失手（撞到地面、沒打到她）的鳥，如果還在鏡頭裡就飛回原本的高度再攻擊一次；已經在鏡頭外就直接消失。\n取消＝照舊：撞地釘住幾秒再消失")]
+    public bool retryAfterMiss = true;
+    [Tooltip("失手後回頭再攻的機率（在鏡頭內才會抽）")]
+    [Range(0f, 1f)] public float retryChance = 0.7f;
+    [Tooltip("同一隻鳥最多回頭再攻幾次")]
+    [Range(0, 4)] public int retryMax = 2;
+    [Tooltip("撞地後停多久才飛起來（秒）")]
+    public float retryPauseSeconds = 0.35f;
+    [Tooltip("飛回原本高度花多久（秒）")]
+    public float retryRiseSeconds = 0.9f;
+    [Tooltip("判定「在鏡頭外」的邊界：畫面外多少比例還算在鏡頭內。0.05＝超出畫面邊緣 5% 以上才算鏡頭外")]
+    [Range(0f, 0.3f)] public float retryViewportMargin = 0.05f;
+
+    private float _atkWarn = 1.2f, _atkAlign = 7f, _atkDescent = 3f;   // 這一次攻擊實際用的數字
+    private int _retryCount = 0;
+
+    /// <summary>每次攻擊開始時呼叫一次：算這一次的前搖／對準／下降速度（必須在 UpdateTargetPosition 之前）。</summary>
+    private void RollAttackProfile()
+    {
+        float wj = warningJitter > 0f ? 1f + Random.Range(-warningJitter, warningJitter) : 1f;
+        float sj = attackSpeedJitter > 0f ? 1f + Random.Range(-attackSpeedJitter, attackSpeedJitter) : 1f;
+        float baseWarn = warningDuration > 0.05f ? warningDuration : 1.2f;
+        _atkWarn = Mathf.Max(0.7f, baseWarn * wj);
+        _atkAlign = Mathf.Max(0.5f, diveAlignSpeed * sj);
+        float descent = diveDescentSpeed * sj;
+        if (_currentAttackType == BirdAttackType.FixedPosition && overrideTarget == null) descent *= Mathf.Max(1f, fixedAttackSpeedBoost);
+        _atkDescent = Mathf.Max(0.5f, descent);
+    }
+
+    private bool IsInCameraView(Vector3 worldPos)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return true;   // 找不到鏡頭：當作在鏡頭內（保守，不把鳥直接刪掉）
+        Vector3 v = cam.WorldToViewportPoint(worldPos);
+        float m = retryViewportMargin;
+        return v.z > 0f && v.x > -m && v.x < 1f + m && v.y > -m && v.y < 1f + m;
+    }
+
     private int _predictCount = 0;
     private int _pushBackSeed = 0;   // ★1010 逼退落點的穩定亂數種子（每隻鳥一個）
     private Vector3 _diveStartPos;
@@ -678,7 +727,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         float t = Time.time * hoverFrequency * _indivSpeedMult + _indivPhase;
 
         // 1. 計算純淨的 Camera-Relative Parametric Curve 目標點
-        Vector3 rawTargetPos = GetParametricHoverPosition(originalPosition, t);
+        Vector3 rawTargetPos = GetParametricHoverPosition(HoverCenter, t);
 
         // 2. 疊加微幅平滑氣流雜訊 (不破壞主要可視巡航形狀)
         if (noiseStrength > 0.01f)
@@ -692,7 +741,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         rawTargetPos += GetWindReactionOffset();
 
         // 3. 平滑更新鳥的世界座標 (嚴格以 originalPosition 為中心，絕不越界漂移)
-        _currentHoverOffset = rawTargetPos - originalPosition;
+        _currentHoverOffset = rawTargetPos - HoverCenter;
         Vector3 newPos = Vector3.Lerp(transform.position, rawTargetPos, Time.deltaTime * hoverSmoothSpeed);
         transform.position = newPos;
         if (rb != null && rb.isKinematic)
@@ -701,7 +750,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         // 4. 計算切線飛行速度向量 (Velocity Tangent) 以獲取鳥頭精確朝向
-        Vector3 nextPathPoint = GetParametricHoverPosition(originalPosition, t + 0.12f);
+        Vector3 nextPathPoint = GetParametricHoverPosition(HoverCenter, t + 0.12f);
         Vector3 flightDir = (nextPathPoint - transform.position).normalized;
 
         if (FacingTargetWhilePending)
@@ -988,6 +1037,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         currentState = BirdState.Warning;
         _currentAttackType = ChooseAttackType(_granted, _grantedType);
         _granted = false;
+        RollAttackProfile();   // ★1018 這一次攻擊的前搖／對準／下降速度（隨機＋定點加快）
         BirdAttackScheduler.Stat("LOCK");
         // 1. 程式切換為警報動畫 (worried)
         PlayAnim(warningAnimName);
@@ -1025,10 +1075,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         // 3. 警報期（前搖）＋水平對準：前搖時間內鳥一邊「不安」一邊飄到落點正上方；
         //    距離太遠、前搖結束還沒到的話，繼續對準到到位為止（有逾時，被地形擋住就地開始下降）。
-        float realWarnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
+        float realWarnTime = _atkWarn;
         float warnT = 0f;
         float alignDist = Mathf.Abs(alignTargetX - transform.position.x);
-        float alignTimeout = realWarnTime + alignDist / Mathf.Max(0.1f, diveAlignSpeed) + 1.5f;
+        float alignTimeout = realWarnTime + alignDist / Mathf.Max(0.1f, _atkAlign) + 1.5f;
         bool aligned = alignDist < 0.05f;
         float alignV = 0f;
         float alignStartTime = Time.time;
@@ -1059,7 +1109,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (!aligned)
             {
                 // 平滑加速到 diveAlignSpeed，不瞬移
-                alignV = Mathf.MoveTowards(alignV, diveAlignSpeed, Mathf.Max(14f, diveAlignSpeed * 2.5f) * Time.deltaTime);   // 加速度跟著最高速走，快的設定也不會拖很久才加速上去
+                alignV = Mathf.MoveTowards(alignV, _atkAlign, Mathf.Max(14f, _atkAlign * 2.5f) * Time.deltaTime);   // 加速度跟著最高速走，快的設定也不會拖很久才加速上去
                 float dxAlign = alignTargetX - transform.position.x;
                 float stepAlign = Mathf.Min(Mathf.Abs(dxAlign), alignV * Time.deltaTime);
                 Vector3 alignDir = new Vector3(Mathf.Sign(dxAlign), 0f, 0f);
@@ -1116,7 +1166,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 5. 垂直慢速下降，直到命中玩家、護盾或地面
         float diveTimer = 0f;
         // 逾時：預估下降時間（從現在高度到玩家腳下 2.5 公尺）＋ 2 秒，最少 5 秒。慢速下降不會被舊的固定 5 秒誤判。
-        float expectedDescent = Mathf.Max(0f, descentStartY - (lockY - 2.5f)) / Mathf.Max(0.1f, diveDescentSpeed);
+        float expectedDescent = Mathf.Max(0f, descentStartY - (lockY - 2.5f)) / Mathf.Max(0.1f, _atkDescent);
         float maxDiveDuration = Mathf.Max(5.0f, expectedDescent + 2.0f);
         Vector3 lastCheckPos = transform.position;
         float stagnationTimer = 0f;
@@ -1149,7 +1199,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
 
             // ★ 落地掃描：沿下降方向掃這一幀會走過的距離，碰到地面／岩石／掩體就停在表面，就地縮小消失
-            float sweepLen = diveDescentSpeed * Time.deltaTime + 0.4f;
+            float sweepLen = _atkDescent * Time.deltaTime + 0.4f;
             if (SweepForSurface(diveDirection, sweepLen, out Vector3 surfacePoint))
             {
                 transform.position = surfacePoint - diveDirection * 0.12f;
@@ -1175,7 +1225,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             // 只動 Y：X 維持在鎖定落點上方（不追蹤玩家、不被物理推走）
             Vector3 dp = transform.position;
             dp.x = alignTargetX;
-            dp.y -= diveDescentSpeed * Time.deltaTime;
+            dp.y -= _atkDescent * Time.deltaTime;
             transform.position = dp;
 
             Quaternion targetRot = Quaternion.LookRotation(lookDown, Vector3.up) * Quaternion.Euler(modelRotationOffset);
@@ -1576,7 +1626,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 幾乎沒在動就不預判，直接打當下位置（避免站著不動時攻擊點亂跑）
         if (Mathf.Abs(playerVx) < 0.2f) return playerPos.x;
 
-        float warnTime = warningDuration > 0.05f ? warningDuration : 1.2f;
+        float warnTime = _atkWarn;   // ★1018 吃這一次攻擊實際用的前搖／速度（RollAttackProfile），預判才會跟實際到達時間對上
 
         // ★1010 預判時間＝前搖 ＋ 鳥飛到「預判落點」的時間，是個不動點問題（落點越遠，鳥飛越久，時間越長，落點又更遠）。
         //   1005 只迭代 2 次，沒收斂：實測鎖定時用的預判時間 2.23 秒，鳥實際 1.9 秒就到了落點，
@@ -1590,8 +1640,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             // ★1015 到達時間要照新的移動方式算：前搖期間水平對準（對準較久就延長，所以是 max）＋ 垂直下降到玩家高度。
             // 公式結構（預判時間 = 到達時間，落點 = 玩家位置 + 速度 × 預判時間）完全沒變，只是「到達時間」改吃新的移動模型。
-            float alignTime = Mathf.Abs(transform.position.x - predictedX) / Mathf.Max(0.1f, diveAlignSpeed);
-            float descendTime = Mathf.Max(0f, transform.position.y + (poseCue ? poseRiseHeight : 0f) - playerPos.y) / Mathf.Max(0.1f, diveDescentSpeed);   // ★1010 前搖會先往上提
+            float alignTime = Mathf.Abs(transform.position.x - predictedX) / Mathf.Max(0.1f, _atkAlign);
+            float descendTime = Mathf.Max(0f, transform.position.y + (poseCue ? poseRiseHeight : 0f) - playerPos.y) / Mathf.Max(0.1f, _atkDescent);   // ★1010 前搖會先往上提
             travelTimeGuess = descendTime;
             predictionTime = Mathf.Clamp((Mathf.Max(warnTime, alignTime) + travelTimeGuess) * predictionTimeMultiplier,
                                          minimumPredictionTime, maximumPredictionTime);
@@ -1704,8 +1754,74 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             animator.speed = 0f;
         }
 
+        // ★1018 失手（沒打到她、撞到地面）：還在鏡頭裡就機率飛回去再攻一次；已經在鏡頭外就直接消失。
+        //   示範俯衝（overrideTarget／harmless）維持原本「釘在地上」的演出，不走這裡。
+        if (retryAfterMiss && overrideTarget == null && !harmless)
+        {
+            if (!IsInCameraView(transform.position))
+            {
+                Debug.Log($"【鳥群系統】{gameObject.name} 失手撞地、已在鏡頭外，直接消失。");
+                hasAttackedOrDied = true;
+                BirdAttackScheduler.Stat("REMOVED");
+                BirdAttackScheduler.Log("REMOVED", this, "失手・鏡頭外");
+                gameObject.SetActive(false);
+                transform.localScale = originalScale;
+                return;
+            }
+            if (_retryCount < retryMax && Random.value < retryChance)
+            {
+                Debug.Log($"【鳥群系統】{gameObject.name} 失手撞地、還在鏡頭內，飛回去再攻一次（第 {_retryCount + 1}/{retryMax} 次）。");
+                StartCoroutine(RetryAfterMissCoroutine());
+                return;
+            }
+        }
+
         Debug.Log($"【鳥群系統】{gameObject.name} 撞擊地表/掩體！停格一瞬，就地縮小消失。");
         StartCoroutine(FadeAndDestroyCoroutine());
+    }
+
+    // ★1018 失手回頭再攻：停一下 → 拔起來飛回原本高度（X 不動）→ 在新的位置繼續盤旋 → 重新進排程器。
+    //   盤旋中心改成「現在的 X、原本的高度」（_hoverCenterOverride），不然盤旋會把牠整隻拉回原本的 X，看起來像瞬移。
+    private bool _hasHoverCenterOverride = false;
+    private Vector3 _hoverCenterOverride;
+    private Vector3 HoverCenter { get { return _hasHoverCenterOverride ? _hoverCenterOverride : originalPosition; } }
+
+    private IEnumerator RetryAfterMissCoroutine()
+    {
+        _retryCount++;
+        yield return new WaitForSeconds(Mathf.Max(0f, retryPauseSeconds));
+
+        if (animator != null) animator.speed = 1f;
+        PlayAnim(idleAnimName);
+
+        Vector3 start = transform.position;
+        float targetY = Mathf.Max(originalPosition.y, start.y + 2f);   // 至少明顯往上拔一段
+        Vector3 target = new Vector3(start.x, targetY, originalPosition.z);
+        float face = playerTrans != null ? Mathf.Sign(playerTrans.position.x - start.x) : 1f;
+        if (Mathf.Approximately(face, 0f)) face = 1f;
+        Quaternion startRot = transform.rotation;
+        Quaternion endRot = Quaternion.LookRotation(new Vector3(face, 0.6f, 0f).normalized, Vector3.up) * Quaternion.Euler(modelRotationOffset);
+
+        float dur = Mathf.Max(0.2f, retryRiseSeconds);
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / dur;
+            float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
+            transform.position = Vector3.Lerp(start, target, k);
+            stuckRotation = Quaternion.Slerp(startRot, endRot, k);   // Stuck 狀態下 LateUpdate 會把姿態鎖在 stuckRotation，所以改這個才轉得動
+            transform.rotation = stuckRotation;
+            yield return null;
+        }
+
+        transform.position = target;
+        _hoverCenterOverride = target;
+        _hasHoverCenterOverride = true;
+        currentState = BirdState.Idle;
+        if (rb != null) rb.position = target;
+
+        // 玩家剛重生／被演出鎖住時不接著攻擊，留給原本的偵測（它本來就有這些判斷）
+        if (!PlayerRespawnSystem.IsAnyRespawning && playerTrans != null) StartAttackSequence();
     }
 
     private IEnumerator FadeAndDestroyCoroutine()
@@ -2076,6 +2192,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             gameObject.SetActive(false);
             return;
         }
+
+        _retryCount = 0;                  // ★1018 重生後失手回頭再攻的次數、盤旋中心都回到出生狀態
+        _hasHoverCenterOverride = false;
 
         // ★1013 存檔點之前還沒攻擊過的鳥：保持原樣盤旋，但這一輪不再偵測、不從身後攻擊（BehindCheckpointBirdsCanAttack 可開）。
         _attackDisabled = behindCheckpoint && !BehindCheckpointBirdsCanAttack;
