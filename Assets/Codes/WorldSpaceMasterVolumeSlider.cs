@@ -5,7 +5,7 @@ using TMPro;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Collider2D))]
-public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+public sealed class WorldSpaceMasterVolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler, IWorldVolumeSlider
 {
     [Header("場景物件")]
     
@@ -87,39 +87,67 @@ private void Awake()
                cameraToUse.GetComponent<Physics2DRaycaster>() == null;
     }
 
-private void UpdateFromPointer(Vector2 screenPosition, Camera eventCamera)
+private void UpdateFromPointer(Vector2 screenPosition, Camera eventCamera, float worldOffsetX = 0f)
     {
         if (trackRenderer == null || interactionCollider == null || volumePointRenderer == null)
-        {
             return;
-        }
+
+        if (!TryGetPointerWorldX(screenPosition, eventCamera, out float pointerX))
+            return;
+
+        Bounds movementBounds = interactionCollider.bounds;
+        float minimumX = movementBounds.min.x;
+        float maximumX = movementBounds.max.x;
+        float volume = Mathf.InverseLerp(
+            minimumX,
+            maximumX,
+            Mathf.Clamp(pointerX + worldOffsetX, minimumX, maximumX));
+
+        ApplyVolume(volume);
+    }
+
+    private bool TryGetPointerWorldX(Vector2 screenPosition, Camera eventCamera, out float worldX)
+    {
+        worldX = 0f;
+        if (trackRenderer == null)
+            return false;
 
         Camera cameraToUse = eventCamera != null ? eventCamera : inputCamera;
         if (cameraToUse == null)
-        {
             cameraToUse = Camera.main;
-        }
 
         if (cameraToUse == null)
-        {
-            return;
-        }
+            return false;
 
         Ray pointerRay = cameraToUse.ScreenPointToRay(screenPosition);
         Plane sliderPlane = new Plane(trackRenderer.transform.forward, trackRenderer.bounds.center);
 
         if (!sliderPlane.Raycast(pointerRay, out float intersectionDistance))
-        {
-            return;
-        }
+            return false;
 
-        Vector3 worldPosition = pointerRay.GetPoint(intersectionDistance);
-        Bounds movementBounds = interactionCollider.bounds;
-        float minimumX = movementBounds.min.x;
-        float maximumX = movementBounds.max.x;
-        float volume = Mathf.InverseLerp(minimumX, maximumX, Mathf.Clamp(worldPosition.x, minimumX, maximumX));
+        worldX = pointerRay.GetPoint(intersectionDistance).x;
+        return true;
+    }
 
-        ApplyVolume(volume);
+    // ★1017 按住控點（volumepoint，見 VolumeSliderHandle）拖曳
+    private float handleGrabOffsetX;
+
+    public void BeginHandleDrag(Vector2 screenPosition, Camera eventCamera)
+    {
+        handleGrabOffsetX = 0f;
+        if (volumePointRenderer != null && TryGetPointerWorldX(screenPosition, eventCamera, out float pointerX))
+            handleGrabOffsetX = volumePointRenderer.transform.position.x - pointerX;
+    }
+
+    public void DragHandle(Vector2 screenPosition, Camera eventCamera)
+    {
+        UpdateFromPointer(screenPosition, eventCamera, handleGrabOffsetX);
+    }
+
+    public void EndHandleDrag()
+    {
+        PlayerPrefs.SetFloat(playerPrefsKey, Value);
+        PlayerPrefs.Save();
     }
 
 private void ApplyVolume(float volume)
