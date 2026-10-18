@@ -25,6 +25,8 @@ public class PageBook : MonoBehaviour
     public float pageHeight = 9f;
     [Tooltip("畫面四周留的邊，0 = 頁面剛好貼滿")]
     [Range(0f, 0.4f)] public float margin = 0.06f;
+    [Tooltip("★1018 滿版：頁面蓋滿整個畫面（比例不同時裁掉超出的部分），不留邊、不露底色。打開時忽略 margin")]
+    public bool fillScreen = true;
 
     [Header("翻頁")]
     public float turnSeconds = 0.9f;
@@ -219,11 +221,12 @@ public class PageBook : MonoBehaviour
     public void FitCamera()
     {
         if (cam == null) return;
-        float k = 1f + margin;
+        float k = fillScreen ? 1f : 1f + margin;
         float byH = pageHeight * 0.5f * k;
         float aspect = (float)Screen.width / Mathf.Max(1, Screen.height);
         float byW = (pageWidth * 0.5f * k) / Mathf.Max(0.0001f, aspect);
-        cam.orthographicSize = Mathf.Max(byH, byW);
+        // 滿版：取小的（頁面蓋滿畫面、多的裁掉）；不滿版：取大的（整頁塞進畫面、四周留底色）
+        cam.orthographicSize = fillScreen ? Mathf.Min(byH, byW) : Mathf.Max(byH, byW);
     }
 
     // ───────────────────────────────────────── 顯示
