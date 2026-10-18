@@ -201,20 +201,20 @@ public class OpeningSequence : MonoBehaviour
         _img.color = new Color(1f, 1f, 1f, 0f);
         _imgRect = _img.rectTransform;
         Stretch(_imgRect);
+
+        // ★1018 滿版：依貼圖比例蓋滿整個畫面（比例不同時裁掉超出的部分），不留邊
+        _fit = imgGo.AddComponent<AspectRatioFitter>();
+        _fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        _fit.aspectRatio = 16f / 9f;
     }
 
-    /// <summary>依貼圖長寬比在 1920×1080 畫布裡置中「內含」，不裁不變形。</summary>
+    private AspectRatioFitter _fit;
+
+    /// <summary>依貼圖長寬比蓋滿整個畫面，不變形；超出畫面的部分裁掉。</summary>
     private void FitPage(Texture2D tex)
     {
-        if (tex == null || _imgRect == null) return;
-        const float W = 1920f, H = 1080f;
-        float ar = (float)tex.width / Mathf.Max(1, tex.height);
-        float w = W, h = W / ar;
-        if (h > H) { h = H; w = H * ar; }
-        _imgRect.anchorMin = _imgRect.anchorMax = new Vector2(0.5f, 0.5f);
-        _imgRect.pivot = new Vector2(0.5f, 0.5f);
-        _imgRect.sizeDelta = new Vector2(w, h);
-        _imgRect.anchoredPosition = Vector2.zero;
+        if (tex == null || _fit == null) return;
+        _fit.aspectRatio = (float)tex.width / Mathf.Max(1, tex.height);
     }
 
     private static void Stretch(RectTransform rt)

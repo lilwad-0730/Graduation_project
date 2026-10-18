@@ -811,6 +811,12 @@ public class WolfEnemy : MonoBehaviour, IResettable
         return true;
     }
 
+    /// <summary>★1018 玩家這一輪遊戲已經成功回頭看過狼（狼因此退後）。教學提示用；重新開始遊戲才歸零。</summary>
+    public static bool PlayerHasLookedBack;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetLookBackFlag() { PlayerHasLookedBack = false; }
+
     private void ChasePlayer()
     {
         float dirToPlayerX = player.position.x - transform.position.x;
@@ -838,6 +844,7 @@ public class WolfEnemy : MonoBehaviour, IResettable
         float realDistance = Vector2.Distance(wolfPos, playerPos);
         _dbgDistance = realDistance;
         _dbgRetreating = isPlayerFacingWolf;
+        if (isPlayerFacingWolf && Time.time >= _biteRetreatUntil) PlayerHasLookedBack = true;   // ★1018 她已經學會「回頭看狼＝狼退後」：教學提示（RuinsLookBackHint）不用再出現
 
         if (Time.time < _biteRetreatUntil)
         {

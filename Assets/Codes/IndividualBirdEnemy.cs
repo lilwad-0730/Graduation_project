@@ -421,17 +421,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     //   （_atkWarn／_atkAlign／_atkDescent）：基準值 × 隨機倍率。預判的時間估算也吃這三個數字，所以落點仍然會算準。
     [Header("★1018 難度：節奏隨機＋失手回頭再攻（DesertBeatDirector 不覆蓋這區）")]
     [Tooltip("每次攻擊的下降／對準速度，在基準值上下隨機多少比例。0.2＝每次落在 80%～120%。0＝每次都一樣")]
-    [Range(0f, 0.5f)] public float attackSpeedJitter = 0.2f;
+    [Range(0f, 0.5f)] public float attackSpeedJitter = 0.1f;
     [Tooltip("每次攻擊的前搖秒數，在基準值上下隨機多少比例。0.3＝70%～130%（下限不會低於 0.7 秒，姿勢預告一定看得到）")]
-    [Range(0f, 0.6f)] public float warningJitter = 0.3f;
+    [Range(0f, 0.6f)] public float warningJitter = 0f;
     [Tooltip("「定點」攻擊（鎖她當下位置、最容易躲的那種）的下降速度額外倍率。1＝不加快")]
     [Range(1f, 2f)] public float fixedAttackSpeedBoost = 1.3f;
     [Tooltip("打勾＝失手（撞到地面、沒打到她）的鳥，如果還在鏡頭裡就飛回原本的高度再攻擊一次；已經在鏡頭外就直接消失。\n取消＝照舊：撞地釘住幾秒再消失")]
     public bool retryAfterMiss = true;
     [Tooltip("失手後回頭再攻的機率（在鏡頭內才會抽）")]
-    [Range(0f, 1f)] public float retryChance = 0.7f;
+    [Range(0f, 1f)] public float retryChance = 0.3f;
     [Tooltip("同一隻鳥最多回頭再攻幾次")]
-    [Range(0, 4)] public int retryMax = 2;
+    [Range(0, 4)] public int retryMax = 1;
     [Tooltip("撞地後停多久才飛起來（秒）")]
     public float retryPauseSeconds = 0.35f;
     [Tooltip("飛回原本高度花多久（秒）")]
@@ -799,6 +799,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             Gizmos.DrawLine(prevPoint, nextPoint);
             prevPoint = nextPoint;
         }
+
+        // ★1018 命中半徑（黃色）：慢速觀察時對照鳥與角色的畫面輪廓，確認「看起來碰到才算命中」。Play 中選到鳥顯示的是導演統一覆蓋後的實際值
+        Gizmos.color = new Color(1f, 0.92f, 0.1f, 0.9f);
+        Gizmos.DrawWireSphere(transform.position, hitRadius);
 
         // 3. 繪製中心點 (綠色小球)
         Gizmos.color = Color.green;

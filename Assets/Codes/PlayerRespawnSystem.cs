@@ -468,9 +468,20 @@ public class PlayerRespawnSystem : MonoBehaviour
         // 放坑洞底部的死亡判定區
         else if (other.CompareTag("DeathZone") || other.name.Contains("DeathZone"))
         {
+            // ★1018 天空掉到廢墟的固定速度墜落中：DeathZone 不算死。
+            //   Root Cause（Editor.log）：每一次墜落都是「碰到 DeathZone → 觸發重生 → 黑屏甦醒」收場，玩家從來沒有真的落地（log 裡從沒出現「結束固定速度墜落（玩家已著地）」），
+            //   所以演出變成：特寫光球 → 掉到一半被殺 → 黑屏 → 重生在空中再掉一次。這些 DeathZone 是舊做法（用死亡重生當作進廢墟）留下的，墜落路線會經過它們。
+            //   墜落中先不理它，落地之後一切照舊；墜落超過 25 秒還沒落地才當作掉出地圖，照舊判死。
+            PlayerMovement fallPm = GetComponent<PlayerMovement>();
+            if (fallPm == null) fallPm = GetComponentInParent<PlayerMovement>();
+            if (fallPm != null && fallPm.IsInControlledFall && fallPm.ControlledFallSeconds < 25f)
+            {
+                Debug.Log($"【墜落免死】固定速度墜落中碰到「{other.name}」（{other.transform.position.ToString("F1")}），玩家在 {transform.position.ToString("F1")}；墜落中不算死，要落地才算。已墜落 {fallPm.ControlledFallSeconds:F1} 秒");
+                return;
+            }
             if (!_isRespawning && !BoulderChallengeController.IsFailing)
             {
-                Debug.Log("【墜崖死亡】玩家碰到 DeathZone，觸發重生！");
+                Debug.Log($"【墜崖死亡】玩家碰到 DeathZone「{other.name}」（{other.transform.position.ToString("F1")}），玩家在 {transform.position.ToString("F1")}，觸發重生！");
                 TriggerRespawn();
             }
         }
