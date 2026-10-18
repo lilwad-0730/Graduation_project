@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ★1018 廢墟「回頭看狼＝狼退後」（123 木頭人）的一次性教學提示：場景裡固定位置的一個圖示（兩格小圖：狼貼著追 → 回頭之後狼退後、距離拉大，加 A／← 鍵），
@@ -53,7 +54,19 @@ public class RuinsLookBackHint : MonoBehaviour
     private float _alpha;
     private bool _finished;
 
+    // ★1018 打包版是從主選單進來的：AfterSceneLoad 只在第一個場景（主選單）載入後跑一次，
+    //   之後換到這一關就不會再跑，圖示不會生成（只有在編輯器直接從這一關按 Play 才看得到）。
+    //   所以另外掛 sceneLoaded：每次載入場景都再試一次（已經有的話 AutoSpawn 第一行就 return，不會重複）。
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Bootstrap()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoadedSpawn;
+        SceneManager.sceneLoaded += OnSceneLoadedSpawn;
+        AutoSpawn();
+    }
+
+    private static void OnSceneLoadedSpawn(Scene scene, LoadSceneMode mode) { AutoSpawn(); }
+
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<RuinsLookBackHint>() != null) return;       // 已經有手動擺的

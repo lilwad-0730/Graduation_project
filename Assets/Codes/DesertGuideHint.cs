@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ★1018 荒原危險說明圖（純線條，一次性）：風在吹→躲在掩體（石柱）後面沒事；站在外面會石化（全身灰黑），石化 3 次會重生（升天）；
@@ -43,7 +44,19 @@ public class DesertGuideHint : MonoBehaviour
     private Vector3 _basePos;
     private float _alpha;
 
+    // ★1018 打包版是從主選單進來的：AfterSceneLoad 只在第一個場景（主選單）載入後跑一次，
+    //   之後換到這一關就不會再跑，圖示不會生成（只有在編輯器直接從這一關按 Play 才看得到）。
+    //   所以另外掛 sceneLoaded：每次載入場景都再試一次（已經有的話 AutoSpawn 第一行就 return，不會重複）。
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Bootstrap()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoadedSpawn;
+        SceneManager.sceneLoaded += OnSceneLoadedSpawn;
+        AutoSpawn();
+    }
+
+    private static void OnSceneLoadedSpawn(Scene scene, LoadSceneMode mode) { AutoSpawn(); }
+
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<DesertGuideHint>() != null) return;
