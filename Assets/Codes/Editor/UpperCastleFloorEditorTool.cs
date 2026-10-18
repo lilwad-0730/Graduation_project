@@ -15,7 +15,7 @@ public static class UpperCastleFloorEditorTool
     {
         if (Application.isPlaying) return;
         var scene = EditorSceneManager.GetActiveScene();
-        if (scene.name == "SampleScene" || GameObject.Find("PatioFloor") != null)
+        if (scene.name == "CottonCastle" || scene.name == "SampleScene" || GameObject.Find("PatioFloor") != null)
         {
             ApplyCollidersInEditor(false);
         }

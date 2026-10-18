@@ -114,7 +114,8 @@ public class UpperCastleFloorController : MonoBehaviour
     private static void OnSceneLoadedRuntime()
     {
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        if (sceneName == "SampleScene" || GameObject.Find("PatioFloor") != null)
+        // ★1019 棉花堡獨立成 CottonCastle：SampleScene 現在是墜落＋廢墟，不該再自動長出上層城堡的地板控制器
+        if (sceneName == "CottonCastle" || GameObject.Find("PatioFloor") != null)
         {
             EnsureControllerExists();
         }

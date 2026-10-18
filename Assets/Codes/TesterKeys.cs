@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 ///   F5（★1017，SampleScene）：直接到廢墟推巨石，按兩次——
 ///     第一次（還不在廢墟）：傳到廢墟落地的地方（P12 左邊），照正常流程翻開命運之書、光球在 P12；
 ///     第二次（已經在廢墟、巨石還沒放下）：光球放到 P13、她傳到光球旁（碰到就照正常流程放巨石、砸牆、滾到起點）。
-///   F4（★1017，SampleScene）：傳到上層城堡跳崖處上方，直接掉進跳崖觸發區（看墜落、落進廢墟那一段）。
+///   F4（★1017，CottonCastle）：傳到上層城堡跳崖處上方，直接掉進跳崖觸發區（看墜落、落進廢墟那一段）。
 ///   演出、重生、文字卡期間不傳送。
 /// </summary>
 public class TesterKeys : MonoBehaviour
@@ -69,7 +69,7 @@ public class TesterKeys : MonoBehaviour
 
         if (ruins)
         {
-            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F5 只在 SampleScene（廢墟）有用"); return; }
+            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F5 只在 SampleScene（墜落＋廢墟）有用；在 CottonCastle 請用 F4 跳崖，會換場景到 SampleScene"); return; }
             // ★1017 第一次：還不在廢墟 → 傳到廢墟落地的地方（進廢墟時會把光球重置到 P12、翻開命運之書，照正常流程）
             if (p.y > -60f)
             {
@@ -90,7 +90,7 @@ public class TesterKeys : MonoBehaviour
         if (skyDive)
         {
             // ★1017 上層城堡跳崖：傳到跳崖觸發區上方（P11 光球點上面一點），直接掉進去
-            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F4 只在 SampleScene（上層城堡）有用"); return; }
+            if (!sceneName.Contains("cottoncastle")) { Debug.Log("【測試鍵】F4 只在 CottonCastle（上層城堡）有用"); return; }   // ★1019 棉花堡獨立場景
             GameObject p11 = GameObject.Find("P11");
             if (p11 == null) { Debug.Log("【測試鍵】找不到 P11"); return; }
             Warp(p11.transform.position + new Vector3(2f, 3f, 0f), "上層城堡跳崖處");

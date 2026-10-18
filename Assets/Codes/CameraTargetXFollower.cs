@@ -180,7 +180,7 @@ public class CameraTargetXFollower : MonoBehaviour
     private static void AutoEnsureInScene()
     {
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
-        if (sceneName.Contains("samplescene") || sceneName.Contains("ruin") || sceneName.Contains("desert"))
+        if (sceneName.Contains("samplescene") || sceneName.Contains("cottoncastle") || sceneName.Contains("ruin") || sceneName.Contains("desert"))   // ★1019 CottonCastle＝棉花堡獨立場景
         {
             GameObject followerObj = GameObject.Find("CameraFollowTarget");
             CameraTargetXFollower follower;
