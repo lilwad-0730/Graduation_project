@@ -123,7 +123,7 @@ public class UpperCastleFloorController : MonoBehaviour
 
     public static UpperCastleFloorController EnsureControllerExists()
     {
-        var controller = Object.FindFirstObjectByType<UpperCastleFloorController>();
+        var controller = Object.FindFirstObjectByType<UpperCastleFloorController>(FindObjectsInactive.Include);
         if (controller == null)
         {
             GameObject go = GameObject.Find("[UpperCastleFloorController]");
@@ -131,7 +131,9 @@ public class UpperCastleFloorController : MonoBehaviour
             {
                 go = new GameObject("[UpperCastleFloorController]");
             }
-            controller = go.AddComponent<UpperCastleFloorController>();
+            // ★1019 同一個物件上已經有控制器就用它，不要再加第二個（第二個是預設值，會把場景裡調好的地板數值蓋掉）
+            controller = go.GetComponent<UpperCastleFloorController>();
+            if (controller == null) controller = go.AddComponent<UpperCastleFloorController>();
         }
         controller.EnsureAllColliders();
         return controller;
