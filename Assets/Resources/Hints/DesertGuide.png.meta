@@ -1,0 +1,598 @@
+fileFormatVersion: 2
+guid: 0dc25b3f3fd44844986ad2ba7b34695e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3770283016769057240
+    second: DesertGuide_0
+  - first:
+      213: -9082459988919551116
+    second: DesertGuide_1
+  - first:
+      213: -6572437933944153023
+    second: DesertGuide_2
+  - first:
+      213: 5015599063482072171
+    second: DesertGuide_3
+  - first:
+      213: -5284066555088728662
+    second: DesertGuide_4
+  - first:
+      213: -7319931414472465610
+    second: DesertGuide_5
+  - first:
+      213: -321580547013136037
+    second: DesertGuide_6
+  - first:
+      213: 7253762326068625394
+    second: DesertGuide_7
+  - first:
+      213: -8710267456437340911
+    second: DesertGuide_8
+  - first:
+      213: -3079240152516310824
+    second: DesertGuide_9
+  - first:
+      213: -4618413842229422725
+    second: DesertGuide_10
+  - first:
+      213: 7244646140730205980
+    second: DesertGuide_11
+  - first:
+      213: 8568602513315329059
+    second: DesertGuide_12
+  - first:
+      213: 2251997603922776639
+    second: DesertGuide_13
+  - first:
+      213: -6662022022042529101
+    second: DesertGuide_14
+  - first:
+      213: 2614857760601282358
+    second: DesertGuide_15
+  - first:
+      213: -6802027459574007715
+    second: DesertGuide_16
+  - first:
+      213: 7921126515684968572
+    second: DesertGuide_17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: DesertGuide_0
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 509
+        width: 1102
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82ecac272934dabc0800000000000000
+      internalID: -3770283016769057240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_1
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 453
+        width: 902
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47b70c1d2ce94f180800000000000000
+      internalID: -9082459988919551116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 397
+        width: 1072
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14cd4f675820ac4a0800000000000000
+      internalID: -6572437933944153023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_3
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 69
+        width: 591
+        height: 287
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6c71a246ccfa9540800000000000000
+      internalID: 5015599063482072171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_4
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 321
+        width: 76
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aad0a6ed6793ba6b0800000000000000
+      internalID: -5284066555088728662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_5
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 311
+        width: 162
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 633652449216a6a90800000000000000
+      internalID: -7319931414472465610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_6
+      rect:
+        serializedVersion: 2
+        x: 1309
+        y: 298
+        width: 43
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b513b904234898bf0800000000000000
+      internalID: -321580547013136037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_7
+      rect:
+        serializedVersion: 2
+        x: 1939
+        y: 298
+        width: 43
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ff7e6a476a8aa460800000000000000
+      internalID: 7253762326068625394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_8
+      rect:
+        serializedVersion: 2
+        x: 1308
+        y: 272
+        width: 44
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1153868b5e9ee1780800000000000000
+      internalID: -8710267456437340911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_9
+      rect:
+        serializedVersion: 2
+        x: 1938
+        y: 272
+        width: 44
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d8452355675445d0800000000000000
+      internalID: -3079240152516310824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_10
+      rect:
+        serializedVersion: 2
+        x: 718
+        y: 76
+        width: 724
+        height: 187
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b751b24741918efb0800000000000000
+      internalID: -4618413842229422725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_11
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 231
+        width: 162
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c17e0adf7472a8460800000000000000
+      internalID: 7244646140730205980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_12
+      rect:
+        serializedVersion: 2
+        x: 1196
+        y: 164
+        width: 65
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 324fda3669ac9e670800000000000000
+      internalID: 8568602513315329059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_13
+      rect:
+        serializedVersion: 2
+        x: 1308
+        y: 246
+        width: 44
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3219d0a3e3b04f10800000000000000
+      internalID: 2251997603922776639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_14
+      rect:
+        serializedVersion: 2
+        x: 1558
+        y: 76
+        width: 524
+        height: 192
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b25352944ebb83a0800000000000000
+      internalID: -6662022022042529101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_15
+      rect:
+        serializedVersion: 2
+        x: 1938
+        y: 246
+        width: 44
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63710d67747d94420800000000000000
+      internalID: 2614857760601282358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_16
+      rect:
+        serializedVersion: 2
+        x: 715
+        y: 69
+        width: 730
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5873af60185a91a0800000000000000
+      internalID: -6802027459574007715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DesertGuide_17
+      rect:
+        serializedVersion: 2
+        x: 1555
+        y: 69
+        width: 530
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c78845c199e7ded60800000000000000
+      internalID: 7921126515684968572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      DesertGuide_0: -3770283016769057240
+      DesertGuide_1: -9082459988919551116
+      DesertGuide_10: -4618413842229422725
+      DesertGuide_11: 7244646140730205980
+      DesertGuide_12: 8568602513315329059
+      DesertGuide_13: 2251997603922776639
+      DesertGuide_14: -6662022022042529101
+      DesertGuide_15: 2614857760601282358
+      DesertGuide_16: -6802027459574007715
+      DesertGuide_17: 7921126515684968572
+      DesertGuide_2: -6572437933944153023
+      DesertGuide_3: 5015599063482072171
+      DesertGuide_4: -5284066555088728662
+      DesertGuide_5: -7319931414472465610
+      DesertGuide_6: -321580547013136037
+      DesertGuide_7: 7253762326068625394
+      DesertGuide_8: -8710267456437340911
+      DesertGuide_9: -3079240152516310824
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
