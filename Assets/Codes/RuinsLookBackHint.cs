@@ -53,7 +53,22 @@ public class RuinsLookBackHint : MonoBehaviour
     private float _alpha;
     private bool _finished;
 
+    // ★1019 AfterSceneLoad 只在「遊戲啟動時載入的第一個場景」跑一次；從主選單開始、之後換場景進來的關卡不會再呼叫。
+    //   棉花堡獨立成場景後，廢墟／荒原都是換場景進來的，所以要掛 sceneLoaded，每次載入新場景都檢查一次。
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Boot()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoadedHook;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoadedHook;
+        AutoSpawn();
+    }
+
+    private static void OnSceneLoadedHook(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (mode != UnityEngine.SceneManagement.LoadSceneMode.Single) return;
+        AutoSpawn();
+    }
+
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<RuinsLookBackHint>() != null) return;       // 已經有手動擺的
