@@ -961,6 +961,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -1296,6 +1305,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -2181,6 +2199,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -2507,6 +2534,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -2719,6 +2755,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -2941,6 +2986,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -3158,6 +3212,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -3479,6 +3542,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -3696,6 +3768,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -9051,6 +9132,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -9263,6 +9353,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -9340,6 +9439,12 @@ MonoBehaviour:
   slotIntervalSeconds: 0.4
   attacksPerRound: 3
   restAfterRoundSeconds: 1.2
+  waveSize: 3
+  waveQuietSeconds: 1.2
+  birdRetryChance: 0.3
+  birdRetryMax: 1
+  birdAttackSpeedJitter: 0.1
+  birdWarningJitter: 0
   maxSimultaneousAttacks: 3
   maxSimultaneousHard: 12
   queuePressureStep: 5
@@ -9619,6 +9724,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -10135,6 +10249,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -10278,7 +10401,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.4879265, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.518463, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10567,6 +10690,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -10897,6 +11029,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -11243,6 +11384,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -11460,6 +11610,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -11682,6 +11841,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -11899,6 +12067,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -12116,6 +12293,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -12604,6 +12790,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -13029,6 +13224,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -13241,6 +13445,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -14331,6 +14544,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -14548,6 +14770,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -15130,6 +15361,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -15342,6 +15582,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -15564,6 +15813,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -15791,6 +16049,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -16177,6 +16444,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -16394,6 +16670,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -17462,6 +17747,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -17882,6 +18176,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -18208,6 +18511,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -18420,6 +18732,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -18738,6 +19059,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -19861,6 +20191,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -20187,6 +20526,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -20399,6 +20747,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -20616,6 +20973,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -20651,7 +21017,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.487926, y: 5.29, z: 0}
+  m_LocalPosition: {x: 16.518463, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20716,6 +21082,9 @@ MonoBehaviour:
   isOverridden: 0
   overrideTarget: {fileID: 0}
   overrideOrthoSize: -1
+  modeSwitchBlendSeconds: 0.6
+  fallingSmoothTime: 0.08
+  modeSwitchBlendMaxDistance: 18
 --- !u!1001 &747983362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21023,6 +21392,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -21240,6 +21618,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -21457,6 +21844,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -21900,6 +22296,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -22117,6 +22522,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -22974,6 +23388,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -23543,6 +23966,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -23755,6 +24187,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -23972,6 +24413,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -24389,6 +24839,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -24606,6 +25065,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -24828,6 +25296,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -25258,6 +25735,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -25470,6 +25956,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -25687,6 +26182,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -26013,6 +26517,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -26225,6 +26738,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -26600,6 +27122,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -26971,6 +27502,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -27351,6 +27891,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -27810,6 +28359,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -28160,6 +28718,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -28671,6 +29238,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -28893,6 +29469,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -29169,6 +29754,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -29386,6 +29980,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -34553,6 +35156,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -34978,6 +35590,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -35671,6 +36292,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -35883,6 +36513,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -36100,6 +36739,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -36317,6 +36965,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -36587,6 +37244,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -37034,6 +37700,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -37251,6 +37926,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -37473,6 +38157,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -42738,6 +43431,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -43105,6 +43807,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -43317,6 +44028,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -43766,6 +44486,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -48885,6 +49614,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -49206,6 +49944,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -49514,6 +50261,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -49953,6 +50709,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -50165,6 +50930,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -50382,6 +51156,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -50604,6 +51387,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -50912,6 +51704,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -51238,6 +52039,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -51450,6 +52260,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -52082,6 +52901,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -52462,6 +53290,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -52770,6 +53607,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -52987,6 +53833,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -53209,6 +54064,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -53612,6 +54476,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -54141,6 +55014,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -54471,6 +55353,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -54801,6 +55692,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -55023,6 +55923,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -55240,6 +56149,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -55548,6 +56466,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -55765,6 +56692,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -55987,6 +56923,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -56209,6 +57154,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -56426,6 +57380,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -56643,6 +57606,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -56969,6 +57941,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -57181,6 +58162,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -57398,6 +58388,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -57793,6 +58792,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -58213,6 +59221,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -58430,6 +59447,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -58887,6 +59913,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -59109,6 +60144,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -59425,6 +60469,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -59647,6 +60700,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -59963,6 +61025,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -60180,6 +61251,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -60397,6 +61477,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -60713,6 +61802,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -61029,6 +62127,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -61246,6 +62353,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -61468,6 +62584,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -61784,6 +62909,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -62191,6 +63325,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -62408,6 +63551,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -62823,6 +63975,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -63131,6 +64292,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -63348,6 +64518,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -63674,6 +64853,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -63886,6 +65074,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -64221,6 +65418,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -64438,6 +65644,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -64850,6 +66065,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -65067,6 +66291,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -65761,6 +66994,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -65978,6 +67220,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -71130,6 +72381,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -71347,6 +72607,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -71564,6 +72833,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -71786,6 +73064,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -72094,6 +73381,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -72364,6 +73660,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -72586,6 +73891,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -72803,6 +74117,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -73129,6 +74452,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -73341,6 +74673,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -73563,6 +74904,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -73912,6 +75262,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -74129,6 +75488,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -74437,6 +75805,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -74654,6 +76031,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -74876,6 +76262,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -75192,6 +76587,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -75414,6 +76818,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -75631,6 +77044,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -75939,6 +77361,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -76255,6 +77686,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -76472,6 +77912,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -76847,6 +78296,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -77208,6 +78666,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -77425,6 +78892,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -77733,6 +79209,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -78041,6 +79526,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -78120,7 +79614,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.4879265, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.518463, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -78498,6 +79992,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -78905,6 +80408,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -79221,6 +80733,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -79674,6 +81195,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -80018,6 +81548,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -80235,6 +81774,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -80551,6 +82099,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -81027,6 +82584,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -81353,6 +82919,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -81565,6 +83140,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -81782,6 +83366,15 @@ MonoBehaviour:
   pushBackAheadMin: 1.6
   pushBackAheadMax: 3.2
   levelForwardX: 1
+  attackSpeedJitter: 0.1
+  warningJitter: 0
+  fixedAttackSpeedBoost: 1.3
+  retryAfterMiss: 1
+  retryChance: 0.3
+  retryMax: 1
+  retryPauseSeconds: 0.35
+  retryRiseSeconds: 0.9
+  retryViewportMargin: 0.05
   retreatInsteadOfKill: 1
   retreatPushSpeed: 6
   retreatPushDuration: 0.35
@@ -81799,6 +83392,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2206954291135562125, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.518463
+      objectReference: {fileID: 0}
+    - target: {fileID: 2206954291135562125, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.29
+      objectReference: {fileID: 0}
     - target: {fileID: 3009231889841423308, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -81845,7 +83446,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 40.660446
+      value: 40.718464
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
