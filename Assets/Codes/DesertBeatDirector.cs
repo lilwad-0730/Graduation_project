@@ -100,6 +100,18 @@ public class DesertBeatDirector : MonoBehaviour
     [Range(2, 8)] public int attacksPerRound = 4;
     [Tooltip("每輪結束後的短暫空檔 (秒)，玩家可以趁這時候前進／停頓")]
     public float restAfterRoundSeconds = 0.4f;
+    [Tooltip("★1018 一波放行幾次攻擊。放完這一波，要等場上的鳥全部攻擊完、再安靜下面那麼多秒，才放下一波（增援和回頭再攻的鳥也遵守）。0＝關閉，回到舊節奏")]
+    [Range(0, 8)] public int waveSize = 3;
+    [Tooltip("★1018 一波結束後的安靜秒數（玩家躲掉之後的喘息，可以往前走）")]
+    public float waveQuietSeconds = 1.2f;
+    [Tooltip("★1018 失手（沒打到她）還在鏡頭內的鳥，回頭再攻的機率。0＝不回頭")]
+    [Range(0f, 1f)] public float birdRetryChance = 0.3f;
+    [Tooltip("★1018 同一隻鳥最多回頭再攻幾次")]
+    [Range(0, 4)] public int birdRetryMax = 1;
+    [Tooltip("★1018 每次攻擊下降／對準速度的隨機幅度（0.1＝±10%）。前搖先固定，玩家才學得會「看到動作後多久落下」")]
+    [Range(0f, 0.5f)] public float birdAttackSpeedJitter = 0.1f;
+    [Tooltip("★1018 每次攻擊前搖秒數的隨機幅度。0＝固定")]
+    [Range(0f, 0.6f)] public float birdWarningJitter = 0f;
     [Tooltip("同時「前搖＋俯衝中」的鳥最多幾隻。1＝一次只有一隻；3＝最多三隻，仍不會整群一起衝")]
     [Range(1, 10)] public int maxSimultaneousAttacks = 6;
     [Tooltip("★1008 佇列很長時，同時攻擊上限會自動增加，但最多到這個數字")]
@@ -323,6 +335,8 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.slotInterval = slotIntervalSeconds;
         BirdAttackScheduler.attacksPerRound = attacksPerRound;
         BirdAttackScheduler.restSeconds = restAfterRoundSeconds;
+        BirdAttackScheduler.waveSize = waveSize;
+        BirdAttackScheduler.waveQuietSeconds = waveQuietSeconds;
         BirdAttackScheduler.maxSimultaneous = maxSimultaneousAttacks;
         BirdAttackScheduler.maxSimultaneousHard = maxSimultaneousHard;
         BirdAttackScheduler.queuePressureStep = queuePressureStep;
@@ -467,6 +481,10 @@ public class DesertBeatDirector : MonoBehaviour
             b.predictionLooseMin = predictionLooseMin;
             b.predictionLooseMax = predictionLooseMax;
             b.hitRadius = birdHitRadius;
+            b.retryChance = birdRetryChance;           // ★1018 場景裡每隻鳥存的是舊值，統一由導演決定
+            b.retryMax = birdRetryMax;
+            b.attackSpeedJitter = birdAttackSpeedJitter;
+            b.warningJitter = birdWarningJitter;
             float speedBoost = Mathf.Lerp(1f, 1.15f, Mathf.Clamp01(birdAttackIntensity - 1f));
             if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed * speedBoost;
             if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed * speedBoost;

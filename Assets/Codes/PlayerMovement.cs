@@ -371,6 +371,9 @@ public class PlayerMovement : MonoBehaviour
 
     /// <summary>★1015 正在固定速度墜落中（給中途傳送用）。</summary>
     public bool IsInControlledFall => _controlledFall;
+    private float _controlledFallStartTime;
+    /// <summary>★1018 這一次固定速度墜落已經掉了幾秒（沒在墜落＝0）。DeathZone 免死用，超過上限就不再保護，免得掉出地圖永遠不死。</summary>
+    public float ControlledFallSeconds => _controlledFall ? Time.time - _controlledFallStartTime : 0f;
 
     /// <summary>
     /// ★1015 墜落途中傳送（天空底 → 廢墟頂，白霧遮住的那一瞬間用）：
@@ -379,6 +382,12 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     public void RelayWarpDuringFall(Vector3 position)
     {
+        // ★1018 墜落時 LateUpdate 每一幀都會把 X 拉回 lockedXValue、Z 拉回 initialZ（isStrictLockingX）。
+        //   Root Cause（Editor.log）：接力傳送點的 X 跟第一段墜落的 X 不一樣時（搬了墜落圖之後），傳過去下一幀就被拉回舊的 X，
+        //   玩家看起來「傳送失敗、一直往下掉」（log：傳到 (50.3,-108.3)，之後玩家一直在 (-25.1, …)）。
+        //   傳送時把鎖定的 X 一起換成新位置，Z 用玩家原本的 Z。
+        position.z = initialZ;
+        if (isStrictLockingX) lockedXValue = position.x;
         transform.position = position;
         if (rb != null)
         {
@@ -396,6 +405,7 @@ public class PlayerMovement : MonoBehaviour
         if (!controlledRuinsFall || rb == null || rb.isKinematic || _controlledFall) return;
         _controlledFall = true;
         _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed);
+        _controlledFallStartTime = Time.time;
         _savedDamping = rb.linearDamping;
         _savedInterpolation = rb.interpolation;
         _savedUseGravity = rb.useGravity;

@@ -43,6 +43,14 @@ public static class BirdAttackScheduler
     public static float behindPenaltyMeters = 8f;
     public static float agingMetersPerSecond = 2f;
 
+    // ★1018 波次空檔：一波放行 waveSize 次攻擊後，等「場上沒有任何鳥在前搖／俯衝」再安靜 waveQuietSeconds 秒才放下一波。
+    //   原本的 restSeconds 只是放行時間往後挪，不代表攻擊已經結束（前一隻還在落下，下一隻就來了），玩家躲掉之後沒有喘息。
+    //   增援鳥、失手回頭再攻的鳥也是走這個佇列，所以一起遵守空檔。waveSize＝0 關閉（回到舊的節奏）。
+    public static int waveSize = 3;
+    public static float waveQuietSeconds = 1.2f;
+    private static int _waveGranted = 0;
+    private static float _lastActiveTime = -999f;
+
     // ── 內部狀態 ──
     private class Request
     {
@@ -103,6 +111,8 @@ public static class BirdAttackScheduler
         _lastZone = -1;
         _sameZoneCount = 0;
         _lastBlock = "";
+        _waveGranted = 0;
+        _lastActiveTime = -999f;
     }
 
     private static void ClearQueueAndCancelBirds()
@@ -212,6 +222,12 @@ public static class BirdAttackScheduler
         return Mathf.Clamp(Mathf.Max(1, maxSimultaneous) + bonus, 1, Mathf.Max(maxSimultaneous, maxSimultaneousHard));
     }
 
+    private static bool AnyForceRequest()
+    {
+        for (int i = 0; i < _queue.Count; i++) if (_queue[i].force) return true;
+        return false;
+    }
+
     private static bool AnyWindFreeRequest()
     {
         for (int i = 0; i < _queue.Count; i++) if (_queue[i].bird != null && _queue[i].bird.IgnoresWind) return true;
@@ -225,6 +241,7 @@ public static class BirdAttackScheduler
     {
         // 1. 清理無效需求／結束的攻擊
         _active.RemoveWhere(b => b == null || !b.IsAttacking);
+        if (_active.Count > 0) _lastActiveTime = Time.time;   // ★1018 波次空檔用：最後一次有鳥在攻擊的時間
         for (int i = _queue.Count - 1; i >= 0; i--)
         {
             IndividualBirdEnemy b = _queue[i].bird;
@@ -240,6 +257,12 @@ public static class BirdAttackScheduler
         else if (windPhase && !AnyWindFreeRequest()) block = "WIND";
         else if (IndividualBirdEnemy.IsAllSuppressed) block = "SHADOW";
         else if (Time.time < _nextSlotTime || _active.Count >= EffectiveCap()) block = "BUSY";
+        else if (waveSize > 0 && _waveGranted >= waveSize && !AnyForceRequest())
+        {
+            // ★1018 這一波放完了：等場上的鳥全部攻擊完，再安靜 waveQuietSeconds 秒才開下一波
+            if (_active.Count > 0 || Time.time - _lastActiveTime < Mathf.Max(0f, waveQuietSeconds)) block = "WAVE";
+            else _waveGranted = 0;
+        }
 
         if (block != _lastBlock)
         {
@@ -302,6 +325,7 @@ public static class BirdAttackScheduler
         BirdAttackType type = c == 'P' ? BirdAttackType.PredictedPosition : BirdAttackType.FixedPosition;
 
         _slotCount++;
+        _waveGranted++;
         float gap = Mathf.Max(0.05f, slotInterval);
         if (_slotCount % Mathf.Max(1, attacksPerRound) == 0) gap += Mathf.Max(0f, restSeconds);
         _nextSlotTime = Time.time + gap;
