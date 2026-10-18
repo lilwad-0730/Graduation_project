@@ -35,8 +35,7 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     public bool keepControlledFall = false;
 
     [Header("🗺️ 換場景模式（棉花堡 CottonCastle → 墜落＋廢墟 SampleScene）")]
-    [Tooltip("有填場景名＝這個觸發器不傳送，改成『白霧 → 載入這個場景 → 白霧散去＋文字卡』（CliffSceneLoader）。留空＝原本的同場景傳送。
-目標場景要在 Build Settings 裡。")]
+    [Tooltip("有填場景名＝這個觸發器不傳送，改成『白霧 → 載入這個場景 → 白霧散去＋文字卡』（CliffSceneLoader）。留空＝原本的同場景傳送。\n目標場景要在 Build Settings 裡。")]
     public string loadSceneName = "";
     [Tooltip("到達新場景後要播的文字卡（M1＝棉花堡→廢墟，Overlay 疊在墜落畫面上）。留空＝不播。")]
     public string arrivalCardId = "M1";
