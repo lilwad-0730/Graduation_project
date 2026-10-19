@@ -331,6 +331,8 @@ public class TextSeeThrough : MonoBehaviour
         if (visible && t.cardGroup != null && t.cardGroup.alpha < 0.01f) visible = false;
         // 黑幕卡（幕幾乎全黑）或紙卡：看不到她，不處理
         if (visible && t.cardCurtain != null && t.cardCurtain.color.a > 0.9f) visible = false;
+        // ★1019 文字卡改畫在她後面（StoryCardPlayer.overlayBehindPlayer）：她自己會擋住字，不用再變淡
+        if (visible && t.cardCurtain != null && text.canvas != null && text.canvas.renderMode != RenderMode.ScreenSpaceOverlay) visible = false;
 
         TMP_TextInfo ti = text.textInfo;
         int n = (ti != null) ? ti.characterCount : 0;

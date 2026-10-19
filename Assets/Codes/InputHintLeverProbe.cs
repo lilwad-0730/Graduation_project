@@ -13,6 +13,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class InputHintLeverProbe : MonoBehaviour
 {
+    /// <summary>★1019 關掉＝不出畫面下方的字（按鍵提示都改成背景線條畫；拉桿現在藏起來，本來就不會出現）。</summary>
+    public static bool Enabled = true;
+
     [Tooltip("走近拉桿時畫面下方顯示的字")]
     public string hintText = "按下 E　拉動拉桿";
 
@@ -82,6 +85,7 @@ public class InputHintLeverProbe : MonoBehaviour
     private void Refresh()
     {
         if (_done) return;
+        if (!Enabled) return;
         if (_lever != null && _lever.triggerOnEnter) return;   // 碰到就自動拉，沒東西可提示
         if (IsPulled()) { Finish(); return; }
         if (_inZone && !_showing)
