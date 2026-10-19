@@ -93,7 +93,7 @@ public class RuinsOrbDirector : MonoBehaviour
 
     [Header("★1016 最後的光球往下移（風暴還是碰到它才來）")]
     [Tooltip("開著＝P14 搬到推巨石的路的 stormSlopeFraction 處（不動場景，執行時搬）；關掉＝留在原本的坡頂")]
-    public bool moveStormWaypoint = true;
+    public bool moveStormWaypoint = false;   // ★1019 改回原本：P14 留在場景裡擺的位置（坡頂）。隊友覺得挑戰性不夠，要降低難度時直接在場景裡把 P14 往下拖就好
     [Tooltip("從巨石起點（Boulder Spawn）到原本 P14 的比例，照水平距離算。目前場景：前約 49 米平地、坡從 x≈190 開始——\n" +
              "0.48≈坡腳、0.6≈坡腳往上 12 米（預設，推約 61 米，原本約 102 米）、0.8≈坡的 6 成、1＝原本坡頂。太難就調小。\n" +
              "Play 中可以直接拉（馬上重放）；要保留就改程式裡的預設值")]

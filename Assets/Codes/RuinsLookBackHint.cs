@@ -42,9 +42,8 @@ public class RuinsLookBackHint : MonoBehaviour
     [Tooltip("呼吸速度")]
     public float glowPulseSpeed = 2.2f;
 
-    [Header("自動生成位置（沒有手動擺時）")]
-    [Tooltip("相對光球路徑點 P12 的偏移（X 負＝在 P12 左邊／落地點那邊，Y 正＝往上）")]
-    public Vector2 offsetFromP12 = new Vector2(-4f, 2f);
+    // 位置：沒有手動擺時自動生成在石球落地處上方；想自己決定位置，用選單 Tools ▸ 提示圖示 ▸ 建立可拖動的提示物件，
+    // 之後直接在 Scene 視窗拖那個物件（存檔就記住），不用改程式。
 
     private SpriteRenderer _sr;
     private SpriteRenderer _glowSr;
@@ -72,16 +71,56 @@ public class RuinsLookBackHint : MonoBehaviour
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<RuinsLookBackHint>() != null) return;       // 已經有手動擺的
-        if (FindAnyObjectByType<WolfEnemy>(FindObjectsInactive.Include) == null && FindAnyObjectByType<WolfSpawner>(FindObjectsInactive.Include) == null) return;   // 沒有狼的場景不用
+        Vector3 pos;
+        if (!TryGetAutoPosition(out pos)) return;
+        GameObject go = new GameObject("RuinsLookBackHint (自動生成)");
+        go.AddComponent<RuinsLookBackHint>();
+        go.transform.position = pos;
+    }
+
+    /// <summary>自動位置（石球落地處上方；找不到就退回 P12 旁）。場景沒有狼就回傳 false。編輯器工具也用這個。</summary>
+    public static bool TryGetAutoPosition(out Vector3 pos)
+    {
+        pos = Vector3.zero;
+        if (FindAnyObjectByType<WolfEnemy>(FindObjectsInactive.Include) == null && FindAnyObjectByType<WolfSpawner>(FindObjectsInactive.Include) == null) return false;   // 沒有狼的場景不用
+        Vector2 offBoulder = new Vector2(0f, 6.5f);
+        Vector2 offP12 = new Vector2(-4f, 2f);
+        // 1. 石球落地、開始推的位置（狼會從這裡之後追上來）
+        Transform boulderSpawn = null;
+        BoulderChallengeController bcc = FindAnyObjectByType<BoulderChallengeController>();
+        if (bcc != null) boulderSpawn = bcc.BoulderSpawnPoint;
+        if (boulderSpawn == null)
+        {
+            GameObject named = GameObject.Find("ChallengeBoulderSpawn");
+            if (named != null) boulderSpawn = named.transform;
+        }
+        if (boulderSpawn != null)
+        {
+            pos = new Vector3(boulderSpawn.position.x + offBoulder.x, boulderSpawn.position.y + offBoulder.y, boulderSpawn.position.z);
+            return true;
+        }
+
+        // 2. 找不到石球落點：退回光球路徑點 P12 旁邊
         GuidanceLight orb = FindAnyObjectByType<GuidanceLight>();
-        if (orb == null || orb.waypoints == null) return;
+        if (orb == null || orb.waypoints == null) return false;
         Transform p12 = null;
         foreach (Transform wp in orb.waypoints) if (wp != null && wp.name == "P12") { p12 = wp; break; }
-        if (p12 == null) return;
+        if (p12 == null) return false;
+        pos = new Vector3(p12.position.x + offP12.x, p12.position.y + offP12.y, p12.position.z);
+        return true;
+    }
 
-        GameObject go = new GameObject("RuinsLookBackHint (自動生成)");
-        RuinsLookBackHint h = go.AddComponent<RuinsLookBackHint>();
-        go.transform.position = new Vector3(p12.position.x + h.offsetFromP12.x, p12.position.y + h.offsetFromP12.y, p12.position.z);
+    // Scene 視窗看得到的框（編輯器裡圖還沒生成，這個框就是圖示佔的範圍）；選到物件、直接拖它就能改位置
+    private void OnDrawGizmos()
+    {
+        float h = worldWidth * 310f / 820f;
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.9f);
+        Gizmos.DrawWireCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.12f);
+        Gizmos.DrawCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+#if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * (h * 0.5f + 0.4f), "回頭看狼提示（拖我移動，存檔就會記住）");
+#endif
     }
 
     private void Start()

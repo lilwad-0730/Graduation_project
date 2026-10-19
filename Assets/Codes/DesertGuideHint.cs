@@ -12,9 +12,9 @@ public class DesertGuideHint : MonoBehaviour
 {
     [Header("出現／消失（以玩家 X 對圖示 X 的差來算，單位公尺）")]
     [Tooltip("玩家在圖示左邊這麼遠開始淡入")]
-    public float fadeInFarDistance = 32f;
+    public float fadeInFarDistance = 22f;
     [Tooltip("玩家在圖示左邊這麼近時完全顯示")]
-    public float fadeInFullDistance = 15f;
+    public float fadeInFullDistance = 10f;
     [Tooltip("玩家走過圖示右邊這麼遠開始淡出")]
     public float fadeOutStartDistance = 12f;
     [Tooltip("玩家走過圖示右邊這麼遠時完全消失")]
@@ -34,9 +34,8 @@ public class DesertGuideHint : MonoBehaviour
     public Vector2 glowScale = new Vector2(1.08f, 1.8f);
     public float glowPulseSpeed = 2.2f;
 
-    [Header("自動生成位置（沒有手動擺時）")]
-    [Tooltip("相對第一根掩體的偏移（X 正＝在掩體右邊、Y 正＝往上）。掩體底部大約在 y = -6.3")]
-    public Vector2 offsetFromFirstShelter = new Vector2(-4f, 6f);
+    // 位置：沒有手動擺時自動生成在玩家出生點右邊 52 米（不會一進場景就看到）；想自己決定位置，用選單 Tools ▸ 提示圖示 ▸ 建立可拖動的提示物件，
+    // 之後直接在 Scene 視窗拖那個物件（存檔就記住），不用改程式。
 
     private SpriteRenderer _sr, _glowSr;
     private Transform _player;
@@ -62,14 +61,41 @@ public class DesertGuideHint : MonoBehaviour
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<DesertGuideHint>() != null) return;
-        WindShelter first = null;
-        foreach (WindShelter s in FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude))
-            if (first == null || s.transform.position.x < first.transform.position.x) first = s;
-        if (first == null) return;
+        Vector3 pos;
+        if (!TryGetAutoPosition(out pos)) return;
         GameObject go = new GameObject("DesertGuideHint (自動生成)");
-        DesertGuideHint h = go.AddComponent<DesertGuideHint>();
-        Vector3 p = first.transform.position;
-        go.transform.position = new Vector3(p.x + h.offsetFromFirstShelter.x, p.y + h.offsetFromFirstShelter.y, p.z);
+        go.AddComponent<DesertGuideHint>();
+        go.transform.position = pos;
+    }
+
+    /// <summary>自動位置：玩家出生點右邊 52 米，高度跟最近的一根掩體。場景沒有掩體或玩家就回傳 false。編輯器工具也用這個。</summary>
+    public static bool TryGetAutoPosition(out Vector3 pos)
+    {
+        pos = Vector3.zero;
+        WindShelter[] shelters = FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude);
+        if (shelters.Length == 0) return false;
+        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+        if (pm == null) return false;
+        float targetX = pm.transform.position.x + 52f;
+        WindShelter best = shelters[0];
+        foreach (WindShelter sh in shelters)
+            if (Mathf.Abs(sh.transform.position.x - targetX) < Mathf.Abs(best.transform.position.x - targetX)) best = sh;
+        Vector3 bp = best.transform.position;
+        pos = new Vector3(targetX, bp.y + 6f, bp.z);
+        return true;
+    }
+
+    // Scene 視窗看得到的框（編輯器裡圖還沒生成，這個框就是圖示佔的範圍）；選到物件、直接拖它就能改位置
+    private void OnDrawGizmos()
+    {
+        float h = worldWidth * 580f / 2100f;
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.9f);
+        Gizmos.DrawWireCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.12f);
+        Gizmos.DrawCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+#if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * (h * 0.5f + 0.4f), "荒原說明圖（拖我移動，存檔就會記住）");
+#endif
     }
 
     private void Start()
