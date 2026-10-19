@@ -114,7 +114,8 @@ public class UpperCastleFloorController : MonoBehaviour
     private static void OnSceneLoadedRuntime()
     {
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        if (sceneName == "SampleScene" || GameObject.Find("PatioFloor") != null)
+        // ★1019 棉花堡獨立成 CottonCastle：SampleScene 現在是墜落＋廢墟，不該再自動長出上層城堡的地板控制器
+        if (sceneName == "CottonCastle" || GameObject.Find("PatioFloor") != null)
         {
             EnsureControllerExists();
         }
@@ -122,7 +123,7 @@ public class UpperCastleFloorController : MonoBehaviour
 
     public static UpperCastleFloorController EnsureControllerExists()
     {
-        var controller = Object.FindFirstObjectByType<UpperCastleFloorController>();
+        var controller = Object.FindFirstObjectByType<UpperCastleFloorController>(FindObjectsInactive.Include);
         if (controller == null)
         {
             GameObject go = GameObject.Find("[UpperCastleFloorController]");
@@ -130,7 +131,9 @@ public class UpperCastleFloorController : MonoBehaviour
             {
                 go = new GameObject("[UpperCastleFloorController]");
             }
-            controller = go.AddComponent<UpperCastleFloorController>();
+            // ★1019 同一個物件上已經有控制器就用它，不要再加第二個（第二個是預設值，會把場景裡調好的地板數值蓋掉）
+            controller = go.GetComponent<UpperCastleFloorController>();
+            if (controller == null) controller = go.AddComponent<UpperCastleFloorController>();
         }
         controller.EnsureAllColliders();
         return controller;

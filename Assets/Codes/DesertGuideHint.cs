@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ★1018 荒原危險說明圖（純線條，一次性）：風在吹→躲在掩體（石柱）後面沒事；站在外面會石化（全身灰黑），石化 3 次會重生（升天）；
@@ -44,18 +43,21 @@ public class DesertGuideHint : MonoBehaviour
     private Vector3 _basePos;
     private float _alpha;
 
-    // ★1018 打包版是從主選單進來的：AfterSceneLoad 只在第一個場景（主選單）載入後跑一次，
-    //   之後換到這一關就不會再跑，圖示不會生成（只有在編輯器直接從這一關按 Play 才看得到）。
-    //   所以另外掛 sceneLoaded：每次載入場景都再試一次（已經有的話 AutoSpawn 第一行就 return，不會重複）。
+    // ★1019 AfterSceneLoad 只在「遊戲啟動時載入的第一個場景」跑一次；從主選單開始、之後換場景進來的關卡不會再呼叫。
+    //   棉花堡獨立成場景後，廢墟／荒原都是換場景進來的，所以要掛 sceneLoaded，每次載入新場景都檢查一次。
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void Bootstrap()
+    private static void Boot()
     {
-        SceneManager.sceneLoaded -= OnSceneLoadedSpawn;
-        SceneManager.sceneLoaded += OnSceneLoadedSpawn;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoadedHook;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoadedHook;
         AutoSpawn();
     }
 
-    private static void OnSceneLoadedSpawn(Scene scene, LoadSceneMode mode) { AutoSpawn(); }
+    private static void OnSceneLoadedHook(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (mode != UnityEngine.SceneManagement.LoadSceneMode.Single) return;
+        AutoSpawn();
+    }
 
     private static void AutoSpawn()
     {

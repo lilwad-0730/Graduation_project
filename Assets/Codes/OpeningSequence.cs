@@ -6,7 +6,7 @@ using UnityEngine.UI;
 /// <summary>
 /// ★前導序列（0902 教授回饋：主畫面按「開始」直接進棉花堡太突兀、沒有代入感）。
 ///
-/// 從主選單進到棉花堡（SampleScene）時：
+/// 從主選單進到棉花堡（CottonCastle）時：
 ///   全黑 → 幾張繪本頁（每頁慢慢推近、淡入淡出）→ 文字卡 M0「一直往前走／雲一直都在」→ 黑幕淡出，關卡開始。
 ///
 /// 不用改主選單、不用改場景：靠 sceneLoaded 自己掛上；
@@ -31,7 +31,7 @@ public class OpeningSequence : MonoBehaviour
         "Pages/002_棉-1",   // 雲海上遠望白城：她要去一個好的地方
         "Pages/004_棉-2",   // 提著光往前走：走了很久
     };
-    public const string GameplaySceneName = "SampleScene";
+    public const string GameplaySceneName = "CottonCastle";   // ★1019 棉花堡獨立成自己的場景；SampleScene 現在是墜落＋廢墟
     public const string MenuSceneName = "MainMenuScene";
     public const string IntroCardId = "M0";
     public const float PageFadeIn = 0.9f;
@@ -41,7 +41,7 @@ public class OpeningSequence : MonoBehaviour
     public const float MinSecondsBeforeSkip = 0.6f;
     public const int CanvasSortingOrder = 10001;    // 蓋過轉場特效 9999 與文字卡 10000（播卡前會把自己關掉）
 
-    /// <summary>測試用：設 true 則下一次進 SampleScene 一定播。</summary>
+    /// <summary>測試用：設 true 則下一次進 CottonCastle 一定播。</summary>
     public static bool ForceNextTime;
     /// <summary>正在播前導（其他系統要判斷可用）。</summary>
     public static bool IsPlaying { get; private set; }

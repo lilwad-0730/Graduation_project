@@ -41,7 +41,7 @@ public class MainMenuController : MonoBehaviour
     public AudioSource sfxAudioSource;
 
     [Header("轉場目標場景名稱（找不到 StartMenuSceneTransition 時的備用）")]
-    public string targetSceneName = "SampleScene";
+    public string targetSceneName = "CottonCastle";   // ★1019 第一關是棉花堡（獨立場景）
 
     // 選單項目（順序：0=開始 1=設定 2=製作名單 3=離開，也就是畫面上由上到下的順序）
     private class Item

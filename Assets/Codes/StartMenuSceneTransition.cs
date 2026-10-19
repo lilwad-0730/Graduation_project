@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public sealed class StartMenuSceneTransition : MonoBehaviour
 {
-    [SerializeField] private string targetSceneName = "SampleScene";
+    [SerializeField] private string targetSceneName = "CottonCastle";   // ★1019
     [SerializeField] private TransitionEffect transitionEffect;
     private bool transitionRequested;
 

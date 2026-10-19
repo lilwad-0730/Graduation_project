@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b73749de9c2eaba4b90efda7ac0cc4e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartMenuSceneTransition
-  targetSceneName: SampleScene
+  targetSceneName: CottonCastle
   transitionEffect: {fileID: 11400000, guid: 7cb3a7472a36ad5468072f6ca7b2d68f, type: 2}
 --- !u!1 &164848392
 GameObject:
@@ -7628,7 +7628,7 @@ MonoBehaviour:
   selectSfx: {fileID: 0}
   confirmSfx: {fileID: 0}
   sfxAudioSource: {fileID: 0}
-  targetSceneName: SampleScene
+  targetSceneName: CottonCastle
 --- !u!4 &1857580221
 Transform:
   m_ObjectHideFlags: 0

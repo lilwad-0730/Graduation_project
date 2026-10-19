@@ -34,6 +34,18 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     [Tooltip("打勾＝這是『墜落途中』的第二段傳送：只有主角正在固定速度墜落時才會觸發，傳送後墜落不中斷、速度曲線照舊。\n不打勾＝原本的跳崖傳送（棉花堡跳下去那一個）")]
     public bool keepControlledFall = false;
 
+    [Header("🗺️ 換場景模式（棉花堡 CottonCastle → 墜落＋廢墟 SampleScene）")]
+    [Tooltip("有填場景名＝這個觸發器不傳送，改成『白霧 → 載入這個場景 → 白霧散去＋文字卡』（CliffSceneLoader）。留空＝原本的同場景傳送。\n目標場景要在 Build Settings 裡。")]
+    public string loadSceneName = "";
+    [Tooltip("到達新場景後要播的文字卡（M1＝棉花堡→廢墟，Overlay 疊在墜落畫面上）。留空＝不播。")]
+    public string arrivalCardId = "M1";
+    [Tooltip("換場景時，白霧蓋滿後停頓幾秒才散去（場景載入完之後才開始算）")]
+    public float arrivalHoldSeconds = 0.1f;
+    [Tooltip("★實驗：玩家靠近時先在背景預載目標場景（allowSceneActivation=false）。掛著沒放行的期間，別的場景載入（例如暫停→回主選單）可能被擋住，所以預設關閉。")]
+    public bool preloadScene = false;
+    [Tooltip("預載開始的距離（玩家離這個觸發區中心的水平距離，公尺）")]
+    public float preloadDistance = 28f;
+
     [Header("🚀 墜落下衝物理")]
     [Tooltip("傳送後給予主角的向下初速度 (負值，預設 -10f 確保下墜感極速流暢)")]
     public float initialDownwardSpeed = -9f;
@@ -61,6 +73,23 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
     private void Awake()
     {
         EnsureColliderSetup();
+    }
+
+    private Transform _preloadPlayer;
+
+    private void Update()
+    {
+        // ★實驗性預載（預設關閉，見 preloadScene 的說明）
+        if (!preloadScene || string.IsNullOrEmpty(loadSceneName) || CliffSceneLoader.IsBusy) return;
+        if (_preloadPlayer == null)
+        {
+            PlayerMovement pm = Object.FindAnyObjectByType<PlayerMovement>();
+            if (pm != null) _preloadPlayer = pm.transform;
+            if (_preloadPlayer == null) return;
+        }
+        Collider c = GetComponent<Collider>();
+        float cx = c != null ? c.bounds.center.x : transform.position.x;
+        if (Mathf.Abs(_preloadPlayer.position.x - cx) <= preloadDistance) CliffSceneLoader.Preload(loadSceneName);
     }
 
     private void Start()
@@ -135,6 +164,15 @@ public class SkyDiveTeleportTrigger : MonoBehaviour
 
         if (pm != null)
         {
+            // ★1019 換場景模式：棉花堡跳崖直接載入墜落＋廢墟場景（不傳送）
+            if (!string.IsNullOrEmpty(loadSceneName))
+            {
+                if (CliffSceneLoader.IsBusy) return;
+                _sharedTeleportStartTime = Time.unscaledTime;
+                Debug.Log($"☁️【SkyDiveTeleportTrigger】'{name}' 偵測到主角跳崖，白霧 → 換場景 [{loadSceneName}]");
+                CliffSceneLoader.Begin(loadSceneName, transitionColor, fadeOutDuration, arrivalHoldSeconds, fadeInDuration, arrivalCardId, transitionSFX, sfxVolume);
+                return;
+            }
             if (keepControlledFall && !pm.IsInControlledFall) return;   // ★1015 接力型只在墜落中才觸發
             if (keepControlledFall && Time.unscaledTime - _lastRelayTime < 8f) return;
             if (targetDropPoint != null)
