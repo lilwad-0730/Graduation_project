@@ -34,11 +34,8 @@ public class DesertGuideHint : MonoBehaviour
     public Vector2 glowScale = new Vector2(1.08f, 1.8f);
     public float glowPulseSpeed = 2.2f;
 
-    [Header("自動生成位置（沒有手動擺時）")]
-    [Tooltip("放在玩家出生點右邊這麼遠（公尺）。荒原鏡頭半寬約 30 米，所以要 > 45 才不會一進場景就看到；\n圖示本身寬 26 米，左緣再往左 13 米，所以預設 52")]
-    public float aheadOfStartDistance = 52f;
-    [Tooltip("高度＝最近一根掩體的底部再往上多少米（掩體底部大約在 y = -6.3）")]
-    public float heightAboveShelter = 6f;
+    // 位置：沒有手動擺時自動生成在玩家出生點右邊 52 米（不會一進場景就看到）；想自己決定位置，用選單 Tools ▸ 提示圖示 ▸ 建立可拖動的提示物件，
+    // 之後直接在 Scene 視窗拖那個物件（存檔就記住），不用改程式。
 
     private SpriteRenderer _sr, _glowSr;
     private Transform _player;
@@ -64,19 +61,41 @@ public class DesertGuideHint : MonoBehaviour
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<DesertGuideHint>() != null) return;
-        WindShelter[] shelters = FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude);
-        if (shelters.Length == 0) return;
-        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
-        if (pm == null) return;
+        Vector3 pos;
+        if (!TryGetAutoPosition(out pos)) return;
         GameObject go = new GameObject("DesertGuideHint (自動生成)");
-        DesertGuideHint h = go.AddComponent<DesertGuideHint>();
-        // 玩家出生點右邊 aheadOfStartDistance 米，吸附到最近的一根掩體（高度跟著掩體底部）
-        float targetX = pm.transform.position.x + h.aheadOfStartDistance;
+        go.AddComponent<DesertGuideHint>();
+        go.transform.position = pos;
+    }
+
+    /// <summary>自動位置：玩家出生點右邊 52 米，高度跟最近的一根掩體。場景沒有掩體或玩家就回傳 false。編輯器工具也用這個。</summary>
+    public static bool TryGetAutoPosition(out Vector3 pos)
+    {
+        pos = Vector3.zero;
+        WindShelter[] shelters = FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude);
+        if (shelters.Length == 0) return false;
+        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+        if (pm == null) return false;
+        float targetX = pm.transform.position.x + 52f;
         WindShelter best = shelters[0];
         foreach (WindShelter sh in shelters)
             if (Mathf.Abs(sh.transform.position.x - targetX) < Mathf.Abs(best.transform.position.x - targetX)) best = sh;
         Vector3 bp = best.transform.position;
-        go.transform.position = new Vector3(targetX, bp.y + h.heightAboveShelter, bp.z);
+        pos = new Vector3(targetX, bp.y + 6f, bp.z);
+        return true;
+    }
+
+    // Scene 視窗看得到的框（編輯器裡圖還沒生成，這個框就是圖示佔的範圍）；選到物件、直接拖它就能改位置
+    private void OnDrawGizmos()
+    {
+        float h = worldWidth * 580f / 2100f;
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.9f);
+        Gizmos.DrawWireCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+        Gizmos.color = new Color(1f, 0.82f, 0.5f, 0.12f);
+        Gizmos.DrawCube(transform.position, new Vector3(worldWidth, h, 0.1f));
+#if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * (h * 0.5f + 0.4f), "荒原說明圖（拖我移動，存檔就會記住）");
+#endif
     }
 
     private void Start()
