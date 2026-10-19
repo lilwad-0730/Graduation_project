@@ -12,9 +12,9 @@ public class DesertGuideHint : MonoBehaviour
 {
     [Header("出現／消失（以玩家 X 對圖示 X 的差來算，單位公尺）")]
     [Tooltip("玩家在圖示左邊這麼遠開始淡入")]
-    public float fadeInFarDistance = 32f;
+    public float fadeInFarDistance = 22f;
     [Tooltip("玩家在圖示左邊這麼近時完全顯示")]
-    public float fadeInFullDistance = 15f;
+    public float fadeInFullDistance = 10f;
     [Tooltip("玩家走過圖示右邊這麼遠開始淡出")]
     public float fadeOutStartDistance = 12f;
     [Tooltip("玩家走過圖示右邊這麼遠時完全消失")]
@@ -35,8 +35,10 @@ public class DesertGuideHint : MonoBehaviour
     public float glowPulseSpeed = 2.2f;
 
     [Header("自動生成位置（沒有手動擺時）")]
-    [Tooltip("相對第一根掩體的偏移（X 正＝在掩體右邊、Y 正＝往上）。掩體底部大約在 y = -6.3")]
-    public Vector2 offsetFromFirstShelter = new Vector2(-4f, 6f);
+    [Tooltip("放在玩家出生點右邊這麼遠（公尺）。荒原鏡頭半寬約 30 米，所以要 > 45 才不會一進場景就看到；\n圖示本身寬 26 米，左緣再往左 13 米，所以預設 52")]
+    public float aheadOfStartDistance = 52f;
+    [Tooltip("高度＝最近一根掩體的底部再往上多少米（掩體底部大約在 y = -6.3）")]
+    public float heightAboveShelter = 6f;
 
     private SpriteRenderer _sr, _glowSr;
     private Transform _player;
@@ -62,14 +64,19 @@ public class DesertGuideHint : MonoBehaviour
     private static void AutoSpawn()
     {
         if (FindAnyObjectByType<DesertGuideHint>() != null) return;
-        WindShelter first = null;
-        foreach (WindShelter s in FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude))
-            if (first == null || s.transform.position.x < first.transform.position.x) first = s;
-        if (first == null) return;
+        WindShelter[] shelters = FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude);
+        if (shelters.Length == 0) return;
+        PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+        if (pm == null) return;
         GameObject go = new GameObject("DesertGuideHint (自動生成)");
         DesertGuideHint h = go.AddComponent<DesertGuideHint>();
-        Vector3 p = first.transform.position;
-        go.transform.position = new Vector3(p.x + h.offsetFromFirstShelter.x, p.y + h.offsetFromFirstShelter.y, p.z);
+        // 玩家出生點右邊 aheadOfStartDistance 米，吸附到最近的一根掩體（高度跟著掩體底部）
+        float targetX = pm.transform.position.x + h.aheadOfStartDistance;
+        WindShelter best = shelters[0];
+        foreach (WindShelter sh in shelters)
+            if (Mathf.Abs(sh.transform.position.x - targetX) < Mathf.Abs(best.transform.position.x - targetX)) best = sh;
+        Vector3 bp = best.transform.position;
+        go.transform.position = new Vector3(targetX, bp.y + h.heightAboveShelter, bp.z);
     }
 
     private void Start()

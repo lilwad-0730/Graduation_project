@@ -45,6 +45,8 @@ public class RuinsLookBackHint : MonoBehaviour
     [Header("自動生成位置（沒有手動擺時）")]
     [Tooltip("相對光球路徑點 P12 的偏移（X 負＝在 P12 左邊／落地點那邊，Y 正＝往上）")]
     public Vector2 offsetFromP12 = new Vector2(-4f, 2f);
+    [Tooltip("★1019 優先位置：石球落地、準備開始推的地方（BoulderChallengeController 的 Boulder Spawn，或叫 ChallengeBoulderSpawn 的物件）。隊友建議：提示要出現在玩家真的會遇到狼追的地方，才聯想得到。X 正＝右、Y 正＝往上；石球頂端大約在落點上方 3 米。")]
+    public Vector2 offsetFromBoulderSpawn = new Vector2(0f, 6.5f);
 
     private SpriteRenderer _sr;
     private SpriteRenderer _glowSr;
@@ -73,6 +75,24 @@ public class RuinsLookBackHint : MonoBehaviour
     {
         if (FindAnyObjectByType<RuinsLookBackHint>() != null) return;       // 已經有手動擺的
         if (FindAnyObjectByType<WolfEnemy>(FindObjectsInactive.Include) == null && FindAnyObjectByType<WolfSpawner>(FindObjectsInactive.Include) == null) return;   // 沒有狼的場景不用
+        // 1. 石球落地、開始推的位置（狼會從這裡之後追上來）
+        Transform boulderSpawn = null;
+        BoulderChallengeController bcc = FindAnyObjectByType<BoulderChallengeController>();
+        if (bcc != null) boulderSpawn = bcc.BoulderSpawnPoint;
+        if (boulderSpawn == null)
+        {
+            GameObject named = GameObject.Find("ChallengeBoulderSpawn");
+            if (named != null) boulderSpawn = named.transform;
+        }
+        if (boulderSpawn != null)
+        {
+            GameObject go1 = new GameObject("RuinsLookBackHint (自動生成)");
+            RuinsLookBackHint h1 = go1.AddComponent<RuinsLookBackHint>();
+            go1.transform.position = new Vector3(boulderSpawn.position.x + h1.offsetFromBoulderSpawn.x, boulderSpawn.position.y + h1.offsetFromBoulderSpawn.y, boulderSpawn.position.z);
+            return;
+        }
+
+        // 2. 找不到石球落點：退回光球路徑點 P12 旁邊
         GuidanceLight orb = FindAnyObjectByType<GuidanceLight>();
         if (orb == null || orb.waypoints == null) return;
         Transform p12 = null;
