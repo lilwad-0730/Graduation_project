@@ -20,6 +20,10 @@ using UnityEngine.UI;
 /// 不改 ShadowMonsterController、不改場景、不改模型檔：場景載入時自己掛到黑影上；
 /// 加出來的東西放在另一個物件（不在黑影底下），黑影原本的顯示／淡出規則照舊（它看不見，這些也跟著看不見）。
 /// 開關：ShadowMonsterDread.Enabled（全部）＋ Inspector 上每一項。
+///
+/// ★1020 M 看了線團頭：「怪物的腦袋為什麼變成一團毛線？」→ 選「改回原本的頭，恐怖效果保留」。
+///   1 的線團（faceVoid）與頭縮掉（collapseHead）預設關：頭回到模型原本纏布＋眼罩的那顆。
+///   眼睛、牙齒網格照樣不畫（紅線）；2～4 的碎屑、抽搐、殘影、畫面窒息照舊。要再看線團版就把兩個勾打開。
 /// </summary>
 [DefaultExecutionOrder(1000)]
 [DisallowMultipleComponent]
@@ -28,9 +32,10 @@ public class ShadowMonsterDread : MonoBehaviour
     public static bool Enabled = true;
 
     [Header("開關")]
-    public bool faceVoid = true;
-    [Tooltip("把模型原本的頭（人的側臉：鼻子、嘴唇、下巴）縮成一點不畫，只留黑線團。關掉＝線團疊在臉上，側臉輪廓會透出來")]
-    public bool collapseHead = true;
+    [Tooltip("★1020 預設關（M：改回原本的頭）。打勾＝脖子上接一團蠕動的黑線團（1018 版）")]
+    public bool faceVoid = false;
+    [Tooltip("把模型原本的頭（人的側臉：鼻子、嘴唇、下巴）縮成一點不畫，只留黑線團（要跟 faceVoid 一起勾才有作用）。★1020 預設關")]
+    public bool collapseHead = false;
     public bool hideEyesAndTeeth = true;
     public bool shedding = true;
     public bool twitching = true;
@@ -141,7 +146,7 @@ public class ShadowMonsterDread : MonoBehaviour
             if (all[i] != null && all[i].GetComponent<ShadowMonsterDread>() == null)
             {
                 all[i].gameObject.AddComponent<ShadowMonsterDread>();
-                Debug.Log("【黑影】★1017 已掛上：臉被黑線團吞掉、碎屑、抽搐殘影、靠近時畫面窒息（ShadowMonsterDread）");
+                Debug.Log("【黑影】★1017 已掛上：碎屑、抽搐殘影、靠近時畫面窒息（ShadowMonsterDread；★1020 頭改回原本的，黑線團預設關）");
             }
         }
     }

@@ -439,6 +439,37 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("判定「在鏡頭外」的邊界：畫面外多少比例還算在鏡頭內。0.05＝超出畫面邊緣 5% 以上才算鏡頭外")]
     [Range(0f, 0.3f)] public float retryViewportMargin = 0.05f;
 
+    // ───────── ★1020 晚鎖定：M「鳥群攻擊的提前量太多，完全沒有達到增加遊戲難度的作用」 ─────────
+    // 10/20 實測 15 次攻擊，沒有一次進到命中範圍（最近距離平均：預判 8.6 米、定點 11.2 米）。原因：
+    //   前搖一開始就鎖死落點，之後還要 3.5～5 秒才落地（前搖 1.0～1.6 秒＋從 12～15 米高、每秒約 7 米慢慢降約 2 秒），
+    //   預判只好往前推 11～30 米（導演 v5 上限 5 秒／30 米）。她中途被風擋下停一下，鳥就落在她前面十米外；
+    //   「打當下位置」的那種則落在她身後 6～18 米。
+    // 晚鎖定：前搖期間鳥一路跟著她、降到她頭上 lateLockHoverHeight 米（瞄的點跟著她的位置和速度一直更新），
+    //   下墜前抖動那一刻才鎖定落點，然後垂直落下。落點只往前算「抖動＋落下」這一小段（約 1 秒、最多 lateLockMaxLead 米）：
+    //   她一直走會被打到；要停下、往回走，或按住 S 硬撐（鳥撞上會彈開）。
+    //   定點／預判、逼她往回走、準／寬鬆的規則都照舊，只是時間軸變短。示範俯衝（overrideTarget）不走這裡。
+    [Header("★1020 晚鎖定（M：提前量太多；DesertBeatDirector 會統一覆蓋）")]
+    [Tooltip("開＝前搖期間一路跟著她、降到她頭上，抖動那一刻才鎖定落點，再垂直落下。關＝1018 的做法（前搖一開始就鎖死落點）")]
+    public bool lateLock = false;
+    [Tooltip("晚鎖定：前搖時降到她頭上多高（公尺，從她的身體中心算）。越低越快落到、越難躲")]
+    public float lateLockHoverHeight = 5f;
+    [Tooltip("晚鎖定：落點最多離她幾公尺（沿她走的方向）")]
+    public float lateLockMaxLead = 6f;
+    [Tooltip("晚鎖定：飛向她頭上那一點的最高速度 (公尺/秒)。0＝用這一次攻擊的對準速度（diveAlignSpeed）")]
+    public float lateLockApproachSpeed = 0f;
+    [Tooltip("晚鎖定：跟著她的平滑時間（秒）。越小跟得越緊")]
+    public float lateLockSmoothTime = 0.22f;
+    // 這一次攻擊的穩定亂數（開始時抽一次，跟著她更新落點時不會每幀亂跳）
+    private bool _llPrecise = true, _llBlock;
+    private float _llOffset, _llAhead;
+    // ★1020 她的速度用「最近 0.3 秒實際走了多遠」算：被岩柱擋住、被風推、跳上跳下時，剛體的速度還會顯示 6（指令速度），實際卻沒前進
+    private const int LlSamples = 64;
+    private readonly float[] _llSampT = new float[LlSamples];
+    private readonly float[] _llSampX = new float[LlSamples];
+    private int _llSampN, _llSampHead;
+    private float _llVx;
+    private bool _llHaveVx;
+
     private float _atkWarn = 1.2f, _atkAlign = 7f, _atkDescent = 3f;   // 這一次攻擊實際用的數字
     private int _retryCount = 0;
 
@@ -1092,6 +1123,84 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         Vector3 poseBaseScale = transform.localScale;
         float poseLift = 0f;
         Vector3 poseJitter = Vector3.zero;
+        bool late = lateLock && overrideTarget == null && playerTrans != null;   // ★1020 晚鎖定（示範俯衝不走這裡）
+        if (late)
+        {
+            // ★1020 晚鎖定：飛到她頭上 lateLockHoverHeight 米、一路跟著她（瞄的點每幀照她的位置和速度更新），
+            //   抖動那一刻才鎖定落點；落點只往前算「抖動＋從這個高度落到她身上」這一小段。
+            float shake = poseCue ? Mathf.Max(0.15f, poseShakeSeconds) : 0.25f;
+            float approachTime = Mathf.Max(0.35f, realWarnTime - shake);
+            float maxApproach = approachTime + 2.5f;
+            float apSpeed = lateLockApproachSpeed > 0f ? lateLockApproachSpeed : Mathf.Max(_atkAlign, 8f);
+            float hoverFall = Mathf.Max(0.5f, lateLockHoverHeight) / Mathf.Max(0.1f, _atkDescent);
+            Vector3 apVel = Vector3.zero;
+            RollLateLockPlan();
+            _llSampN = 0; _llSampHead = 0; _llHaveVx = false;
+            float lt = 0f;
+            alignDist = 1f;   // 讓後面的 ALIGN-DONE 照樣印
+            alignEndReason = "晚鎖定";
+            BirdAttackScheduler.Log("ALIGN-START", this, $"晚鎖定：飛到她頭上 {lateLockHoverHeight:F1}m 跟著她 BirdX={transform.position.x:F1} PlayerX={playerTrans.position.x:F1}");
+            while (true)
+            {
+                lt += Time.deltaTime;
+                Vector3 pp = playerTrans.position;
+                LateTrackSample(pp.x);
+                float aimX = LateLockAimX(pp, shake + hoverFall);
+                Vector3 goal = new Vector3(aimX, pp.y + lateLockHoverHeight, transform.position.z);
+                Vector3 cur = transform.position;
+                Vector3 next = Vector3.SmoothDamp(cur, goal, ref apVel, Mathf.Max(0.05f, lateLockSmoothTime), apSpeed);
+                Vector3 mv = next - cur;
+                if (mv.sqrMagnitude > 1e-6f && SweepForSurface(mv.normalized, mv.magnitude + 0.4f, out Vector3 _))
+                {
+                    // 前面有岩柱／掩體：不穿過去，只做上下
+                    Vector3 vOnly = new Vector3(0f, mv.y, 0f);
+                    next = (vOnly.sqrMagnitude > 1e-6f && !SweepForSurface(vOnly.normalized, vOnly.magnitude + 0.4f, out Vector3 _)) ? cur + vOnly : cur;
+                    apVel.x = 0f;
+                }
+                transform.position = next;
+                if (poseCue) transform.localScale = poseBaseScale * Mathf.Lerp(1f, posePuffScale, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(lt / approachTime)));
+                _lockedDiveTarget = new Vector3(aimX, pp.y, originalPosition.z);   // 頭一路轉向現在瞄的點（Update 的 showAttackAngleCue）
+                bool near = Mathf.Abs(goal.x - next.x) < 0.8f && Mathf.Abs(goal.y - next.y) < 0.8f;
+                if ((lt >= approachTime && near) || lt >= maxApproach) break;
+                yield return null;
+            }
+
+            // 鎖定：從現在的高度落到她身上要多久，落點就只往前算這麼久（＋抖動）
+            Vector3 pc = playerTrans.position;
+            LateTrackSample(pc.x);
+            float fallT = Mathf.Max(0f, transform.position.y - pc.y) / Mathf.Max(0.1f, _atkDescent);
+            alignTargetX = LateLockAimX(pc, shake + fallT);
+            _lockedDiveTarget = new Vector3(alignTargetX, pc.y, originalPosition.z);
+            if (BirdAttackScheduler.debugEnabled)
+            {
+                BirdAttackScheduler.Log("LOCK-LATE", this,
+                    $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} 跟了{lt:F1}s PlayerX={pc.x:F1} 實際vx={LateVx():F1}（剛體{LatePlayerVx():F1}） " +
+                    $"TargetX={alignTargetX:F1} Lead={(alignTargetX - pc.x):F1} 抖{shake:F2}s＋落{fallT:F2}s 高{(transform.position.y - pc.y):F1}m " +
+                    $"{(_llPrecise ? "準" : "寬鬆")}{(pushBackMode && _llBlock ? "／停著擋前" : "")}");
+            }
+
+            // 抖動（下墜前最後的預告）：這段 X 收到鎖定點上方，不再跟她
+            float st = 0f;
+            while (st < shake)
+            {
+                st += Time.deltaTime;
+                transform.position -= poseJitter;
+                Vector3 sp = transform.position;
+                sp.x = Mathf.MoveTowards(sp.x, alignTargetX, apSpeed * Time.deltaTime);
+                transform.position = sp;
+                poseJitter = poseCue ? new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * poseShakeAmount : Vector3.zero;
+                transform.position += poseJitter;
+                yield return null;
+            }
+            transform.position -= poseJitter;
+            poseJitter = Vector3.zero;
+            Vector3 fp = transform.position;
+            fp.x = alignTargetX;
+            transform.position = fp;
+            aligned = true;
+            warnT = realWarnTime;
+        }
+        else
         while (warnT < realWarnTime || !aligned)
         {
             warnT += Time.deltaTime;
@@ -1670,6 +1779,87 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         _dbgPrecise = precise;
         _dbgOffset = sgn * offset;
         return playerPos.x + finalLead;
+    }
+
+    /// <summary>★1020 晚鎖定：這一次攻擊的穩定亂數（準／寬鬆、她停著時擋前面還是打她、擋多遠），攻擊開始抽一次，跟著她更新落點時不會每幀亂跳。</summary>
+    private void RollLateLockPlan()
+    {
+        _predictCount++;
+        int id = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
+        float u1 = StableHash01(id * 31 + _predictCount * 17 + 1);
+        float u2 = StableHash01(id * 131 + _predictCount * 71 + 7);
+        _llPrecise = u1 < Mathf.Clamp01(predictionPreciseChance);
+        // 寬鬆的偏移只取一半：時間軸變短了，照原本 ±5 米幾乎都打不到
+        _llOffset = _llPrecise ? predictionPreciseOffset : Mathf.Lerp(predictionLooseMin, predictionLooseMax, u2) * 0.5f;
+        if (_pushBackSeed == 0) _pushBackSeed = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this) | 1;
+        float a1 = StableHash01(_pushBackSeed * 37 + _predictCount * 13 + 3);
+        float a2 = StableHash01(_pushBackSeed * 97 + _predictCount * 53 + 11);
+        _llBlock = a1 < Mathf.Clamp01(pushBackAheadChance);
+        _llAhead = Mathf.Lerp(pushBackAheadMin, pushBackAheadMax, a2);
+    }
+
+    /// <summary>★1020 她現在的水平速度（剛體實際速度，已含減速、坡度；沒有剛體就用指令速度）。</summary>
+    private float LatePlayerVx()
+    {
+        if (_playerRb == null && playerTrans != null)
+        {
+            _playerRb = playerTrans.GetComponent<Rigidbody>();
+            if (_playerRb == null) _playerRb = playerTrans.GetComponentInParent<Rigidbody>();
+            _playerMove = playerTrans.GetComponent<PlayerMovement>();
+            if (_playerMove == null) _playerMove = playerTrans.GetComponentInParent<PlayerMovement>();
+        }
+        if (_playerRb != null) return _playerRb.linearVelocity.x;
+        if (_playerMove != null) return _playerMove.CommandedHorizontalSpeed;
+        return 0f;
+    }
+
+    /// <summary>★1020 記一筆她的位置（跟著她的每一幀）。</summary>
+    private void LateTrackSample(float x)
+    {
+        _llSampT[_llSampHead] = Time.time;
+        _llSampX[_llSampHead] = x;
+        _llSampHead = (_llSampHead + 1) % LlSamples;
+        if (_llSampN < LlSamples) _llSampN++;
+        // 找 0.3 秒前（或最舊）的那一筆，算這段時間實際的水平速度
+        int newest = (_llSampHead - 1 + LlSamples) % LlSamples;
+        float tNow = _llSampT[newest];
+        int oldest = newest;
+        for (int k = 1; k < _llSampN; k++)
+        {
+            int idx = (newest - k + LlSamples) % LlSamples;
+            oldest = idx;
+            if (tNow - _llSampT[idx] >= 0.3f) break;
+        }
+        float dt = tNow - _llSampT[oldest];
+        if (dt >= 0.12f)
+        {
+            _llVx = (_llSampX[newest] - _llSampX[oldest]) / dt;
+            _llHaveVx = true;
+        }
+    }
+
+    /// <summary>★1020 她現在的水平速度：有最近 0.12 秒以上的實際位移就用它，還沒有就用剛體速度。</summary>
+    private float LateVx() { return _llHaveVx ? _llVx : LatePlayerVx(); }
+
+    /// <summary>
+    /// ★1020 晚鎖定：現在要瞄哪個 X。T＝從現在到落到她身上還要多久（抖動＋落下，約 1 秒）。
+    /// 定點＝她的位置；預判＝她的位置＋速度×T（最多 lateLockMaxLead 米）；逼她往回走的規則照舊（往回走、停著時落在她前方或打她）。
+    /// </summary>
+    private float LateLockAimX(Vector3 pp, float T)
+    {
+        if (_currentAttackType == BirdAttackType.FixedPosition) return pp.x;
+        float vx = LateVx();
+        float fwd = levelForwardX >= 0f ? 1f : -1f;
+        if (pushBackMode)
+        {
+            if (vx * fwd <= -0.2f) return pp.x + fwd * _llAhead;                          // 她在往回走：落在她剛走過的地方（她前方）
+            if (Mathf.Abs(vx) < 0.2f) return _llBlock ? pp.x + fwd * _llAhead : pp.x;    // 她停著：一部分擋在前面一兩步，其餘打她
+        }
+        if (Mathf.Abs(vx) < 0.2f) return pp.x;
+        float lead = Mathf.Clamp(vx * Mathf.Max(0f, T), -lateLockMaxLead, lateLockMaxLead);
+        float off = _llOffset;
+        if (pushBackMode && vx * fwd > 0f) off = Mathf.Max(0f, off);   // 往前走時，寬鬆的也不落在她身後
+        return pp.x + lead + Mathf.Sign(vx) * off;
     }
 
     // 穩定的 0..1 偽亂數（同樣的輸入永遠同樣的結果）

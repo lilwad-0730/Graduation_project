@@ -39,6 +39,21 @@ public class WolfSpawner : MonoBehaviour, IResettable
     private Collider spawnedWolfCollider;
     private bool isWolfActivated = false;
 
+    // ★1020 M：「廢墟：狼群的再復活後數量減少」
+    //   原因：生狼的條件是「她走到出生點 2 米內」（triggerType 2）。咬滿 3 口後重生在挑戰起點（ChallengePlayerSpawn x 137），
+    //   已經在 wolf1（x 123）、wolf2（x 135）的右邊，她不會再走回去，這兩隻就永遠不再生：第一次 4 隻、重生後 2 隻（10/20 log）。
+    //   修法：重生把狼重置以後，等重生整段跑完（她已經站在重生點、畫面亮了），她已經走過的出生點照原位（出生點＋spawnOffset）補生；
+    //   補生的狼等她從重生的位置開始動，才照原本「離出生點 startChasePlayerDistance 米」的規則放出去追——跟第一次走過來時一樣在她身後。
+    //   只有重生造成的重置才補（背景區域切換的重置不補）。
+    [Header("★1020 重生後補生（M：重生後狼變少）")]
+    [Tooltip("重生後她已經在這個出生點右邊（走過了）也照樣生這隻狼。取消＝舊行為：走過的出生點不再生，重生後狼會變少")]
+    public bool refillWhenPassedAfterRespawn = true;
+    [Tooltip("補生的狼：她離開重生的位置多少米才開始追（另外還要符合原本的「離出生點 startChasePlayerDistance 米」）")]
+    public float refillStartMoveDistance = 1.5f;
+    private bool _checkPassedAfterReset;
+    private bool _refilled;
+    private float _refillPlayerX;
+
     private void Start()
     {
         // 尋找玩家 (優先使用 PlayerMovement 組件搜尋，防呆且不依賴 Tag 判定)
@@ -87,6 +102,19 @@ public class WolfSpawner : MonoBehaviour, IResettable
     {
         if (playerTransform == null) return;
 
+        // ★1020 重生後補生：重生還沒跑完（黑幕中、她還沒被傳到重生點）先不判斷，跑完只判斷一次
+        if (_checkPassedAfterReset && !hasSpawned && !PlayerRespawnSystem.IsAnyRespawning)
+        {
+            _checkPassedAfterReset = false;
+            if (refillWhenPassedAfterRespawn && PlayerPassedSpawner())
+            {
+                _refillPlayerX = playerTransform.position.x;
+                Debug.Log($"【狼出生點】★1020 '{gameObject.name}' 重生後她已經在出生點右邊（她 x {_refillPlayerX:F1}，出生點 x {transform.position.x:F1}），照原位補生；她開始往前走才放出去追");
+                SpawnWolf();
+                _refilled = true;
+            }
+        }
+
         // 1. 偵測生成條件
         if (!hasSpawned)
         {
@@ -120,11 +148,20 @@ public class WolfSpawner : MonoBehaviour, IResettable
             // 計算主角目前與出生點的距離
             float distFromSpawner = Vector3.Distance(playerTransform.position, transform.position);
 
-            if (distFromSpawner >= startChasePlayerDistance)
+            // ★1020 補生的狼：還要等她從重生的位置開始動（不然 wolf1 這種離她 14 米的，畫面一亮就衝過來）
+            bool playerStarted = !_refilled || Mathf.Abs(playerTransform.position.x - _refillPlayerX) >= refillStartMoveDistance;
+            if (distFromSpawner >= startChasePlayerDistance && playerStarted)
             {
                 ActivateWolf();
             }
         }
+    }
+
+    /// <summary>★1020 她是不是已經走過這個出生點（關卡往右走；超過觸發範圍才算走過）。</summary>
+    private bool PlayerPassedSpawner()
+    {
+        float margin = triggerType == 1 ? triggerXOffset : (triggerType == 2 ? triggerDistance : 0f);
+        return playerTransform.position.x > transform.position.x + Mathf.Max(0f, margin);
     }
 
     // 3D 碰撞器觸發 (triggerType = 0)
@@ -248,6 +285,9 @@ public class WolfSpawner : MonoBehaviour, IResettable
         StopAllCoroutines();
         hasSpawned = false;
         isWolfActivated = false;
+        // ★1020 重生造成的重置（重生系統在黑幕中呼叫，這時 IsAnyRespawning 已經是 true）：重生跑完後檢查要不要補生
+        _checkPassedAfterReset = PlayerRespawnSystem.IsAnyRespawning;
+        _refilled = false;
         if (spawnedWolf != null)
         {
             // ★0910：這隻狼可能正咬在玩家身上（是玩家的子物件）。
