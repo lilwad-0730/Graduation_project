@@ -20,6 +20,12 @@ using UnityEngine;
 ///   ・檔案裡寫一行 start=場景名（例如 start=dark glasses），主選單按「開始遊戲」會直接進那一關。
 ///     可用的場景名：CottonCastle（棉花堡）、SampleScene（墜落＋廢墟）、desert（荒原）、underwater（水下）、dark glasses（星空玻璃館）。
 ///     寫錯或沒寫就照常從第一關開始。
+///   ・★1020 其他設定（一行一個 名稱=值，用 TesterMode.Option("名稱") 讀）：
+///       hints=page　　提示線條畫改成「翻頁」出現（LineHintDirector）
+///       hideui=1　　　F11 錄影、F12 截圖時把右上角齒輪與 GOD MODE 字樣藏起來
+///       recfps=30　　 F11 錄影的每秒張數（預設 30）
+///       recwidth=1920 F11 錄影存下來的寬度（預設 1920）
+///       shotscale=1　 F12 截圖放大倍數（預設 1＝螢幕原解析度）
 /// </summary>
 public static class TesterMode
 {
@@ -30,12 +36,32 @@ public static class TesterMode
     private static bool _fileFound;
     private static string _startScene;
     private static string _foundPath;
+    private static System.Collections.Generic.Dictionary<string, string> _options =
+        new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
 
     /// <summary>測試功能是否開啟（編輯器／Development Build 一律開；正式版要有測試檔）。</summary>
     public static bool Enabled { get { Init(); return _enabled; } }
 
     /// <summary>測試檔指定的起始場景（沒有就是 null）。編輯器裡也一樣要有檔才會跳關。</summary>
     public static string StartScene { get { Init(); return _startScene; } }
+
+    /// <summary>★1020 測試檔裡「名稱=值」那一行的值（沒有測試檔、寫 off、或沒有這一行就是 null）。</summary>
+    public static string Option(string key)
+    {
+        Init();
+        if (!_fileFound || string.IsNullOrEmpty(key)) return null;
+        string v;
+        return _options.TryGetValue(key.Trim(), out v) ? v : null;
+    }
+
+    /// <summary>★1020 數字設定（讀不到或不是數字就回傳 fallback）。</summary>
+    public static float OptionFloat(string key, float fallback)
+    {
+        string v = Option(key);
+        float f;
+        if (!string.IsNullOrEmpty(v) && float.TryParse(v.Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out f)) return f;
+        return fallback;
+    }
 
     private static void Init()
     {
@@ -55,6 +81,7 @@ public static class TesterMode
                 if (string.IsNullOrEmpty(path) || !File.Exists(path)) continue;
                 bool off = false;
                 string start = null;
+                var opts = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
                 foreach (string raw in File.ReadAllLines(path))
                 {
                     string line = raw.Trim();
@@ -64,12 +91,19 @@ public static class TesterMode
                         string s = line.Substring(6).Trim();
                         if (s.Length > 0) start = s;
                     }
+                    else if (!line.StartsWith("#") && line.Contains("="))
+                    {
+                        int eq = line.IndexOf('=');
+                        string k = line.Substring(0, eq).Trim();
+                        if (k.Length > 0) opts[k] = line.Substring(eq + 1).Trim();
+                    }
                 }
                 if (off) { Debug.Log("【測試模式】" + path + " 寫著 off，不開"); continue; }
                 _fileFound = true;
                 _foundPath = path;
                 _enabled = true;
                 _startScene = start;
+                _options = opts;
                 break;
             }
             catch (System.Exception e)
