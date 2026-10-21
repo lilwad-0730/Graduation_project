@@ -42,6 +42,15 @@ public class VerticalConveyorPlatform : MonoBehaviour
     [Tooltip("移動方向 (預設：由上往下 TopToBottom)")]
     private MoveDirection direction = MoveDirection.TopToBottom;
 
+    [Header("★1021 拉長行程（試玩回饋：平台生成時玩家看得到、而且玩家會被載到死亡區）")]
+    [SerializeField]
+    [Tooltip("生成點再往上抬幾米，讓平台出現在畫面外（鏡頭半高約 13.5，要比玩家站的最高處再高過半個畫面）。0＝照場景原本的 Top Y。")]
+    private float extraRiseAtTop = 18f;
+
+    [SerializeField]
+    [Tooltip("消失點至少比原本的 Bottom Y 再低幾米（要低過底下的死亡區，平台才是在黑暗裡消失）。實際行程會湊成「平台間距的整數倍」，循環才不會出現不等距的縫。")]
+    private float extraDropAtBottom = 8f;
+
     [Header("移動速度")]
     [SerializeField]
     [Tooltip("平台移動速度 (單位：單位/秒)")]
@@ -105,6 +114,17 @@ public class VerticalConveyorPlatform : MonoBehaviour
         // 若開啟自動生成多個平台，且非克隆生成過程中
         if (autoGenerateClonePlatforms && !_isGeneratingClones && spawnedPlatforms.Count == 0)
         {
+            // ★1021 拉長行程：頂端往上抬、底端往下延，行程湊成間距的整數倍（只有原件做，複製品會照抄這組數字）
+            if (spacingY > 0f && (extraRiseAtTop > 0f || extraDropAtBottom > 0f))
+            {
+                float oldBottom = bottomY;
+                float newTop = topY + Mathf.Max(0f, extraRiseAtTop);
+                int cells = Mathf.CeilToInt((newTop - (oldBottom - Mathf.Max(0f, extraDropAtBottom))) / spacingY);
+                topY = newTop;
+                bottomY = newTop - cells * spacingY;
+                totalPlatformCount = cells;
+                Debug.Log($"【垂直輸送帶】{name}：行程拉長為 Top {topY:F1} ～ Bottom {bottomY:F1}（{cells} 格 × {spacingY:F2}）");
+            }
             GeneratePlatforms();
         }
         else
