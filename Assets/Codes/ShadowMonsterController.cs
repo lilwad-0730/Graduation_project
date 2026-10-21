@@ -987,6 +987,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // ──────────────────────────────────────────────────────────────────────────
 
     /// <summary> 登場：保持尺寸漸漸顯示 (Alpha Fade)，不從小放大 </summary>
+    // ★1021 遠處的吼聲：怪物登場時「先吼、再移鏡頭」。吼聲在登場一開始就播，運鏡版再多等 farRoarLeadSeconds 秒才把鏡頭飛向怪物。
+    [Header("★1021 登場前的遠吼")]
+    [Tooltip("登場一開始先播一聲遠處的吼（Resources/Sfx/Glass_MonsterFarRoar，原檔：玻璃館_怪物吼叫_02.wav）。")]
+    public bool playFarRoar = true;
+    [Range(0f, 1f), Tooltip("遠吼音量（小聲＝像從很遠的地方傳來）。")]
+    public float farRoarVolume = 0.3f;
+    [Tooltip("吼完再等幾秒才移動鏡頭到怪物身上（只有第一次的運鏡版會等）。")]
+    public float farRoarLeadSeconds = 0.5f;
+    private static AudioClip _farRoarClip;
+
+    private void PlayFarRoar()
+    {
+        if (!playFarRoar) return;
+        if (_farRoarClip == null) _farRoarClip = Resources.Load<AudioClip>("Sfx/Glass_MonsterFarRoar");
+        if (_farRoarClip == null) { Debug.LogWarning("【影子怪物】找不到 Resources/Sfx/Glass_MonsterFarRoar，遠吼沒播。"); return; }
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(_farRoarClip, farRoarVolume);
+        else AudioSource.PlayClipAtPoint(_farRoarClip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(farRoarVolume));
+    }
+
     private IEnumerator AppearSequence()
     {
         currentState = MonsterState.Appearing;
@@ -1011,6 +1030,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   死亡重生後往前走不到一個單位就會再踩到，每次都重演六秒、期間完全不能動——
         //   玩家會覺得「重生後不能跳」。第二次以後直接用原本的原地淡入。
         bool doReveal = useRevealCutscene && player != null && !(revealOnlyOnce && _revealPlayed);
+        PlayFarRoar();     // ★1021 先吼（運鏡版接著在 RevealCutsceneRoutine 裡等一下才移鏡頭）
         if (doReveal)
         {
             _revealPlayed = true;
@@ -1071,6 +1091,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             Rigidbody prb = _pm.GetComponent<Rigidbody>();
             if (prb != null) prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
         }
+
+        // ★1021 先吼、再移鏡頭：玩家已凍住、吼聲已經響了，停一下才開始運鏡
+        if (playFarRoar && farRoarLeadSeconds > 0f) yield return new WaitForSeconds(farRoarLeadSeconds);
 
         // 2) 先量出怪物的視覺範圍。
         //    ★不能用 Renderer.bounds：這時候 SetVisualAlpha(0) 已經把所有 Renderer 關掉，

@@ -53,8 +53,9 @@ public static class HintPlacementTool
             }
         }
 
+        // ★1021 這關沒有「廢墟回頭看狼／荒原風與石化」這兩張 → 改成處理企劃的線條畫提示（水下、玻璃館、棉花堡…）
         if (made == 0)
-            EditorUtility.DisplayDialog("提示圖示", "目前開著的場景（" + scene + "）不需要提示圖示。\n廢墟請開 SampleScene，荒原請開 desert。", "好");
+            LineHintAnchorTool.CreateAnchors();
     }
 
     private static void Select(GameObject go, string label)

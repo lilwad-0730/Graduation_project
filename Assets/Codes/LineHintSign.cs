@@ -115,6 +115,15 @@ public class LineHintSign : MonoBehaviour
     /// <summary>在 pos 生一張線條畫提示（z 由呼叫端決定，要比她大）。</summary>
     public static LineHintSign Create(string name, string resourcePath, Vector3 pos, float worldWidth)
     {
+        // ★1021 場景裡有同名的「可拖動標記」（LineHintAnchor）就用標記的位置／大小；沒有就照呼叫端算的。
+        LineHintAnchor anchor;
+        if (LineHintAnchor.TryGet(name, out anchor))
+        {
+            pos = new Vector3(anchor.transform.position.x, anchor.transform.position.y, pos.z);
+            if (anchor.worldWidth > 0f) worldWidth = anchor.worldWidth;
+        }
+        LineHintAnchor.Record(name, resourcePath, pos, worldWidth);   // 只在編輯器：記下位置，給選單建立標記用
+
         GameObject go = new GameObject(name);
         go.transform.position = pos;
         LineHintSign s = go.AddComponent<LineHintSign>();
