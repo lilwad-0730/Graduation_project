@@ -215,6 +215,15 @@ public class UnderwaterRockTrapAudit : MonoBehaviour
         var sbFile = new StringBuilder();
         sbFile.AppendLine("水下石頭體檢  格子 " + _w + "x" + _h + "（每格 " + _cell.ToString("F2") + " m），玩家碰撞盒半寬 " + _hx.ToString("F2") + " x " + _hy.ToString("F2"));
         sbFile.AppendLine("石頭 " + rockCount + " 顆、可游動 " + freeCount + " 格、分成 " + (compSize.Count - 1) + " 塊（主要游動區 " + compSize[mainComp] + " 格）");
+        // ★1021 重要位置有沒有都游得到（調整玩家碰撞盒大小後，用這行確認沒有把路擋掉）
+        var unreachable = new List<string>();
+        for (int i = 0; i < important.Count; i++)
+            if (!importantInMain.Contains(i))
+            {
+                int c = important[i].cell;
+                unreachable.Add(important[i].name + (c >= 0 ? CellCenter(c % _w, c / _w).ToString("F1") : "(範圍外)"));
+            }
+        sbFile.AppendLine("重要位置 " + important.Count + " 個，主要游動區游得到 " + importantInMain.Count + " 個" + (unreachable.Count > 0 ? "；游不到：" + string.Join("、", unreachable) : ""));
         int listed = 0;
         var sbLog = new StringBuilder();
         foreach (Risk r in shown)

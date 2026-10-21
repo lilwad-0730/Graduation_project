@@ -1044,7 +1044,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         Camera cam = Camera.main ?? Object.FindFirstObjectByType<Camera>();
         if (cam != null)
         {
-            _audioFilter = cam.GetComponent<AudioLowPassFilter>();
+            // 跳過水下深度音效自己的 filter，兩個各管各的
+            _audioFilter = null;
+            foreach (AudioLowPassFilter f in cam.GetComponents<AudioLowPassFilter>())
+            {
+                if (f != UnderwaterDepthAudio.OwnedFilter) { _audioFilter = f; break; }
+            }
             if (_audioFilter == null)
             {
                 _audioFilter = cam.gameObject.AddComponent<AudioLowPassFilter>();
