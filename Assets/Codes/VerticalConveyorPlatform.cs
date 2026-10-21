@@ -136,13 +136,17 @@ public class VerticalConveyorPlatform : MonoBehaviour
             autoGenerateClonePlatforms = false;
 
         float totalSpan = Mathf.Abs(topY - bottomY);
-        int autoCalculatedCount = (spacingY > 0) ? Mathf.CeilToInt(totalSpan / spacingY) : 1;
-        
+        int autoCalculatedCount = (spacingY > 0) ? Mathf.Max(1, Mathf.RoundToInt(totalSpan / spacingY)) : 1;
+
         // 自動補充足夠的平台數量
         if (totalPlatformCount < autoCalculatedCount)
         {
             totalPlatformCount = autoCalculatedCount;
         }
+
+        // 平台到底部會瞬移回頂部（循環長度 = totalSpan），
+        // 所以間距必須剛好把 totalSpan 平分，否則接縫處兩個平台會擠在一起。
+        spacingY = totalSpan / totalPlatformCount;
 
         float startY = (direction == MoveDirection.TopToBottom) ? topY : bottomY;
         float step = (direction == MoveDirection.TopToBottom) ? -spacingY : spacingY;
