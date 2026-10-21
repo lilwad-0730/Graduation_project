@@ -20,6 +20,8 @@ public class GlassHallAbyssHint : MonoBehaviour
 {
     [Tooltip("要鋪在哪個死亡區下方（物件名稱）。")]
     public string zoneObjectName = "DeathZone_main";
+    [Tooltip("有「鏡頭下限」（CinemachineDeathZoneFloor）時：漸層從鏡頭畫面最底邊往上延伸幾米，到畫面最底邊剛好全黑。")]
+    public float rampAboveCameraFloor = 9f;
     [Tooltip("鏡頭 Y 跟隨偏移（場景裡 CinemachineFollow 的 FollowOffset.y）。")]
     public float cameraFollowYOffset = 2.2f;
     [Tooltip("重生淡出的短時間內玩家還會再多掉的距離（米）。")]
@@ -97,6 +99,18 @@ public class GlassHallAbyssHint : MonoBehaviour
 
         // 玩家在死亡區頂邊時的鏡頭畫面最底邊，再多一點餘裕 → 漸層長度
         _depth = Mathf.Max(4f, halfH - cameraFollowYOffset + fallAllowance);
+
+        // ★1021 組員加了「鏡頭下限」（CinemachineDeathZoneFloor）：鏡頭畫面最底邊最低只到「死亡區頂面＋viewBottomAboveDeathZone」，
+        //   死亡區頂面以下的東西永遠不會進畫面。所以有這個下限時，漸層要鋪在「畫面最底邊」往上，到最底邊剛好全黑，
+        //   最底邊以下再用同一種黑補滿（鏡頭看不到，只是保險）。
+        CinemachineDeathZoneFloor floor = FindAnyObjectByType<CinemachineDeathZoneFloor>();
+        if (floor != null)
+        {
+            float camBottom = _top + floor.viewBottomAboveDeathZone;      // 鏡頭畫面最底邊的最低位置
+            _top = camBottom + rampAboveCameraFloor;                      // 漸層頂邊（全透明）
+            _depth = rampAboveCameraFloor;                                // 到 camBottom 剛好最黑
+            Debug.Log($"【玻璃館深淵提示】偵測到鏡頭下限：畫面最底邊最低 Y={camBottom:F1}，漸層從 Y={_top:F1} 往下 {_depth:F1} 米到那裡全黑");
+        }
 
         const int H = 256;
         Texture2D tex = new Texture2D(2, H, TextureFormat.RGBA32, false);
