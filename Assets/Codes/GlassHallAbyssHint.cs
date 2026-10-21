@@ -18,6 +18,9 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class GlassHallAbyssHint : MonoBehaviour
 {
+    /// <summary>★1021 試玩後決定先拿掉紫色的深淵提示：預設關閉（不會生成任何東西）。想再試就改成 true。程式與數字都留著。</summary>
+    public static bool Enabled = false;
+
     [Tooltip("要鋪在哪個死亡區下方（物件名稱）。")]
     public string zoneObjectName = "DeathZone_main";
     [Tooltip("有「鏡頭下限」（CinemachineDeathZoneFloor）時：漸層從鏡頭畫面最底邊往上延伸幾米，到畫面最底邊剛好全黑。")]
@@ -70,6 +73,7 @@ public class GlassHallAbyssHint : MonoBehaviour
 
     private static void Build(Scene s)
     {
+        if (!Enabled) return;
         if (!s.name.ToLowerInvariant().Contains("glass")) return;
         if (FindAnyObjectByType<GlassHallAbyssHint>() != null) return;
         GameObject go = new GameObject("GlassHallAbyssHint");
