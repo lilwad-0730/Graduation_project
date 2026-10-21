@@ -32,6 +32,24 @@ public class CandleCollectible : MonoBehaviour, IResettable
     [Header("【狀態觀察 (勿手動修改)】")]
     public bool isCollected = false;
 
+    [Header("★1021 沒點燃的燭火")]
+    [Tooltip("怪物靠近一根「玩家還沒點燃」的燭火後，多給玩家幾秒來得及點燃；超過就算漏掉（怪物不受傷、不計數，火焰閃一下熄滅）。")]
+    public float unlitGraceSeconds = 0.3f;
+    [Tooltip("已漏掉：怪物經過時玩家還沒點燃。重生時會清掉。")]
+    public bool missed = false;
+
+    private float _unlitSince = -1f;
+
+    /// <summary>★1021 玩家點燃了嗎（沒有光暈元件的燭火一律當作已點燃，維持舊行為）。</summary>
+    public bool IsLitByPlayer
+    {
+        get
+        {
+            CandleAuraGlow aura = GetComponent<CandleAuraGlow>();
+            return aura == null || aura.IsLit;
+        }
+    }
+
     // 組件快取
     private Collider _col;
     private Renderer[] _renderers;
@@ -79,7 +97,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
     private void Update()
     {
         // 單一權威物理 Trigger 判定為主要機制；若物件已被收集直接返回
-        if (isCollected) return;
+        if (isCollected || missed) return;
 
         // ★ 主動 2.5D 平面距離判定 (前後 3.5 米，上下 6.5 米)
         if (ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.currentState != ShadowMonsterController.MonsterState.Dormant)
@@ -96,7 +114,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isCollected) return;
+        if (isCollected || missed) return;
         if (!IsMonster(other.gameObject)) return;
 
         TryCollect(other.gameObject);
@@ -109,7 +127,16 @@ public class CandleCollectible : MonoBehaviour, IResettable
     public bool TryCollect(GameObject collector = null)
     {
         // ★ 核心原子防護：確保整場遊戲每根燭火 100% 只被收集一次
-        if (isCollected) return false;
+        if (isCollected || missed) return false;
+
+        // ★1021 沒被玩家點燃的燭火，怪物碰了也不算：先給寬限，寬限內玩家點燃就照常算；超過就漏掉
+        if (!IsLitByPlayer)
+        {
+            if (_unlitSince < 0f) _unlitSince = Time.time;
+            if (Time.time - _unlitSince >= Mathf.Max(0f, unlitGraceSeconds)) MarkMissed();
+            return false;
+        }
+
         isCollected = true;
 
         // 立即關閉自身 Collider，徹底杜絕同幀內物理重疊重複觸發
@@ -162,6 +189,32 @@ public class CandleCollectible : MonoBehaviour, IResettable
     public void Collect()
     {
         TryCollect();
+    }
+
+    /// <summary>★1021 怪物經過時玩家還沒點燃：記成漏掉、通知怪物，火焰閃一下熄滅當作提示。</summary>
+    private void MarkMissed()
+    {
+        if (missed || isCollected) return;
+        missed = true;
+        _unlitSince = -1f;
+        Debug.Log($"🕯️【燭火漏掉】{gameObject.name}（X = {transform.position.x:F1}）怪物經過時玩家還沒點燃，不算數。");
+        if (ShadowMonsterController.Instance != null)
+            ShadowMonsterController.Instance.OnCandleMissed(this);
+        StartCoroutine(FlickerOutRoutine());
+    }
+
+    private System.Collections.IEnumerator FlickerOutRoutine()
+    {
+        RefreshVisualComponents();
+        for (int i = 0; i < 3; i++)
+        {
+            foreach (var l in _lights) if (l != null) l.enabled = false;
+            yield return new WaitForSeconds(0.07f);
+            foreach (var l in _lights) if (l != null) l.enabled = true;
+            yield return new WaitForSeconds(0.07f);
+        }
+        foreach (var l in _lights) if (l != null) l.enabled = false;
+        foreach (var ps in _particles) if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
     }
 
     /// <summary>
@@ -232,9 +285,14 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
-        if (!isCollected) return; // 尚未被收集，不需要重置
+        if (!isCollected && !missed) return; // 沒被收集、也沒漏掉，不需要重置
 
+        StopAllCoroutines();
         isCollected = false;
+        missed = false;
+        _unlitSince = -1f;
+        if (_col == null) _col = GetComponent<Collider>();
+        RefreshVisualComponents();
 
         // 重新啟用碰撞器
         _col.enabled = true;

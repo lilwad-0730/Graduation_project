@@ -46,6 +46,9 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
     private float fadeTimer = 0f;
     private bool hasBeenTriggered = false;
 
+    /// <summary>★1021 玩家碰過這根燭火、光暈亮起來了＝已點燃。影子怪物靠它判斷這根燭火算不算數。</summary>
+    public bool IsLit { get { return hasBeenTriggered; } }
+
     private void Awake()
     {
         SetupAuraObject();
