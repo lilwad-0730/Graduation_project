@@ -53,6 +53,7 @@ public class CliffSceneLoader : MonoBehaviour
     public static void Preload(string sceneName)
     {
         if (_preOp != null || _busy || string.IsNullOrWhiteSpace(sceneName)) return;
+        sceneName = ResolveSceneName(sceneName);
         if (!Application.CanStreamedLevelBeLoaded(sceneName)) return;
         _preName = sceneName.Trim();
         _preOp = SceneManager.LoadSceneAsync(_preName);
@@ -66,10 +67,26 @@ public class CliffSceneLoader : MonoBehaviour
         if (_preOp != null) { _preOp.allowSceneActivation = true; _preOp = null; }
     }
 
+    /// <summary>
+    /// ★1021 場景改名保險：「墜落＋廢墟」場景被改名成 Ruined 之後，棉花堡裡存的 loadSceneName 還是舊名字 SampleScene，
+    /// 找不到就跳不了崖。舊名字不在 Build Settings、但新名字在，就自動改用新名字（兩種名字都能用，不用改場景檔）。
+    /// </summary>
+    private static string ResolveSceneName(string sceneName)
+    {
+        string n = string.IsNullOrWhiteSpace(sceneName) ? "" : sceneName.Trim();
+        if (n == "SampleScene" && !Application.CanStreamedLevelBeLoaded("SampleScene") && Application.CanStreamedLevelBeLoaded("Ruined"))
+        {
+            Debug.Log("【跳崖換場景】場景已改名：SampleScene → Ruined，自動改用 Ruined");
+            return "Ruined";
+        }
+        return n;
+    }
+
     /// <summary>開始換場景。回傳 false＝沒開始（已經在換、或場景沒加進 Build Settings）。</summary>
     public static bool Begin(string sceneName, Color mistColor, float fadeOut, float hold, float fadeIn, string arrivalCardId, AudioClip arrivalSfx = null, float arrivalSfxVolume = 0.9f)
     {
         if (_busy) return false;
+        sceneName = ResolveSceneName(sceneName);
         if (string.IsNullOrWhiteSpace(sceneName) || !Application.CanStreamedLevelBeLoaded(sceneName.Trim()))
         {
             Debug.LogError($"【跳崖換場景錯誤】場景 '{sceneName}' 不在 Build Settings 裡（File ▸ Build Profiles ▸ Scene List）！");

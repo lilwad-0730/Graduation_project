@@ -69,7 +69,7 @@ public class TesterKeys : MonoBehaviour
 
         if (ruins)
         {
-            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F5 只在 SampleScene（墜落＋廢墟）有用；在 CottonCastle 請用 F4 跳崖，會換場景到 SampleScene"); return; }
+            if (!sceneName.Contains("samplescene") && !sceneName.Contains("ruined")) { Debug.Log("【測試鍵】F5 只在 SampleScene（墜落＋廢墟）有用；在 CottonCastle 請用 F4 跳崖，會換場景到 SampleScene"); return; }
             // ★1017 第一次：還不在廢墟 → 傳到廢墟落地的地方（進廢墟時會把光球重置到 P12、翻開命運之書，照正常流程）
             if (p.y > -60f)
             {
