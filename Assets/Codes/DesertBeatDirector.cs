@@ -190,6 +190,15 @@ public class DesertBeatDirector : MonoBehaviour
     public float pushBackAheadMin = 1.6f;
     public float pushBackAheadMax = 3.2f;
 
+    [Header("★1020 晚鎖定（M：「鳥群攻擊的提前量太多，完全沒有達到增加遊戲難度的作用」）")]
+    [Tooltip("開＝鳥前搖時一路跟著她、降到她頭上，抖一下那一刻才鎖定落點，再垂直落下：落點只往前算約 1 秒（最多 Bird Late Lock Max Lead 米），她一直走會被打到，要停、退或按住 S。\n" +
+             "關＝1018 的做法：前搖一開始就鎖死落點，3.5～5 秒後才落地，落點常在她前面 10～30 米（10/20 實測 15 次 0 次打到）")]
+    public bool birdLateLock = true;
+    [Tooltip("前搖時降到她頭上多高（公尺）。越低越快落到、越難躲")]
+    public float birdLateLockHoverHeight = 5f;
+    [Tooltip("落點最多離她幾公尺（她一直走、剛好撞上的距離約 6 米）")]
+    public float birdLateLockMaxLead = 6f;
+
     [Header("★1010 取消護盾後減鳥（02 #36「攻擊頻率真的過不去再減鳥數」）")]
     [Tooltip("勾著＝拍三（沒有掩體那段）的攻擊鳥每 Beat3 Keep Every 隻留一隻，鳥群增援也減少。\n" +
              "原本拍三 60 隻，每隻被發現時約四成機率再多生最多 3 隻增援；沒有護盾、被啄一次就死，太密。取消勾選＝回到原本的數量")]
@@ -495,6 +504,9 @@ public class DesertBeatDirector : MonoBehaviour
             b.pushBackAheadChance = pushBackAheadChance;
             b.pushBackAheadMin = pushBackAheadMin;
             b.pushBackAheadMax = pushBackAheadMax;
+            b.lateLock = birdLateLock;                         // ★1020 晚鎖定（M：提前量太多）
+            b.lateLockHoverHeight = birdLateLockHoverHeight;
+            b.lateLockMaxLead = birdLateLockMaxLead;
 
             if (x < beat1End)
             {
@@ -577,6 +589,7 @@ public class DesertBeatDirector : MonoBehaviour
            .Append("、紅線").Append(birdShowTelegraph && !cancelRedLine ? "開" : "關")              // ★1010
            .Append("、姿勢預告").Append(birdPoseCue ? "開" : "關")
            .Append("、逼她往回走").Append(birdPushBack ? "開（停著時 " + Mathf.RoundToInt(pushBackAheadChance * 100f) + "% 落在前方 " + pushBackAheadMin.ToString("F1") + "～" + pushBackAheadMax.ToString("F1") + "m）" : "關")
+           .Append("、晚鎖定").Append(birdLateLock ? "開（降到她頭上 " + birdLateLockHoverHeight.ToString("F1") + "m、落點最多 " + birdLateLockMaxLead.ToString("F1") + "m）" : "關")   // ★1020
            .Append("）；");
 
         // ★1006 鳥的分類（一次講清楚哪些是會攻擊的鳥、哪些是裝飾）

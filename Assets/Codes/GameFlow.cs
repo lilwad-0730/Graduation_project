@@ -172,6 +172,7 @@ public static class GameFlow
         Step("玩家抓取鎖", PlayerCutsceneHold.ResetAll);
         Step("跳躍封鎖", () => { PlayerMovement.JumpBlockedByStair = false; PlayerMovement.JumpBlockedByRuinsChase = false; });
         Step("挑戰失敗狼停止旗標", () => { WolfEnemy.ChallengeFailHalt = false; });
+        Step("回頭看狼教學旗標", () => { WolfEnemy.PlayerHasLookedBack = false; });   // ★1018 不清的話，同一次開機的下一位玩家看不到廢墟的回頭提示
 
         // 荒原／鳥群／風
         Step("遮陽傘與掩體", () => { UmbrellaZone.IsPlayerUnderUmbrella = false; WindGustSystem.ClearShelterCount(); });

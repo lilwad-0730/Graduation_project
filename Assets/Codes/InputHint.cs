@@ -60,6 +60,12 @@ public class InputHint : MonoBehaviour
     private RectTransform _holder;
     private TextMeshProUGUI _label;
     private TextMeshProUGUI _shadow;
+    private Image _backing;
+
+    [Header("★1017 背板（亮的背景上骨白字看不清：荒原沙地）")]
+    [Tooltip("字後面墊一片很淡的暗色圓角條；深色場景幾乎看不出來。關掉＝跟以前一樣只有字和影子")]
+    public bool useBacking = true;
+    public Color backingColor = new Color(0.04f, 0.05f, 0.10f, 0.42f);
     private bool _built;
     private float _alpha;
     private string _current = "";
@@ -206,6 +212,7 @@ public class InputHint : MonoBehaviour
             if (!string.IsNullOrEmpty(_current)) Build();
             if (_label != null) _label.text = _current;
             if (_shadow != null) _shadow.text = _current;
+            FitBacking();
         }
         if (string.IsNullOrEmpty(_current)) target = 0f;
 
@@ -283,10 +290,59 @@ public class InputHint : MonoBehaviour
         _group.interactable = false;
 
         // 影子先蓋（在下層），本體後蓋
+        // 背板最先蓋（在最下層）
+        if (useBacking)
+        {
+            GameObject bgo = new GameObject("Backing");
+            bgo.transform.SetParent(groupGO.transform, false);
+            _backing = bgo.AddComponent<Image>();
+            _backing.sprite = MakePillSprite();
+            _backing.type = Image.Type.Sliced;
+            _backing.color = backingColor;
+            _backing.raycastTarget = false;
+            RectTransform br = _backing.rectTransform;
+            br.anchorMin = br.anchorMax = new Vector2(0.5f, 0.5f);
+            br.pivot = new Vector2(0.5f, 0.5f);
+            br.anchoredPosition = Vector2.zero;
+            br.sizeDelta = new Vector2(10f, 64f);
+            _backing.enabled = false;
+        }
+
         _shadow = MakeLabel(groupGO.transform, "Shadow", shadowColor, new Vector2(2f, -2f));
         _label = MakeLabel(groupGO.transform, "Label", textColor, Vector2.zero);
 
         _built = true;
+    }
+
+    /// <summary>背板跟著字的寬度走：字寬＋左右各 48。</summary>
+    private void FitBacking()
+    {
+        if (_backing == null || _label == null) return;
+        if (string.IsNullOrEmpty(_current)) { _backing.enabled = false; return; }
+        Vector2 pref = _label.GetPreferredValues(_current);
+        _backing.rectTransform.sizeDelta = new Vector2(pref.x + 96f, Mathf.Max(60f, pref.y + 24f));
+        _backing.enabled = true;
+    }
+
+    /// <summary>程式畫一條軟邊圓角條（九宮格，左右兩端不會被拉扁）。</summary>
+    private static Sprite MakePillSprite()
+    {
+        const int W = 128, H = 64, R = 30;
+        Texture2D t = new Texture2D(W, H, TextureFormat.RGBA32, false);
+        t.wrapMode = TextureWrapMode.Clamp;
+        Color32[] px = new Color32[W * H];
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+            {
+                float cx = Mathf.Clamp(x + 0.5f, R, W - R);
+                float cy = H * 0.5f;
+                float d = Mathf.Sqrt((x + 0.5f - cx) * (x + 0.5f - cx) + (y + 0.5f - cy) * (y + 0.5f - cy));
+                float a = Mathf.Clamp01((R - d) / 12f);   // 邊緣 12 像素淡出
+                px[y * W + x] = new Color32(255, 255, 255, (byte)(a * a * 255f));
+            }
+        t.SetPixels32(px);
+        t.Apply(false, true);
+        return Sprite.Create(t, new Rect(0, 0, W, H), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(R + 2, 0, R + 2, 0));
     }
 
     private TextMeshProUGUI MakeLabel(Transform parent, string name, Color color, Vector2 offset)

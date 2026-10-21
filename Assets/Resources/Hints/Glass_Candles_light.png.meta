@@ -1,0 +1,1248 @@
+fileFormatVersion: 2
+guid: bae8e4775929d4f80841ba1607ab38e2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7000792631354228185
+    second: Glass_Candles_light_0
+  - first:
+      213: -603544117815849862
+    second: Glass_Candles_light_1
+  - first:
+      213: 1626747327632554615
+    second: Glass_Candles_light_2
+  - first:
+      213: -493012651386241537
+    second: Glass_Candles_light_3
+  - first:
+      213: 338747855863331024
+    second: Glass_Candles_light_4
+  - first:
+      213: -3252708847535689323
+    second: Glass_Candles_light_5
+  - first:
+      213: -2207701604993939704
+    second: Glass_Candles_light_6
+  - first:
+      213: 6695731426831723696
+    second: Glass_Candles_light_7
+  - first:
+      213: 5682344975947827518
+    second: Glass_Candles_light_8
+  - first:
+      213: -1965554533036768613
+    second: Glass_Candles_light_9
+  - first:
+      213: 3060848015444195582
+    second: Glass_Candles_light_10
+  - first:
+      213: 4502805988198662476
+    second: Glass_Candles_light_11
+  - first:
+      213: -4216286446201300147
+    second: Glass_Candles_light_12
+  - first:
+      213: -1135940311956985767
+    second: Glass_Candles_light_13
+  - first:
+      213: -4201687019172044871
+    second: Glass_Candles_light_14
+  - first:
+      213: -7802802350964031331
+    second: Glass_Candles_light_15
+  - first:
+      213: -7436436823016576793
+    second: Glass_Candles_light_16
+  - first:
+      213: -1331792260253600852
+    second: Glass_Candles_light_17
+  - first:
+      213: -7059880140690690172
+    second: Glass_Candles_light_18
+  - first:
+      213: 5535772160779194560
+    second: Glass_Candles_light_19
+  - first:
+      213: 1024174778673913166
+    second: Glass_Candles_light_20
+  - first:
+      213: -1540922564699355821
+    second: Glass_Candles_light_21
+  - first:
+      213: -995485093972524673
+    second: Glass_Candles_light_22
+  - first:
+      213: -3280781611615022570
+    second: Glass_Candles_light_23
+  - first:
+      213: 3782093641259809571
+    second: Glass_Candles_light_24
+  - first:
+      213: 3526386417621147922
+    second: Glass_Candles_light_25
+  - first:
+      213: 7072866637989809526
+    second: Glass_Candles_light_26
+  - first:
+      213: 789690815098284355
+    second: Glass_Candles_light_27
+  - first:
+      213: 4300576224612704143
+    second: Glass_Candles_light_28
+  - first:
+      213: 4433056258527641606
+    second: Glass_Candles_light_29
+  - first:
+      213: 1246080441936080900
+    second: Glass_Candles_light_30
+  - first:
+      213: -6168830353580552525
+    second: Glass_Candles_light_31
+  - first:
+      213: -8037877066669682527
+    second: Glass_Candles_light_32
+  - first:
+      213: 8559471296038321762
+    second: Glass_Candles_light_33
+  - first:
+      213: -563309211289427346
+    second: Glass_Candles_light_34
+  - first:
+      213: -5379432791407662910
+    second: Glass_Candles_light_35
+  - first:
+      213: 1260777916873853541
+    second: Glass_Candles_light_36
+  - first:
+      213: -123122936800875851
+    second: Glass_Candles_light_37
+  - first:
+      213: -4251960497606198814
+    second: Glass_Candles_light_38
+  - first:
+      213: 2013602756555563822
+    second: Glass_Candles_light_39
+  - first:
+      213: 6478697939960514443
+    second: Glass_Candles_light_40
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: VisionOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: tvOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Glass_Candles_light_0
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 31
+        width: 377
+        height: 347
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72285fd813038de90800000000000000
+      internalID: -7000792631354228185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_1
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 12
+        width: 123
+        height: 203
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7c4f4392d7cf97f0800000000000000
+      internalID: -603544117815849862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_2
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 211
+        width: 43
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77abada531e539610800000000000000
+      internalID: 1626747327632554615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_3
+      rect:
+        serializedVersion: 2
+        x: 596
+        y: 11
+        width: 244
+        height: 239
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ffd795c0b977829f0800000000000000
+      internalID: -493012651386241537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_4
+      rect:
+        serializedVersion: 2
+        x: 978
+        y: 211
+        width: 43
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d8b821516973b400800000000000000
+      internalID: 338747855863331024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_5
+      rect:
+        serializedVersion: 2
+        x: 1168
+        y: 211
+        width: 43
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5917dd8698e0cd2d0800000000000000
+      internalID: -3252708847535689323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_6
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 145
+        width: 22
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 807c640561bac51e0800000000000000
+      internalID: -2207701604993939704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_7
+      rect:
+        serializedVersion: 2
+        x: 541
+        y: 156
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0bc69b7d1440cec50800000000000000
+      internalID: 6695731426831723696
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_8
+      rect:
+        serializedVersion: 2
+        x: 543
+        y: 118
+        width: 37
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e39889636aebbde40800000000000000
+      internalID: 5682344975947827518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_9
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 156
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b924fafe092f8b4e0800000000000000
+      internalID: -1965554533036768613
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_10
+      rect:
+        serializedVersion: 2
+        x: 579
+        y: 145
+        width: 20
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef8b2009d015a7a20800000000000000
+      internalID: 3060848015444195582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_11
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 93
+        width: 163
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c41451b703e2d7e30800000000000000
+      internalID: 4502805988198662476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_12
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 156
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4b90e6e0ddbc75c0800000000000000
+      internalID: -4216286446201300147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_13
+      rect:
+        serializedVersion: 2
+        x: 1019
+        y: 145
+        width: 20
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 958e1c30e445c30f0800000000000000
+      internalID: -1135940311956985767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_14
+      rect:
+        serializedVersion: 2
+        x: 1151
+        y: 145
+        width: 22
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bf51e4eaeb90b5c0800000000000000
+      internalID: -4201687019172044871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_15
+      rect:
+        serializedVersion: 2
+        x: 1171
+        y: 156
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d90c4325a90e6b390800000000000000
+      internalID: -7802802350964031331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_16
+      rect:
+        serializedVersion: 2
+        x: 1173
+        y: 118
+        width: 37
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e866710c187cc890800000000000000
+      internalID: -7436436823016576793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_17
+      rect:
+        serializedVersion: 2
+        x: 1193
+        y: 156
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca338f4def5848de0800000000000000
+      internalID: -1331792260253600852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_18
+      rect:
+        serializedVersion: 2
+        x: 1209
+        y: 145
+        width: 20
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48feb49ba64460e90800000000000000
+      internalID: -7059880140690690172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_19
+      rect:
+        serializedVersion: 2
+        x: 508
+        y: 11
+        width: 82
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c09db0537303dc40800000000000000
+      internalID: 5535772160779194560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_20
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 11
+        width: 80
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4dd5cee889963e00800000000000000
+      internalID: 1024174778673913166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_21
+      rect:
+        serializedVersion: 2
+        x: 1086
+        y: 98
+        width: 60
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35506b0771b8d9ae0800000000000000
+      internalID: -1540922564699355821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_22
+      rect:
+        serializedVersion: 2
+        x: 1138
+        y: 11
+        width: 82
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f714292d4935f22f0800000000000000
+      internalID: -995485093972524673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_23
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6129d0ea1825872d0800000000000000
+      internalID: -3280781611615022570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_24
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32bfd8ad022bc7430800000000000000
+      internalID: 3782093641259809571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_25
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 211221363cd30f030800000000000000
+      internalID: 3526386417621147922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_26
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67d081dcbbed72260800000000000000
+      internalID: 7072866637989809526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_27
+      rect:
+        serializedVersion: 2
+        x: 172
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3496254cc9b85fa00800000000000000
+      internalID: 789690815098284355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_28
+      rect:
+        serializedVersion: 2
+        x: 214
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8fd7857a47beab30800000000000000
+      internalID: 4300576224612704143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_29
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 600ccd60e21658d30800000000000000
+      internalID: 4433056258527641606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_30
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 12
+        width: 42
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40079275f87fa4110800000000000000
+      internalID: 1246080441936080900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_31
+      rect:
+        serializedVersion: 2
+        x: 340
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3be0f2f2a79e36aa0800000000000000
+      internalID: -6168830353580552525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_32
+      rect:
+        serializedVersion: 2
+        x: 462
+        y: 14
+        width: 42
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a015e4f469b37090800000000000000
+      internalID: -8037877066669682527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_33
+      rect:
+        serializedVersion: 2
+        x: 592
+        y: 14
+        width: 36
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26e34813bc959c670800000000000000
+      internalID: 8559471296038321762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_34
+      rect:
+        serializedVersion: 2
+        x: 844
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e626362c149be28f0800000000000000
+      internalID: -563309211289427346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_35
+      rect:
+        serializedVersion: 2
+        x: 886
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c8ee0fa06a6855b0800000000000000
+      internalID: -5379432791407662910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_36
+      rect:
+        serializedVersion: 2
+        x: 928
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56a4ce3e5de2f7110800000000000000
+      internalID: 1260777916873853541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_37
+      rect:
+        serializedVersion: 2
+        x: 1054
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bae74067549a4ef0800000000000000
+      internalID: -123122936800875851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_38
+      rect:
+        serializedVersion: 2
+        x: 1096
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e9703d84700ef4c0800000000000000
+      internalID: -4251960497606198814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_39
+      rect:
+        serializedVersion: 2
+        x: 1222
+        y: 12
+        width: 38
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e23ed3fd901c1fb10800000000000000
+      internalID: 2013602756555563822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Glass_Candles_light_40
+      rect:
+        serializedVersion: 2
+        x: 1264
+        y: 12
+        width: 32
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b87c6666375f8e950800000000000000
+      internalID: 6478697939960514443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Glass_Candles_light_0: -7000792631354228185
+      Glass_Candles_light_1: -603544117815849862
+      Glass_Candles_light_10: 3060848015444195582
+      Glass_Candles_light_11: 4502805988198662476
+      Glass_Candles_light_12: -4216286446201300147
+      Glass_Candles_light_13: -1135940311956985767
+      Glass_Candles_light_14: -4201687019172044871
+      Glass_Candles_light_15: -7802802350964031331
+      Glass_Candles_light_16: -7436436823016576793
+      Glass_Candles_light_17: -1331792260253600852
+      Glass_Candles_light_18: -7059880140690690172
+      Glass_Candles_light_19: 5535772160779194560
+      Glass_Candles_light_2: 1626747327632554615
+      Glass_Candles_light_20: 1024174778673913166
+      Glass_Candles_light_21: -1540922564699355821
+      Glass_Candles_light_22: -995485093972524673
+      Glass_Candles_light_23: -3280781611615022570
+      Glass_Candles_light_24: 3782093641259809571
+      Glass_Candles_light_25: 3526386417621147922
+      Glass_Candles_light_26: 7072866637989809526
+      Glass_Candles_light_27: 789690815098284355
+      Glass_Candles_light_28: 4300576224612704143
+      Glass_Candles_light_29: 4433056258527641606
+      Glass_Candles_light_3: -493012651386241537
+      Glass_Candles_light_30: 1246080441936080900
+      Glass_Candles_light_31: -6168830353580552525
+      Glass_Candles_light_32: -8037877066669682527
+      Glass_Candles_light_33: 8559471296038321762
+      Glass_Candles_light_34: -563309211289427346
+      Glass_Candles_light_35: -5379432791407662910
+      Glass_Candles_light_36: 1260777916873853541
+      Glass_Candles_light_37: -123122936800875851
+      Glass_Candles_light_38: -4251960497606198814
+      Glass_Candles_light_39: 2013602756555563822
+      Glass_Candles_light_4: 338747855863331024
+      Glass_Candles_light_40: 6478697939960514443
+      Glass_Candles_light_5: -3252708847535689323
+      Glass_Candles_light_6: -2207701604993939704
+      Glass_Candles_light_7: 6695731426831723696
+      Glass_Candles_light_8: 5682344975947827518
+      Glass_Candles_light_9: -1965554533036768613
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

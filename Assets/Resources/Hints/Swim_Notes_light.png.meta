@@ -1,0 +1,1040 @@
+fileFormatVersion: 2
+guid: f4cd68905b9dc4121bfb872083aa40bc
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6891205510850749775
+    second: Swim_Notes_light_0
+  - first:
+      213: 190996438496202579
+    second: Swim_Notes_light_1
+  - first:
+      213: 5542160040746431843
+    second: Swim_Notes_light_2
+  - first:
+      213: -676378114248641981
+    second: Swim_Notes_light_3
+  - first:
+      213: -9091384526274482595
+    second: Swim_Notes_light_4
+  - first:
+      213: 4606239401374483523
+    second: Swim_Notes_light_5
+  - first:
+      213: 2164154706932631588
+    second: Swim_Notes_light_6
+  - first:
+      213: 6427272142999556078
+    second: Swim_Notes_light_7
+  - first:
+      213: 3162322052364713965
+    second: Swim_Notes_light_8
+  - first:
+      213: 6632065313297872272
+    second: Swim_Notes_light_9
+  - first:
+      213: 2268592032728893955
+    second: Swim_Notes_light_10
+  - first:
+      213: -6085256553514104841
+    second: Swim_Notes_light_11
+  - first:
+      213: -3061450556595630831
+    second: Swim_Notes_light_12
+  - first:
+      213: -3821863516230158413
+    second: Swim_Notes_light_13
+  - first:
+      213: 6414974466032121052
+    second: Swim_Notes_light_14
+  - first:
+      213: 5385575776431101888
+    second: Swim_Notes_light_15
+  - first:
+      213: 5350253206452931599
+    second: Swim_Notes_light_16
+  - first:
+      213: 3324310138701975499
+    second: Swim_Notes_light_17
+  - first:
+      213: -8549374198373955246
+    second: Swim_Notes_light_18
+  - first:
+      213: -1083054151052485852
+    second: Swim_Notes_light_19
+  - first:
+      213: 8025693133133551290
+    second: Swim_Notes_light_20
+  - first:
+      213: -682595102457344259
+    second: Swim_Notes_light_21
+  - first:
+      213: 4779300973671232901
+    second: Swim_Notes_light_22
+  - first:
+      213: 2322831722607807844
+    second: Swim_Notes_light_23
+  - first:
+      213: 1988226818625625584
+    second: Swim_Notes_light_24
+  - first:
+      213: 2127288467507542404
+    second: Swim_Notes_light_25
+  - first:
+      213: 827498808008998570
+    second: Swim_Notes_light_26
+  - first:
+      213: -6892507475566143973
+    second: Swim_Notes_light_27
+  - first:
+      213: -8829285101645682939
+    second: Swim_Notes_light_28
+  - first:
+      213: 5938442207585649947
+    second: Swim_Notes_light_29
+  - first:
+      213: -4079682439223448585
+    second: Swim_Notes_light_30
+  - first:
+      213: -7324881196020787289
+    second: Swim_Notes_light_31
+  - first:
+      213: -1249801772274127981
+    second: Swim_Notes_light_32
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: VisionOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: tvOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Swim_Notes_light_0
+      rect:
+        serializedVersion: 2
+        x: 543
+        y: 12
+        width: 52
+        height: 435
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f452974a6ea72af50800000000000000
+      internalID: 6891205510850749775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_1
+      rect:
+        serializedVersion: 2
+        x: 599
+        y: 331
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35f4ee5bf3e86a200800000000000000
+      internalID: 190996438496202579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_2
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 274
+        width: 122
+        height: 167
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3653e058135b9ec40800000000000000
+      internalID: 5542160040746431843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_3
+      rect:
+        serializedVersion: 2
+        x: 739
+        y: 22
+        width: 52
+        height: 375
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3427c5e40b50d96f0800000000000000
+      internalID: -676378114248641981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_4
+      rect:
+        serializedVersion: 2
+        x: 881
+        y: 12
+        width: 38
+        height: 435
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5e2dea01f9e4d180800000000000000
+      internalID: -9091384526274482595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_5
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 282
+        width: 46
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3448555a456acef30800000000000000
+      internalID: 4606239401374483523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_6
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 282
+        width: 46
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42885b16d3f980e10800000000000000
+      internalID: 2164154706932631588
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_7
+      rect:
+        serializedVersion: 2
+        x: 286
+        y: 282
+        width: 46
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eef804ef5f1423950800000000000000
+      internalID: 6427272142999556078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_8
+      rect:
+        serializedVersion: 2
+        x: 591
+        y: 280
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: def3594e623d2eb20800000000000000
+      internalID: 3162322052364713965
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_9
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 286
+        width: 37
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0953f46a344d90c50800000000000000
+      internalID: 6632065313297872272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_10
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 234
+        width: 43
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30a461b2f68ab7f10800000000000000
+      internalID: 2268592032728893955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_11
+      rect:
+        serializedVersion: 2
+        x: 827
+        y: 294
+        width: 36
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f78ca8d763dc8ba0800000000000000
+      internalID: -6085256553514104841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_12
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 172
+        width: 82
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11d02b460fa8385d0800000000000000
+      internalID: -3061450556595630831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_13
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 173
+        width: 78
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b7731f816306fac0800000000000000
+      internalID: -3821863516230158413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_14
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 174
+        width: 78
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd4bb03f941960950800000000000000
+      internalID: 6414974466032121052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_15
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 243
+        width: 28
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c7df1972a86dba40800000000000000
+      internalID: 5385575776431101888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_16
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 256
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0c8505c1faef3a40800000000000000
+      internalID: 5350253206452931599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_17
+      rect:
+        serializedVersion: 2
+        x: 383
+        y: 210
+        width: 95
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcf8f8c4572522e20800000000000000
+      internalID: 3324310138701975499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_18
+      rect:
+        serializedVersion: 2
+        x: 571
+        y: 209
+        width: 28
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 259c70e86758a5980800000000000000
+      internalID: -8549374198373955246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_19
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 227
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42b1106ecf738f0f0800000000000000
+      internalID: -1083054151052485852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_20
+      rect:
+        serializedVersion: 2
+        x: 792
+        y: 214
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab697b4f16df06f60800000000000000
+      internalID: 8025693133133551290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_21
+      rect:
+        serializedVersion: 2
+        x: 845
+        y: 171
+        width: 23
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfecb90fe5fe686f0800000000000000
+      internalID: -682595102457344259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_22
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 190
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5853a5ae9ec735240800000000000000
+      internalID: 4779300973671232901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_23
+      rect:
+        serializedVersion: 2
+        x: 588
+        y: 97
+        width: 66
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46d0c03152b5c3020800000000000000
+      internalID: 2322831722607807844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_24
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 115
+        width: 34
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fdd519e1c9979b10800000000000000
+      internalID: 1988226818625625584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_25
+      rect:
+        serializedVersion: 2
+        x: 668
+        y: 124
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48972902795a58d10800000000000000
+      internalID: 2127288467507542404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_26
+      rect:
+        serializedVersion: 2
+        x: 785
+        y: 121
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aae7f6718cddb7b00800000000000000
+      internalID: 827498808008998570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_27
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 101
+        width: 43
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b16d72318f4e850a0800000000000000
+      internalID: -6892507475566143973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_28
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 95
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 507a2c7caf3187580800000000000000
+      internalID: -8829285101645682939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_29
+      rect:
+        serializedVersion: 2
+        x: 651
+        y: 83
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b15445e79b5996250800000000000000
+      internalID: 5938442207585649947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_30
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 80
+        width: 43
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fbefa5cf6e0267c0800000000000000
+      internalID: -4079682439223448585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_31
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 71
+        width: 31
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a71e317c5bc85a90800000000000000
+      internalID: -7324881196020787289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Notes_light_32
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 59
+        width: 31
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39b62fbe8efc7aee0800000000000000
+      internalID: -1249801772274127981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Swim_Notes_light_0: 6891205510850749775
+      Swim_Notes_light_1: 190996438496202579
+      Swim_Notes_light_10: 2268592032728893955
+      Swim_Notes_light_11: -6085256553514104841
+      Swim_Notes_light_12: -3061450556595630831
+      Swim_Notes_light_13: -3821863516230158413
+      Swim_Notes_light_14: 6414974466032121052
+      Swim_Notes_light_15: 5385575776431101888
+      Swim_Notes_light_16: 5350253206452931599
+      Swim_Notes_light_17: 3324310138701975499
+      Swim_Notes_light_18: -8549374198373955246
+      Swim_Notes_light_19: -1083054151052485852
+      Swim_Notes_light_2: 5542160040746431843
+      Swim_Notes_light_20: 8025693133133551290
+      Swim_Notes_light_21: -682595102457344259
+      Swim_Notes_light_22: 4779300973671232901
+      Swim_Notes_light_23: 2322831722607807844
+      Swim_Notes_light_24: 1988226818625625584
+      Swim_Notes_light_25: 2127288467507542404
+      Swim_Notes_light_26: 827498808008998570
+      Swim_Notes_light_27: -6892507475566143973
+      Swim_Notes_light_28: -8829285101645682939
+      Swim_Notes_light_29: 5938442207585649947
+      Swim_Notes_light_3: -676378114248641981
+      Swim_Notes_light_30: -4079682439223448585
+      Swim_Notes_light_31: -7324881196020787289
+      Swim_Notes_light_32: -1249801772274127981
+      Swim_Notes_light_4: -9091384526274482595
+      Swim_Notes_light_5: 4606239401374483523
+      Swim_Notes_light_6: 2164154706932631588
+      Swim_Notes_light_7: 6427272142999556078
+      Swim_Notes_light_8: 3162322052364713965
+      Swim_Notes_light_9: 6632065313297872272
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

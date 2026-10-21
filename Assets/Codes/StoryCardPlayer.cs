@@ -88,6 +88,29 @@ public class StoryCardPlayer : MonoBehaviour
     [Range(0f, 1f), Tooltip("Overlay 卡的幕透明度。0.62＝畫面壓暗六成，龍捲風／沉水／廢墟落點還看得到。1＝等同黑幕")]
     public float overlayAlpha = 0.62f;
 
+    [Header("★1019 Overlay 卡放到她後面（M：文字卡「放到背景去」）")]
+    [Tooltip("M1～M4 這種疊在演出上的卡，改畫在她後面：她擋到的字就被她擋住（她是實心模型），不再變淡。黑幕卡、日誌紙卡照舊在最上層")]
+    public bool overlayBehindPlayer = true;
+    [Tooltip("字的平面在她後面幾公尺")]
+    public float behindDistance = 0.6f;
+
+    private bool _wantBehind;
+    private bool _behind;
+    private Camera _behindCam;
+    private Transform _behindPlayer;
+    private float _nextBehindLookup;
+
+    /// <summary>目前這張卡是不是畫在她後面。</summary>
+    public bool IsBehindPlayer { get { return _behind; } }
+
+    [Tooltip("卡畫在她後面時：每一頁開始時，字如果會被她擋到，整段字往下（放不下就往上）挪開，她跟字都看得清楚。字本身不改")]
+    public bool avoidPlayerWhenBehind = true;
+    [Tooltip("挪開時字跟她之間至少留多少（畫布單位，畫面高＝1080）")]
+    public float avoidMargin = 28f;
+
+    private float _labelBaseY = float.NaN;   // 這一頁字的位置（NaN＝照 verticalPercent）
+    private string _currentCardId = "";
+
     // ══════════════════════════════════════════
     // 日誌照片頁（水下 D1–D3：先照片，再原句）
     // ══════════════════════════════════════════
@@ -314,6 +337,8 @@ public class StoryCardPlayer : MonoBehaviour
         _pendingPhoto = (_paper && diaryPhotoEnabled) ? FindDiaryPhoto(cardId) : null;
         // Overlay：幕只到 overlayAlpha，畫面在字後面繼續演；其他樣式照舊全遮
         float curtainMax = card.style == CardStyle.Overlay ? Mathf.Clamp01(overlayAlpha) : 1f;
+        _wantBehind = card.style == CardStyle.Overlay && overlayBehindPlayer;   // ★1019
+        _currentCardId = cardId;
         yield return PlayPages(card.pages, curtainFadeIn, curtainFadeOut, curtainMax, card.minHoldSeconds);
     }
 
@@ -395,6 +420,9 @@ public class StoryCardPlayer : MonoBehaviour
         }
 
         _canvas.enabled = true;
+        // ★1019 Overlay 卡：整張卡（幕＋字）畫在她後面；其他卡照舊在最上層
+        if (_wantBehind) { _wantBehind = false; if (!EnterBehind()) ExitBehind(); }
+        else ExitBehind();
         if (_curtain != null) _curtain.sprite = _paper ? _activePaperSprite : null;
         if (_label != null) _label.color = _paper ? paperInkColor : textColor;
         SetCurtainAlpha(curtainFadeIn ? 0f : curtainMax);
@@ -465,6 +493,10 @@ public class StoryCardPlayer : MonoBehaviour
                 Debug.LogWarning($"[StoryCardPlayer] ForceMeshUpdate 警告: {ex.Message}");
             }
 
+            // ★1019 卡畫在她後面：這一頁的字如果會被她擋到，整段挪到她下面（放不下就上面）
+            _labelBaseY = (_behind && avoidPlayerWhenBehind) ? AvoidPlayerY(i) : DefaultLabelY();
+            if (_labelRect != null) _labelRect.anchoredPosition = new Vector2(0f, _labelBaseY);
+
             // 這一頁的緩升（換頁或跳過時 token 一變就自己停）
             _driftToken++;
             if (pageDriftPixels > 0.01f && _labelRect != null)
@@ -485,6 +517,7 @@ public class StoryCardPlayer : MonoBehaviour
         SetLabelAlpha(0f);
         _label.text = "";
         _driftToken++;   // 停掉最後一頁的緩升
+        _labelBaseY = float.NaN;
         if (_labelRect != null)
         {
             _labelRect.anchoredPosition = new Vector2(0f, (0.5f - verticalPercent) * 1080f);
@@ -500,14 +533,28 @@ public class StoryCardPlayer : MonoBehaviour
             }
             SetCurtainAlpha(0f);
             _canvas.enabled = false;
+            ExitBehind();
         }
         else
         {
             // 維持全黑，讓呼叫端接手載入場景。
             // Overlay 卡此時只有 curtainMax 的暗度 → 先補到全黑，交接才不會露出半透明的畫面。
-            if (curtainMax < 0.999f)
+            if (_behind)
             {
-                yield return FadeCurtain(curtainMax, 1f, 0.35f);
+                // ★1019 卡畫在她後面（M2／M3／M4）：直接切回最上層的話，她會「啪」一下變暗。
+                //   改成最上層另淡入一張黑，「她＋畫面」一起暗到全黑，全黑之後才把卡片收回最上層。
+                yield return FadeHandoff(0f, 1f, 0.35f);
+                ExitBehind();
+                SetCurtainAlpha(1f);
+                SetHandoffAlpha(0f);   // 同一幀：卡片的黑幕已經全黑在最上層，看不出交換
+            }
+            else
+            {
+                ExitBehind();
+                if (curtainMax < 0.999f)
+                {
+                    yield return FadeCurtain(curtainMax, 1f, 0.35f);
+                }
             }
             SetCurtainAlpha(1f);
             // 新場景載完後 OnSceneLoaded 會自己把黑幕淡掉。
@@ -515,6 +562,181 @@ public class StoryCardPlayer : MonoBehaviour
         }
 
         _playing = false;
+    }
+
+    // ══════════════════════════════════════════
+    // ★1019 卡片畫在她後面（Overlay 卡）
+    //   畫布改成「跟著主鏡頭」（ScreenSpaceCamera），平面放在她後面 behindDistance 公尺。
+    //   她是實心的 3D 模型、會寫深度，所以她擋到的字自然被擋住；背景（雲、廢墟、龍捲風）照樣被字和幕蓋住。
+    //   要全黑交接（換場景）前一定先回到最上層（ExitBehind），黑幕才蓋得住她。
+    // ══════════════════════════════════════════
+    private bool EnterBehind()
+    {
+        if (_canvas == null) return false;
+        Camera cam = Camera.main;
+        Transform p = FindBehindPlayer();
+        if (cam == null || p == null) return false;
+        float d = Vector3.Dot(p.position - cam.transform.position, cam.transform.forward) + behindDistance;
+        if (d <= cam.nearClipPlane + 0.05f || d >= cam.farClipPlane - 0.05f) return false;
+        _canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        _canvas.worldCamera = cam;
+        _canvas.planeDistance = d;
+        _canvas.sortingOrder = sortingOrder;
+        _behind = true;
+        _behindCam = cam;
+        return true;
+    }
+
+    private void ExitBehind()
+    {
+        if (!_behind || _canvas == null) { _behind = false; return; }
+        _behind = false;
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas.worldCamera = null;
+        _canvas.sortingOrder = sortingOrder;
+    }
+
+    // ★1019 交接黑幕：卡在她後面時，要全黑交接用。獨立一張最上層的畫布（比卡片高一層），只在那 0.35 秒出現。
+    private Canvas _handoffCanvas;
+    private Image _handoffImg;
+
+    private void EnsureHandoffBuilt()
+    {
+        if (_handoffCanvas != null) return;
+        GameObject go = new GameObject("StoryCardHandoff");
+        go.transform.SetParent(transform, false);   // 跟 StoryCardCanvas 並排（不是它的子物件），才會是獨立的最上層畫布
+        _handoffCanvas = go.AddComponent<Canvas>();
+        _handoffCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _handoffCanvas.sortingOrder = sortingOrder + 1;
+        GameObject imgGo = new GameObject("Black");
+        imgGo.transform.SetParent(go.transform, false);
+        _handoffImg = imgGo.AddComponent<Image>();
+        _handoffImg.color = new Color(bgColor.r, bgColor.g, bgColor.b, 0f);
+        _handoffImg.raycastTarget = false;
+        RectTransform r = _handoffImg.rectTransform;
+        r.anchorMin = Vector2.zero;
+        r.anchorMax = Vector2.one;
+        r.offsetMin = Vector2.zero;
+        r.offsetMax = Vector2.zero;
+        _handoffCanvas.enabled = false;
+    }
+
+    private IEnumerator FadeHandoff(float from, float to, float duration)
+    {
+        EnsureHandoffBuilt();
+        _handoffCanvas.sortingOrder = sortingOrder + 1;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            SetHandoffAlpha(Mathf.Lerp(from, to, Mathf.Clamp01(t / Mathf.Max(0.001f, duration))));
+            yield return null;
+        }
+        SetHandoffAlpha(to);
+    }
+
+    private void SetHandoffAlpha(float a)
+    {
+        if (_handoffImg == null) return;
+        _handoffImg.color = new Color(bgColor.r, bgColor.g, bgColor.b, a);
+        _handoffCanvas.enabled = a > 0.001f;
+    }
+
+    private float DefaultLabelY()
+    {
+        return (0.5f - verticalPercent) * 1080f;
+    }
+
+    /// <summary>
+    /// ★1019 卡畫在她後面時，她站在字的位置就會擋掉幾個字（實測：風暴 M2 她在畫面正中間，擋掉「我只」「的不」）。
+    /// 每一頁開始時看她在畫面上的範圍：字的那一塊會碰到她，就整段挪到她下面；下面放不下才放上面；都放不下就照舊。
+    /// 只挪位置，字一個都不改。
+    /// </summary>
+    private float AvoidPlayerY(int pageIndex)
+    {
+        float y0 = DefaultLabelY();
+        if (_label == null || _labelRect == null || _canvas == null) return y0;
+        Camera cam = _behindCam != null ? _behindCam : Camera.main;
+        Transform p = FindBehindPlayer();
+        if (cam == null || p == null) return y0;
+
+        // 她的模型（只算網格，不算泡泡粒子之類）在世界裡的範圍
+        Bounds wb = new Bounds();
+        bool has = false;
+        foreach (Renderer r in p.GetComponentsInChildren<Renderer>())
+        {
+            if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+            if (!(r is SkinnedMeshRenderer) && !(r is MeshRenderer)) continue;
+            if (!has) { wb = r.bounds; has = true; }
+            else wb.Encapsulate(r.bounds);
+        }
+        if (!has) return y0;
+
+        // 投到畫布座標（畫布中心＝0，往上為正）
+        RectTransform canvasRt = _canvas.transform as RectTransform;
+        if (canvasRt == null) return y0;
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        Vector3 c = wb.center, e = wb.extents;
+        for (int k = 0; k < 8; k++)
+        {
+            Vector3 corner = c + new Vector3((k & 1) == 0 ? -e.x : e.x, (k & 2) == 0 ? -e.y : e.y, (k & 4) == 0 ? -e.z : e.z);
+            Vector3 sp = cam.WorldToScreenPoint(corner);
+            Vector2 lp;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, sp, cam, out lp)) continue;
+            min = Vector2.Min(min, lp);
+            max = Vector2.Max(max, lp);
+        }
+        if (min.x > max.x) return y0;
+        Rect her = Rect.MinMaxRect(min.x - avoidMargin, min.y - avoidMargin, max.x + avoidMargin, max.y + avoidMargin);
+
+        // 這一頁的字實際佔的範圍（label 自己的座標；label 錨在畫布中心）
+        Bounds tb = _label.textBounds;
+        if (tb.size.x <= 0.01f || tb.size.y <= 0.01f) return y0;
+        if (!TextRectAt(tb, y0).Overlaps(her)) return y0;
+
+        float halfH = canvasRt.rect.height * 0.5f - 40f;   // 上下各留一點邊
+        float below = her.yMin - tb.max.y;                 // 字的頂端貼在她腳下（含留白）
+        float above = her.yMax - tb.min.y;                 // 字的底端貼在她頭上（含留白）
+        bool okBelow = below + tb.min.y >= -halfH;
+        bool okAbove = above + tb.max.y <= halfH;
+        float y = y0;
+        if (okBelow && okAbove) y = Mathf.Abs(below - y0) <= Mathf.Abs(above - y0) ? below : above;
+        else if (okBelow) y = below;
+        else if (okAbove) y = above;
+        if (!Mathf.Approximately(y, y0))
+            Debug.Log($"【文字卡】★1019 {_currentCardId} 第 {pageIndex + 1} 頁：她站在字的位置，整段字往{(y < y0 ? "下" : "上")}挪 {Mathf.Abs(y - y0):F0}（畫面高 1080 計），她跟字都不被擋");
+        else
+            Debug.Log($"【文字卡】★1019 {_currentCardId} 第 {pageIndex + 1} 頁：她太大、上下都放不下，字照原位");
+        return y;
+    }
+
+    private static Rect TextRectAt(Bounds tb, float y)
+    {
+        return Rect.MinMaxRect(tb.min.x, y + tb.min.y, tb.max.x, y + tb.max.y);
+    }
+
+    private Transform FindBehindPlayer()
+    {
+        if (_behindPlayer == null && Time.unscaledTime >= _nextBehindLookup)
+        {
+            _nextBehindLookup = Time.unscaledTime + 0.25f;
+            PlayerMovement pm = FindAnyObjectByType<PlayerMovement>();
+            if (pm != null) _behindPlayer = pm.transform;
+        }
+        return _behindPlayer;
+    }
+
+    private void LateUpdate()
+    {
+        if (!_behind || _canvas == null) return;
+        Camera cam = Camera.main;
+        if (cam == null) { ExitBehind(); return; }
+        if (cam != _behindCam) { _canvas.worldCamera = cam; _behindCam = cam; }
+        Transform p = FindBehindPlayer();
+        if (p == null) return;
+        float d = Vector3.Dot(p.position - cam.transform.position, cam.transform.forward) + behindDistance;
+        if (d > cam.nearClipPlane + 0.05f && d < cam.farClipPlane - 0.05f) _canvas.planeDistance = d;
     }
 
     /// <summary>改層級（結局名單的 canvas 也是 10000，卡片要壓在它上面時先叫這個）。</summary>
@@ -536,12 +758,14 @@ public class StoryCardPlayer : MonoBehaviour
     {
         if (_canvas != null)
         {
+            ExitBehind();
             SetCurtainAlpha(0f);
             SetLabelAlpha(0f);
             SetGroupAlpha(_photoGroup, 0f);
             if (_curtain != null) _curtain.raycastTarget = false;
             _canvas.enabled = false;
         }
+        SetHandoffAlpha(0f);   // ★1019 交接黑幕也收掉（中途被 ForceStopAll 砍掉時不會留一張黑）
     }
 
     /// <summary>強制停止所有卡片播放與黑幕，恢復 TimeScale 與點擊穿透</summary>
@@ -756,7 +980,7 @@ public class StoryCardPlayer : MonoBehaviour
     private IEnumerator DriftLabel(int token, float duration)
     {
         if (_labelRect == null || duration <= 0f) yield break;
-        float baseY = (0.5f - verticalPercent) * 1080f;
+        float baseY = float.IsNaN(_labelBaseY) ? DefaultLabelY() : _labelBaseY;   // ★1019 挪開過就從新位置緩升
         float t = 0f;
         while (t < duration && token == _driftToken)
         {

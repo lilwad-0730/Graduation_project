@@ -16,6 +16,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class InputHintSwimProbe : MonoBehaviour
 {
+    /// <summary>★1019 關掉＝不出畫面下方的字（LineHintDirector 改放背景線條畫時會關）。</summary>
+    public static bool Enabled = true;
+
     [Tooltip("第一次入水時顯示的字")]
     [TextArea(2, 3)]
     public string hintText = "W／S　上浮與下潛\n連續上浮會脫力，稍等再游";
@@ -39,6 +42,7 @@ public class InputHintSwimProbe : MonoBehaviour
         if (InputHint.IsBusy) return;      // 過場／文字卡正蓋著，等它演完再說
 
         _done = true;
+        if (!Enabled) return;   // ★1019 改成背景線條畫（LineHintDirector：Hints/Swim_WS_light）
         InputHint.Once("swim", hintText, hintSeconds);
     }
 }

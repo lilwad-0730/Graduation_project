@@ -1,0 +1,2288 @@
+fileFormatVersion: 2
+guid: 46b8ed769bd2447808e80ddbae81a40a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2313280497456349930
+    second: Swim_Air_light_0
+  - first:
+      213: -4404483822268176628
+    second: Swim_Air_light_1
+  - first:
+      213: 3077945597564673664
+    second: Swim_Air_light_2
+  - first:
+      213: -2815286775108738990
+    second: Swim_Air_light_3
+  - first:
+      213: 3751834538539719952
+    second: Swim_Air_light_4
+  - first:
+      213: 1019634164415916239
+    second: Swim_Air_light_5
+  - first:
+      213: -6894306012244191004
+    second: Swim_Air_light_6
+  - first:
+      213: 6877058580565603871
+    second: Swim_Air_light_7
+  - first:
+      213: 754516998466038484
+    second: Swim_Air_light_8
+  - first:
+      213: -5964254955744903104
+    second: Swim_Air_light_9
+  - first:
+      213: -2189163567996289149
+    second: Swim_Air_light_10
+  - first:
+      213: -2979531528075963916
+    second: Swim_Air_light_11
+  - first:
+      213: -6627526505241401602
+    second: Swim_Air_light_12
+  - first:
+      213: -794885560937528106
+    second: Swim_Air_light_13
+  - first:
+      213: 4972985699750542201
+    second: Swim_Air_light_14
+  - first:
+      213: 2634179724778895526
+    second: Swim_Air_light_15
+  - first:
+      213: -3792007265046539876
+    second: Swim_Air_light_16
+  - first:
+      213: 3075159069633059038
+    second: Swim_Air_light_17
+  - first:
+      213: -3415298431631102634
+    second: Swim_Air_light_18
+  - first:
+      213: -8131513815560539334
+    second: Swim_Air_light_19
+  - first:
+      213: 4316304303041354817
+    second: Swim_Air_light_20
+  - first:
+      213: -1368909401864649298
+    second: Swim_Air_light_21
+  - first:
+      213: 140506151319883255
+    second: Swim_Air_light_22
+  - first:
+      213: 8068688970867954596
+    second: Swim_Air_light_23
+  - first:
+      213: -1991471593240130390
+    second: Swim_Air_light_24
+  - first:
+      213: -7164248741064212539
+    second: Swim_Air_light_25
+  - first:
+      213: 2848654512396384935
+    second: Swim_Air_light_26
+  - first:
+      213: -1613788741687171928
+    second: Swim_Air_light_27
+  - first:
+      213: -8288451273023750135
+    second: Swim_Air_light_28
+  - first:
+      213: -5413711185038076845
+    second: Swim_Air_light_29
+  - first:
+      213: -6948472229606196288
+    second: Swim_Air_light_30
+  - first:
+      213: -7597813113939764532
+    second: Swim_Air_light_31
+  - first:
+      213: -1658292857840730863
+    second: Swim_Air_light_32
+  - first:
+      213: 6228642116689168152
+    second: Swim_Air_light_33
+  - first:
+      213: 5628445259584472831
+    second: Swim_Air_light_34
+  - first:
+      213: 717582848813700629
+    second: Swim_Air_light_35
+  - first:
+      213: 1019031917822589985
+    second: Swim_Air_light_36
+  - first:
+      213: 2428335786102728957
+    second: Swim_Air_light_37
+  - first:
+      213: 5382836610254879852
+    second: Swim_Air_light_38
+  - first:
+      213: -2821734490403208824
+    second: Swim_Air_light_39
+  - first:
+      213: 7199562594673954481
+    second: Swim_Air_light_40
+  - first:
+      213: 747684175580084058
+    second: Swim_Air_light_41
+  - first:
+      213: -4750388745454234688
+    second: Swim_Air_light_42
+  - first:
+      213: 6721275934849587994
+    second: Swim_Air_light_43
+  - first:
+      213: -7542992519594492154
+    second: Swim_Air_light_44
+  - first:
+      213: -9034794393899284663
+    second: Swim_Air_light_45
+  - first:
+      213: -2518595815150390718
+    second: Swim_Air_light_46
+  - first:
+      213: -6046103957260888505
+    second: Swim_Air_light_47
+  - first:
+      213: -1636231774075532730
+    second: Swim_Air_light_48
+  - first:
+      213: -3534240978137905506
+    second: Swim_Air_light_49
+  - first:
+      213: -4501594560774417755
+    second: Swim_Air_light_50
+  - first:
+      213: 8227441465889636049
+    second: Swim_Air_light_51
+  - first:
+      213: -4921133630418187189
+    second: Swim_Air_light_52
+  - first:
+      213: 1341546281577924570
+    second: Swim_Air_light_53
+  - first:
+      213: 288521865175015841
+    second: Swim_Air_light_54
+  - first:
+      213: -6465172371429173160
+    second: Swim_Air_light_55
+  - first:
+      213: -7325762159790364559
+    second: Swim_Air_light_56
+  - first:
+      213: 6317859073477177476
+    second: Swim_Air_light_57
+  - first:
+      213: 5443157630366186291
+    second: Swim_Air_light_58
+  - first:
+      213: 821279635362992202
+    second: Swim_Air_light_59
+  - first:
+      213: -2352646446362274799
+    second: Swim_Air_light_60
+  - first:
+      213: 1710984760136424444
+    second: Swim_Air_light_61
+  - first:
+      213: -4989868453756400132
+    second: Swim_Air_light_62
+  - first:
+      213: -7745386080366116497
+    second: Swim_Air_light_63
+  - first:
+      213: -5948315917656693096
+    second: Swim_Air_light_64
+  - first:
+      213: 8657127287798389547
+    second: Swim_Air_light_65
+  - first:
+      213: -8241421684835421578
+    second: Swim_Air_light_66
+  - first:
+      213: -849303358434335444
+    second: Swim_Air_light_67
+  - first:
+      213: 8302432970362518501
+    second: Swim_Air_light_68
+  - first:
+      213: -7111260724602096354
+    second: Swim_Air_light_69
+  - first:
+      213: 1868346723981602977
+    second: Swim_Air_light_70
+  - first:
+      213: 8159045030833922449
+    second: Swim_Air_light_71
+  - first:
+      213: -8368061269934844477
+    second: Swim_Air_light_72
+  - first:
+      213: -3665053281996638282
+    second: Swim_Air_light_73
+  - first:
+      213: 1007638507440760066
+    second: Swim_Air_light_74
+  - first:
+      213: -4094350457880769347
+    second: Swim_Air_light_75
+  - first:
+      213: 2906413196648077971
+    second: Swim_Air_light_76
+  - first:
+      213: -8161420232364768081
+    second: Swim_Air_light_77
+  - first:
+      213: -2351478234294069386
+    second: Swim_Air_light_78
+  - first:
+      213: 1020529197803592342
+    second: Swim_Air_light_79
+  - first:
+      213: 2078232037528294844
+    second: Swim_Air_light_80
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: VisionOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: tvOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Swim_Air_light_0
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 359
+        width: 28
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae289bc2b5c6a1020800000000000000
+      internalID: 2313280497456349930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_1
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 370
+        width: 29
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0720c2bc4120e2c0800000000000000
+      internalID: -4404483822268176628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_2
+      rect:
+        serializedVersion: 2
+        x: 953
+        y: 376
+        width: 30
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08ed1dc963f07ba20800000000000000
+      internalID: 3077945597564673664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_3
+      rect:
+        serializedVersion: 2
+        x: 984
+        y: 373
+        width: 30
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 250e9c418971ee8d0800000000000000
+      internalID: -2815286775108738990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_4
+      rect:
+        serializedVersion: 2
+        x: 1014
+        y: 365
+        width: 30
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01d93bd72a1311430800000000000000
+      internalID: 3751834538539719952
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_5
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 312
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc8ecdaced7762e00800000000000000
+      internalID: 1019634164415916239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_6
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 312
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e8585f95318250a0800000000000000
+      internalID: -6894306012244191004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_7
+      rect:
+        serializedVersion: 2
+        x: 867
+        y: 343
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f163a22c758307f50800000000000000
+      internalID: 6877058580565603871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_8
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 351
+        width: 28
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4daef866635987a00800000000000000
+      internalID: 754516998466038484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_9
+      rect:
+        serializedVersion: 2
+        x: 1070
+        y: 332
+        width: 26
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04046fcb7b5ba3da0800000000000000
+      internalID: -5964254955744903104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_10
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 314
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38fba5665578e91e0800000000000000
+      internalID: -2189163567996289149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_11
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 328
+        width: 29
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f194f78cd396a6d0800000000000000
+      internalID: -2979531528075963916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_12
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 336
+        width: 30
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef6a993f1cb4604a0800000000000000
+      internalID: -6627526505241401602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_13
+      rect:
+        serializedVersion: 2
+        x: 174
+        y: 332
+        width: 30
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d44b373bcff7f4f0800000000000000
+      internalID: -794885560937528106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_14
+      rect:
+        serializedVersion: 2
+        x: 204
+        y: 321
+        width: 28
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97b7aba5528930540800000000000000
+      internalID: 4972985699750542201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_15
+      rect:
+        serializedVersion: 2
+        x: 844
+        y: 322
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a87bf1d08c7e8420800000000000000
+      internalID: 2634179724778895526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_16
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 293
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c91533dbb75106bc0800000000000000
+      internalID: -3792007265046539876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_17
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 112
+        width: 120
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed89c4581e82daa20800000000000000
+      internalID: 3075159069633059038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_18
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 303
+        width: 27
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65deda4eb2c6a90d0800000000000000
+      internalID: -3415298431631102634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_19
+      rect:
+        serializedVersion: 2
+        x: 479
+        y: 112
+        width: 128
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a333551744f072f80800000000000000
+      internalID: -8131513815560539334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_20
+      rect:
+        serializedVersion: 2
+        x: 586
+        y: 292
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14c154515e796eb30800000000000000
+      internalID: 4316304303041354817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_21
+      rect:
+        serializedVersion: 2
+        x: 614
+        y: 300
+        width: 13
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea54a2cd628a00de0800000000000000
+      internalID: -1368909401864649298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_22
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 292
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fdcd26a99d23f100800000000000000
+      internalID: 140506151319883255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_23
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 297
+        width: 22
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a352b78eddb9ff60800000000000000
+      internalID: 8068688970867954596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_24
+      rect:
+        serializedVersion: 2
+        x: 862
+        y: 288
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aac04a0232fdc54e0800000000000000
+      internalID: -1991471593240130390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_25
+      rect:
+        serializedVersion: 2
+        x: 916
+        y: 112
+        width: 120
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cff3525ab9739c90800000000000000
+      internalID: -7164248741064212539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_26
+      rect:
+        serializedVersion: 2
+        x: 1048
+        y: 288
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7aa333baf24788720800000000000000
+      internalID: 2848654512396384935
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_27
+      rect:
+        serializedVersion: 2
+        x: 1093
+        y: 308
+        width: 23
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a4263d80bbaa99e0800000000000000
+      internalID: -1613788741687171928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_28
+      rect:
+        serializedVersion: 2
+        x: 1111
+        y: 282
+        width: 22
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90009453b7189fc80800000000000000
+      internalID: -8288451273023750135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_29
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 268
+        width: 22
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3541f3b3c52aed4b0800000000000000
+      internalID: -5413711185038076845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_30
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 280
+        width: 24
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cbf7ae5251129f90800000000000000
+      internalID: -6948472229606196288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_31
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 252
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccad0d15a352f8690800000000000000
+      internalID: -7597813113939764532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_32
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 257
+        width: 44
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11df5da8e6f8cf8e0800000000000000
+      internalID: -1658292857840730863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_33
+      rect:
+        serializedVersion: 2
+        x: 642
+        y: 272
+        width: 24
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8178b4e1105907650800000000000000
+      internalID: 6228642116689168152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_34
+      rect:
+        serializedVersion: 2
+        x: 812
+        y: 269
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff6834f84214c1e40800000000000000
+      internalID: 5628445259584472831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_35
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 253
+        width: 19
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51614709ccd55f900800000000000000
+      internalID: 717582848813700629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_36
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 239
+        width: 18
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12cb9945124542e00800000000000000
+      internalID: 1019031917822589985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_37
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 222
+        width: 16
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df8a506188e23b120800000000000000
+      internalID: 2428335786102728957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_38
+      rect:
+        serializedVersion: 2
+        x: 614
+        y: 233
+        width: 13
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6cb536a06da3ba40800000000000000
+      internalID: 5382836610254879852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_39
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 245
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8818c016e6f27d8d0800000000000000
+      internalID: -2821734490403208824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_40
+      rect:
+        serializedVersion: 2
+        x: 803
+        y: 239
+        width: 17
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1be0bb1f80cf9e360800000000000000
+      internalID: 7199562594673954481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_41
+      rect:
+        serializedVersion: 2
+        x: 1134
+        y: 222
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a57b1a9dbce406a00800000000000000
+      internalID: 747684175580084058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_42
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 209
+        width: 14
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c3df2aca9a331eb0800000000000000
+      internalID: -4750388745454234688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_43
+      rect:
+        serializedVersion: 2
+        x: 285
+        y: 192
+        width: 15
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1b57161ad4c64d50800000000000000
+      internalID: 6721275934849587994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_44
+      rect:
+        serializedVersion: 2
+        x: 333
+        y: 195
+        width: 85
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60f34269448e15790800000000000000
+      internalID: -7542992519594492154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_45
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 195
+        width: 85
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94741fcfd56fd9280800000000000000
+      internalID: -9034794393899284663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_46
+      rect:
+        serializedVersion: 2
+        x: 801
+        y: 208
+        width: 13
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 242fc2143762c0dd0800000000000000
+      internalID: -2518595815150390718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_47
+      rect:
+        serializedVersion: 2
+        x: 1136
+        y: 191
+        width: 14
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74691680c7ce71ca0800000000000000
+      internalID: -6046103957260888505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_48
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 178
+        width: 16
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64a4500eedfea49e0800000000000000
+      internalID: -1636231774075532730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_49
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 149
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e96067b3e8ad3fec0800000000000000
+      internalID: -3534240978137905506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_50
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 162
+        width: 18
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a2d532f89f1781c0800000000000000
+      internalID: -4501594560774417755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_51
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 131
+        width: 64
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1debba02c6ebd2270800000000000000
+      internalID: 8227441465889636049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_52
+      rect:
+        serializedVersion: 2
+        x: 801
+        y: 178
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4c02b2590f94bbb0800000000000000
+      internalID: -4921133630418187189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_53
+      rect:
+        serializedVersion: 2
+        x: 1130
+        y: 161
+        width: 17
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad7c23b3c312e9210800000000000000
+      internalID: 1341546281577924570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_54
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 124
+        width: 24
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a1a0b39b19010400800000000000000
+      internalID: 288521865175015841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_55
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 135
+        width: 22
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8585b4d6bf71746a0800000000000000
+      internalID: -6465172371429173160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_56
+      rect:
+        serializedVersion: 2
+        x: 806
+        y: 148
+        width: 19
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17862b4112aa55a90800000000000000
+      internalID: -7325762159790364559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_57
+      rect:
+        serializedVersion: 2
+        x: 817
+        y: 120
+        width: 22
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 480f5979a5b8da750800000000000000
+      internalID: 6317859073477177476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_58
+      rect:
+        serializedVersion: 2
+        x: 1118
+        y: 132
+        width: 20
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33bfe66960bf98b40800000000000000
+      internalID: 5443157630366186291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_59
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 77
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a40d21f1a75c56b00800000000000000
+      internalID: 821279635362992202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_60
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 103
+        width: 27
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 114dd7a9588b95fd0800000000000000
+      internalID: -2352646446362274799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_61
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 94
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfbd90cf293aeb710800000000000000
+      internalID: 1710984760136424444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_62
+      rect:
+        serializedVersion: 2
+        x: 242
+        y: 112
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfd0ce9241d60cab0800000000000000
+      internalID: -4989868453756400132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_63
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 77
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f61c58f856cd28490800000000000000
+      internalID: -7745386080366116497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_64
+      rect:
+        serializedVersion: 2
+        x: 834
+        y: 95
+        width: 23
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 896654c3036537da0800000000000000
+      internalID: -5948315917656693096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_65
+      rect:
+        serializedVersion: 2
+        x: 862
+        y: 102
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2b509c966b442870800000000000000
+      internalID: 8657127287798389547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_66
+      rect:
+        serializedVersion: 2
+        x: 1048
+        y: 102
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 672fe2f74a690ad80800000000000000
+      internalID: -8241421684835421578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_67
+      rect:
+        serializedVersion: 2
+        x: 1102
+        y: 106
+        width: 22
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c25a9f5681ba634f0800000000000000
+      internalID: -849303358434335444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_68
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 89
+        width: 28
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ebf2f16cca283370800000000000000
+      internalID: 8302432970362518501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_69
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 81
+        width: 30
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e15b7ec4c0abf4d90800000000000000
+      internalID: -7111260724602096354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_70
+      rect:
+        serializedVersion: 2
+        x: 157
+        y: 81
+        width: 30
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a030305273bde910800000000000000
+      internalID: 1868346723981602977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_71
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 84
+        width: 29
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 191a5412a30ca3170800000000000000
+      internalID: 8159045030833922449
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_72
+      rect:
+        serializedVersion: 2
+        x: 854
+        y: 74
+        width: 26
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c554d26c9caedb80800000000000000
+      internalID: -8368061269934844477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_73
+      rect:
+        serializedVersion: 2
+        x: 1081
+        y: 83
+        width: 25
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b7f5b3557d132dc0800000000000000
+      internalID: -3665053281996638282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_74
+      rect:
+        serializedVersion: 2
+        x: 879
+        y: 58
+        width: 28
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 205e20242e9dbfd00800000000000000
+      internalID: 1007638507440760066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_75
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 47
+        width: 30
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbc0f0c83f1fd27c0800000000000000
+      internalID: -4094350457880769347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_76
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 51
+        width: 28
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39a57bc4767a55820800000000000000
+      internalID: 2906413196648077971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_77
+      rect:
+        serializedVersion: 2
+        x: 1056
+        y: 65
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa4463b2a8fccbe80800000000000000
+      internalID: -8161420232364768081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_78
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 41
+        width: 30
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 677d6db210fdd5fd0800000000000000
+      internalID: -2351478234294069386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_79
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 41
+        width: 30
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69a5ffdf5e5a92e00800000000000000
+      internalID: 1020529197803592342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Swim_Air_light_80
+      rect:
+        serializedVersion: 2
+        x: 998
+        y: 43
+        width: 29
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb5d5b5f60d57dc10800000000000000
+      internalID: 2078232037528294844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Swim_Air_light_0: 2313280497456349930
+      Swim_Air_light_1: -4404483822268176628
+      Swim_Air_light_10: -2189163567996289149
+      Swim_Air_light_11: -2979531528075963916
+      Swim_Air_light_12: -6627526505241401602
+      Swim_Air_light_13: -794885560937528106
+      Swim_Air_light_14: 4972985699750542201
+      Swim_Air_light_15: 2634179724778895526
+      Swim_Air_light_16: -3792007265046539876
+      Swim_Air_light_17: 3075159069633059038
+      Swim_Air_light_18: -3415298431631102634
+      Swim_Air_light_19: -8131513815560539334
+      Swim_Air_light_2: 3077945597564673664
+      Swim_Air_light_20: 4316304303041354817
+      Swim_Air_light_21: -1368909401864649298
+      Swim_Air_light_22: 140506151319883255
+      Swim_Air_light_23: 8068688970867954596
+      Swim_Air_light_24: -1991471593240130390
+      Swim_Air_light_25: -7164248741064212539
+      Swim_Air_light_26: 2848654512396384935
+      Swim_Air_light_27: -1613788741687171928
+      Swim_Air_light_28: -8288451273023750135
+      Swim_Air_light_29: -5413711185038076845
+      Swim_Air_light_3: -2815286775108738990
+      Swim_Air_light_30: -6948472229606196288
+      Swim_Air_light_31: -7597813113939764532
+      Swim_Air_light_32: -1658292857840730863
+      Swim_Air_light_33: 6228642116689168152
+      Swim_Air_light_34: 5628445259584472831
+      Swim_Air_light_35: 717582848813700629
+      Swim_Air_light_36: 1019031917822589985
+      Swim_Air_light_37: 2428335786102728957
+      Swim_Air_light_38: 5382836610254879852
+      Swim_Air_light_39: -2821734490403208824
+      Swim_Air_light_4: 3751834538539719952
+      Swim_Air_light_40: 7199562594673954481
+      Swim_Air_light_41: 747684175580084058
+      Swim_Air_light_42: -4750388745454234688
+      Swim_Air_light_43: 6721275934849587994
+      Swim_Air_light_44: -7542992519594492154
+      Swim_Air_light_45: -9034794393899284663
+      Swim_Air_light_46: -2518595815150390718
+      Swim_Air_light_47: -6046103957260888505
+      Swim_Air_light_48: -1636231774075532730
+      Swim_Air_light_49: -3534240978137905506
+      Swim_Air_light_5: 1019634164415916239
+      Swim_Air_light_50: -4501594560774417755
+      Swim_Air_light_51: 8227441465889636049
+      Swim_Air_light_52: -4921133630418187189
+      Swim_Air_light_53: 1341546281577924570
+      Swim_Air_light_54: 288521865175015841
+      Swim_Air_light_55: -6465172371429173160
+      Swim_Air_light_56: -7325762159790364559
+      Swim_Air_light_57: 6317859073477177476
+      Swim_Air_light_58: 5443157630366186291
+      Swim_Air_light_59: 821279635362992202
+      Swim_Air_light_6: -6894306012244191004
+      Swim_Air_light_60: -2352646446362274799
+      Swim_Air_light_61: 1710984760136424444
+      Swim_Air_light_62: -4989868453756400132
+      Swim_Air_light_63: -7745386080366116497
+      Swim_Air_light_64: -5948315917656693096
+      Swim_Air_light_65: 8657127287798389547
+      Swim_Air_light_66: -8241421684835421578
+      Swim_Air_light_67: -849303358434335444
+      Swim_Air_light_68: 8302432970362518501
+      Swim_Air_light_69: -7111260724602096354
+      Swim_Air_light_7: 6877058580565603871
+      Swim_Air_light_70: 1868346723981602977
+      Swim_Air_light_71: 8159045030833922449
+      Swim_Air_light_72: -8368061269934844477
+      Swim_Air_light_73: -3665053281996638282
+      Swim_Air_light_74: 1007638507440760066
+      Swim_Air_light_75: -4094350457880769347
+      Swim_Air_light_76: 2906413196648077971
+      Swim_Air_light_77: -8161420232364768081
+      Swim_Air_light_78: -2351478234294069386
+      Swim_Air_light_79: 1020529197803592342
+      Swim_Air_light_8: 754516998466038484
+      Swim_Air_light_80: 2078232037528294844
+      Swim_Air_light_9: -5964254955744903104
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
