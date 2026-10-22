@@ -226,6 +226,151 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool isPushing = false;
     private float _collisionPushableTimer = 0f;
 
+    [Header("🕯️ 點燃燭火動作")]
+    [Tooltip("PlayerAnimator 裡點燃動作的 State 名稱")]
+    public string lightCandleAnimState = "LightCandle";
+    [Tooltip("點燃動作統一在幾秒內播完（會自動加速）；點燃時間比這長的話，多出來的時間停在最後一格")]
+    public float lightAnimPlaySeconds = 1.5f;
+    [Tooltip("點燃時身體往鏡頭轉的角度（面向右時是順時針）。只在沒勾 aimLightHandAtCandle 時使用")]
+    public float lightAnimYawOffset = 15f;
+    [Tooltip("點燃時轉向燭台的速度（度/秒）。300 ≈ 轉 180 度約 0.6 秒，數字越小轉越慢")]
+    public float lightTurnDegreesPerSecond = 300f;
+    private bool _candleLightAnim = false;
+    private bool _candleLightHold = false;
+    private const string LightCandleSpeedParam = "LightCandleSpeed";
+
+    [Header("🕯️ 點燃轉向：讓點火的手最靠近燭火")]
+    [Tooltip("勾選＝以燭火為圓心、玩家到燭火的距離為半徑，算出讓手最靠近燭火的轉向角度；不勾＝只左右轉向燭台再加上面的固定角度")]
+    public bool aimLightHandAtCandle = true;
+    [Tooltip("點火的手（指尖）")]
+    public HumanBodyBones lightHandBone = HumanBodyBones.LeftIndexDistal;
+    [Tooltip("點燃動作最後一格時，手相對外觀模型的位置（模型自己的座標）。第一次點完會用實際骨頭位置自動校正")]
+    public Vector3 lightHandLocalOffset = new Vector3(-0.157f, 0.521f, 0.684f);
+    [Tooltip("瞄準時燭火深度（Z）的額外位移。0＝用燭台在 3D 世界裡的實際深度：玩家越接近站在鏡頭和燭台之間，就越轉身背對鏡頭去點")]
+    public float candleAimDepthOffset = 0f;
+    [Tooltip("好幾個角度一樣近時（差距在這個距離內），挑身體最面向燭台的那個，讓動作合常理")]
+    public float lightAimFacingTieTolerance = 0.05f;
+    private bool _hasCandleAimYaw = false;
+    private float _candleAimYaw = 0f;
+    private bool _lightHandCalibrated = false;
+
+    /// <summary>開始播點燃動作（不循環，播完停在最後一格），並轉向燭火。flamePos＝燭火位置。</summary>
+    public void BeginCandleLightAnim(float duration, Vector3 flamePos)
+    {
+        if (animator == null) return;
+        float dx = flamePos.x - transform.position.x;
+        if (Mathf.Abs(dx) > 0.05f) facingDirection = dx > 0f ? Vector3.right : Vector3.left;
+
+        _hasCandleAimYaw = false;
+        if (aimLightHandAtCandle && animator.transform != transform)
+        {
+            // 用燭火在 3D 世界的實際位置（含深度）：以燭火為圓心、玩家到燭火的水平距離為半徑
+            Vector3 target = new Vector3(flamePos.x, flamePos.y, flamePos.z + candleAimDepthOffset);
+            _candleAimYaw = FindBestLightYaw(target);
+            _hasCandleAimYaw = true;
+            Vector3 fwd = Quaternion.Euler(0f, _candleAimYaw, 0f) * Vector3.forward;
+            if (Mathf.Abs(fwd.x) > 0.01f) facingDirection = fwd.x > 0f ? Vector3.right : Vector3.left;
+        }
+
+        float speed = 1f;
+        // 動作統一在 lightAnimPlaySeconds 內播完；點燃時間比較短的話就跟著點燃時間播完
+        float playSeconds = lightAnimPlaySeconds > 0.01f ? lightAnimPlaySeconds : duration;
+        if (duration > 0.01f) playSeconds = Mathf.Min(playSeconds, duration);
+        float clipLength = GetLightClipLength();
+        if (clipLength > 0.01f && playSeconds > 0.01f) speed = clipLength / playSeconds;
+        foreach (var p in animator.parameters)
+            if (p.name == LightCandleSpeedParam) { animator.SetFloat(LightCandleSpeedParam, speed); break; }
+
+        _candleLightAnim = true;
+        _candleLightHold = false;
+        try
+        {
+            animator.Play(lightCandleAnimState, 0, 0f);
+            currentAnimState = lightCandleAnimState;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[點燃動作] 找不到 State '{lightCandleAnimState}'：{e.Message}");
+            _candleLightAnim = false;
+        }
+    }
+
+    /// <summary>結束點燃動作。holdPose＝true 時停在最後一格，直到玩家移動才回到一般動作。</summary>
+    public void EndCandleLightAnim(bool holdPose)
+    {
+        if (!_candleLightAnim) return;
+        if (holdPose) _candleLightHold = true;
+        else { _candleLightAnim = false; _candleLightHold = false; }
+    }
+
+    /// <summary>
+    /// 以燭火為圓心、玩家到燭火的水平距離為半徑：每 1 度試一個轉向，
+    /// 算出點燃動作最後一格時手會在哪，挑手離燭火最近的角度（一樣近就挑身體最面向燭台的）。回傳世界 Y 軸角度。
+    /// </summary>
+    private float FindBestLightYaw(Vector3 target)
+    {
+        Transform visual = animator.transform;
+        Transform parent = visual.parent;
+        Matrix4x4 parentM = parent != null ? parent.localToWorldMatrix : Matrix4x4.identity;
+        Quaternion parentRotInv = parent != null ? Quaternion.Inverse(parent.rotation) : Quaternion.identity;
+        Vector3 localPos = visual.localPosition;
+        Vector3 localScale = visual.localScale;
+
+        var dist = new float[360];
+        float best = float.MaxValue;
+        for (int deg = 0; deg < 360; deg++)
+        {
+            Quaternion world = Quaternion.Euler(0f, deg, 0f);
+            Matrix4x4 m = parentM * Matrix4x4.TRS(localPos, parentRotInv * world, localScale);
+            Vector3 hand = m.MultiplyPoint3x4(lightHandLocalOffset);
+            Vector2 d = new Vector2(hand.x - target.x, hand.z - target.z);
+            dist[deg] = d.magnitude;
+            if (dist[deg] < best) best = dist[deg];
+        }
+
+        // 一樣近的角度裡挑身體最面向燭台的，動作才合常理（不會側身或背對燭台去點）
+        Vector3 toTarget = target - visual.position;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude < 0.0001f) toTarget = facingDirection;
+        toTarget.Normalize();
+
+        int pick = 0;
+        float bestFacing = float.MinValue;
+        for (int deg = 0; deg < 360; deg++)
+        {
+            if (dist[deg] > best + lightAimFacingTieTolerance) continue;
+            float facing = Vector3.Dot(Quaternion.Euler(0f, deg, 0f) * Vector3.forward, toTarget);
+            if (facing > bestFacing) { bestFacing = facing; pick = deg; }
+        }
+        return pick;
+    }
+
+    /// <summary>第一次停在點燃動作最後一格時，用實際的手指骨頭位置校正 lightHandLocalOffset。</summary>
+    private void CalibrateLightHandIfReady()
+    {
+        if (_lightHandCalibrated || !_candleLightAnim || animator == null || !animator.isHuman) return;
+        if (animator.IsInTransition(0)) return;
+        var info = animator.GetCurrentAnimatorStateInfo(0);
+        if (!info.IsName(lightCandleAnimState) || info.normalizedTime < 1f) return;
+        Transform bone = animator.GetBoneTransform(lightHandBone);
+        if (bone == null) { _lightHandCalibrated = true; return; }
+        lightHandLocalOffset = animator.transform.InverseTransformPoint(bone.position);
+        _lightHandCalibrated = true;
+    }
+
+    [Tooltip("點燃動作的動畫片段名稱（用來算播放速度）")]
+    public string lightCandleClipName = "Light Candle";
+    private float _cachedLightClipLength = -1f;
+
+    private float GetLightClipLength()
+    {
+        if (_cachedLightClipLength > 0f) return _cachedLightClipLength;
+        if (animator == null || animator.runtimeAnimatorController == null) return 0f;
+        foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            if (clip != null && clip.name == lightCandleClipName) { _cachedLightClipLength = clip.length; break; }
+        return Mathf.Max(0f, _cachedLightClipLength);
+    }
+
     [Header("🌪️ 風暴吸入物理牽引 (Wind Suction - 地形與斜坡適應)")]
     [HideInInspector] public bool isWindSuctionActive = false;
     [HideInInspector] public float windSuctionTargetX = 0f;
@@ -1088,7 +1233,12 @@ public class PlayerMovement : MonoBehaviour
             // 控制角色外觀模型轉向與水下按 W 向上 15 度仰角傾斜
             if (facingDirection != Vector3.zero)
             {
-                Quaternion baseRotation = Quaternion.LookRotation(facingDirection);
+                // 點燃燭火且算過「手最靠近燭火」的角度：用那個角度；否則照左右朝向
+                bool useCandleAim = _candleLightAnim && _hasCandleAimYaw && !isUnderwater;
+                Quaternion baseRotation = useCandleAim
+                    ? Quaternion.Euler(0f, _candleAimYaw, 0f)
+                    : Quaternion.LookRotation(facingDirection);
+                CalibrateLightHandIfReady();
 
                 // ★0920 斜坡視覺貼合：站在坡上時外觀跟著坡面傾斜，離地平滑回正。
                 //   ・只轉 animator 這個外觀子物件，剛體的 FreezeRotation 完全不動
@@ -1111,6 +1261,14 @@ public class PlayerMovement : MonoBehaviour
                     baseRotation = Quaternion.Euler(0f, 0f, _slopeVisualAngle) * baseRotation;
                 }
 
+                // 點燃燭火時身體轉向鏡頭一點，讓動作看得清楚
+                //   面向右：順時針（從上往下看）轉；面向左：鏡射成逆時針，兩邊都是朝鏡頭轉
+                if (_candleLightAnim && !useCandleAim && Mathf.Abs(lightAnimYawOffset) > 0.01f)
+                {
+                    float yaw = facingDirection.x >= 0f ? lightAnimYawOffset : -lightAnimYawOffset;
+                    baseRotation = Quaternion.Euler(0f, yaw, 0f) * baseRotation;
+                }
+
                 // ★1014 划水式游泳：按住不代表在往上，只看實際是否正在上升
                 bool isSwimmingUpward = isUnderwater && rb.linearVelocity.y > 0.3f;
 
@@ -1123,7 +1281,15 @@ public class PlayerMovement : MonoBehaviour
                 else
                 {
                     // 陸地移動（包含斜坡）：保持正立左右朝向，絕不往 Z 軸深處傾倒穿透背景貼圖
-                    animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, baseRotation, Time.deltaTime * 12f);
+                    if (_candleLightAnim && lightTurnDegreesPerSecond > 0.01f)
+                    {
+                        // 點燃燭火時等速轉身，轉向燭台的過程看得出來，不會像瞬間翻面
+                        animator.transform.rotation = Quaternion.RotateTowards(animator.transform.rotation, baseRotation, lightTurnDegreesPerSecond * Time.deltaTime);
+                    }
+                    else
+                    {
+                        animator.transform.rotation = Quaternion.Slerp(animator.transform.rotation, baseRotation, Time.deltaTime * 12f);
+                    }
                 }
             }
 
@@ -1172,6 +1338,8 @@ public class PlayerMovement : MonoBehaviour
                 {
                     targetAnim = "Treading Water";
                 }
+                _candleLightAnim = false;
+                _candleLightHold = false;
             }
             else
             {
@@ -1187,6 +1355,20 @@ public class PlayerMovement : MonoBehaviour
                 else
                 {
                     targetAnim = hasHorizontalSpeed ? "Run" : "Idle";
+                }
+
+                // 點燃燭火：點燃中播點燃動作；點完停在最後一格，玩家一移動才放掉
+                if (_candleLightAnim && !isFalling && !isPushing)
+                {
+                    if (_candleLightHold && (hasKeyboardInput || hasHorizontalSpeed))
+                    {
+                        _candleLightAnim = false;
+                        _candleLightHold = false;
+                    }
+                    else
+                    {
+                        targetAnim = lightCandleAnimState;
+                    }
                 }
             }
 
