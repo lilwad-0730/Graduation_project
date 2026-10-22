@@ -3,11 +3,50 @@ using System.Collections;
 
 /// <summary>
 /// 掛載於燭火物件 (例如 'candle_01')。
-/// 提供約 3 秒鐘由無到有 (Alpha 0->1, Scale 0->Target) 柔和淡入出現的光暈動畫，
-/// 動畫結束後轉為優雅的呼吸脈動。
+/// 玩家走到燭火旁按住 S 鍵點燃，點完光暈才淡入亮起，之後轉為呼吸脈動。
+/// 點燃時間依燭火在 Candles 底下的順序：第 1 根 1.5 秒，之後每根多 0.1 秒。
 /// </summary>
 public class CandleAuraGlow : MonoBehaviour, IResettable
 {
+    [Header("🕯️ 點燃操作")]
+    [Tooltip("點燃用的按鍵")]
+    public KeyCode lightKey = KeyCode.S;
+
+    [Tooltip("勾選＝要一直按住直到點完，放開就重來；不勾＝按一下就開始，玩家離開範圍才會中斷")]
+    public bool holdToLight = true;
+
+    [Tooltip("第一根燭火的點燃時間 (秒)")]
+    public float baseLightDuration = 1.5f;
+
+    [Tooltip("依 Candles 底下的順序，每往後一根多花的秒數")]
+    public float extraPerCandleOrder = 0.1f;
+
+    [Tooltip("玩家離燭火多近才能點燃 (左右距離)")]
+    public float lightRangeX = 2.0f;
+
+    [Tooltip("玩家離燭火多近才能點燃 (上下距離)")]
+    public float lightRangeY = 5.0f;
+
+    /// <summary>開始點燃時呼叫（之後接點燃動作模型用）。</summary>
+    public event System.Action<CandleAuraGlow> LightingStarted;
+    /// <summary>點到一半中斷時呼叫。</summary>
+    public event System.Action<CandleAuraGlow> LightingCanceled;
+    /// <summary>點燃完成時呼叫。</summary>
+    public event System.Action<CandleAuraGlow> LightingCompleted;
+
+    /// <summary>正在點燃中嗎。</summary>
+    public bool IsLighting { get { return _isLighting; } }
+    /// <summary>點燃進度 0~1。</summary>
+    public float LightProgress { get { return _lightDuration > 0f ? Mathf.Clamp01(_lightTimer / _lightDuration) : 0f; } }
+    /// <summary>這根燭火需要的點燃秒數。</summary>
+    public float LightDuration { get { return GetLightDuration(); } }
+
+    private bool _isLighting = false;
+    private float _lightTimer = 0f;
+    private float _lightDuration = 0f;
+    private PlayerMovement _player;
+    private CandleCollectible _collectible;
+
     [Header("淡入出現動畫設定")]
     [Tooltip("光暈從無到有的出現過程時間 (秒)")]
     public float fadeInDuration = 3.0f;
@@ -52,10 +91,14 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
     private void Awake()
     {
         SetupAuraObject();
+        if (Application.isPlaying && GetComponent<CandleLightProgressBar>() == null)
+            gameObject.AddComponent<CandleLightProgressBar>();
     }
 
     private void OnEnable()
     {
+        _isLighting = false;
+        _lightTimer = 0f;
         StopAllCoroutines();
         isFadingIn = false;
         fadeTimer = 0f;
@@ -92,23 +135,111 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         SetAuraHidden();
     }
 
-    private void OnTriggerEnter(Collider other)
+    // ──────────────── 點燃操作 ────────────────
+
+    /// <summary>依 Candles 底下的順序算點燃時間：第 1 根 base，之後每根 +extra。</summary>
+    private float GetLightDuration()
     {
-        if (hasBeenTriggered || !IsPlayer(other.gameObject))
+        int order = 0;
+        Transform parent = transform.parent;
+        if (parent != null)
         {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform sibling = parent.GetChild(i);
+                if (sibling == transform) break;
+                if (sibling.GetComponent<CandleAuraGlow>() != null) order++;
+            }
+        }
+        return Mathf.Max(0f, baseLightDuration + extraPerCandleOrder * order);
+    }
+
+    private PlayerMovement FindPlayer()
+    {
+        if (_player != null) return _player;
+        GameObject tagged = GameObject.FindWithTag("Player");
+        if (tagged != null) _player = tagged.GetComponent<PlayerMovement>();
+        if (_player == null) _player = FindAnyObjectByType<PlayerMovement>();
+        return _player;
+    }
+
+    private bool IsPlayerInRange()
+    {
+        PlayerMovement player = FindPlayer();
+        if (player == null || !player.isActiveAndEnabled) return false;
+        Vector3 d = player.transform.position - transform.position;
+        return Mathf.Abs(d.x) <= lightRangeX && Mathf.Abs(d.y) <= lightRangeY;
+    }
+
+    /// <summary>被怪物吃掉或漏掉的燭火不能再點。</summary>
+    private bool CanBeLit()
+    {
+        if (hasBeenTriggered) return false;
+        if (_collectible == null) _collectible = GetComponent<CandleCollectible>();
+        if (_collectible != null && (_collectible.isCollected || _collectible.missed)) return false;
+        return true;
+    }
+
+    private void UpdateLighting()
+    {
+        if (!Application.isPlaying) return;
+
+        bool canLight = CanBeLit()
+                        && IsPlayerInRange()
+                        && !_player.IsControlLocked
+                        && !PlayerMovement.IsHardCutsceneLocked;
+
+        if (!_isLighting)
+        {
+            if (canLight && Input.GetKeyDown(lightKey)) BeginLighting();
             return;
         }
 
-        hasBeenTriggered = true;
-        PlayFadeInAnimation();
+        bool stillHolding = !holdToLight || Input.GetKey(lightKey);
+        if (!canLight || !stillHolding || IsPressingMoveKey())
+        {
+            CancelLighting();
+            return;
+        }
+
+        _lightTimer += Time.deltaTime;
+        if (_lightTimer >= _lightDuration)
+        {
+            _isLighting = false;
+            _lightTimer = _lightDuration;
+            if (_player != null) _player.EndCandleLightAnim(true);
+            PlayFadeInAnimation();
+            if (LightingCompleted != null) LightingCompleted(this);
+        }
     }
 
-    private bool IsPlayer(GameObject go)
+    private void BeginLighting()
     {
-        if (go.CompareTag("Player")) return true;
-        if (go.GetComponent<PlayerMovement>() != null) return true;
-        if (go.name.ToLower().Contains("player")) return true;
-        return false;
+        _isLighting = true;
+        _lightTimer = 0f;
+        _lightDuration = GetLightDuration();
+        Debug.Log($"🕯️【點燃】開始點燃 {gameObject.name}，需要 {_lightDuration:F1} 秒");
+        // 燭火位置＝光暈圓心（燭台上方的火焰處）
+        if (_player != null) _player.BeginCandleLightAnim(_lightDuration, transform.position + new Vector3(auraCenterOffset.x, auraCenterOffset.y, 0f));
+        if (LightingStarted != null) LightingStarted(this);
+    }
+
+    /// <summary>中斷點燃，進度歸零。</summary>
+    public void CancelLighting()
+    {
+        if (!_isLighting) return;
+        _isLighting = false;
+        _lightTimer = 0f;
+        if (_player != null) _player.EndCandleLightAnim(false);
+        if (LightingCanceled != null) LightingCanceled(this);
+    }
+
+    /// <summary>點燃中按移動或跳躍鍵＝放棄點燃。</summary>
+    private static bool IsPressingMoveKey()
+    {
+        return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W)
+            || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftArrow)
+            || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.UpArrow);
     }
 
     public void PlayFadeInAnimation()
@@ -193,6 +324,8 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         {
             SetupAuraObject();
         }
+
+        UpdateLighting();
 
         if (!hasBeenTriggered)
         {
@@ -299,6 +432,7 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     public void HideAura()
     {
+        CancelLighting();
         StopAllCoroutines();
         isFadingIn = false;
         fadeTimer = 0f;
@@ -312,6 +446,7 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        CancelLighting();
         StopAllCoroutines();
         isFadingIn = false;
         fadeTimer = 0f;

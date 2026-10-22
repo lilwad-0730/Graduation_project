@@ -155,18 +155,21 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
 
             GlassTarget nearest = null;
             float nearestDistance = float.MaxValue;
+            // 只比畫面上的左右、上下距離：燭台為了不蓋住玩家手部被往後放（Z），不能讓 Z 影響挑哪片玻璃
+            Vector3 cp = candle.transform.position;
             foreach (var target in _targets)
             {
                 if (target == null || target.tr == null) continue;
 
                 float distance = target.colliders.Length == 0
-                    ? (target.tr.position - candle.transform.position).sqrMagnitude
+                    ? (target.tr.position - new Vector3(cp.x, cp.y, target.tr.position.z)).sqrMagnitude
                     : float.MaxValue;
 
                 foreach (var collider in target.colliders)
                 {
                     if (collider == null) continue;
-                    distance = Mathf.Min(distance, collider.bounds.SqrDistance(candle.transform.position));
+                    Bounds b = collider.bounds;
+                    distance = Mathf.Min(distance, b.SqrDistance(new Vector3(cp.x, cp.y, b.center.z)));
                 }
 
                 if (distance >= nearestDistance) continue;
