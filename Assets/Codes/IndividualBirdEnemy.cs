@@ -234,6 +234,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
         // 預設播放待機飛行動畫 (flying)
         PlayAnim(idleAnimName);
+
+        // ★1022 開場第一幀直接進飛行姿勢：Animator 的預設 state 是站姿 Idle，
+        //   原本會從站姿淡入飛行約 0.1 秒，開場那一瞬間看起來像「站在半空中」。
+        //   這裡直接跳到飛行，拍翅時間點隨機錯開，鳥群也不會整齊同步拍翅。
+        foreach (Animator anim in GetComponentsInChildren<Animator>(true))
+        {
+            if (anim == null || !anim.isActiveAndEnabled) continue;
+            AnimStateResolver.SetFlying(anim, true);
+            if (AnimStateResolver.PlaySafe(anim, idleAnimName, Random.value)) anim.Update(0f);
+        }
     }
 
     /// <summary>

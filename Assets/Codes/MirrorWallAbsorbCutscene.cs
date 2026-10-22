@@ -122,6 +122,9 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     /// </summary>
     private bool _sequenceCompleted = false;
 
+    /// <summary>★1021 整段演出（光球吸入、鏡牆碎裂、過場文字）是不是已經完整跑完。影子怪物觸發區用它判斷「演出沒跑完就不准出場」。</summary>
+    public bool SequenceCompleted { get { return _sequenceCompleted; } }
+
     // 內部狀態變數
     private bool hasTriggered = false;
     private bool isCutsceneRunning = false;

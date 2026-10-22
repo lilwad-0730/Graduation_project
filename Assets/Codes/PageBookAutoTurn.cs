@@ -31,7 +31,9 @@ public class PageBookAutoTurn : MonoBehaviour
     [Tooltip("一打開的第一頁多停幾秒（玩家要先弄懂這是什麼）")]
     public float firstPageExtraSeconds = 2f;   // ★1021 3 → 2
     [Tooltip("翻到新的一頁後，過多久才出現倒數圈（先讓人看畫）")]
-    public float showDelay = 0.6f;
+    public float showDelay = 0f;   // ★1021 原本 0.6：翻完頁還要再等才出現圈，看起來像「翻完才開始」。改成 0＝一翻到就在
+    [Tooltip("★1021 翻頁翻到這個比例（0～1）就先把下一頁的倒數圈亮出來（滿的、還沒開始倒），翻完立刻接著倒數。")]
+    [Range(0.1f, 1f)] public float showRingAtTurnProgress = 0.4f;
     public bool inChapterMode = true;
     public bool inEndingMode = true;
 
@@ -65,6 +67,7 @@ public class PageBookAutoTurn : MonoBehaviour
     private bool _firstPage = true;
     private bool _done;
     private bool _cardPlaying, _cardDone;   // ★1021 結局插卡
+    private int _inactiveLogIndex = -1;
 
     private Canvas _canvas;
     private RectTransform _holder;
@@ -99,10 +102,21 @@ public class PageBookAutoTurn : MonoBehaviour
         _book = GetComponent<PageBook>();
         _credits = GetComponent<EndCredits>();
         if (_credits == null) _credits = Object.FindAnyObjectByType<EndCredits>();
+        if (_book != null) _book.OnTurnStarted += OnTurnStarted;
+    }
+
+    private float _turnStart = -1f;
+    private int _turnDir;
+
+    private void OnTurnStarted(int dir)
+    {
+        _turnStart = Time.unscaledTime;
+        _turnDir = dir;
     }
 
     private void OnDestroy()
     {
+        if (_book != null) _book.OnTurnStarted -= OnTurnStarted;
         if (_canvas != null) Destroy(_canvas.gameObject);
     }
 
@@ -120,7 +134,16 @@ public class PageBookAutoTurn : MonoBehaviour
         bool last = active && IsLastPage(chapter);
         if (active && ending && last) active = false;   // 結局最後一頁交給 EndCredits
 
-        if (!active) { SetVisible(false); return; }
+        if (!active)
+        {
+            if (_book != null && _book.Index != _inactiveLogIndex && (chapter || ending))
+            {
+                _inactiveLogIndex = _book.Index;
+                Debug.Log($"【漫畫倒數】第 {_book.Index + 1} 頁不倒數：Enabled={Enabled}、已完成={_done}、章節模式={chapter}、結局模式={ending}、名單捲動中={(_credits != null && _credits.IsRolling)}、結局最後一頁={(ending && last)}");
+            }
+            SetVisible(false);
+            return;
+        }
 
         EnsureBuilt();
 
@@ -140,6 +163,7 @@ public class PageBookAutoTurn : MonoBehaviour
             _total = behind ? Mathf.Max(1f, catchUpSecondsPerPage) : Mathf.Max(1f, secondsPerPage + (_firstPage ? firstPageExtraSeconds : 0f));
             _remain = _total;
             _shownFor = 0f;
+            Debug.Log($"【漫畫倒數】第 {_book.Index + 1} 頁：倒數 {_total:F0} 秒（timeScale={Time.timeScale}、章節模式={chapter}、結局模式={ending}、最後一頁={last}）");
             // ★1021 結局插卡：翻離第 070 頁那一刻（手翻或自動翻都算），先播「那是我的形狀」再看 071
             if (ending && !_cardDone && endingCardAfterIndex >= 0 && prev == endingCardAfterIndex && _book.Index == endingCardAfterIndex + 1)
             {
@@ -150,10 +174,30 @@ public class PageBookAutoTurn : MonoBehaviour
         }
 
         // 翻頁中、拖曳中：不算時間，圈先收起來
-        if (_book.IsBusy) { SetVisible(false); _shownFor = 0f; return; }
+        if (_book.IsBusy)
+        {
+            _shownFor = 0f;
+            // ★1021 往後翻到一定程度，就先把「下一頁」的倒數圈亮出來（滿的、還沒開始倒）：翻完立刻接著倒數，不用等翻完才冒出來
+            bool nextIsLast = IsLastIndex(_book.Index + 1, chapter);
+            bool showEarly = _turnDir > 0 && _turnStart >= 0f
+                             && Time.unscaledTime - _turnStart >= _book.turnSeconds * showRingAtTurnProgress
+                             && !(ending && nextIsLast);
+            if (showEarly)
+            {
+                Layout(chapter && nextIsLast);
+                _ring.fillAmount = 1f;
+                string t = Mathf.CeilToInt(Mathf.Max(1f, secondsPerPage)).ToString();
+                if (_sec.text != t) { _sec.text = t; _secShadow.text = t; }
+                SetVisible(true);
+            }
+            else SetVisible(false);
+            return;
+        }
 
-        // 設定選單打開（時間暫停）時不倒數
-        float dt = Time.timeScale > 0f ? Time.unscaledDeltaTime : 0f;
+        // 設定選單打開（時間暫停）時不倒數。
+        // ★1021 只有「時間暫停、而且設定選單真的開著」才停：轉場、文字卡有時會把 timeScale 留在 0，
+        //   原本一看到 timeScale 是 0 就不倒數，翻了第一頁之後倒數就卡死（只有第一頁有倒數）。
+        float dt = IsPausedBySettings() ? 0f : Time.unscaledDeltaTime;
         _shownFor += dt;
         if (_shownFor >= showDelay) _remain -= dt;
 
@@ -192,9 +236,24 @@ public class PageBookAutoTurn : MonoBehaviour
         _cardPlaying = false;
     }
 
-    private bool IsLastPage(bool chapter)
+    private float _nextPauseCheck;
+    private bool _pausedCached;
+
+    private bool IsPausedBySettings()
     {
-        int i = _book.Index;
+        if (Time.timeScale > 0f) return false;
+        if (Time.unscaledTime >= _nextPauseCheck)
+        {
+            _nextPauseCheck = Time.unscaledTime + 0.25f;
+            _pausedCached = Object.FindAnyObjectByType<SettingsPopupOverlayPresenter>() != null;   // 只找啟用中的＝選單開著
+        }
+        return _pausedCached;
+    }
+
+    private bool IsLastPage(bool chapter) { return IsLastIndex(_book.Index, chapter); }
+
+    private bool IsLastIndex(int i, bool chapter)
+    {
         if (chapter && BookTransitionManager.chapterEndPage >= 0 && i >= BookTransitionManager.chapterEndPage) return true;
         return i >= _book.PageCount - 1;
     }

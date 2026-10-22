@@ -165,6 +165,7 @@ public class BookAudio : MonoBehaviour
         }
 
         float vol = (curChapter >= 0 && curChapter < chapters.Length) ? chapters[curChapter].volume : 0.7f;
+        vol *= AudioManager.BgmVolume;   // ★1022 跟主介面／遊戲內的 BGM 音量滑桿連動
         if (fade < 1f)
         {
             cur.volume = (1f - fade) * vol * duckMul;

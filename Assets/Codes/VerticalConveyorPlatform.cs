@@ -42,6 +42,15 @@ public class VerticalConveyorPlatform : MonoBehaviour
     [Tooltip("移動方向 (預設：由上往下 TopToBottom)")]
     private MoveDirection direction = MoveDirection.TopToBottom;
 
+    [Header("★1021 拉長行程（試玩回饋：平台生成時玩家看得到、而且玩家會被載到死亡區）")]
+    [SerializeField]
+    [Tooltip("生成點再往上抬幾米，讓平台出現在畫面外（鏡頭半高約 13.5，要比玩家站的最高處再高過半個畫面）。0＝照場景原本的 Top Y。")]
+    private float extraRiseAtTop = 45f;
+
+    [SerializeField]
+    [Tooltip("消失點至少比原本的 Bottom Y 再低幾米（要低過底下的死亡區，平台才是在黑暗裡消失）。實際行程會湊成「平台間距的整數倍」，循環才不會出現不等距的縫。")]
+    private float extraDropAtBottom = 40f;
+
     [Header("移動速度")]
     [SerializeField]
     [Tooltip("平台移動速度 (單位：單位/秒)")]
@@ -105,6 +114,14 @@ public class VerticalConveyorPlatform : MonoBehaviour
         // 若開啟自動生成多個平台，且非克隆生成過程中
         if (autoGenerateClonePlatforms && !_isGeneratingClones && spawnedPlatforms.Count == 0)
         {
+            // ★1021 拉長行程：頂端往上抬、底端往下延，行程湊成間距的整數倍（只有原件做，複製品會照抄這組數字）
+            if (TryGetExtendedRange(out float newTop, out float newBottom, out int cells))
+            {
+                topY = newTop;
+                bottomY = newBottom;
+                totalPlatformCount = cells;
+                Debug.Log($"【垂直輸送帶】{name}：行程拉長為 Top {topY:F1} ～ Bottom {bottomY:F1}（{cells} 格 × {spacingY:F2}）");
+            }
             GeneratePlatforms();
         }
         else
@@ -136,13 +153,17 @@ public class VerticalConveyorPlatform : MonoBehaviour
             autoGenerateClonePlatforms = false;
 
         float totalSpan = Mathf.Abs(topY - bottomY);
-        int autoCalculatedCount = (spacingY > 0) ? Mathf.CeilToInt(totalSpan / spacingY) : 1;
-        
+        int autoCalculatedCount = (spacingY > 0) ? Mathf.Max(1, Mathf.RoundToInt(totalSpan / spacingY)) : 1;
+
         // 自動補充足夠的平台數量
         if (totalPlatformCount < autoCalculatedCount)
         {
             totalPlatformCount = autoCalculatedCount;
         }
+
+        // 平台到底部會瞬移回頂部（循環長度 = totalSpan），
+        // 所以間距必須剛好把 totalSpan 平分，否則接縫處兩個平台會擠在一起。
+        spacingY = totalSpan / totalPlatformCount;
 
         float startY = (direction == MoveDirection.TopToBottom) ? topY : bottomY;
         float step = (direction == MoveDirection.TopToBottom) ? -spacingY : spacingY;
@@ -303,12 +324,29 @@ public class VerticalConveyorPlatform : MonoBehaviour
 
     // --- Gizmos 繪製 ---
 
+    /// <summary>★1021 算出拉長後的行程（Top 往上抬、Bottom 往下延，行程湊成間距的整數倍）。沒有要拉長就回傳 false。</summary>
+    private bool TryGetExtendedRange(out float newTop, out float newBottom, out int cells)
+    {
+        newTop = topY; newBottom = bottomY; cells = 0;
+        if (spacingY <= 0f || (extraRiseAtTop <= 0f && extraDropAtBottom <= 0f)) return false;
+        newTop = topY + Mathf.Max(0f, extraRiseAtTop);
+        cells = Mathf.CeilToInt((newTop - (bottomY - Mathf.Max(0f, extraDropAtBottom))) / spacingY);
+        newBottom = newTop - cells * spacingY;
+        return true;
+    }
+
     private void OnDrawGizmos()
     {
         if (!drawGizmos) return;
 
-        Vector3 topPos = new Vector3(fixedX, topY, fixedZ);
-        Vector3 bottomPos = new Vector3(fixedX, bottomY, fixedZ);
+        // ★1021 編輯模式（還沒按 Play）也畫「拉長後」的範圍，跟實際玩的時候一樣長；玩的時候 topY／bottomY 已經是拉長後的值
+        float gTop = topY, gBottom = bottomY;
+        if (!Application.isPlaying && autoGenerateClonePlatforms && TryGetExtendedRange(out float eTop, out float eBottom, out int eCells))
+        {
+            gTop = eTop; gBottom = eBottom;
+        }
+        Vector3 topPos = new Vector3(transform.position.x, gTop, fixedZ);
+        Vector3 bottomPos = new Vector3(transform.position.x, gBottom, fixedZ);
 
         // 繪製移動路線
         Gizmos.color = Color.yellow;
@@ -327,12 +365,12 @@ public class VerticalConveyorPlatform : MonoBehaviour
         if (spacingY > 0)
         {
             Gizmos.color = spacingGizmoColor;
-            float totalSpan = Mathf.Abs(topY - bottomY);
+            float totalSpan = Mathf.Abs(gTop - gBottom);
             int count = Mathf.FloorToInt(totalSpan / spacingY);
             for (int i = 1; i < count; i++)
             {
-                float y = (direction == MoveDirection.TopToBottom) ? topY - (spacingY * i) : bottomY + (spacingY * i);
-                Gizmos.DrawWireSphere(new Vector3(fixedX, y, fixedZ), 0.2f);
+                float y = (direction == MoveDirection.TopToBottom) ? gTop - (spacingY * i) : gBottom + (spacingY * i);
+                Gizmos.DrawWireSphere(new Vector3(transform.position.x, y, fixedZ), 0.2f);
             }
         }
     }

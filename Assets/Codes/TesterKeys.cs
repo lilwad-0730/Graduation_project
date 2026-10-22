@@ -16,6 +16,8 @@ using UnityEngine.SceneManagement;
 ///     第一次（還不在廢墟）：傳到廢墟落地的地方（P12 左邊），照正常流程翻開命運之書、光球在 P12；
 ///     第二次（已經在廢墟、巨石還沒放下）：光球放到 P13、她傳到光球旁（碰到就照正常流程放巨石、砸牆、滾到起點）。
 ///   F4（★1017，CottonCastle）：傳到上層城堡跳崖處上方，直接掉進跳崖觸發區（看墜落、落進廢墟那一段）。
+///   F10（★1021，任何場景）：直接跳到「結局漫畫」——跟玻璃館吃完最後一根燭火之後一樣，進 Book 場景翻結尾漫畫，翻完自動捲名單。
+///     用來測結局漫畫的翻頁、倒數圈，不用每次從頭打到玻璃館。
 ///   演出、重生、文字卡期間不傳送。
 /// </summary>
 public class TesterKeys : MonoBehaviour
@@ -39,10 +41,27 @@ public class TesterKeys : MonoBehaviour
         go.AddComponent<TesterKeys>();
     }
 
+    /// <summary>★1021 直接進結局漫畫（做法跟 ShadowMonsterController.PlayEndingRoutine 最後一步相同：EndingMode＝true、載入 Book）。</summary>
+    private static void JumpToEndingComic()
+    {
+        if (!Application.CanStreamedLevelBeLoaded("Book"))
+        {
+            Debug.LogWarning("【測試鍵】F10：Build Settings 裡找不到 Book 場景，沒辦法進結局漫畫");
+            return;
+        }
+        Debug.Log("【測試鍵】F10：直接進結局漫畫");
+        Time.timeScale = 1f;
+        BookTransitionManager.isChapterMode = false;
+        EndCredits.EndingMode = true;
+        SceneManager.LoadScene("Book");
+    }
+
     private PlayerMovement _pm;
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.F10)) { JumpToEndingComic(); return; }
+
         bool next = Input.GetKeyDown(KeyCode.F8);
         bool prev = Input.GetKeyDown(KeyCode.F7);
         bool rock = Input.GetKeyDown(KeyCode.F9);
@@ -69,7 +88,7 @@ public class TesterKeys : MonoBehaviour
 
         if (ruins)
         {
-            if (!sceneName.Contains("samplescene")) { Debug.Log("【測試鍵】F5 只在 SampleScene（墜落＋廢墟）有用；在 CottonCastle 請用 F4 跳崖，會換場景到 SampleScene"); return; }
+            if (!sceneName.Contains("samplescene") && !sceneName.Contains("ruined")) { Debug.Log("【測試鍵】F5 只在 SampleScene（墜落＋廢墟）有用；在 CottonCastle 請用 F4 跳崖，會換場景到 SampleScene"); return; }
             // ★1017 第一次：還不在廢墟 → 傳到廢墟落地的地方（進廢墟時會把光球重置到 P12、翻開命運之書，照正常流程）
             if (p.y > -60f)
             {

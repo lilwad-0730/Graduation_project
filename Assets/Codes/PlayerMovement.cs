@@ -539,6 +539,12 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("每按一下往上鍵 (W / Space / ↑) 往上升的高度 (單位)。按住不會持續上升，要再按一次才會再划一下；兩次划水的最短間隔見 Swim Cooldown")]
     public float swimStrokeHeight = 1.6f;
 
+    [Tooltip("★1021 蛙式：每划一下「蹬腿推水」加速到最高速要多久 (秒)。越長越慢慢起步")]
+    public float swimStrokePushTime = 0.45f;
+
+    [Tooltip("★1021 蛙式：推完之後滑行的水阻減速度 (單位/秒²)。越小滑越久、速度越柔和；最高速會自動算，讓每划一下仍升 Swim Stroke Height")]
+    public float swimStrokeGlideDecel = 2.5f;
+
     [Tooltip("每划一下消耗的隱形體力 (秒，體力上限見 Max Swim Stamina)")]
     public float swimStrokeStaminaCost = 0.4f;
 
@@ -556,6 +562,9 @@ public class PlayerMovement : MonoBehaviour
     public float underwaterDiveAccel = 12f;
 
     private bool _swimStrokeQueued;
+    private float _strokePushStart = -99f;   // ★1021 蛙式推水開始時間 (fixedTime)
+    private float _strokePushFromVy;         // 推水開始時的垂直速度
+    private float _strokePeakVy;             // 這一划的最高上升速度
     private float _lastSwimWantTime = -99f;
     private bool _swimHoldBlocked;   // 按住划水到力竭後，要放開往上鍵才會恢復按住連划
 
@@ -2279,9 +2288,9 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 vel = rb.linearVelocity;
 
-            // 水中自然下沉速度上限 (越深越快)
+            // 水中自然下沉速度上限 (越深越快：中性浮力點以下每深 1 米 +2%)
             float effectiveMaxFallSpeed = enableDepthBuoyancyPhysics && (transform.position.y < neutralBuoyancyY)
-                ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.05f)
+                ? underwaterMaxFallSpeed * (1f + (neutralBuoyancyY - transform.position.y) * 0.02f)
                 : underwaterMaxFallSpeed;
 
             // ★1014 S 下潛的目標速度：至少比自然下沉上限快 (原本固定 -4.5，深處反而比不按還慢)
@@ -2289,21 +2298,30 @@ public class PlayerMovement : MonoBehaviour
 
             // 3. 水下游泳：W/Space/↑ 划一下往上升一段 (瑪利歐式)，S/↓ 主動下潛
             bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
-            float riseDecel = underwaterVerticalDrag * 4f;   // 划水上升時的水阻減速度
 
             bool stroke = _swimStrokeQueued;
             _swimStrokeQueued = false;
             if (stroke && !IsControlLocked && !isSwimExhausted && Time.time - lastSwimTime >= swimCooldown)
             {
-                // 依「要升多高」反算初速：上升時受到 水阻減速 + 物理淨重力 (重力扣掉浮力) + 剛體線性阻力 一起減速，
-                // 升到 swimStrokeHeight 剛好停住，之後自然下沉。不論原本下沉多快，划一下都直接改成往上
-                //   等減速 D 加上線性阻力 c·v (取平均 c·v0/2 近似)：v0² = 2h(D + c·v0/2)
-                //   → v0 = (c·h + √(c²h² + 8hD)) / 2
+                // ★1021 蛙式划水：不再瞬間給初速，而是「推水」swimStrokePushTime 秒內平滑加速到最高速，
+                // 之後以 swimStrokeGlideDecel 慢慢滑行減速。最高速由「要升多高」反算：
+                //   推水段 (smoothstep，平均速度 = peak/2)：peak·T/2
+                //   滑行段 (等減速 Dg = 滑行水阻 + 淨重力 + 線性阻力近似 c·peak/2)：peak²/(2Dg)
+                //   peak²/(2Dg) + peak·T/2 = h → peak = Dg·(√(T²/4 + 2h/Dg) − T/2)
                 float netGravity = Mathf.Max(0f, gravityMagnitude - finalCounterForce / rb.mass);
                 float h = Mathf.Max(0f, swimStrokeHeight);
                 float c = rb.linearDamping;
-                float D = riseDecel + netGravity;
-                vel.y = (c * h + Mathf.Sqrt(c * c * h * h + 8f * h * D)) * 0.5f;
+                float T = Mathf.Max(0f, swimStrokePushTime);
+                float peak = 2f;
+                for (int i = 0; i < 3; i++)
+                {
+                    float Dg = Mathf.Max(0.1f, swimStrokeGlideDecel + netGravity + c * peak * 0.5f);
+                    peak = Dg * (Mathf.Sqrt(T * T * 0.25f + 2f * h / Dg) - T * 0.5f);
+                }
+                _strokePeakVy = peak;
+                _strokePushFromVy = vel.y;
+                _strokePushStart = Time.fixedTime;
+                if (T <= 0f) vel.y = peak;
                 lastSwimTime = Time.time;
                 isSwimming = true;
 
@@ -2317,15 +2335,25 @@ public class PlayerMovement : MonoBehaviour
                     Debug.Log("【水下體力機制】連續划水體力耗盡，暫時無法往上划！");
                 }
             }
-            else if (isPressingSwimDown)
+            float pushT = swimStrokePushTime > 0f ? (Time.fixedTime - _strokePushStart) / swimStrokePushTime : 1f;
+            bool inStrokePush = pushT >= 0f && pushT < 1f;
+
+            if (isPressingSwimDown)
             {
-                // 按住 S / 下方向鍵 主動下潛
+                // 按住 S / 下方向鍵 主動下潛 (會中斷正在推水的那一划)
+                _strokePushStart = -99f;
                 vel.y = Mathf.MoveTowards(vel.y, diveTargetSpeed, Time.fixedDeltaTime * underwaterDiveAccel);
+            }
+            else if (inStrokePush)
+            {
+                // ★1021 蛙式推水：從划水當下的速度平滑加速到這一划的最高速 (原本往下沉也會先慢下來再往上)
+                float e = pushT * pushT * (3f - 2f * pushT);
+                vel.y = Mathf.Lerp(_strokePushFromVy, _strokePeakVy, e);
             }
             else if (vel.y > 0f)
             {
-                // 划水後的上升：水阻減速，到頂點後順應水中重力自然下沉
-                vel.y = Mathf.MoveTowards(vel.y, 0f, riseDecel * Time.fixedDeltaTime);
+                // 划水後的滑行：較柔和的水阻減速，到頂點後順應水中重力自然下沉
+                vel.y = Mathf.MoveTowards(vel.y, 0f, swimStrokeGlideDecel * Time.fixedDeltaTime);
             }
 
             // ★ 水下穿模修正：

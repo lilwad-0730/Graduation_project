@@ -160,6 +160,14 @@ public class BubbleClusterFx : MonoBehaviour
             Material matInst = new Material(bubbleMaterial);
             mr.sharedMaterial = matInst;
 
+            // ★1021 泡泡每次 OnEnable 都會重新生成，不需要存進場景。
+            // 以前會被存檔，加上編譯/重載時舊的來不及刪，場景裡的泡泡（和每顆的材質）會一直倍增。
+            if (!Application.isPlaying)
+            {
+                bubbleGO.hideFlags = HideFlags.DontSave;
+                matInst.hideFlags = HideFlags.DontSave;
+            }
+
             int depthLayer = i % 3; 
             float scale, alpha, zOffset, swayAmp;
             int vCycles, swayFreq;
@@ -219,6 +227,11 @@ public class BubbleClusterFx : MonoBehaviour
 
     void Update()
     {
+#if UNITY_EDITOR
+        // ★1021 編輯模式：OnEnable 排程刪除舊泡泡的 delayCall 在場景重載時常常不會執行，
+        // 舊泡泡就一直留著（還被存進場景）。這裡把「不是這次生成的」子物件清掉。
+        if (!Application.isPlaying && transform.childCount != _bubbles.Count) RemoveUntrackedChildren();
+#endif
         if (pauseAnimation) return;
 
         if (_bubbles == null || _bubbles.Count == 0) return;
@@ -280,6 +293,39 @@ public class BubbleClusterFx : MonoBehaviour
 
         UpdateBubbleAudio();
     }
+
+#if UNITY_EDITOR
+    private void RemoveUntrackedChildren()
+    {
+        var tracked = new HashSet<GameObject>();
+        foreach (var b in _bubbles) if (b.gameObject != null) tracked.Add(b.gameObject);
+        bool removed = false;
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject c = transform.GetChild(i).gameObject;
+            if (tracked.Contains(c)) continue;
+            MeshRenderer mr = c.GetComponent<MeshRenderer>();
+            if (mr != null && mr.sharedMaterial != null && mr.sharedMaterial != bubbleMaterial) DestroyImmediate(mr.sharedMaterial);
+            DestroyImmediate(c);
+            removed = true;
+        }
+        if (removed && gameObject.scene.IsValid()) UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+    }
+
+    [UnityEditor.MenuItem("Tools/泡泡/清掉場景裡重複的泡泡")]
+    private static void CleanAllClusters()
+    {
+        if (Application.isPlaying) return;
+        int before = 0, after = 0;
+        foreach (BubbleClusterFx fx in FindObjectsByType<BubbleClusterFx>(FindObjectsInactive.Include))
+        {
+            before += fx.transform.childCount;
+            fx.RemoveUntrackedChildren();
+            after += fx.transform.childCount;
+        }
+        Debug.Log("【泡泡】清掉重複泡泡：" + before + " → " + after + "。記得存檔 (Ctrl+S)。");
+    }
+#endif
 
     private void Start()
     {

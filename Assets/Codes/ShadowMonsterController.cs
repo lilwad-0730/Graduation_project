@@ -309,6 +309,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     // ──────────── 內部狀態 ────────────
     private int _candlesCollected = 0;
+
+    [Header("★1021 沒點燃的燭火（漏掉）")]
+    [Tooltip("怪物走過最後一根燭火、但燭火數量沒湊齊（有漏點）時，過了這麼多秒玩家還沒被抓到，就強制讓怪物抓人、重生。")]
+    public float doomedRespawnSeconds = 15f;
+    private bool _doomed = false;
+    private Coroutine _doomRoutine;
+
+    /// <summary>★1021 現在有幾根燭火「漏掉」（直接數燭火的狀態，重生時燭火一刷新就自動重算，不另存計數）。</summary>
+    private int MissedCount()
+    {
+        int n = 0;
+        if (candles != null) foreach (var c in candles) if (c != null && c.missed) n++;
+        return n;
+    }
     private int _totalCandles = 0;
     private CandleCollectible _lastCandleByX;
 
@@ -871,6 +885,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     }
 
     /// <summary>★1016 追逐中她站上中途存檔點 → 更新重生點。</summary>
+    private bool CandlesBeforeAreLitOrCollected(float x)
+    {
+        if (candles == null) return true;
+        foreach (var c in candles)
+        {
+            if (c == null || c.transform.position.x >= x) continue;
+            if (c.isCollected) continue;
+            if (!c.missed && c.IsLitByPlayer) continue;
+            return false;
+        }
+        return true;
+    }
+
     private void UpdateChaseCheckpoints()
     {
         if (!useChaseCheckpoints || chaseCheckpoints == null || chaseCheckpoints.Length == 0) return;
@@ -882,6 +909,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         for (int i = chaseCheckpoints.Length - 1; i > _chaseCheckpointIndex; i--)
         {
             if (px < chaseCheckpoints[i].x) continue;
+            // ★1021 存檔點前面的燭火都要「已點燃或已吃」才存。漏點的燭火會擋住後面的存檔點，
+            //   這樣重生一定回到漏點那根的前面、可以重來；不然怪物重生時會把存檔點前的燭火當成吃過（免費算數），或陷入注定失敗的重生迴圈。
+            if (!CandlesBeforeAreLitOrCollected(chaseCheckpoints[i].x)) continue;
             _chaseCheckpointIndex = i;
             Vector3 cp = new Vector3(chaseCheckpoints[i].x, chaseCheckpoints[i].y, 0f);
             PlayerRespawnSystem rs = PlayerRespawnSystem.Instance != null ? PlayerRespawnSystem.Instance : respawnSystem;
@@ -901,6 +931,66 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _progressMaxX = px;
             _lastProgressTime = Time.time;
         }
+    }
+
+    /// <summary>★1021 怪物經過一根玩家沒點燃的燭火：不受傷、不縮小、不計數。走過最後一根（吃到或漏掉都算）而數量沒湊齊，就進懲罰＋15 秒倒數。</summary>
+    public void OnCandleMissed(CandleCollectible candle)
+    {
+        if (currentState != MonsterState.Chasing && currentState != MonsterState.Appearing && currentState != MonsterState.Punishing)
+        {
+            Debug.Log($"【影子怪物】非追逐狀態（{currentState}），燭火漏掉不處理。");
+            return;
+        }
+        Debug.Log($"【影子怪物】漏掉燭火 {candle.gameObject.name}（漏 {MissedCount()} 根、已吃 {_candlesCollected}/{_totalCandles}）：不受傷、不計數");
+        if (candle == _lastCandleByX)
+        {
+            Debug.Log("【影子怪物】走過最後一根燭火但數量沒湊齊！觸發懲罰！");
+            TriggerPunishment();
+            EnterDoom();
+        }
+    }
+
+    /// <summary>★1021 這一輪注定通不了關：開始 doomedRespawnSeconds 倒數，時間到就直接抓人重生。</summary>
+    private void EnterDoom()
+    {
+        if (_doomed) return;
+        _doomed = true;
+        _finaleDash = false;     // 注定失敗的不要進「只嚇人不攻擊」的最後衝刺
+        if (_doomRoutine != null) StopCoroutine(_doomRoutine);
+        _doomRoutine = StartCoroutine(DoomRoutine());
+        Debug.Log($"【影子怪物】★1021 這一輪通不了關：{doomedRespawnSeconds:F0} 秒內沒被抓到也會強制重生");
+    }
+
+    private IEnumerator DoomRoutine()
+    {
+        float t = 0f;
+        while (t < Mathf.Max(1f, doomedRespawnSeconds))
+        {
+            // 被抓、重生流程進行中就不用倒數了（重生會呼叫 ResetToInitialState，連這個協程一起停掉）
+            if (currentState == MonsterState.Dormant || currentState == MonsterState.Devouring) { _doomRoutine = null; yield break; }
+            t += Time.deltaTime;
+            yield return null;
+        }
+        _doomRoutine = null;
+        if (currentState == MonsterState.Dormant || currentState == MonsterState.Devouring) yield break;
+
+        Debug.Log("【影子怪物】★1021 倒數結束，強制抓人重生");
+        currentState = MonsterState.Devouring;
+        StopChaseBGM(true);
+        if (_pm != null)
+        {
+            _pm.isCutsceneFrozen = true;
+            Rigidbody prb = _pm.GetComponent<Rigidbody>();
+            if (prb != null) prb.linearVelocity = Vector3.zero;
+        }
+        if (ScreenFeedbackManager.Instance != null) ScreenFeedbackManager.Instance.TriggerHitFeedback();
+        yield return new WaitForSeconds(0.85f);
+
+        PlayerRespawnSystem rs = PlayerRespawnSystem.Instance != null ? PlayerRespawnSystem.Instance : respawnSystem;
+        if (rs != null) rs.TriggerRespawn();
+        if (_pm != null) _pm.isCutsceneFrozen = false;
+        yield return new WaitForSecondsRealtime(1.5f);
+        ResetToInitialState();
     }
 
     public void OnCandleCollected(CandleCollectible candle)
@@ -924,6 +1014,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             Debug.Log("【影子怪物】吃到最後一根燭火但未全部收集！觸發懲罰！");
             TriggerPunishment();
+            EnterDoom();
             return;
         }
 
@@ -987,6 +1078,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     // ──────────────────────────────────────────────────────────────────────────
 
     /// <summary> 登場：保持尺寸漸漸顯示 (Alpha Fade)，不從小放大 </summary>
+    // ★1021 遠處的吼聲：怪物登場時「先吼、再移鏡頭」。吼聲在登場一開始就播，運鏡版再多等 farRoarLeadSeconds 秒才把鏡頭飛向怪物。
+    [Header("★1021 登場前的遠吼")]
+    [Tooltip("登場一開始先播一聲遠處的吼（Resources/Sfx/Glass_MonsterFarRoar，原檔：玻璃館_怪物吼叫_02.wav）。")]
+    public bool playFarRoar = true;
+    [Range(0f, 1f), Tooltip("遠吼音量（小聲＝像從很遠的地方傳來）。")]
+    public float farRoarVolume = 0.3f;
+    [Tooltip("吼完再等幾秒才移動鏡頭到怪物身上（只有第一次的運鏡版會等）。")]
+    public float farRoarLeadSeconds = 0.5f;
+    private static AudioClip _farRoarClip;
+
+    private void PlayFarRoar()
+    {
+        if (!playFarRoar) return;
+        if (_farRoarClip == null) _farRoarClip = Resources.Load<AudioClip>("Sfx/Glass_MonsterFarRoar");
+        if (_farRoarClip == null) { Debug.LogWarning("【影子怪物】找不到 Resources/Sfx/Glass_MonsterFarRoar，遠吼沒播。"); return; }
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(_farRoarClip, farRoarVolume);
+        else AudioSource.PlayClipAtPoint(_farRoarClip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(farRoarVolume));
+    }
+
     private IEnumerator AppearSequence()
     {
         currentState = MonsterState.Appearing;
@@ -1011,6 +1121,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   死亡重生後往前走不到一個單位就會再踩到，每次都重演六秒、期間完全不能動——
         //   玩家會覺得「重生後不能跳」。第二次以後直接用原本的原地淡入。
         bool doReveal = useRevealCutscene && player != null && !(revealOnlyOnce && _revealPlayed);
+        PlayFarRoar();     // ★1021 先吼（運鏡版接著在 RevealCutsceneRoutine 裡等一下才移鏡頭）
         if (doReveal)
         {
             _revealPlayed = true;
@@ -1071,6 +1182,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             Rigidbody prb = _pm.GetComponent<Rigidbody>();
             if (prb != null) prb.linearVelocity = new Vector3(0f, prb.linearVelocity.y, 0f);
         }
+
+        // ★1021 先吼、再移鏡頭：玩家已凍住、吼聲已經響了，停一下才開始運鏡
+        if (playFarRoar && farRoarLeadSeconds > 0f) yield return new WaitForSeconds(farRoarLeadSeconds);
 
         // 2) 先量出怪物的視覺範圍。
         //    ★不能用 Renderer.bounds：這時候 SetVisualAlpha(0) 已經把所有 Renderer 關掉，
@@ -1584,7 +1698,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             Debug.Log("💨【影子怪物】巨爪揮空 (主角已及時逃出範圍)，攻擊結束後繼續追擊！");
             yield return new WaitForSeconds(0.85f);
-            currentState = MonsterState.Chasing;
+            currentState = _doomed ? MonsterState.Punishing : MonsterState.Chasing;   // ★1021 注定失敗的，抓空後維持懲罰追擊
         }
     }
 
@@ -1699,6 +1813,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (_revealActive || player == null || candles == null || _totalCandles <= 0) return;
         if (_candlesCollected != _totalCandles - 1) return;
+        if (_doomed || MissedCount() > 0) return;   // ★1021 有漏點的燭火：不進「只嚇人不攻擊」的最後衝刺
 
         CandleCollectible remaining = null;
         foreach (var c in candles)
@@ -2251,6 +2366,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         currentState = MonsterState.Dormant;
         _candlesCollected = 0;
+        _doomed = false;          // ★1021 倒數與注定失敗的標記一起清掉（漏掉的燭火在下面 ResetToInitialState 時刷新，數量自動重算）
+        _doomRoutine = null;
         _currentScaleMultiplier = 1f;
         _smoothedChaseSpeed = -1f;
 
