@@ -288,7 +288,7 @@ public class PageBook : MonoBehaviour
         else
         {
             int backStop = Mathf.Max(0, minPage);
-            if (BookTransitionManager.isChapterMode) backStop = Mathf.Max(backStop, BookTransitionManager.chapterStartPage);
+            if (BookTransitionManager.isChapterMode && !BookTransitionManager.allowFlipBackBeforeChapter) backStop = Mathf.Max(backStop, BookTransitionManager.chapterStartPage);   // ★1021 允許往回翻時不擋
             if (index <= backStop) return false;   // 結局／章節轉場：最多翻回本段第一頁
             toIdx = index - 1;
             SetTex(curlMat, Page(toIdx));
@@ -318,7 +318,7 @@ public class PageBook : MonoBehaviour
     public void GoTo(int i, bool animate = false)
     {
         int lowest = Mathf.Max(0, minPage);
-        if (BookTransitionManager.isChapterMode) lowest = Mathf.Max(lowest, BookTransitionManager.chapterStartPage);
+        if (BookTransitionManager.isChapterMode && !BookTransitionManager.allowFlipBackBeforeChapter) lowest = Mathf.Max(lowest, BookTransitionManager.chapterStartPage);   // ★1021
         i = Mathf.Clamp(i, lowest, Mathf.Max(0, PageCount - 1));   // Home 在結局／章節模式只回到本段第一頁
         if (i == index) return;
         if (animate) { if (i > index) Next(); else Prev(); return; }

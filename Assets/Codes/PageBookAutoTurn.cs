@@ -1,3 +1,4 @@
+using System.Collections;   // ★1021 結局插卡的協程
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -26,13 +27,25 @@ public class PageBookAutoTurn : MonoBehaviour
 
     [Header("倒數")]
     [Tooltip("每一頁停幾秒後自動翻")]
-    public float secondsPerPage = 7f;
+    public float secondsPerPage = 5f;      // ★1021 7 → 5（43 章）
     [Tooltip("一打開的第一頁多停幾秒（玩家要先弄懂這是什麼）")]
-    public float firstPageExtraSeconds = 3f;
+    public float firstPageExtraSeconds = 2f;   // ★1021 3 → 2
     [Tooltip("翻到新的一頁後，過多久才出現倒數圈（先讓人看畫）")]
     public float showDelay = 0.6f;
     public bool inChapterMode = true;
     public bool inEndingMode = true;
+
+    [Header("結局插卡（★1021 M：E1 拆兩張）")]
+    [Tooltip("結局繪本翻離這一頁（0 起算；69＝第 070 頁「光做的孩子」）之後、看下一頁之前，先播一張黑幕卡；-1＝不插")]
+    public int endingCardAfterIndex = 69;
+    [Tooltip("要插的卡（StoryCardPlayer 的 id）。E1a＝「那是我的形狀」；E1 剩下標題頁「我　你　他」，仍由 EndCredits 在名單前播")]
+    public string endingCardId = "E1a";
+
+    [Header("往回翻（★1021 M：隨著玩家推進，繪本緊隨開放）")]
+    [Tooltip("掉落漫畫、結局繪本可以往回翻到第 1 頁（玩過的章節都開著）；往前仍只到本段最後一頁")]
+    public bool allowFlipBackToStart = true;
+    [Tooltip("翻回到本段之前的頁時，自動翻頁改用這個秒數追回來")]
+    public float catchUpSecondsPerPage = 2.5f;
 
     [Header("提示")]
     public string hintText = "→　翻頁";
@@ -51,6 +64,7 @@ public class PageBookAutoTurn : MonoBehaviour
     private int _lastIndex = -1;
     private bool _firstPage = true;
     private bool _done;
+    private bool _cardPlaying, _cardDone;   // ★1021 結局插卡
 
     private Canvas _canvas;
     private RectTransform _holder;
@@ -110,13 +124,29 @@ public class PageBookAutoTurn : MonoBehaviour
 
         EnsureBuilt();
 
+        // ★1021 往回翻：章節模式由 PageBook 讀這個旗標；結局模式 EndCredits 把 minPage 設成結局第一頁，這裡放開
+        BookTransitionManager.allowFlipBackBeforeChapter = allowFlipBackToStart;
+        if (allowFlipBackToStart && ending && _book.minPage != 0) _book.minPage = 0;
+
+        if (_cardPlaying) { SetVisible(false); return; }   // ★1021 卡播的時候不倒數
+
         if (_book.Index != _lastIndex)
         {
+            int prev = _lastIndex;
             _firstPage = _lastIndex < 0;
             _lastIndex = _book.Index;
-            _total = Mathf.Max(1f, secondsPerPage + (_firstPage ? firstPageExtraSeconds : 0f));
+            int segStart = chapter ? BookTransitionManager.chapterStartPage : (_credits != null ? _credits.endingStartPage : 0);
+            bool behind = allowFlipBackToStart && _book.Index < segStart;   // 翻回本段之前：用追回來的秒數
+            _total = behind ? Mathf.Max(1f, catchUpSecondsPerPage) : Mathf.Max(1f, secondsPerPage + (_firstPage ? firstPageExtraSeconds : 0f));
             _remain = _total;
             _shownFor = 0f;
+            // ★1021 結局插卡：翻離第 070 頁那一刻（手翻或自動翻都算），先播「那是我的形狀」再看 071
+            if (ending && !_cardDone && endingCardAfterIndex >= 0 && prev == endingCardAfterIndex && _book.Index == endingCardAfterIndex + 1)
+            {
+                StartCoroutine(PlayEndingCard());
+                SetVisible(false);
+                return;
+            }
         }
 
         // 翻頁中、拖曳中：不算時間，圈先收起來
@@ -142,6 +172,24 @@ public class PageBookAutoTurn : MonoBehaviour
         _ring.fillAmount = fill;
         string s = Mathf.CeilToInt(_remain).ToString();
         if (_sec.text != s) { _sec.text = s; _secShadow.text = s; }
+    }
+
+    // ★1021 結局插卡
+    private IEnumerator PlayEndingCard()
+    {
+        _cardPlaying = true; _cardDone = true;
+        StoryCardPlayer scp = StoryCardPlayer.Instance;
+        bool wasEnabled = _book.enabled;
+        _book.enabled = false;   // 卡播的時候不吃翻頁的按鍵、滑鼠
+        if (scp != null && scp.HasCard(endingCardId))
+        {
+            scp.SetSortingOrder(10001);   // 跟 EndCredits 一樣，蓋過名單與這裡的倒數圈
+            yield return scp.Play(endingCardId);   // 自己淡入黑幕、播完淡出，底下就是下一頁
+        }
+        else Debug.LogWarning("[PageBookAutoTurn] 找不到結局插卡 " + endingCardId + "，略過");
+        _book.enabled = wasEnabled;
+        _remain = _total; _shownFor = 0f;
+        _cardPlaying = false;
     }
 
     private bool IsLastPage(bool chapter)

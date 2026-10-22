@@ -29,7 +29,7 @@ public class OpeningSequence : MonoBehaviour
         "Intro/序-2",       // 同一個房間，牆上她的影子比她大（「他」第一次出現，只是影子）
         "Intro/序-3",       // 她推開門，門外不是走廊，是雲
         "Pages/002_棉-1",   // 雲海上遠望白城：她要去一個好的地方
-        "Pages/004_棉-2",   // 提著光往前走：走了很久
+        // ★1021 拿掉 004（提著光往前走）：下一秒就在棉花堡做同一件事，跟第一關重複（43 章）。要加回來，在這裡補一行 "Pages/004_棉-2"。
     };
     public const string GameplaySceneName = "CottonCastle";   // ★1019 棉花堡獨立成自己的場景；SampleScene 現在是墜落＋廢墟
     public const string MenuSceneName = "MainMenuScene";

@@ -15,8 +15,8 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class FateBookState
 {
-    /// <summary>整包開關。</summary>
-    public static bool Enabled = true;
+    /// <summary>整包開關。★1021 M：「先做，但不放入」——命運之書做完放製作名單與展板，遊戲裡關掉；第一次死直接播 D 版（43 章）。要再看，改回 true。</summary>
+    public static bool Enabled = false;
 
     /// <summary>印每一次上墨、翻頁的紀錄到 Console。</summary>
     public static bool LogEvents = true;

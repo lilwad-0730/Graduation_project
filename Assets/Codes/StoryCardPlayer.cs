@@ -1262,10 +1262,15 @@ public class StoryCardPlayer : MonoBehaviour
             "原來\n我也可以求救"
         }));
 
-        // ── E1　結局：翻完結尾漫畫、捲名單之前（v1.0 TXT-07 ＋ 標題卡）──
-        //    人稱階梯收束：只剩「我」→ 三個字分開＝三個都是她。標題卡停 4 秒。
+        // ── E1　結局（v1.0 TXT-07 ＋ 標題卡）──
+        //    ★1021 M：拆成兩張，字一個不動。
+        //    E1a「那是我的形狀」：結局繪本翻離第 070 頁（黑影散成光做的孩子）之後播，「那」才有所指（PageBookAutoTurn.endingCardAfterIndex）。
+        //    E1 只剩標題卡「我　你　他」：翻完結尾漫畫、捲名單之前，由 EndCredits 播（Book 場景的 endingCardId 仍是 E1）。停 4 秒。
+        //    人稱階梯收束：只剩「我」→ 三個字分開＝三個都是她。
+        list.Add(NewCard("E1a", new string[] {
+            "那是我的形狀"
+        }));
         Card ending = NewCard("E1", new string[] {
-            "那是我的形狀",
             "我　你　他"
         });
         ending.minHoldSeconds = 4.0f;
