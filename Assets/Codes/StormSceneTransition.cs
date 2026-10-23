@@ -219,7 +219,7 @@ public class StormSceneTransition : MonoBehaviour
 
         string targetScene = nextSceneName.Trim();
         Debug.Log($"✨【風暴轉場完成】主角抵達風暴核心！載入場景：'{targetScene}'，指定出生點：'{targetSpawnPointName}'");
-        SceneManager.LoadScene(targetScene);
+        SceneLoader.Load(targetScene);
     }
 
     private void CreateFadeImage()

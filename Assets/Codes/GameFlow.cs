@@ -111,7 +111,7 @@ public static class GameFlow
     {
         Log("回主選單：" + reason);
         ResetRunState("離開前清理（" + reason + "）");
-        SceneManager.LoadScene(MenuSceneName);
+        SceneLoader.Load(MenuSceneName);
     }
 
     /// <summary>離開遊戲（編輯器內停止 Play）。</summary>

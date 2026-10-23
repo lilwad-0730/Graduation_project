@@ -1079,7 +1079,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             SceneTransitionController.Instance.TransitionToScene(endingBookScene);
             yield break;
         }
-        UnityEngine.SceneManagement.SceneManager.LoadScene(endingBookScene);
+        SceneLoader.Load(endingBookScene);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
