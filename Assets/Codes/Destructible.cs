@@ -259,10 +259,12 @@ public class Destructible : MonoBehaviour, IResettable
         Vector3 v2 = new Vector3((p2.x - centerUV.x) * bounds.size.x, (p2.y - centerUV.y) * bounds.size.y, 0f);
         Vector3 v3 = new Vector3((p3.x - centerUV.x) * bounds.size.x, (p3.y - centerUV.y) * bounds.size.y, 0f);
 
-        Vector2 uv0 = new Vector2((rect.x + p0.x * rect.width) / texture.width, (rect.y + p0.y * rect.height) / texture.height);
-        Vector2 uv1 = new Vector2((rect.x + p1.x * rect.width) / texture.width, (rect.y + p1.y * rect.height) / texture.height);
-        Vector2 uv2 = new Vector2((rect.x + p2.x * rect.width) / texture.width, (rect.y + p2.y * rect.height) / texture.height);
-        Vector2 uv3 = new Vector2((rect.x + p3.x * rect.width) / texture.width, (rect.y + p3.y * rect.height) / texture.height);
+        // 原本的圖有左右翻面（flipX）時，碎片的貼圖也要跟著翻，不然一碎開圖案會瞬間轉回原方向
+        bool fx = origSr != null && origSr.flipX;
+        Vector2 uv0 = new Vector2((rect.x + (fx ? 1f - p0.x : p0.x) * rect.width) / texture.width, (rect.y + p0.y * rect.height) / texture.height);
+        Vector2 uv1 = new Vector2((rect.x + (fx ? 1f - p1.x : p1.x) * rect.width) / texture.width, (rect.y + p1.y * rect.height) / texture.height);
+        Vector2 uv2 = new Vector2((rect.x + (fx ? 1f - p2.x : p2.x) * rect.width) / texture.width, (rect.y + p2.y * rect.height) / texture.height);
+        Vector2 uv3 = new Vector2((rect.x + (fx ? 1f - p3.x : p3.x) * rect.width) / texture.width, (rect.y + p3.y * rect.height) / texture.height);
 
         Mesh mesh = new Mesh();
         mesh.vertices = new Vector3[] { v0, v1, v2, v3 };

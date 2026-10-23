@@ -212,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
     /// 當前主角是否處於完全鎖定操作狀態
     /// </summary>
     public bool IsControlLocked =>
+        _candleLightLocked ||
         isCutsceneFrozen ||
         freezeHorizontal ||
         IsHardCutsceneLocked;
@@ -237,6 +238,7 @@ public class PlayerMovement : MonoBehaviour
     public float lightTurnDegreesPerSecond = 300f;
     private bool _candleLightAnim = false;
     private bool _candleLightHold = false;
+    private bool _candleLightLocked = false;   // 點燃中鎖住移動，點完或中斷才放開
     private const string LightCandleSpeedParam = "LightCandleSpeed";
 
     [Header("🕯️ 點燃轉向：讓點火的手最靠近燭火")]
@@ -257,6 +259,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>開始播點燃動作（不循環，播完停在最後一格），並轉向燭火。flamePos＝燭火位置。</summary>
     public void BeginCandleLightAnim(float duration, Vector3 flamePos)
     {
+        _candleLightLocked = true;
         if (animator == null) return;
         float dx = flamePos.x - transform.position.x;
         if (Mathf.Abs(dx) > 0.05f) facingDirection = dx > 0f ? Vector3.right : Vector3.left;
@@ -298,6 +301,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>結束點燃動作。holdPose＝true 時停在最後一格，直到玩家移動才回到一般動作。</summary>
     public void EndCandleLightAnim(bool holdPose)
     {
+        _candleLightLocked = false;
         if (!_candleLightAnim) return;
         if (holdPose) _candleLightHold = true;
         else { _candleLightAnim = false; _candleLightHold = false; }
@@ -457,6 +461,10 @@ public class PlayerMovement : MonoBehaviour
     public float swimToTreadBlendSeconds = 0.8f;
     [Tooltip("★1014 水下開始移動：踩水 → 游泳 的淡入淡出時間 (秒)")]
     public float treadToSwimBlendSeconds = 0.3f;
+    [Tooltip("停下來：奔跑 → 站立 的淡入淡出時間 (秒，0＝硬切)。越大收腳越慢越柔")]
+    public float runToIdleBlendSeconds = 0.25f;
+    [Tooltip("起跑：站立 → 奔跑 的淡入淡出時間 (秒，0＝硬切)")]
+    public float idleToRunBlendSeconds = 0.15f;
     private float _fallCandidateTime = 0f;
 
     // 一般（平地）跳躍的滯空時間：用跳躍力、重力、剛體阻力模擬出來，數值沒變就不重算
@@ -1397,13 +1405,16 @@ public class PlayerMovement : MonoBehaviour
                     // ★1011 進出落下動畫用淡入淡出（原本是硬切，姿勢瞬間跳一下，看起來像抽筋）；其他動畫維持原本的直接切換
                     bool involvesFalling = targetAnim == "Falling" || currentAnimState == "Falling";
                     // ★1014 水下 游泳 ↔ 踩水 也用淡入淡出：放開方向鍵時身體從平躺 (~73°) 慢慢抬回直立踩水 (~34°)，不再像兩張 GIF 硬切
-                    float swimBlend = 0f;
-                    if (currentAnimState == "Swimming" && targetAnim == "Treading Water") swimBlend = swimToTreadBlendSeconds;
-                    else if (currentAnimState == "Treading Water" && targetAnim == "Swimming") swimBlend = treadToSwimBlendSeconds;
+                    float blend = 0f;
+                    if (currentAnimState == "Swimming" && targetAnim == "Treading Water") blend = swimToTreadBlendSeconds;
+                    else if (currentAnimState == "Treading Water" && targetAnim == "Swimming") blend = treadToSwimBlendSeconds;
+                    // 奔跑 ↔ 站立 也用淡入淡出，停下來時不會像換圖片一樣瞬間跳成站姿
+                    else if (currentAnimState == "Run" && targetAnim == "Idle") blend = runToIdleBlendSeconds;
+                    else if (currentAnimState == "Idle" && targetAnim == "Run") blend = idleToRunBlendSeconds;
 
-                    if (swimBlend > 0.001f)
+                    if (blend > 0.001f)
                     {
-                        animator.CrossFadeInFixedTime(targetAnim, swimBlend, 0);
+                        animator.CrossFadeInFixedTime(targetAnim, blend, 0);
                     }
                     else if (involvesFalling && fallAnimBlendSeconds > 0.001f)
                     {
