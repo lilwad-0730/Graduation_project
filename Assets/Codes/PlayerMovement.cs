@@ -212,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
     /// 當前主角是否處於完全鎖定操作狀態
     /// </summary>
     public bool IsControlLocked =>
+        _candleLightLocked ||
         isCutsceneFrozen ||
         freezeHorizontal ||
         IsHardCutsceneLocked;
@@ -237,6 +238,7 @@ public class PlayerMovement : MonoBehaviour
     public float lightTurnDegreesPerSecond = 300f;
     private bool _candleLightAnim = false;
     private bool _candleLightHold = false;
+    private bool _candleLightLocked = false;   // 點燃中鎖住移動，點完或中斷才放開
     private const string LightCandleSpeedParam = "LightCandleSpeed";
 
     [Header("🕯️ 點燃轉向：讓點火的手最靠近燭火")]
@@ -257,6 +259,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>開始播點燃動作（不循環，播完停在最後一格），並轉向燭火。flamePos＝燭火位置。</summary>
     public void BeginCandleLightAnim(float duration, Vector3 flamePos)
     {
+        _candleLightLocked = true;
         if (animator == null) return;
         float dx = flamePos.x - transform.position.x;
         if (Mathf.Abs(dx) > 0.05f) facingDirection = dx > 0f ? Vector3.right : Vector3.left;
@@ -298,6 +301,7 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>結束點燃動作。holdPose＝true 時停在最後一格，直到玩家移動才回到一般動作。</summary>
     public void EndCandleLightAnim(bool holdPose)
     {
+        _candleLightLocked = false;
         if (!_candleLightAnim) return;
         if (holdPose) _candleLightHold = true;
         else { _candleLightAnim = false; _candleLightHold = false; }

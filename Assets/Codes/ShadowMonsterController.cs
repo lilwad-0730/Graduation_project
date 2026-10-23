@@ -55,6 +55,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("鏡頭飛去怪物、以及飛回主角，各自等多久（留時間給 Cinemachine 的阻尼追上）")]
     public float revealCameraTravel = 1.2f;
 
+    [Tooltip("鏡頭飛回主角時，畫面中心離主角在這個左右距離內就把控制權還給玩家（不用等滿上面的秒數）")]
+    public float revealReleaseDistance = 1.0f;
+
     [Tooltip("怪物完全浮現之後、開始移動之前的停頓")]
     public float revealHoldBeforeMove = 0.4f;
 
@@ -144,6 +147,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public string hitAnimationName = "gethit3";
     [Tooltip("捕獲玩家攻擊動畫名稱 (預設 attack2)")]
     public string attackAnimationName = "attack2";
+
+    [Tooltip("一般動作之間切換的混合時間 (秒)，0＝直接硬切")]
+    public float animCrossFade = 0.2f;
+    [Tooltip("受擊動作接回走路／跑步的混合時間 (秒)。會提前這麼久開始混合，讓受擊最後幾格和移動動作疊在一起")]
+    public float hitExitCrossFade = 0.45f;
 
     [Header("🎵 怪物追逐專屬背景音樂 (Chase BGM)")]
     [Tooltip("怪物追逐時播放的專屬背景音樂 (例如 玻璃館_追逐_loop.wav 或 EyesInTheVoid.mp3，留空時自動載入 玻璃館_追逐_loop)")]
@@ -330,6 +338,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private Vector3 _baseScale;
     private float _currentScaleMultiplier = 1f;
     private bool _isHitShrinking = false;
+    private float _hitAnimLockUntil = 0f;   // 受擊動畫播完的時間點，之前不切回移動動畫
     private float _chaseTimer = 0f;  // 追逐計時，用於延遲 run2 啟動
 
     // ──────────── 解耦架構 (Decoupled Visual & Gameplay) ────────────
@@ -1236,12 +1245,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         // 6) 鏡頭飛回主角，鏡頭大小同時收回原本的
+        //    ★鏡頭一回到主角身上就先解凍，不要等滿 travel 秒（阻尼小時鏡頭早就到了，剩下的時間玩家會卡著不能走）
         RevealCameraLookAt(player != null ? player : transform);
         e = 0f;
+        bool released = false;
         while (e < travel)
         {
             e += Time.deltaTime;
             UpdateRevealZoom(1f - Mathf.Clamp01(e / travel));
+            if (!released && IsCameraBackOnPlayer())
+            {
+                released = true;
+                if (_pm != null) _pm.isCutsceneFrozen = false;
+            }
             yield return null;
         }
         UpdateRevealZoom(0f);
@@ -1249,6 +1265,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // 7) 還原相機、解凍、開始遊戲
         RevealFinish();
         Debug.Log("【影子怪物】登場運鏡結束，控制權交還玩家。");
+    }
+
+    /// <summary> 鏡頭飛回來時，畫面中心離主角夠近就算回到主角身上了（只看左右）。 </summary>
+    private bool IsCameraBackOnPlayer()
+    {
+        if (player == null) return true;
+        if (_mainCam == null) _mainCam = Camera.main;
+        if (_mainCam == null) return true;
+        return Mathf.Abs(_mainCam.transform.position.x - player.position.x) <= revealReleaseDistance;
     }
 
     /// <summary> 演出正常收尾：還原相機、解凍主角。 </summary>
@@ -1542,7 +1567,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         _isHitShrinking = true;
 
-        PlayAnimationByName(hitAnimationName);
+        // 連續吃到燭火時也要從頭重播受擊動畫
+        PlayAnimationByName(hitAnimationName, true);
+        // ★受擊動畫要播完才能切回走路／跑步。先用保底時間鎖住，下一幀讀到實際長度再更新
+        _hitAnimLockUntil = Time.time + Mathf.Max(smoothShrinkDuration, 0.1f);
+        StartCoroutine(LockUntilHitAnimEnds());
 
         if (hitSFX != null)
         {
@@ -1566,6 +1595,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _currentScaleMultiplier = targetMult;
         ApplyCurrentScale();
         _isHitShrinking = false;
+    }
+
+    /// <summary> 讀出受擊動畫實際長度（含 State 速度），鎖到它播完為止。 </summary>
+    private IEnumerator LockUntilHitAnimEnds()
+    {
+        yield return null;
+        if (_animator == null) yield break;
+        // 用 CrossFade 進受擊時，這一幀受擊還是「下一個」狀態
+        AnimatorStateInfo info = _animator.IsInTransition(0) ? _animator.GetNextAnimatorStateInfo(0) : _animator.GetCurrentAnimatorStateInfo(0);
+        if (!info.IsName(hitAnimationName)) info = _animator.GetCurrentAnimatorStateInfo(0);
+        if (!info.IsName(hitAnimationName)) yield break;
+        float remaining = info.length * (1f - Mathf.Repeat(info.normalizedTime, 1f));
+        _hitAnimLockUntil = Mathf.Max(_hitAnimLockUntil, Time.time + remaining);
     }
 
     private IEnumerator VanishSequence()
@@ -1964,7 +2006,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private string _currentAnimName = "";
 
-    private void PlayAnimationByName(string animName)
+    private void PlayAnimationByName(string animName, bool restart = false)
     {
         if (_animator == null || string.IsNullOrEmpty(animName)) return;
 
@@ -1980,10 +2022,35 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         // 用字串比對防止每幀重複呼叫
-        if (_currentAnimName == animName) return;
+        if (_currentAnimName == animName && !restart) return;
 
+        bool leavingHit = _currentAnimName == hitAnimationName && animName != hitAnimationName;
+        float fade = leavingHit ? hitExitCrossFade : animCrossFade;
+
+        // ★受擊動畫播完之前，走路／跑步／待機都不能打斷它（揮爪攻擊可以）。
+        //   提前 fade 秒放行，讓混合跟受擊最後幾格疊在一起，不會停在最後一格再跳到移動動作
+        if (leavingHit && animName != attackAnimationName && Time.time < _hitAnimLockUntil - fade) return;
+
+        string prev = _currentAnimName;
         _currentAnimName = animName;
-        _animator.Play(animName, 0, 0f);
+
+        // 第一次播（剛出場／重置）、或重播同一個動作：直接從頭播
+        if (string.IsNullOrEmpty(prev) || prev == animName || fade <= 0f)
+        {
+            _animator.Play(animName, 0, 0f);
+            return;
+        }
+
+        // 走路↔跑步：接續目前的步伐相位，腳步才不會亂跳
+        AnimatorStateInfo cur = _animator.GetCurrentAnimatorStateInfo(0);
+        float startNorm = 0f;
+        bool locomotionSwap = (prev == walkAnimationName && animName == runAnimationName)
+                           || (prev == runAnimationName && animName == walkAnimationName);
+        if (locomotionSwap) startNorm = Mathf.Repeat(cur.normalizedTime, 1f);
+
+        // CrossFade 的混合時間是以「目前動作長度」為單位，換算成秒數
+        float normFade = Mathf.Clamp01(fade / Mathf.Max(0.01f, cur.length));
+        _animator.CrossFade(animName, normFade, 0, startNorm);
     }
 
 
@@ -2357,6 +2424,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _deferCoroutine = null;
         _activationPending = false;   // ★1016 延後出場的等待也一起取消（重生流程會再安排）
         _isHitShrinking = false;
+        _hitAnimLockUntil = 0f;
         _finaleDash = false;
         _currentAnimName = "";
         _chaseTimer = 0f;  // 重置追逐計時，確保下次出場先播 walk4

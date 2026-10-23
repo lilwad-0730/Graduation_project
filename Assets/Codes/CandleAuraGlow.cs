@@ -3,8 +3,8 @@ using System.Collections;
 
 /// <summary>
 /// 掛載於燭火物件 (例如 'candle_01')。
-/// 玩家走到燭火旁按住 S 鍵點燃，點完光暈才淡入亮起，之後轉為呼吸脈動。
-/// 點燃時間依燭火在 Candles 底下的順序：第 1 根 1.5 秒，之後每根多 0.1 秒。
+/// 玩家走到燭火旁按一下 S 鍵開始點燃，點燃期間不能移動，點完光暈才淡入亮起，之後轉為呼吸脈動。
+/// 點燃時間由每根燭火的 lightDuration 各自設定。
 /// </summary>
 public class CandleAuraGlow : MonoBehaviour, IResettable
 {
@@ -12,14 +12,9 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
     [Tooltip("點燃用的按鍵")]
     public KeyCode lightKey = KeyCode.S;
 
-    [Tooltip("勾選＝要一直按住直到點完，放開就重來；不勾＝按一下就開始，玩家離開範圍才會中斷")]
-    public bool holdToLight = true;
-
-    [Tooltip("第一根燭火的點燃時間 (秒)")]
-    public float baseLightDuration = 1.5f;
-
-    [Tooltip("依 Candles 底下的順序，每往後一根多花的秒數")]
-    public float extraPerCandleOrder = 0.1f;
+    [Tooltip("這根燭火的點燃時間 (秒)，每根各自設定")]
+    [UnityEngine.Serialization.FormerlySerializedAs("baseLightDuration")]
+    public float lightDuration = 1.5f;
 
     [Tooltip("玩家離燭火多近才能點燃 (左右距離)")]
     public float lightRangeX = 2.0f;
@@ -137,21 +132,9 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     // ──────────────── 點燃操作 ────────────────
 
-    /// <summary>依 Candles 底下的順序算點燃時間：第 1 根 base，之後每根 +extra。</summary>
     private float GetLightDuration()
     {
-        int order = 0;
-        Transform parent = transform.parent;
-        if (parent != null)
-        {
-            for (int i = 0; i < parent.childCount; i++)
-            {
-                Transform sibling = parent.GetChild(i);
-                if (sibling == transform) break;
-                if (sibling.GetComponent<CandleAuraGlow>() != null) order++;
-            }
-        }
-        return Mathf.Max(0f, baseLightDuration + extraPerCandleOrder * order);
+        return Mathf.Max(0f, lightDuration);
     }
 
     private PlayerMovement FindPlayer()
@@ -195,8 +178,9 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
             return;
         }
 
-        bool stillHolding = !holdToLight || Input.GetKey(lightKey);
-        if (!canLight || !stillHolding || IsPressingMoveKey())
+        // 按一下就點到完：放開 S、按移動鍵都不會中斷（玩家被鎖住不能動）。
+        // 只有燭火被吃掉／漏掉、或進入劇情演出時才中斷，避免玩家卡住。
+        if (!CanBeLit() || PlayerMovement.IsHardCutsceneLocked || _player == null || !_player.isActiveAndEnabled)
         {
             CancelLighting();
             return;
@@ -234,12 +218,10 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         if (LightingCanceled != null) LightingCanceled(this);
     }
 
-    /// <summary>點燃中按移動或跳躍鍵＝放棄點燃。</summary>
-    private static bool IsPressingMoveKey()
+    private void OnDisable()
     {
-        return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W)
-            || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftArrow)
-            || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.UpArrow);
+        // 點到一半燭火被關掉時，記得放開玩家
+        CancelLighting();
     }
 
     public void PlayFadeInAnimation()
