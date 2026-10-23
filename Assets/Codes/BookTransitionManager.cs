@@ -20,6 +20,9 @@ public static class BookTransitionManager
     // 本次轉場要播放的章節結束頁碼 (翻到此頁後提示進入下一關)
     public static int chapterEndPage = -1;
 
+    // ★1021 章節轉場時可以往回翻到第 1 頁（玩過的章節都開著；M：隨著玩家推進，繪本緊隨開放）。由 PageBookAutoTurn 設定，PageBook 讀。
+    public static bool allowFlipBackBeforeChapter = false;
+
     // 翻完漫畫後要載入的目標關卡名稱 (例如 desert, underwater, dark glasses)
     public static string nextSceneAfterBook = "";
 

@@ -350,6 +350,47 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("模型旋轉偏移角度 (預設 0,0,0)")]
     public Vector3 modelRotationOffset = Vector3.zero;
 
+    // ── ★1022 轉向不破圖（M：鳥群模型轉向會破圖）──────────────────
+    //   鳥是側面看的模型；原本左右轉向是用 Slerp 慢慢繞過正面，中間那幾格看到的是薄片、翻面，就是破圖。
+    //   改成：水平朝向一變就直接翻面（像 2D 翻面），只有同一側的俯仰、側傾才平滑；
+    //   而且朝向永遠保留一點水平分量，不會變成正對鏡頭或直上直下。
+    [Header("★1022 轉向不破圖")]
+    [Tooltip("開＝左右朝向改變時直接翻面，不經過正面；關＝原本的平滑轉向")]
+    public bool snapHorizontalFlip = true;
+    [Tooltip("朝向的水平分量小於這個值時沿用上一個朝向，避免 8 字端點來回抖")]
+    public float flipDeadZone = 0.08f;
+    [Tooltip("朝向至少保留多少水平分量（0～1），避免模型正對鏡頭、直上或直下時看起來像薄片")]
+    [Range(0.1f, 0.9f)] public float minSideComponent = 0.35f;
+    private int _faceSign = 0;
+
+    /// <summary>★1022 把「朝 dir 看」套到 transform.rotation：水平朝向翻面就直接套，同一側才平滑。</summary>
+    private void FaceDirection(Vector3 dir, Vector3 up, Vector3 extraEuler, float smooth)
+    {
+        if (dir.sqrMagnitude < 0.0001f) return;
+        if (!snapHorizontalFlip)
+        {
+            Quaternion plain = Quaternion.LookRotation(dir.normalized, up) * Quaternion.Euler(modelRotationOffset + extraEuler);
+            transform.rotation = Quaternion.Slerp(transform.rotation, plain, Time.deltaTime * smooth);
+            return;
+        }
+        float x = Vector3.Dot(dir, _camRight);
+        float y = Vector3.Dot(dir, _camUp);
+        int sgn = Mathf.Abs(x) < flipDeadZone ? _faceSign : (x >= 0f ? 1 : -1);
+        if (sgn == 0) sgn = 1;
+        Vector3 side = _camRight * (sgn * Mathf.Max(Mathf.Abs(x), minSideComponent)) + _camUp * y;
+        if (side.sqrMagnitude < 0.0001f) side = _camRight * sgn;
+        Quaternion target = Quaternion.LookRotation(side.normalized, up) * Quaternion.Euler(modelRotationOffset + extraEuler);
+        if (sgn != _faceSign)
+        {
+            _faceSign = sgn;
+            transform.rotation = target;   // 翻面：一格到位，不繞過正面
+        }
+        else
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, target, Time.deltaTime * smooth);
+        }
+    }
+
     // ── ★0905 荒原四拍 ─────────────────────────────────────────
     [Header("★0905 起風反應（閒置鳥當風向標）")]
     [Tooltip("前兆時全體抬高、吹風時往下風飄；鳥先動＝第二個起風前兆（Rain World：動物先知道）")]
@@ -719,16 +760,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 lookDir.z = 0f;
                 if (lookDir.sqrMagnitude > 0.001f)
                 {
-                    Quaternion targetRot = Quaternion.LookRotation(lookDir.normalized, Vector3.up) * Quaternion.Euler(modelRotationOffset);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * attackAngleCueTurnSpeed);
+                    FaceDirection(lookDir, Vector3.up, Vector3.zero, attackAngleCueTurnSpeed);   // ★1022 翻面不破圖
                 }
             }
             else if (playerTrans != null)
             {
                 float dx = playerTrans.position.x - transform.position.x;
                 Vector3 lookDir = dx < 0 ? Vector3.left : Vector3.right;
-                Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up) * Quaternion.Euler(modelRotationOffset);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 8f);
+                FaceDirection(lookDir, Vector3.up, Vector3.zero, 8f);   // ★1022 翻面不破圖
             }
         }
     }
@@ -801,8 +840,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             aim.z = 0f;
             if (aim.sqrMagnitude > 0.001f)
             {
-                Quaternion aimRot = Quaternion.LookRotation(aim.normalized, Vector3.up) * Quaternion.Euler(modelRotationOffset);
-                transform.rotation = Quaternion.Slerp(transform.rotation, aimRot, Time.deltaTime * attackAngleCueTurnSpeed);
+                FaceDirection(aim, Vector3.up, Vector3.zero, attackAngleCueTurnSpeed);   // ★1022 翻面不破圖
             }
         }
         else if (flightDir.sqrMagnitude > 0.001f)
@@ -813,8 +851,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             _currentTiltZ = Mathf.Lerp(_currentTiltZ, targetTiltZ, Time.deltaTime * 5f);
 
             // 6. 綜合 LookRotation 與 模型旋轉偏移 (modelRotationOffset)
-            Quaternion targetRot = Quaternion.LookRotation(flightDir, _camUp) * Quaternion.Euler(modelRotationOffset + new Vector3(0f, 0f, _currentTiltZ));
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothSpeed);
+            FaceDirection(flightDir, _camUp, new Vector3(0f, 0f, _currentTiltZ), rotationSmoothSpeed);   // ★1022 翻面不破圖
         }
     }
 
@@ -1351,8 +1388,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             dp.y -= _atkDescent * Time.deltaTime;
             transform.position = dp;
 
-            Quaternion targetRot = Quaternion.LookRotation(lookDown, Vector3.up) * Quaternion.Euler(modelRotationOffset);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 8f);
+            FaceDirection(lookDown, Vector3.up, Vector3.zero, 8f);   // ★1022 翻面不破圖（俯衝：水平分量本來就只有 0.35）
 
             // 命中判定：當鳥撲擊接近目標時結算
             if (playerTrans != null)
@@ -2013,7 +2049,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             t += Time.deltaTime / dur;
             float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t));
             transform.position = Vector3.Lerp(start, target, k);
-            stuckRotation = Quaternion.Slerp(startRot, endRot, k);   // Stuck 狀態下 LateUpdate 會把姿態鎖在 stuckRotation，所以改這個才轉得動
+            stuckRotation = snapHorizontalFlip ? (k < 0.5f ? startRot : endRot) : Quaternion.Slerp(startRot, endRot, k);   // Stuck 狀態下 LateUpdate 會把姿態鎖在 stuckRotation，所以改這個才轉得動；★1022 翻面不破圖：拔起時一格翻到位
             transform.rotation = stuckRotation;
             yield return null;
         }

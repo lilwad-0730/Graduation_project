@@ -108,8 +108,8 @@ public class FirstWolfDeathStory : MonoBehaviour
     public float[] pageHolds = RespawnComicPlayer.DPageHolds();
     [Tooltip("D 從每個停點移到下一個的秒數（9 個，最後一個是 0）。預設值讓畫面每秒最多移動約 0.6 個畫面寬；調短會變快、比較不順")]
     public float[] pageMoves = RespawnComicPlayer.DPageMoves();
-    [Tooltip("D 整體速度（1＝約 20 秒；1.2 約 17 秒但移動快 2 成）")]
-    [Range(0.5f, 2f)] public float pageSpeed = 1f;
+    [Tooltip("D 整體速度（1＝約 20 秒；1.8＝約 12 秒。★1021 改 1.8：43 章「第一次死縮到 12 秒內」）")]
+    [Range(0.5f, 2f)] public float pageSpeed = 1.8f;
     [Tooltip("D（1003 兩格版，素材不齊時才用）：閃、轉紫、縮進格 1、停、格 2 進、停、格 3 進、停、淡出")]
     public float[] freezeTimes = new float[] { 0.12f, 0.35f, 0.6f, 1.6f, 0.3f, 3.0f, 0.3f, 3.2f, 0.6f };
     [Tooltip("D：定格畫面乘上的顏色（紫夜）。comicPlainCapture 開著時不用")]
@@ -150,9 +150,12 @@ public class FirstWolfDeathStory : MonoBehaviour
     [Header("規則")]
     [Tooltip("整個執行期間只播一次")]
     public bool onlyOnce = true;
-    [Tooltip("允許按鍵跳到下一格（黑幕總長不會跟著縮短，預設關）")]
-    public bool allowSkip = false;
-    public float minSecondsBeforeSkip = 1.0f;
+    [Tooltip("允許按鍵跳過（★1021 預設開；D 版跳到最後、黑幕也跟著提早放：PlayerRespawnSystem 讀 ReleaseBlackEarly）")]
+    public bool allowSkip = true;
+    public float minSecondsBeforeSkip = 1.5f;
+
+    /// <summary>★1021 漫畫播完（或被跳過）＝true：PlayerRespawnSystem 的黑幕停頓看到它就提早結束，用完歸 false。</summary>
+    public static bool ReleaseBlackEarly;
 
     [Header("除錯")]
     public bool logEvents = true;
@@ -618,12 +621,12 @@ public class FirstWolfDeathStory : MonoBehaviour
                             if (logEvents) Debug.Log("[FirstWolfDeathStory] 命運之書：D 連續頁改在廢墟頁的 A 格裡播（多 " + FateBookPage.FirstDeathOverhead.ToString("F1") + " 秒）");
                         }
                         else
-                            play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, tintUse, htUse, 0.25f, 2.6f, fadeIn, !comicPlainCapture), true);
+                            play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, tintUse, htUse, 0.25f, 2.6f, fadeIn, !comicPlainCapture, allowSkip, minSecondsBeforeSkip), true);
                     }
                     else
                     {
                         startsAtDeath = true;
-                        play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, freezeTint, freezeHalftoneAlpha), false);
+                        play = FreezeRoutine(cap => RespawnComicPlayer.PlayDPage(UIRoot(), cap, set, ph, pm, sp, camOn, freezeTint, freezeHalftoneAlpha, 0.25f, 2.6f, 0f, true, allowSkip, minSecondsBeforeSkip), false);
                     }
                     break;
                 }
@@ -671,7 +674,7 @@ public class FirstWolfDeathStory : MonoBehaviour
                                        bool camOn, Color tint, float ht, float innerFade, bool flash)
     {
         yield return FateBookPage.PlayFirstDeath(UIRoot(), book,
-            root => RespawnComicPlayer.PlayDPage(root, cap, set, ph, pm, sp, camOn, tint, ht, 0.25f, 2.6f, innerFade, flash));
+            root => RespawnComicPlayer.PlayDPage(root, cap, set, ph, pm, sp, camOn, tint, ht, 0.25f, 2.6f, innerFade, flash, allowSkip, minSecondsBeforeSkip));
         book.Unload();
     }
 
@@ -780,7 +783,9 @@ public class FirstWolfDeathStory : MonoBehaviour
 
     private IEnumerator Run(IEnumerator play)
     {
+        ReleaseBlackEarly = false;   // ★1021 黑幕等漫畫播完（或跳過）才放
         yield return play;
+        ReleaseBlackEarly = true;    // ★1021 漫畫結束：PlayerRespawnSystem 的停頓看到就提早結束（沒跳過時它早就等完了）
         if (_canvas != null) _canvas.gameObject.SetActive(false);
         FreezeWolves(false);
         if (_originalBlackTime >= 0f) _rs.blackScreenTime = _originalBlackTime;

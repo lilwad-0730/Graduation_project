@@ -756,8 +756,17 @@ public class PlayerRespawnSystem : MonoBehaviour
             _messageText.gameObject.SetActive(true);
         }
 
-        // 2. 深淵停頓
-        yield return new WaitForSecondsRealtime(blackScreenTime);
+        // 2. 深淵停頓（★1021 第一次死亡漫畫可按鍵跳過：漫畫播完就提早結束停頓，否則照 blackScreenTime 等。旗標在 FirstWolfDeathStory.ReleaseBlackEarly）
+        {
+            float held = 0f;
+            while (held < blackScreenTime)
+            {
+                if (FirstWolfDeathStory.ReleaseBlackEarly && held >= 0.6f) break;
+                held += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            FirstWolfDeathStory.ReleaseBlackEarly = false;
+        }
 
         // 聽覺破曉恢復
         SetAudioMuffle(false, fadeDuration);

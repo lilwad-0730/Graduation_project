@@ -877,8 +877,9 @@ public static class RespawnComicPlayer
     /// <param name="flash">★1008 開頭那一下白閃（關掉＝漸黑之後直接接漫畫，沒有多餘的畫面）</param>
     public static IEnumerator PlayDPage(Transform canvasRoot, Texture2D capture, DPageSet a, float[] holds, float[] moves, float speed,
                                         bool cameraMoves, Color tint, float halftoneAlpha, float pulse = 0.25f, float pulsePeriod = 2.6f,
-                                        float fadeIn = 0f, bool flash = true)
+                                        float fadeIn = 0f, bool flash = true, bool allowSkip = false, float minBeforeSkip = 1.5f)
     {
+        // ★1021 allowSkip：播了 minBeforeSkip 秒後按任意鍵，直接跳到最後、走淡出（43 章：第一次死縮短、可跳）
         CanvasGroup g; GameObject run;
         RectTransform frame = MakeDesignFrame(canvasRoot, out g, out run);
         GameObject pg = new GameObject("Page (鏡頭)", typeof(RectTransform));
@@ -944,6 +945,7 @@ public static class RespawnComicPlayer
         {
             float dt = Time.unscaledDeltaTime;
             t += dt;
+            if (allowSkip && t > minBeforeSkip && t < track.end && Input.anyKeyDown) t = track.end;   // ★1021 跳過：剩淡出
             Vector4 s4 = spring.Step(LogW(track.At(t)), dt);
             DCam follow = CamOf(s4);
             if (cameraMoves) cam = follow;
