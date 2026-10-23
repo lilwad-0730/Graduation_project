@@ -63,6 +63,9 @@ public class ScatteredFlock : MonoBehaviour
     [Tooltip("軸心追上玩家的遲滯秒數。0＝硬鎖；大一點會像被拖著走")]
     public float followLag = 0.55f;
 
+    [Tooltip("打勾＝整團只左右跟著她，高度固定在一開始的高度（她跳躍、上下坡，鳥群都不會跟著上下動）")]
+    public bool lockFollowY = true;
+
     [Tooltip("找不到玩家時退而用鏡頭的哪個位置")]
     public Vector2 cameraFallbackViewport = new Vector2(0.5f, 0.8f);
 
@@ -165,6 +168,7 @@ public class ScatteredFlock : MonoBehaviour
     private Vector2 _flockSeedX, _flockSeedY;
     private float _nextAttackAt;
     private bool _spawned, _snapped;
+    private float _lockedY;   // lockFollowY 時固定的軸心高度（第一次定位時記下）
     private static readonly int _ColorId = Shader.PropertyToID("_Color");
     private static readonly int _BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int _BaseMapId = Shader.PropertyToID("_BaseMap");
@@ -366,7 +370,15 @@ public class ScatteredFlock : MonoBehaviour
 
         float t = Time.time * noiseSpeed * 0.6f;
         want.x += N(_flockSeedX, t) * 2f * flockWander;
-        want.y += N(_flockSeedY, t) * 2f * flockWander * 0.55f;
+        if (lockFollowY)
+        {
+            if (!_snapped) _lockedY = want.y;
+            want.y = _lockedY;   // 高度固定：只左右跟隨
+        }
+        else
+        {
+            want.y += N(_flockSeedY, t) * 2f * flockWander * 0.55f;
+        }
         want.z = depthZ;
 
         if (followLag <= 0.001f || !_snapped)
@@ -413,7 +425,8 @@ public class ScatteredFlock : MonoBehaviour
         float baseW = (Mathf.PI * 2f) / Mathf.Max(0.1f, periodSeconds);
         float t = Time.time;
         float nt = t * noiseSpeed;
-        float floorY = (_player != null ? _player.position.y : transform.position.y) + minHeightAbovePlayer;
+        // 高度鎖定時，安全網也用固定高度算，不然她走上高處時會把鳥往上推（等於又跟著上下動）
+        float floorY = (lockFollowY && _snapped ? _lockedY : (_player != null ? _player.position.y : transform.position.y)) + minHeightAbovePlayer;
 
         for (int i = 0; i < _birds.Count; i++)
         {

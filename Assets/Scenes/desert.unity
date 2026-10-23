@@ -908,6 +908,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -929,6 +932,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -1980,6 +1991,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -2001,6 +2015,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -7426,6 +7448,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -7447,6 +7472,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -7805,6 +7838,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -7826,6 +7862,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -8308,6 +8352,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -8329,6 +8376,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -8754,6 +8809,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -8775,6 +8833,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -9232,6 +9298,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -9253,6 +9322,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -9309,8 +9386,8 @@ Transform:
   m_GameObject: {fileID: 341364196}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 68.1221, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 68.1221, y: 0.00789, z: 0}
+  m_LocalScale: {x: 0.392654, y: 0.392654, z: 0.392654}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -9353,8 +9430,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: 0.105, y: 0, z: 0}
 --- !u!212 &341364200
 SpriteRenderer:
   serializedVersion: 2
@@ -9501,7 +9578,7 @@ Transform:
   m_GameObject: {fileID: 347544275}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.4679, y: -0.105700016, z: 0}
+  m_LocalPosition: {x: 7.4679, y: -0.10578, z: 0}
   m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9526,8 +9603,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: 0.105, y: 0, z: 0}
 --- !u!114 &347544279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9734,6 +9811,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -9755,6 +9835,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -10150,6 +10238,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -10171,6 +10262,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -10587,8 +10686,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8.360796, y: 17.680647, z: 0.2}
-  m_Center: {x: -0.30219182, y: 0.5053132, z: 0}
+  m_Size: {x: 6.38, y: 16.65, z: 0.2}
+  m_Center: {x: -0.235, y: 0, z: 0}
 --- !u!114 &401288207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10897,8 +10996,8 @@ Transform:
   m_GameObject: {fileID: 433070023}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 111.6221, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 111.6221, y: -0.00835, z: 0}
+  m_LocalScale: {x: 0.388984, y: 0.388984, z: 0.388984}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -10941,8 +11040,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: -0.105, y: 0, z: 0}
 --- !u!212 &433070027
 SpriteRenderer:
   serializedVersion: 2
@@ -10994,7 +11093,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1320482956087586018, guid: a0aef0a083909f341b456882846077b2, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -11587,6 +11686,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -11608,6 +11710,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -11823,6 +11933,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -11844,6 +11957,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -12064,6 +12185,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -12085,6 +12209,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -12464,6 +12596,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -12485,6 +12620,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -13226,8 +13369,8 @@ Transform:
   m_GameObject: {fileID: 579535221}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 64.6021, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 64.6021, y: 0.03297, z: 0}
+  m_LocalScale: {x: 0.383939, y: 0.383939, z: 0.383939}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -13294,8 +13437,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!212 &579535226
 SpriteRenderer:
   serializedVersion: 2
@@ -13347,7 +13490,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -13550,6 +13693,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -13571,6 +13717,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -13966,6 +14120,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -13987,6 +14144,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -14292,6 +14457,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -14313,6 +14481,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -14462,8 +14638,8 @@ Transform:
   m_GameObject: {fileID: 636829700}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 20.07, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 20.07, y: 0.16502, z: 0}
+  m_LocalScale: {x: 0.414052, y: 0.414052, z: 0.414052}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -14530,8 +14706,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!212 &636829705
 SpriteRenderer:
   serializedVersion: 2
@@ -14583,7 +14759,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -14619,8 +14795,8 @@ Transform:
   m_GameObject: {fileID: 639753582}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 52, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 52, y: -0.04082, z: 0}
+  m_LocalScale: {x: 0.381645, y: 0.381645, z: 0.381645}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -14663,8 +14839,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: 0.105, y: 0, z: 0}
 --- !u!212 &639753586
 SpriteRenderer:
   serializedVersion: 2
@@ -14753,8 +14929,8 @@ Transform:
   m_GameObject: {fileID: 643076216}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 108.1021, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 108.1021, y: 0.16502, z: 0}
+  m_LocalScale: {x: 0.414052, y: 0.414052, z: 0.414052}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -14821,8 +14997,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: -0.02, y: 0, z: 0}
 --- !u!212 &643076221
 SpriteRenderer:
   serializedVersion: 2
@@ -15607,6 +15783,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -15628,6 +15807,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -16022,6 +16209,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -16043,6 +16233,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -16470,6 +16668,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -16491,6 +16692,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -16701,6 +16910,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -16722,6 +16934,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -17856,6 +18076,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -17877,6 +18100,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -18087,6 +18318,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -18108,6 +18342,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -18505,6 +18747,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -18526,6 +18771,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -18926,6 +19179,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -18947,6 +19203,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -19252,6 +19516,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -19273,6 +19540,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -19330,8 +19605,8 @@ Transform:
   m_GameObject: {fileID: 879180877}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 44.532097, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 44.5321, y: -0.04955, z: 0}
+  m_LocalScale: {x: 0.365119, y: 0.365119, z: 0.365119}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -19398,8 +19673,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!212 &879180882
 SpriteRenderer:
   serializedVersion: 2
@@ -19451,7 +19726,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -19799,6 +20074,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -19820,6 +20098,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -19919,7 +20205,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -19936,8 +20222,8 @@ Transform:
   m_GameObject: {fileID: 918943784}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 0, y: -0.13208, z: 0}
+  m_LocalScale: {x: 0.346298, y: 0.346298, z: 0.346298}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -19961,8 +20247,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!114 &918943788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20039,8 +20325,8 @@ Transform:
   m_GameObject: {fileID: 937310458}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 132.08209, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 132.08209, y: -0.17073, z: 0}
+  m_LocalScale: {x: 0.352288, y: 0.352288, z: 0.352288}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -20083,8 +20369,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: -0.105, y: 0, z: 0}
 --- !u!212 &937310462
 SpriteRenderer:
   serializedVersion: 2
@@ -20136,7 +20422,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1320482956087586018, guid: a0aef0a083909f341b456882846077b2, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -20272,8 +20558,8 @@ Transform:
   m_GameObject: {fileID: 950837339}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 23.59, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 23.59, y: 0.02413, z: 0}
+  m_LocalScale: {x: 0.396324, y: 0.396324, z: 0.396324}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -20316,8 +20602,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: -0.105, y: 0, z: 0}
 --- !u!212 &950837343
 SpriteRenderer:
   serializedVersion: 2
@@ -20369,7 +20655,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1320482956087586018, guid: a0aef0a083909f341b456882846077b2, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -20899,6 +21185,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -20920,6 +21209,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -26151,8 +26448,8 @@ Transform:
   m_GameObject: {fileID: 1057586024}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 88.58209, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 88.58209, y: 0.04037, z: 0}
+  m_LocalScale: {x: 0.399993, y: 0.399993, z: 0.399993}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -26195,8 +26492,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: 0.105, y: 0, z: 0}
 --- !u!212 &1057586028
 SpriteRenderer:
   serializedVersion: 2
@@ -26423,6 +26720,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7921139974992476005, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: petrifySFX
       value: 
@@ -26442,6 +26743,10 @@ PrefabInstance:
     - target: {fileID: 8888888888888888888, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: petrifyColor.r
       value: 0.3372549
+      objectReference: {fileID: 0}
+    - target: {fileID: 9125291579769780957, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7777777777777777777, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
@@ -26732,6 +27037,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -26753,6 +27061,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -26963,6 +27279,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -26984,6 +27303,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -27194,6 +27521,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -27215,6 +27545,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -27699,6 +28037,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -27720,6 +28061,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -27935,6 +28284,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -27956,6 +28308,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -33341,6 +33701,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -33362,6 +33725,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -33508,8 +33879,8 @@ Transform:
   m_GameObject: {fileID: 1166126468}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 44.05, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 44.05, y: -0.26816, z: 0}
+  m_LocalScale: {x: 0.33027, y: 0.33027, z: 0.33027}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -33552,8 +33923,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: 0.105, y: 0, z: 0}
 --- !u!212 &1166126472
 SpriteRenderer:
   serializedVersion: 2
@@ -38697,6 +39068,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -38718,6 +39092,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -39023,6 +39405,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -39044,6 +39429,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -39336,6 +39729,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -39357,6 +39753,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -39775,6 +40179,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -39796,6 +40203,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -40011,6 +40426,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -40032,6 +40450,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -40428,6 +40854,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -40449,6 +40878,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -40506,8 +40943,8 @@ Transform:
   m_GameObject: {fileID: 1279824611}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 58.482098, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 58.4821, y: -0.11558, z: 0}
+  m_LocalScale: {x: 0.350062, y: 0.350062, z: 0.350062}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -40574,8 +41011,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!212 &1279824616
 SpriteRenderer:
   serializedVersion: 2
@@ -40627,7 +41064,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -40754,8 +41191,8 @@ Transform:
   m_GameObject: {fileID: 1318919234}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 88.0321, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 88.0321, y: -0.03305, z: 0}
+  m_LocalScale: {x: 0.368883, y: 0.368883, z: 0.368883}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -40822,8 +41259,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: -0.02, y: 0, z: 0}
 --- !u!212 &1318919239
 SpriteRenderer:
   serializedVersion: 2
@@ -40912,8 +41349,8 @@ Transform:
   m_GameObject: {fileID: 1326084089}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 13.95, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 13.95, y: -0.08257, z: 0}
+  m_LocalScale: {x: 0.35759, y: 0.35759, z: 0.35759}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -40980,8 +41417,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: -0.02, y: 0, z: 0}
 --- !u!212 &1326084094
 SpriteRenderer:
   serializedVersion: 2
@@ -41228,6 +41665,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -41249,6 +41689,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -41546,6 +41994,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -41567,6 +42018,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -41623,8 +42082,8 @@ Transform:
   m_GameObject: {fileID: 1376206461}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 95.5, y: -0.105700016, z: 0}
-  m_LocalScale: {x: 0.3669664, y: 0.3669664, z: 0.3669664}
+  m_LocalPosition: {x: 95.5, y: -0.25192, z: 0}
+  m_LocalScale: {x: 0.333939, y: 0.333939, z: 0.333939}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1144596182}
@@ -41667,8 +42126,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.314028, y: 9.458876, z: 0.2}
-  m_Center: {x: 0.28126353, y: 0.2944291, z: 0}
+  m_Size: {x: 2.29, y: 8.85, z: 0.2}
+  m_Center: {x: -0.105, y: 0, z: 0}
 --- !u!212 &1376206465
 SpriteRenderer:
   serializedVersion: 2
@@ -41720,7 +42179,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1320482956087586018, guid: a0aef0a083909f341b456882846077b2, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -41810,8 +42269,8 @@ Transform:
   m_GameObject: {fileID: 1379540995}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 101.9821, y: 0, z: 0}
-  m_LocalScale: {x: 0.376411, y: 0.376411, z: 0.376411}
+  m_LocalPosition: {x: 101.9821, y: -0.09907, z: 0}
+  m_LocalScale: {x: 0.353826, y: 0.353826, z: 0.353826}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 828347928}
@@ -41878,8 +42337,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.0906367, y: 8.79, z: 0.2}
-  m_Center: {x: 0.030889632, y: 0, z: 0}
+  m_Size: {x: 2.51, y: 8.77, z: 0.2}
+  m_Center: {x: 0.02, y: 0, z: 0}
 --- !u!212 &1379541000
 SpriteRenderer:
   serializedVersion: 2
@@ -41931,7 +42390,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1240050458026448982, guid: b0bbfe0625f30134db18f7cc38faaa95, type: 3}
   m_Color: {r: 0.8207547, g: 0.7732215, b: 0.7704254, a: 0.92156863}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 10.33, y: 16.67}
@@ -42275,6 +42734,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -42296,6 +42758,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -42732,6 +43202,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -42753,6 +43226,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -42968,6 +43449,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -42989,6 +43473,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -43281,6 +43773,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -43302,6 +43797,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -43517,6 +44020,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -43538,6 +44044,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -43753,6 +44267,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -43774,6 +44291,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -43984,6 +44509,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -44005,6 +44533,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -44215,6 +44751,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -44236,6 +44775,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -44541,6 +45088,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -44562,6 +45112,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -44950,6 +45508,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -44971,6 +45532,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -45423,6 +45992,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -45444,6 +46016,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -45876,6 +46456,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -45897,6 +46480,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -46202,6 +46793,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -46223,6 +46817,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -46438,6 +47040,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -46459,6 +47064,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -46759,6 +47372,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -46780,6 +47396,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -47080,6 +47704,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -47101,6 +47728,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -47401,6 +48036,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -47422,6 +48060,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -47637,6 +48283,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -47658,6 +48307,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -47958,6 +48615,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -47979,6 +48639,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -48370,6 +49038,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -48391,6 +49062,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -48781,6 +49460,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -48802,6 +49484,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -49103,6 +49793,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -49124,6 +49817,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -49429,6 +50130,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -49450,6 +50154,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -49778,6 +50490,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -49799,6 +50514,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -50654,6 +51377,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -50675,6 +51401,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -55811,6 +56545,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -55832,6 +56569,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -56047,6 +56792,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -56068,6 +56816,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -56360,6 +57116,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -56381,6 +57140,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -56644,6 +57411,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -56665,6 +57435,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -56880,6 +57658,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -56901,6 +57682,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -57206,6 +57995,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -57227,6 +58019,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -57442,6 +58242,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -57463,6 +58266,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -57805,6 +58616,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -57826,6 +58640,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -58036,6 +58858,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -58057,6 +58882,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -58358,6 +59191,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -58379,6 +59215,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -58589,6 +59433,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -58610,6 +59457,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -58974,6 +59829,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -58995,6 +59853,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -59386,6 +60252,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -59407,6 +60276,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -59910,6 +60787,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -59931,6 +60811,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -60223,6 +61111,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -60244,6 +61135,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -60966,6 +61865,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -60987,6 +61889,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -61015,6 +61925,133 @@ MonoBehaviour:
   queueAttackDuringWind: 1
   maxQueueWaitSeconds: 8
   useLegacyBehaviorType: 0
+--- !u!1 &2011137825
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2011137828}
+  - component: {fileID: 2011137827}
+  - component: {fileID: 2011137826}
+  m_Layer: 0
+  m_Name: "Character Key Light (\u4E3B\u89D2\u88DC\u5149)"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2011137826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2011137825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 2
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
+--- !u!108 &2011137827
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2011137825}
+  m_Enabled: 1
+  serializedVersion: 13
+  m_Type: 1
+  m_Color: {r: 0.9496855, g: 0.8878648, b: 0.8571061, a: 1}
+  m_Intensity: 0.2
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 2
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShapeRadius: 0.025
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &2011137828
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2011137825}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.29613742, y: 0.16561122, z: -0.052217018, w: 0.9392279}
+  m_LocalPosition: {x: 0, y: 10, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2011832821
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -61287,6 +62324,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -61308,6 +62348,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -61736,6 +62784,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -61757,6 +62808,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -62085,6 +63144,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -62106,6 +63168,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -62316,6 +63386,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -62337,6 +63410,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -62637,6 +63718,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -62658,6 +63742,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -63213,6 +64305,9 @@ MonoBehaviour:
   attackAngleCueTurnSpeed: 10
   pendingFaceTarget: 1
   modelRotationOffset: {x: 0, y: 0, z: 0}
+  snapHorizontalFlip: 1
+  flipDeadZone: 0.08
+  minSideComponent: 0.35
   reactToWind: 1
   windLiftHeight: 0.6
   windDriftDistance: 1.2
@@ -63234,6 +64329,14 @@ MonoBehaviour:
   posePuffScale: 1.3
   poseShakeSeconds: 0.35
   poseShakeAmount: 0.08
+  showLandingShadow: 1
+  landingShadowColor: {r: 0.12, g: 0.05, b: 0.03, a: 1}
+  landingShadowWidthScale: 1.6
+  landingShadowHeightRatio: 0.28
+  landingShadowTrackingAlpha: 0.22
+  landingShadowLockedAlpha: 0.45
+  landingShadowMaxAlpha: 0.8
+  landingShadowStartScale: 0.6
   pushBackMode: 0
   pushBackAheadChance: 0.5
   pushBackAheadMin: 1.6
@@ -63444,3 +64547,4 @@ SceneRoots:
   - {fileID: 2026060341}
   - {fileID: 1471361116}
   - {fileID: 1862020648}
+  - {fileID: 2011137828}
