@@ -10,7 +10,8 @@ using UnityEngine.SceneManagement;
 ///   F8：往右傳送到下一個點　　F7：往左傳送到上一個點
 ///     ・星空玻璃館：每一片玻璃地板（追逐、燭火、結局照常運作，只是不用自己跳）；
 ///       傳送點會避開黑影觸發區（只靠測試鍵傳送不會開追，要測追逐就自己走進觸發區）
-///     ・水下：還沒撿的日誌紙（由左到右）；F9 傳送到通關巨石旁邊
+///     ・水下：還沒撿的日誌紙（由左到右）；F9 傳送到通關巨石旁邊（★1023 巨石已消散＝傳進出口的水幕）
+///     ・★1023 荒原：F9 傳送到光球左邊 4 米（還沒拿到光球時）
 ///     ・其他關卡：場景裡的重生點（RespawnPoint）；棉花堡另加第三個台階（照遊戲流程傳送到上層城堡）
 ///   F5（★1017，SampleScene）：直接到廢墟推巨石，按兩次——
 ///     第一次（還不在廢墟）：傳到廢墟落地的地方（P12 左邊），照正常流程翻開命運之書、光球在 P12；
@@ -118,8 +119,22 @@ public class TesterKeys : MonoBehaviour
 
         if (rock)
         {
+            // ★1023 荒原：F9＝傳到光球左邊 4 米（還沒拿到時），測光球那一段不用從頭走
+            if (DesertOrbDirector.GateActive && !DesertOrbDirector.Collected && !float.IsNegativeInfinity(DesertOrbDirector.OrbX))
+            {
+                Warp(new Vector3(DesertOrbDirector.OrbX - 4f, p.y + 1f, p.z), "荒原光球左邊");
+                return;
+            }
             QuestClearBarrierRock r = FindAnyObjectByType<QuestClearBarrierRock>();
-            if (r != null) Warp(r.transform.position + new Vector3(-6f, 4f, 0f), "通關巨石旁");
+            if (r != null) { Warp(r.transform.position + new Vector3(-6f, 4f, 0f), "通關巨石旁"); return; }
+            // ★1023 巨石已經消散：F9＝傳進出口（水下的水幕），接 M4 文字卡與轉場漫畫
+            SceneTransitionZone exit = FindAnyObjectByType<SceneTransitionZone>();
+            if (exit != null)
+            {
+                Collider ec = exit.GetComponent<Collider>();
+                Vector3 c = ec != null ? ec.bounds.center : exit.transform.position;
+                Warp(c, "出口（" + exit.gameObject.name + "）");
+            }
             return;
         }
 

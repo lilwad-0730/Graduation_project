@@ -7,8 +7,9 @@ using UnityEngine.UI;
 /// ★1023 故事進度（M 10/23：「玩家玩到哪裡，獲取到什麼，我們的故事就同步到哪裡」）。
 ///
 /// 記「繪本開到第幾頁」（0 起算、含）。她走到哪一關、翻過哪一段漫畫、拿到什麼，就把書多開幾頁：
-///   棉花堡 001–008 ／ 墜落＋廢墟 009–027 ／ 進荒原 028–035 ／ 荒原拿到光球 036–039 ／ 掉落漫畫 040–048 ／
-///   水下 049–056 ／ 穿水幕漫畫 057–059 ／ 玻璃館 060–062 ／ 結局 063–074。
+///   棉花堡 001–008 ／ 墜落＋廢墟 009–027 ／ 進荒原 028–035 ／ 荒原走到鳥群開始追蹤（x≥45）036–038 ／
+///   荒原拿到光球 039 ／ 掉落漫畫 040–048 ／ 水下 049–056 ／ 穿水幕漫畫 057–059 ／ 玻璃館鏡牆碎掉 060–063 ／ 結局 064–074。
+/// ★1023c 荒原、玻璃館改成「發生了才開」：進荒原只開到 035，鳥影三頁等鳥開始追她，鏡牆四頁等鏡子碎掉（之前一進場就開，會先劇透）。
 /// 按「開始遊戲」新的一輪就從頭（只開棉花堡那幾頁）；存在 PlayerPrefs，關掉遊戲再開還在。
 ///
 /// 主選單多一個入口「故事到目前為止」（左下角，程式長出來的按鈕，美術之後可以換圖）：
@@ -50,9 +51,9 @@ public static class StoryProgress
         string l = n.ToLower();
         if (l == "cottoncastle") Unlock(7, "進棉花堡");
         else if (l == "samplescene" || l.Contains("ruined")) Unlock(26, "墜落、廢墟");
-        else if (l == "desert") Unlock(35, "進荒原");
+        else if (l == "desert") Unlock(34, "進荒原");                 // 036–038 鳥影：DesertOrbDirector（x≥45）；039：拿到光球
         else if (l == "underwater") Unlock(55, "水下");
-        else if (l.Contains("dark glasses")) Unlock(61, "玻璃館");
+        else if (l.Contains("dark glasses")) Unlock(58, "玻璃館");  // 060–063：MirrorWallAbsorbCutscene 鏡牆碎掉
         else if (n == BookSceneName)
         {
             if (EndCredits.EndingMode) Unlock(LastPage, "結局");
@@ -193,8 +194,8 @@ public class StoryBookMenuButton : MonoBehaviour
         RectTransform rt = btnGo.AddComponent<RectTransform>();
         rt.anchorMin = new Vector2(0f, 0f); rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0f, 0f);
-        rt.anchoredPosition = new Vector2(48f, 40f);
-        rt.sizeDelta = new Vector2(360f, 64f);
+        rt.anchoredPosition = new Vector2(150f, 14f);      // ★1023 跟主選單那排按鈕的左緣大致對齊；壓低一點，不碰「離開遊戲」的框
+        rt.sizeDelta = new Vector2(560f, 64f);
         Image bg = btnGo.AddComponent<Image>();
         bg.color = new Color(0.05f, 0.07f, 0.16f, 0.55f);
         Button btn = btnGo.AddComponent<Button>();
@@ -215,6 +216,8 @@ public class StoryBookMenuButton : MonoBehaviour
         _label.font = f;
         _label.fontSize = 30;
         _label.alignment = TextAnchor.MiddleLeft;
+        _label.horizontalOverflow = HorizontalWrapMode.Overflow;   // 字不要被切掉
+        _label.verticalOverflow = VerticalWrapMode.Overflow;
         _label.color = new Color(0.91f, 0.88f, 0.82f, 0.95f);
         _label.raycastTarget = false;
         _label.text = "繪本　故事到目前為止（第 " + (StoryProgress.UnlockedThrough + 1) + " 頁）";

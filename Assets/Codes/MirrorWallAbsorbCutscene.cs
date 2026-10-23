@@ -29,13 +29,15 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     [Tooltip("鏡牆演完要播哪張卡（預設 M5）")]
     public string afterCutsceneCardId = "M5";
 
-    [Header("★1023 鏡牆碎掉之後先翻三頁繪本（M：解釋怪物為什麼出現）")]
-    [Tooltip("勾著＝碎掉、鏡頭回到她之後，先翻下面這幾頁（她把光交給鏡子、鏡中的她、光被吸進去），再播 M5、再放黑影")]
+    [Header("★1023 鏡牆碎掉之後先翻幾頁繪本（M：解釋怪物為什麼出現）")]
+    [Tooltip("勾著＝碎掉、鏡頭回到她之後，先翻下面這幾頁（她把光交給鏡子、鏡中的她、光被吸進去、★1023c 裂縫裡跑出一個跟她同樣形狀的巨大黑影追著她），再播 M5、再放黑影")]
     public bool playPagesAfterShatter = true;
     [Tooltip("要翻的頁（Resources 路徑，不含副檔名）")]
-    public string[] pagesAfterShatter = new string[] { "Pages/060_館-1", "Pages/061_館-2", "Pages/062_館-3" };
+    public string[] pagesAfterShatter = new string[] { "Pages/060_館-1", "Pages/061_館-2", "Pages/062_館-3", "Pages/063_結-7" };
     [Tooltip("每頁停幾秒（任意鍵可提早翻）")]
     public float pageHoldSeconds = 5f;
+    [Tooltip("碎掉之後等幾秒再翻頁（等碎片飛完、白光退掉；碎片壽命 1.5～2.5 秒）")]
+    public float pagesDelayAfterShatter = 2.2f;
 
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
@@ -916,9 +918,11 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         if (playPagesAfterShatter && pagesAfterShatter != null && pagesAfterShatter.Length > 0)
         {
             if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
+            if (pagesDelayAfterShatter > 0f) yield return new WaitForSeconds(pagesDelayAfterShatter);   // ★1023b 碎片飛完再翻（第一版碎片停在半空，翻完才繼續飛）
             Debug.Log("📖【鏡牆】★1023 碎掉之後翻 " + pagesAfterShatter.Length + " 頁繪本，解釋怪物的來處");
             yield return StoryPageCard.PlayRoutine(pagesAfterShatter, pageHoldSeconds, false, true);
         }
+        StoryProgress.Unlock(62, "鏡牆碎掉（060～063）");   // ★1023c 繪本這幾頁等鏡子碎了才開（063＝黑影從裂縫出來追她）
 
         // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）
         //   接下來玩家往前走會踩到 ShadowMonsterTrigger，黑影才開始追。
