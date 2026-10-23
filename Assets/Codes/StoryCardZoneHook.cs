@@ -221,6 +221,12 @@ public class StoryCardZoneHook : MonoBehaviour
             comicFrom = 41;   // 042_掉-1（頁碼 0 起算＝41）
             comicTo = 47;     // 048_掉-7
         }
+        else if (comicFrom < 0 && cardId == "M4")
+        {
+            // ★1023 水下→玻璃館：穿水幕之後接「游」三頁——手碰水幕、穿過去、走進星空（M 10/23）
+            comicFrom = 56;   // 057_游-1
+            comicTo = 58;     // 059_游-3
+        }
         if (comicFrom >= 0 && comicTo >= comicFrom)
         {
             Debug.Log("[StoryCardZoneHook] 文字卡 " + cardId + " 播完，接轉場漫畫 頁 " + (comicFrom + 1) + "~" + (comicTo + 1) + " ➔ " + targetScene);

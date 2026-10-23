@@ -48,6 +48,51 @@ public static class BirdAttackScheduler
     //   增援鳥、失手回頭再攻的鳥也是走這個佇列，所以一起遵守空檔。waveSize＝0 關閉（回到舊的節奏）。
     public static int waveSize = 3;
     public static float waveQuietSeconds = 1.2f;
+
+    // ★1023 鳥群節奏（M 10/23：先直衝、後加預判追蹤、越來越密）：依玩家的 x 換一段設定。
+    //   DesertBeatDirector 開局寫入；rhythm＝null 就照上面的全域值（舊行為）。
+    public class RhythmStage
+    {
+        public string name;
+        public float fromX;          // 玩家 x 走到這裡之後用這一段
+        public string pattern;       // C＝定點直衝（可閃）、P＝預判（追著她的落點）
+        public int maxSimultaneous;  // 同時攻擊上限
+        public int waveSize;         // 一波幾隻
+    }
+    public static List<RhythmStage> rhythm = null;
+    private static RhythmStage _stage;
+
+    /// <summary>依玩家 x 找出現在是哪一段（fromX 最大且 ≤ x 的那一段）。</summary>
+    private static RhythmStage StageFor(float x)
+    {
+        if (rhythm == null || rhythm.Count == 0) return null;
+        RhythmStage best = null;
+        for (int i = 0; i < rhythm.Count; i++)
+        {
+            RhythmStage r = rhythm[i];
+            if (r == null || x < r.fromX) continue;
+            if (best == null || r.fromX >= best.fromX) best = r;
+        }
+        return best ?? rhythm[0];
+    }
+
+    /// <summary>更新目前的段；段換了就重頭數攻擊型態、印一行。</summary>
+    private static void UpdateStage()
+    {
+        if (rhythm == null) { _stage = null; return; }
+        Transform p = GetPlayer();
+        if (p == null) return;
+        RhythmStage now = StageFor(p.position.x);
+        if (now != _stage)
+        {
+            _stage = now;
+            _patternIndex = 0;
+            if (now != null) Debug.Log($"[BIRD RHYTHM] ★1023 進入「{now.name}」（x≥{now.fromX:F0}）：型態 {now.pattern}、同時最多 {now.maxSimultaneous}、一波 {now.waveSize}");
+        }
+    }
+    private static string CurrentPattern() { return (_stage != null && !string.IsNullOrEmpty(_stage.pattern)) ? _stage.pattern : attackPattern; }
+    private static int CurrentMaxSimultaneous() { return _stage != null ? Mathf.Max(1, _stage.maxSimultaneous) : maxSimultaneous; }
+    private static int CurrentWaveSize() { return _stage != null ? _stage.waveSize : waveSize; }
     private static int _waveGranted = 0;
     private static float _lastActiveTime = -999f;
 
@@ -89,6 +134,7 @@ public static class BirdAttackScheduler
 
     private static void OnSceneLoaded(Scene s, LoadSceneMode m)
     {
+        rhythm = null;   // ★1023 每個場景由 DesertBeatDirector 重新寫入；沒寫＝照全域值
         ClearQueueAndCancelBirds();
         _stats.Clear();
         ResetCounters();
@@ -105,6 +151,7 @@ public static class BirdAttackScheduler
 
     private static void ResetCounters()
     {
+        _stage = null;   // ★1023 下一次 Tick 重新依 x 選段
         _patternIndex = 0;
         _slotCount = 0;
         _nextSlotTime = 0f;
@@ -219,7 +266,8 @@ public static class BirdAttackScheduler
     private static int EffectiveCap()
     {
         int bonus = queuePressureStep > 0 ? _queue.Count / queuePressureStep : 0;
-        return Mathf.Clamp(Mathf.Max(1, maxSimultaneous) + bonus, 1, Mathf.Max(maxSimultaneous, maxSimultaneousHard));
+        int baseCap = CurrentMaxSimultaneous();
+        return Mathf.Clamp(Mathf.Max(1, baseCap) + bonus, 1, Mathf.Max(baseCap, maxSimultaneousHard));
     }
 
     private static bool AnyForceRequest()
@@ -248,6 +296,7 @@ public static class BirdAttackScheduler
             if (b == null || !b.isActiveAndEnabled || !b.IsPending) _queue.RemoveAt(i);
         }
         if (_queue.Count == 0) { _lastBlock = ""; return; }
+        UpdateStage();   // ★1023 依玩家 x 換段
 
         // 2. 全場阻擋：只延後，不丟需求（事件只在「開始被擋」那一刻記一次）
         bool windPhase = IndividualBirdEnemy.IsWindPhase();
@@ -257,7 +306,7 @@ public static class BirdAttackScheduler
         else if (windPhase && !AnyWindFreeRequest()) block = "WIND";
         else if (IndividualBirdEnemy.IsAllSuppressed) block = "SHADOW";
         else if (Time.time < _nextSlotTime || _active.Count >= EffectiveCap()) block = "BUSY";
-        else if (waveSize > 0 && _waveGranted >= waveSize && !AnyForceRequest())
+        else if (CurrentWaveSize() > 0 && _waveGranted >= CurrentWaveSize() && !AnyForceRequest())
         {
             // ★1018 這一波放完了：等場上的鳥全部攻擊完，再安靜 waveQuietSeconds 秒才開下一波
             if (_active.Count > 0 || Time.time - _lastActiveTime < Mathf.Max(0f, waveQuietSeconds)) block = "WAVE";
@@ -319,7 +368,8 @@ public static class BirdAttackScheduler
         int chosenZone = ZoneOf(chosenDx);
         if (chosenZone == _lastZone) _sameZoneCount++; else { _lastZone = chosenZone; _sameZoneCount = 1; }
 
-        string pat = string.IsNullOrEmpty(attackPattern) ? "CP" : attackPattern;
+        string pat = CurrentPattern();
+        if (string.IsNullOrEmpty(pat)) pat = "CP";
         char c = char.ToUpperInvariant(pat[_patternIndex % pat.Length]);
         _patternIndex++;
         BirdAttackType type = c == 'P' ? BirdAttackType.PredictedPosition : BirdAttackType.FixedPosition;

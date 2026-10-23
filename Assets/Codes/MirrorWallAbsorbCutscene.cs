@@ -29,6 +29,14 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     [Tooltip("鏡牆演完要播哪張卡（預設 M5）")]
     public string afterCutsceneCardId = "M5";
 
+    [Header("★1023 鏡牆碎掉之後先翻三頁繪本（M：解釋怪物為什麼出現）")]
+    [Tooltip("勾著＝碎掉、鏡頭回到她之後，先翻下面這幾頁（她把光交給鏡子、鏡中的她、光被吸進去），再播 M5、再放黑影")]
+    public bool playPagesAfterShatter = true;
+    [Tooltip("要翻的頁（Resources 路徑，不含副檔名）")]
+    public string[] pagesAfterShatter = new string[] { "Pages/060_館-1", "Pages/061_館-2", "Pages/062_館-3" };
+    [Tooltip("每頁停幾秒（任意鍵可提早翻）")]
+    public float pageHoldSeconds = 5f;
+
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
     public GameObject mirrorWall;
@@ -902,6 +910,14 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         if (enableCameraZoom)
         {
             yield return StartCoroutine(SmoothZoomLens(originalLensSize, zoomTransitionSpeed * 0.8f));
+        }
+
+        // ★1023 碎掉之後先翻繪本 060～062（她的光被鏡子吸走、鏡中的她走出來）＝怪物是從哪裡來的；之後才是 M5「我也可以求救」
+        if (playPagesAfterShatter && pagesAfterShatter != null && pagesAfterShatter.Length > 0)
+        {
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
+            Debug.Log("📖【鏡牆】★1023 碎掉之後翻 " + pagesAfterShatter.Length + " 頁繪本，解釋怪物的來處");
+            yield return StoryPageCard.PlayRoutine(pagesAfterShatter, pageHoldSeconds, false, true);
         }
 
         // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）

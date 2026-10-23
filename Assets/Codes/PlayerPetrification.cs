@@ -251,7 +251,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
         // 3. 主動石化：按住 ⬇/S 變成石頭（抗風抗鳥、不能動）；放開立刻解除
         //    ★只有荒原吃這套；其他關卡的 ⬇/S 交還給移動系統（水下下潛等），這裡完全不攔。
-        if (holdToPetrify && IsPetrifyAllowedInCurrentScene())
+        //    ★1023 荒原要先拿到光球才能硬撐（DesertOrbDirector）：拿到之前按 S 沒有作用，風只能靠岩柱躲。
+        if (holdToPetrify && IsPetrifyAllowedInCurrentScene() && DesertOrbDirector.BraceAllowed)
         {
             bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow);
             if (holding && !isPetrified)

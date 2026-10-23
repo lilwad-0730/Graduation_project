@@ -52,6 +52,8 @@ public class PageBook : MonoBehaviour
 
     /// <summary>往前翻的下限頁（0 起算）。結局模式由 EndCredits 設成結尾漫畫第一頁；平常 0＝不限制。</summary>
     [System.NonSerialized] public int minPage = 0;
+    /// <summary>★1023 往前翻的上限（0 起算，含）；-1＝不限。主選單的「故事到目前為止」用：她走到哪一章，書就開到哪一頁。</summary>
+    [System.NonSerialized] public int maxPage = -1;
 
     enum Mode { Idle, Turning, Dragging }
 
@@ -262,6 +264,7 @@ public class PageBook : MonoBehaviour
         if (dir > 0)
         {
             bool last = index >= pages.Length - 1;
+            if (maxPage >= 0 && index >= maxPage && !BookTransitionManager.isChapterMode) return false;   // ★1023 還沒玩到的章節不給翻
             if (BookTransitionManager.isChapterMode && BookTransitionManager.chapterEndPage >= 0)
             {
                 if (index >= BookTransitionManager.chapterEndPage)
@@ -319,7 +322,9 @@ public class PageBook : MonoBehaviour
     {
         int lowest = Mathf.Max(0, minPage);
         if (BookTransitionManager.isChapterMode && !BookTransitionManager.allowFlipBackBeforeChapter) lowest = Mathf.Max(lowest, BookTransitionManager.chapterStartPage);   // ★1021
-        i = Mathf.Clamp(i, lowest, Mathf.Max(0, PageCount - 1));   // Home 在結局／章節模式只回到本段第一頁
+        int highest = Mathf.Max(0, PageCount - 1);
+        if (maxPage >= 0 && !BookTransitionManager.isChapterMode) highest = Mathf.Min(highest, Mathf.Max(0, maxPage));   // ★1023
+        i = Mathf.Clamp(i, lowest, highest);   // Home 在結局／章節模式只回到本段第一頁
         if (i == index) return;
         if (animate) { if (i > index) Next(); else Prev(); return; }
         index = i;

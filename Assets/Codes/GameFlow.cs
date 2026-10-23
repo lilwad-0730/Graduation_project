@@ -76,6 +76,11 @@ public static class GameFlow
             State = FlowState.Ending;
             Log("進入結局（繪本＋名單）");
         }
+        else if (scene.name == BookSceneName && StoryProgress.ReaderMode)
+        {
+            State = FlowState.MainMenu;   // ★1023 主選單的「故事到目前為止」：還算在主選單，不開新的一輪
+            Log("主選單翻繪本（故事到目前為止）");
+        }
         else if (State != FlowState.Playing)
         {
             // 從主選單走進第一關，或在編輯器直接從某一關按 Play
@@ -102,6 +107,7 @@ public static class GameFlow
     {
         RunIndex++;
         State = FlowState.Playing;
+        StoryProgress.ResetForNewRun();   // ★1023 新的一輪：繪本從頭開
         ResetRunState("開始第 " + RunIndex + " 輪");
         Log("新的一輪開始");
     }

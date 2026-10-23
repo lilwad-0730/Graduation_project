@@ -60,6 +60,7 @@ public static class BookTransitionManager
         targetSpawnPointName = spawnPointName;
 
         Debug.Log($"📖【漫畫轉場】啟動漫畫章節轉場！起始頁: {startPage} -> 結束頁: {endPage}，下一關: {nextSceneName}");
+        StoryProgress.Unlock(endPage, "翻過章節漫畫 " + (startPage + 1) + "～" + (endPage + 1));   // ★1023 書開到這裡
 
         if (SceneTransitionController.Instance != null)
         {

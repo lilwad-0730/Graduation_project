@@ -31,7 +31,7 @@ public class BookAudio : MonoBehaviour
 
     [Header("巨石落地後的全靜音")]
     [Tooltip("翻到這一頁時，音樂整個消失 N 秒 —— 全片唯一一次")]
-    public int silencePage = 26;          // 廢-6「街空了」
+    public int silencePage = 20;          // 廢-6「街空了」（★1023 廢墟頁重排後 廢-6 是第 21 頁＝index 20；Book 場景裡的值也改了）
     public float silenceSeconds = 0.8f;
 
     PageBook book;

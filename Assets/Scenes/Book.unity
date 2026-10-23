@@ -225,7 +225,7 @@ MonoBehaviour:
   pageTurnClips: []
   sfxVolume: 0.55
   pitchJitter: 0.12
-  silencePage: 26
+  silencePage: 20
   silenceSeconds: 0.8
 --- !u!114 &1000014
 MonoBehaviour:
