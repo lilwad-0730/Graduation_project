@@ -800,6 +800,8 @@ public class PlayerMovement : MonoBehaviour
 
     // 天空背景邊界快取 (避免每幀 FindObjectsByType)
     private float _nextSkyBoundsCheckTime = 0f;
+    private GameObject _followTargetObj;          // 快取的 CameraFollowTarget（LateUpdate 用）
+    private float _nextFollowTargetFind = 0f;
     private Bounds _cachedSkyBounds = new Bounds();
     private bool _hasCachedSkyBounds = false;
 
@@ -1755,7 +1757,13 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         if (smoothCameraY && cameraTarget != null)
         {
-            GameObject customTarget = GameObject.Find("CameraFollowTarget");
+            // 效能：GameObject.Find 是整個場景比對名字，原本每幀都跑。快取起來，找不到時每秒才再找一次
+            if (_followTargetObj == null && Time.time >= _nextFollowTargetFind)
+            {
+                _nextFollowTargetFind = Time.time + 1f;
+                _followTargetObj = GameObject.Find("CameraFollowTarget");
+            }
+            GameObject customTarget = _followTargetObj;
             if (customTarget != null)
             {
                 cameraTarget.position = customTarget.transform.position;
@@ -1786,7 +1794,9 @@ public class PlayerMovement : MonoBehaviour
                     // 快取計算 SkyBackground 包圍盒，避免每幀執行全場景 FindObjectsByType 造成卡頓
                     if (!_hasCachedSkyBounds || Time.time >= _nextSkyBoundsCheckTime)
                     {
-                        _nextSkyBoundsCheckTime = Time.time + 2.0f;
+                        // 效能：這一掃是全場景所有物件，原本每 2 秒掃一次會週期性頓一下。
+                        //   天空背景不會動，找到後 30 秒才再確認一次；沒找到也放慢到 10 秒。
+                        _nextSkyBoundsCheckTime = Time.time + (_hasCachedSkyBounds ? 30.0f : 10.0f);
                         _cachedSkyBounds = new Bounds();
                         _hasCachedSkyBounds = false;
 

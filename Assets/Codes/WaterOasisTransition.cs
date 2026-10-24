@@ -196,12 +196,8 @@ public class WaterOasisTransition : MonoBehaviour, IResettable
         // ★改用非同步載入：水下場景很大（上百顆石頭、近 300MB 貼圖），同步載入會讓視窗整個卡住、
         //   Windows 跳出「沒有回應」（exe 才會發生，編輯器裡資源已在記憶體所以沒感覺）。
         //   非同步載入時視窗持續有回應，畫面維持全黑直到新場景好。
-        AsyncOperation load = SceneManager.LoadSceneAsync(targetScene);
-        if (load == null)
-        {
-            SceneManager.LoadScene(targetScene);
-            yield break;
-        }
+        AsyncOperation load = SceneLoader.Load(targetScene);   // 取不到非同步操作時 SceneLoader 已經退回同步載入
+        if (load == null) yield break;
         while (!load.isDone) yield return null;
     }
 

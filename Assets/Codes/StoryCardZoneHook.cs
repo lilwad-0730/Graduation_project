@@ -242,7 +242,7 @@ public class StoryCardZoneHook : MonoBehaviour
         }
 
         Debug.Log("[StoryCardZoneHook] 文字卡 " + cardId + " 播完，載入場景 " + targetScene);
-        SceneManager.LoadScene(targetScene);
+        SceneLoader.Load(targetScene);
     }
 
     private IEnumerator Sink(Transform t, float speed, float depth)

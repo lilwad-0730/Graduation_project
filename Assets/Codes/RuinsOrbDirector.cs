@@ -639,7 +639,7 @@ public class RuinsOrbDirector : MonoBehaviour
         string next = _storm != null && !string.IsNullOrWhiteSpace(_storm.nextSceneName) ? _storm.nextSceneName.Trim() : "desert";
         if (!string.IsNullOrEmpty(spawn)) PlayerRespawnSystem.QueueNextSceneSpawn(spawn);
         if (logEvents) Debug.Log("【廢墟光球】風暴轉場完成，載入 " + next);
-        SceneManager.LoadScene(next);
+        SceneLoader.Load(next);
     }
 
     /// <summary>★1011 狼淡出（只改圖片透明度），淡完關掉。咬在她身上的也一起消失。</summary>

@@ -68,7 +68,7 @@ public static class BookTransitionManager
         }
         else
         {
-            SceneManager.LoadScene("Book");
+            SceneLoader.Load("Book");
         }
     }
 
@@ -105,7 +105,7 @@ public static class BookTransitionManager
         }
         else
         {
-            SceneManager.LoadScene(targetScene);
+            SceneLoader.Load(targetScene);
         }
     }
 }

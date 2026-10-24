@@ -337,7 +337,7 @@ public class MainMenuController : MonoBehaviour
         Debug.LogWarning("【主選單】找不到 StartMenuSceneTransition，改用備用路線直接載入 " + targetSceneName);
         GameFlow.StartNewRun();
         string testerStart = TesterMode.StartScene;   // ★1016 測試模式指定的起始關卡（沒有就照常）
-        SceneManager.LoadScene(!string.IsNullOrEmpty(testerStart) && Application.CanStreamedLevelBeLoaded(testerStart) ? testerStart : targetSceneName);
+        SceneLoader.Load(!string.IsNullOrEmpty(testerStart) && Application.CanStreamedLevelBeLoaded(testerStart) ? testerStart : targetSceneName);
     }
 
     private static void FocusOf(GameObject item)
