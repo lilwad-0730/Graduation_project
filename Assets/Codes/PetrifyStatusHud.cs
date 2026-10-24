@@ -23,6 +23,12 @@ public class PetrifyStatusHud : MonoBehaviour
     [Header("文字")]
     public string braceTitle = "抗敵能力";
     public string braceSub = "抗風・擋鳥　放開 S 解除";
+    [Tooltip("前幾次主動石化時的副標（說明這個能力在做什麼）")]
+    public string braceFirstSub = "變成石頭　風吹不動、鳥啄不動";
+    [Tooltip("前幾次主動石化會顯示說明副標")]
+    public int firstUseCount = 2;
+    [Tooltip("說明副標至少停留幾秒（即使馬上放開 S）")]
+    public float firstUseMinSeconds = 2.2f;
     public string passiveTitle = "石化中";
     public string passiveSub = "被風吹成石頭";
 
@@ -43,7 +49,13 @@ public class PetrifyStatusHud : MonoBehaviour
     private TextMeshProUGUI _title, _sub;
     private float _alpha;
     private bool _fontReady;
+    private bool _wasActive, _firstUse;
+    private float _holdUntil;
+    private static int _braceUses;   // 這次遊玩已經顯示過幾次說明（重新開遊戲才歸零）
     private static Sprite _backingSprite, _stoneSprite;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() { _braceUses = 0; _backingSprite = null; _stoneSprite = null; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -77,12 +89,26 @@ public class PetrifyStatusHud : MonoBehaviour
 
         bool bracing = _pet != null && _pet.isPetrified && _pet.IsBracing;
         bool passive = _pet != null && _pet.isPetrified && !_pet.IsBracing;
-        bool show = Enabled && (bracing || passive);
+        bool active = Enabled && (bracing || passive);
+
+        // 前幾次主動石化：副標多說明一句這個能力在做什麼，而且至少停留 firstUseMinSeconds 秒（按一下就放開也看得完）
+        if (active && !_wasActive && bracing && _braceUses < firstUseCount)
+        {
+            _braceUses++;
+            _firstUse = true;
+            _holdUntil = Time.unscaledTime + firstUseMinSeconds;
+        }
+        else if (active && !_wasActive) _firstUse = false;
+        _wasActive = active;
+
+        bool holding = Enabled && _firstUse && Time.unscaledTime < _holdUntil;
+        bool show = active || holding;
         if (show)
         {
             if (!_fontReady) ApplyFont();
-            _title.text = bracing ? braceTitle : passiveTitle;
-            _sub.text = bracing ? braceSub : passiveSub;
+            bool asBrace = bracing || (holding && !passive);
+            _title.text = asBrace ? braceTitle : passiveTitle;
+            _sub.text = asBrace ? (_firstUse ? braceFirstSub : braceSub) : passiveSub;
         }
 
         float target = show ? 1f : 0f;

@@ -1093,6 +1093,11 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W) || 
             Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
         {
+            // ★1024 這是「按了不能動」的診斷：Editor.log 一場玩下來印了 659 次（每按一下都組一大串字、GetComponent 兩次、整段 stack trace）。
+            //   只在真的可能動不了（剛體鎖住／元件關掉／被凍結或鎖定）時才印，正常按鍵不印。
+            bool maybeStuck = rb == null || rb.isKinematic || !enabled || freezeHorizontal || isCutsceneFrozen || isStrictLockingX || IsHardCutsceneLocked;
+            if (maybeStuck)
+            {
             PlayerPetrification petr = GetComponent<PlayerPetrification>();
             if (petr == null) petr = GetComponentInChildren<PlayerPetrification>();
             Debug.Log($"【移動診斷 LOG】玩家按下按鍵！\n" +
@@ -1113,6 +1118,7 @@ public class PlayerMovement : MonoBehaviour
                       $" - 石化狀態 isPetrified: {(petr != null ? petr.isPetrified.ToString() : "無石化組件")}\n" +
                       $" - 當前速度 currentSpeed: {currentSpeed}\n" +
                       $" - 剛體速度 velocity: {(rb != null ? rb.linearVelocity.ToString() : "NULL")}");
+            }
         }
 
         // ==========================================

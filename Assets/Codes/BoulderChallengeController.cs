@@ -329,11 +329,10 @@ public class BoulderChallengeController : MonoBehaviour
         boulder.EndRollback();
         if (challengeBoulderSpawn != null)
         {
-            _boulderRb.isKinematic = true;   // 先轉 kinematic 才能乾淨地改位置與速度
+            if (!_boulderRb.isKinematic) { _boulderRb.linearVelocity = Vector3.zero; _boulderRb.angularVelocity = Vector3.zero; }   // ★1024 kinematic 時設速度會噴警告，先歸零
+            _boulderRb.isKinematic = true;   // 先轉 kinematic 才能乾淨地改位置
             boulder.transform.position = challengeBoulderSpawn.position;
             _boulderRb.position = challengeBoulderSpawn.position;
-            _boulderRb.linearVelocity = Vector3.zero;
-            _boulderRb.angularVelocity = Vector3.zero;
         }
         else if (!_boulderRb.isKinematic)
         {

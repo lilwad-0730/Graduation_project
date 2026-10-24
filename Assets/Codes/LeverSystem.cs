@@ -319,9 +319,8 @@ public class LeverSystem : MonoBehaviour, IResettable
 
         if (targetRock != null)
         {
+            if (!targetRock.isKinematic) { targetRock.linearVelocity = Vector3.zero; targetRock.angularVelocity = Vector3.zero; }   // ★1024 kinematic 時設速度會噴警告，先歸零
             targetRock.isKinematic = true;
-            targetRock.linearVelocity = Vector3.zero;
-            targetRock.angularVelocity = Vector3.zero;
             if (_rockInitialPosition != Vector3.zero)
             {
                 targetRock.transform.position = _rockInitialPosition;

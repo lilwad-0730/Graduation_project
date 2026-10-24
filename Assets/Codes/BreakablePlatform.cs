@@ -295,10 +295,9 @@ public class BreakablePlatform : MonoBehaviour, IResettable
 
         if (!visible && rb != null)
         {
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }   // ★1024 kinematic 時設速度會噴警告（log 79 次），先歸零再轉 kinematic
             rb.isKinematic = true;
             rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
         }
     }
 
@@ -339,10 +338,9 @@ public class BreakablePlatform : MonoBehaviour, IResettable
 
         if (rb != null)
         {
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }   // ★1024 kinematic 時設速度會噴警告（log 79 次），先歸零再轉 kinematic
             rb.isKinematic = true;
             rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
         }
 
         // 恢復原版主貼圖
