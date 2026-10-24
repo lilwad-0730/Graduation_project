@@ -94,6 +94,34 @@ public class GuidanceLight : MonoBehaviour, IResettable
     public AudioClip absorbSFX;
     [Range(0f, 1f)] public float sfxVolume = 0.9f;
 
+    [System.Serializable]
+    public class WaypointVoice
+    {
+        [Tooltip("路徑點名稱（例如 P2）")]
+        public string waypointName;
+        public AudioClip clip;
+        [Range(0f, 1f)] public float volume = 1f;
+        [Tooltip("語音播放時畫面下方顯示的字幕（留空＝不顯示）。可用換行分成兩行")]
+        [TextArea(2, 4)] public string subtitle;
+    }
+
+    [Header("🎙 到點語音")]
+    [Tooltip("光球到達（被觸發）這些路徑點時播放對應的語音，每個點整場只播一次")]
+    public WaypointVoice[] waypointVoices;
+    [Tooltip("字幕的字型、大小、顏色、光暈、位置。Play 中調整會馬上套用（停止 Play 後會還原，要保留請在停止前記下數值）。\n" +
+             "在元件右上角 ⋮ 選「預覽字幕」可以在 Play 中直接叫出字幕")]
+    public VoiceSubtitle.Style subtitleStyle = new VoiceSubtitle.Style();
+
+    [ContextMenu("預覽字幕（Play 中）")]
+    private void PreviewSubtitle()
+    {
+        if (!Application.isPlaying) { Debug.LogWarning("【字幕】請先按 Play 再預覽"); return; }
+        if (waypointVoices == null) return;
+        foreach (WaypointVoice v in waypointVoices)
+            if (v != null && !string.IsNullOrWhiteSpace(v.subtitle)) { VoiceSubtitle.Show(v.subtitle, 30f, subtitleStyle); return; }
+    }
+    private readonly HashSet<string> _playedWaypointVoices = new HashSet<string>();
+
     // 狀態屬性，便於外部偵測
     public bool IsAbsorbing { get; private set; } = false;
 
@@ -485,6 +513,8 @@ public class GuidanceLight : MonoBehaviour, IResettable
     {
         if (_cutsceneFlightCoroutine != null) return;
 
+        PlayWaypointVoice(waypoints[currentWaypointIndex]);
+
         if (freezePlayer && pm != null && currentWaypointIndex + 1 < waypoints.Length)
         {
             _cutsceneFlightCoroutine = StartCoroutine(CutsceneFlightSequence(pm, useCloseup));
@@ -493,6 +523,20 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             currentWaypointIndex++;
             maxWaypointReached = Mathf.Max(maxWaypointReached, currentWaypointIndex);
+        }
+    }
+
+    private void PlayWaypointVoice(Transform wp)
+    {
+        if (wp == null || waypointVoices == null) return;
+        foreach (WaypointVoice v in waypointVoices)
+        {
+            if (v == null || v.clip == null || v.waypointName != wp.name) continue;
+            if (!_playedWaypointVoices.Add(wp.name)) return;   // 已經播過（例如重生後再經過）
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(v.clip, v.volume);
+            else AudioSource.PlayClipAtPoint(v.clip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(v.volume));
+            VoiceSubtitle.Show(v.subtitle, v.clip.length, subtitleStyle);
+            return;
         }
     }
 
