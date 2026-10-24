@@ -18709,8 +18709,8 @@ MonoBehaviour:
   cameraHandBackSeconds: 1
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
-  touchTriggerDistance: 2.6
-  useExtendedTouchRange: 1
+  touchTriggerDistance: 2.2
+  useExtendedTouchRange: 0
   touchZoneX: 2.2
   touchZoneAbove: 3.8
   touchZoneBelow: 2
@@ -18726,7 +18726,7 @@ MonoBehaviour:
   closeupLensLerpSpeed: 6
   bobHeight: 0.3
   bobSpeed: 3
-  absorbTriggerDistance: 2.6
+  absorbTriggerDistance: 2.2
   fadeOutDuration: 1
   fadeInDuration: 1
   absorbSFX: {fileID: 8300000, guid: a713f28395c464f4f82be46d25c65a8e, type: 3}

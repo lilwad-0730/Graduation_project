@@ -285,6 +285,13 @@ public class CandleCollectible : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        // ★1024 存檔點前面的燭火玩家已經過關，重生不刷新（由 ShadowMonsterController 統一處理，避免重生系統逐個重置時把它們復原）
+        if (ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.IsCandleKeptByCheckpoint(this))
+        {
+            if (!isCollected) MarkCollectedSilently();
+            return;
+        }
+
         if (!isCollected && !missed) return; // 沒被收集、也沒漏掉，不需要重置
 
         StopAllCoroutines();

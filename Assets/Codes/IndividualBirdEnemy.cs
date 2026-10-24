@@ -178,6 +178,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     // 每隻鳥生成時隨機決定一次的專屬特徵 (Runtime Individual Profile)
     private float _indivSpeedMult = 1.0f;
+    private float _hoverPhase = 0f;   // ★1024 盤旋相位（累加，速度會被雜訊拉快拉慢）
     private float _indivRadiusX = 1.0f;
     private float _indivAmpY = 1.0f;
     private float _indivRadiusZ = 1.0f;
@@ -822,10 +823,18 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     /// </summary>
     private void UpdateOrganicIdleHover()
     {
-        float t = Time.time * hoverFrequency * _indivSpeedMult + _indivPhase;
+        // ★1024 像真鳥一樣隨機盤旋：原本相位是 時間×固定頻率，軌跡是固定的 8 字、每圈一模一樣，看起來像在跑軌道。
+        //   改成「相位用累加」，每一刻的速度被慢慢變化的雜訊拉快拉慢（有時滑翔有時急轉），
+        //   盤旋範圍也跟著雜訊忽大忽小，每隻鳥各自用自己的雜訊種子，不會同步。
+        float tNow = Time.time;
+        float speedWobble = 1f + (Mathf.PerlinNoise(_noiseSeedY + 31.7f, tNow * 0.18f) - 0.5f) * 1.1f;   // 約 0.45～1.55 倍
+        _hoverPhase += Time.deltaTime * hoverFrequency * _indivSpeedMult * speedWobble;
+        float t = _hoverPhase + _indivPhase;
+        float sizeWobble = Mathf.Lerp(0.7f, 1.25f, Mathf.PerlinNoise(_noiseSeedX + 57.3f, tNow * 0.11f));
 
-        // 1. 計算純淨的 Camera-Relative Parametric Curve 目標點
+        // 1. 計算純淨的 Camera-Relative Parametric Curve 目標點（範圍隨雜訊縮放）
         Vector3 rawTargetPos = GetParametricHoverPosition(HoverCenter, t);
+        rawTargetPos = HoverCenter + (rawTargetPos - HoverCenter) * sizeWobble;
 
         // 2. 疊加微幅平滑氣流雜訊 (不破壞主要可視巡航形狀)
         if (noiseStrength > 0.01f)

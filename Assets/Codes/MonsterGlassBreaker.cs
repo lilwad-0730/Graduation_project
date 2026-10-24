@@ -34,6 +34,8 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
 
     [Tooltip("玻璃右緣要比她的位置後面幾公尺才打碎")]
     public float behindPlayerMargin = 1.0f;
+    [Tooltip("★1024 打勾＝燭火所在的那片平台怪物不會摧毀（舊行為）。預設關閉：怪物無視一切，不管燭火有沒有點亮，燭火和它的平台都會被摧毀")]
+    public bool protectCandlePlatforms = false;
     private class GlassTarget
     {
         public Transform tr;
@@ -63,7 +65,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         monsterCollider.isTrigger = true;
 
         BuildTargetList();
-        ProtectGlassNearestToCandles();
+        if (protectCandlePlatforms) ProtectGlassNearestToCandles();
 
         Debug.Log($"【玻璃摧毀】'{gameObject.name}' 初始化完成：納入 {_targets.Count} 片玻璃平台，" +
                   $"monsterController = {(monsterController != null ? monsterController.gameObject.name : "null")}");

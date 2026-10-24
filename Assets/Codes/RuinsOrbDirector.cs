@@ -79,7 +79,7 @@ public class RuinsOrbDirector : MonoBehaviour
     [Tooltip("光球要起飛時，最多等巨石砸碎石牆多久（秒）。保底，避免石牆沒碎就卡住")]
     public float gateMaxWaitSeconds = 8f;
     [Tooltip("石牆碎了之後，再多停多久才讓光球飛（秒），讓玩家看清楚")]
-    public float gateHoldAfterBreakSeconds = 0.8f;
+    public float gateHoldAfterBreakSeconds = 0.5f;   // ★1024 0.8→0.5
 
     [Header("★1015 保險：她跑到巨石前面（沒有推）")]
     [Tooltip("她比巨石還右邊超過這麼遠（公尺）＝越過巨石，拉回碰光球的地方")]
@@ -404,7 +404,7 @@ public class RuinsOrbDirector : MonoBehaviour
         _hasPushStartPos = true;
         Flare(40);
         PlayOrbSfx();
-        yield return new WaitForSeconds(0.35f);
+        yield return new WaitForSeconds(0.15f);   // ★1024 0.35→0.15，碰到光球到巨石放下少等 0.2 秒
         if (_rock != null && _rock.isKinematic)
         {
             _rock.isKinematic = false;
@@ -433,6 +433,10 @@ public class RuinsOrbDirector : MonoBehaviour
             t += Time.deltaTime;
             yield return null;
         }
+        // ★1024 巨石砸碎牆的那一刻就接著滾（原本要等光球起飛前的停留 0.8 秒過完才開始滾，砸完停一下才滾很不順）
+        if (rollBoulderToChallengeStart && _door != null && _door.HasShattered && !PlayerRespawnSystem.IsAnyRespawning)
+            StartCoroutine(RollBoulderToChallengeStartRoutine());
+
         float h = 0f;
         while (h < gateHoldAfterBreakSeconds && !PlayerRespawnSystem.IsAnyRespawning)
         {
@@ -441,10 +445,6 @@ public class RuinsOrbDirector : MonoBehaviour
         }
         if (logEvents) Debug.Log("【廢墟光球】石牆演完了（等了 " + t.ToString("F1") + " 秒）：光球起飛，鏡頭跟過去");
         _gateActive = false;
-
-        // ★1016 巨石順勢滾過碎牆，停在推巨石的起點（Boulder Spawn）
-        if (rollBoulderToChallengeStart && _door != null && _door.HasShattered && !PlayerRespawnSystem.IsAnyRespawning)
-            StartCoroutine(RollBoulderToChallengeStartRoutine());
     }
 
     /// <summary>★1016 砸完石牆：巨石往右滾到 Boulder Spawn 停下（用物理滾，外觀會跟著轉）。</summary>

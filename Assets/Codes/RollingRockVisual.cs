@@ -167,20 +167,24 @@ public class RollingRockVisual : MonoBehaviour
             Debug.Log($"【巨石外觀】★1018 玩家多了推石專用圓頭膠囊：半徑(世界)≈{tag.capsule.radius * Mathf.Max(Mathf.Abs(pm.transform.lossyScale.x), Mathf.Abs(pm.transform.lossyScale.z)):F2} 高(local){tag.capsule.height:F2}，石頭已忽略原本的方框");
     }
 
+    private float _spinDegPerSec;   // ★1024 視覺滾動的角速度（有慣性）
+
     void Update()
     {
         EnsureRoundPushCollider();
         if (rb == null || visualTransform == null) return;
 
-        // 獲取水平移動速度 (X 軸)
-        float speed = rb.linearVelocity.x;
-
-        // 根據線速度與半徑計算旋轉角度：角度變化 = (速度 / 半徑) * 弧度轉角度
-        // 乘以 Time.deltaTime 得到此影格的旋轉增量
-        float rotationAmount = (speed / radius) * Mathf.Rad2Deg * Time.deltaTime;
+        // ★1024 滾動速度改取「沿坡面的實際速度」（方向跟水平速度一致）：原本只看水平速度，坡上推石時轉得比實際移動慢，會像在打滑；
+        //   而且停下時角速度一格就歸零，石頭突然「釘住」。改成角速度有慣性：加速跟得上、減速慢慢收（約 0.2 秒），停下後多滾一點點。
+        Vector3 vel = rb.linearVelocity;
+        float speed = Mathf.Abs(vel.x) > 0.01f ? new Vector2(vel.x, vel.y).magnitude * Mathf.Sign(vel.x) : 0f;
+        float targetSpin = (speed / radius) * Mathf.Rad2Deg;   // 度／秒
+        float follow = Mathf.Abs(targetSpin) >= Mathf.Abs(_spinDegPerSec) ? 18f : 5f;
+        _spinDegPerSec = Mathf.Lerp(_spinDegPerSec, targetSpin, 1f - Mathf.Exp(-follow * Time.deltaTime));
+        if (Mathf.Abs(_spinDegPerSec) < 0.5f && Mathf.Abs(targetSpin) < 0.5f) _spinDegPerSec = 0f;
 
         // 僅沿著 Z 軸旋轉視覺子物件（順時針滾動，所以帶負號）
-        visualTransform.Rotate(Vector3.forward, -rotationAmount, Space.Self);
+        visualTransform.Rotate(Vector3.forward, -_spinDegPerSec * Time.deltaTime, Space.Self);
 
         UpdateSlopePushVisualPull();
     }
@@ -942,7 +946,9 @@ public class RollingRockVisual : MonoBehaviour
     [Tooltip("往下滾的加速度（公尺／秒²）")]
     public float slopeIdleRollAccel = 1.5f;
     [Tooltip("平地上沒人推時的煞車（公尺／秒²）。原本沒有摩擦，放手後會一直滑")]
-    public float idleFlatBrake = 6f;
+    public float idleFlatBrake = 4f;
+    [Tooltip("★1024 玩家放手後石頭收速度的煞車（公尺／秒²）。比推的時候的 boulderBraking 柔，放手後會多滾一小段")]
+    public float releaseBrake = 6f;
     [Tooltip("坡度超過這個角度才算在坡上（度）")]
     public float slopeIdleMinAngle = 6f;
 
@@ -991,7 +997,7 @@ public class RollingRockVisual : MonoBehaviour
             bool holding = Time.time - _idleSince < slopeIdleHoldSeconds;
             Vector3 target = holding ? Vector3.zero : downhill * Mathf.Max(0f, slopeIdleRollSpeed);
             // 整個速度（含 y）沿坡逼近目標：加速慢（slopeIdleRollAccel）、收速度快（boulderBraking），不會飛離坡面
-            float rate = target.sqrMagnitude > v.sqrMagnitude ? slopeIdleRollAccel : Mathf.Max(slopeIdleRollAccel, boulderBraking);
+            float rate = target.sqrMagnitude > v.sqrMagnitude ? slopeIdleRollAccel : Mathf.Max(slopeIdleRollAccel, releaseBrake);   // ★1024 放手收速度用比較柔的 releaseBrake
             Vector3 next = Vector3.MoveTowards(v, target, Mathf.Max(0.1f, rate) * dt);
             rb.linearVelocity = new Vector3(next.x, next.y, 0f);
         }
@@ -1032,7 +1038,7 @@ public class RollingRockVisual : MonoBehaviour
         {
             Vector3 tan = new Vector3(gn.y, -gn.x, 0f).normalized;
             float vt = Vector3.Dot(rb.linearVelocity, tan);
-            vt = Mathf.MoveTowards(vt, 0f, Mathf.Max(0.1f, boulderBraking) * Time.fixedDeltaTime);
+            vt = Mathf.MoveTowards(vt, 0f, Mathf.Max(0.1f, releaseBrake) * Time.fixedDeltaTime);   // ★1024 放手收速度用比較柔的 releaseBrake
             rb.linearVelocity = tan * vt;
             return;
         }

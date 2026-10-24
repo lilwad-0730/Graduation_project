@@ -428,6 +428,10 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
     public void ResetToInitialState()
     {
+        // ★1024 存檔點前面的燭火已完成：重生不刷新（見 CandleCollectible.ResetToInitialState）
+        if (_collectible == null) _collectible = GetComponent<CandleCollectible>();
+        if (_collectible != null && ShadowMonsterController.Instance != null && ShadowMonsterController.Instance.IsCandleKeptByCheckpoint(_collectible)) return;
+
         CancelLighting();
         StopAllCoroutines();
         isFadingIn = false;
