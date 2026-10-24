@@ -38,8 +38,8 @@ public class PageBookAutoTurn : MonoBehaviour
     public bool inEndingMode = true;
 
     [Header("結局插卡（★1021 M：E1 拆兩張）")]
-    [Tooltip("結局繪本翻離這一頁（0 起算；69＝第 070 頁「光做的孩子」）之後、看下一頁之前，先播一張黑幕卡；-1＝不插")]
-    public int endingCardAfterIndex = 69;
+    [Tooltip("結局繪本翻離這一頁（0 起算；★1023d 插入鏡中的她 4 頁之後，73＝第 074 頁「光做的孩子」結-5.1）之後、看下一頁之前，先播一張黑幕卡；-1＝不插")]
+    public int endingCardAfterIndex = 73;
     [Tooltip("要插的卡（StoryCardPlayer 的 id）。E1a＝「那是我的形狀」；E1 剩下標題頁「我　你　他」，仍由 EndCredits 在名單前播")]
     public string endingCardId = "E1a";
 
@@ -164,7 +164,7 @@ public class PageBookAutoTurn : MonoBehaviour
             _remain = _total;
             _shownFor = 0f;
             Debug.Log($"【漫畫倒數】第 {_book.Index + 1} 頁：倒數 {_total:F0} 秒（timeScale={Time.timeScale}、章節模式={chapter}、結局模式={ending}、最後一頁={last}）");
-            // ★1021 結局插卡：翻離第 070 頁那一刻（手翻或自動翻都算），先播「那是我的形狀」再看 071
+            // ★1021 結局插卡：翻離「光做的孩子」那一頁（★1023d 現在是第 074 頁）那一刻（手翻或自動翻都算），先播「那是我的形狀」再看下一頁
             if (ending && !_cardDone && endingCardAfterIndex >= 0 && prev == endingCardAfterIndex && _book.Index == endingCardAfterIndex + 1)
             {
                 StartCoroutine(PlayEndingCard());

@@ -178,7 +178,7 @@ public class BookAudio : MonoBehaviour
         }
     }
 
-    /// <summary>Inspector 沒填的話，用這一組預設章節分頁（對應 74 頁的順序）。</summary>
+    /// <summary>Inspector 沒填的話，用這一組預設章節分頁（★1023d 對應 78 頁的順序：061 之後插了 4 頁鏡中的她）。</summary>
     [ContextMenu("填入預設章節分頁")]
     public void FillDefaultChapters()
     {
@@ -189,7 +189,7 @@ public class BookAudio : MonoBehaviour
             new Chapter { name = "荒原", startPage = 30, bgmResource = "BGM_荒原_原型_loop", volume = 0.62f },
             new Chapter { name = "水下", startPage = 41, bgmResource = "BGM_水下_原型_loop", volume = 0.60f },
             new Chapter { name = "星空玻璃館", startPage = 56, bgmResource = "BGM_玻璃館_原型_loop", volume = 0.66f },
-            new Chapter { name = "結局", startPage = 62, bgmResource = "BGM_結局_原型", volume = 0.58f },
+            new Chapter { name = "結局", startPage = 67, bgmResource = "BGM_結局_原型", volume = 0.58f },   // ★1024 結局從 068 結-1 開始
         };
         Debug.Log("[BookAudio] 已填入 6 章，BGM 會自動從 Resources/Audio/ 載入。");
     }

@@ -217,7 +217,7 @@ MonoBehaviour:
     bgmResource: BGM_玻璃館_原型_loop
     volume: 0.66
   - name: 結局
-    startPage: 62
+    startPage: 67
     bgm: {fileID: 0}
     bgmResource: BGM_結局_原型
     volume: 0.58

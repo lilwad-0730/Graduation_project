@@ -65,8 +65,8 @@ public class EndCredits : MonoBehaviour
     // 結局流程（玻璃館結束 → 這裡）
     // ══════════════════════════════════════════
     [Header("結局流程")]
-    [Tooltip("結尾漫畫的起始頁（0 起算）。第 63 頁＝62")]
-    public int endingStartPage = 62;
+    [Tooltip("結尾漫畫的起始頁（0 起算）。★1023d 繪本在 061 之後插了 4 頁鏡中的她；★1024 結局改從 068 結-1「她停下來面對黑影」開始＝67（067 結-7 黑影追她已經在鏡牆碎掉後翻過、追逐也玩過了，不再重看）")]
+    public int endingStartPage = 67;
     [Tooltip("結局模式下，翻到最後一頁後等這麼多秒自動捲名單（不必等玩家按鍵）")]
     public float endingAutoRollSeconds = 2.5f;
     [Tooltip("名單捲完後載入的場景。留空＝停在標題卡（展場模式）")]
