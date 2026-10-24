@@ -699,7 +699,7 @@ public class EndCredits : MonoBehaviour
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "音樂與音效");
-        AddRole(L, "原創音樂・音效", "團隊自製");
+        AddRole(L, "原創音樂・音效", "王翊安");   // ★1024 跟主選單名單一致
         Add(L, Kind.Gap, "", 60f);
         AddRole(L, "Shadows and Dust", "Scott Buckley");
         AddRole(L, "Echoes", "chosic.com");
@@ -708,9 +708,10 @@ public class EndCredits : MonoBehaviour
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "字　型");
-        AddRole(L, "芫荽 ChenYuluoyan", "justfont");
-        AddRole(L, "Mamelon", "—");
-        AddRole(L, "UoqMunThenKhung", "—");
+        AddRole(L, "辰宇落雁體 ChenYuluoyan", "劉韋辰・王立宇");   // ★1024 字型檔是辰宇落雁體（OFL），不是芫荽
+        AddRole(L, "源泉圓體 GenSenRounded2 TW", "ButTaiwan");
+        AddRole(L, "Mamelon", "MJ-WORK");
+        AddRole(L, "宇文天穹 UoqMunThenKhung", "Moonlit Owen");
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "使用素材");
