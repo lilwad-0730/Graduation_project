@@ -408,6 +408,9 @@ public class WolfEnemy : MonoBehaviour, IResettable
             rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
         }
 
+        // 廢墟石階裡標成「狼可以穿過」的（StoneStepCollider），一律忽略；之後才生出來的狼也適用
+        StoneStepCollider.IgnoreForWolf(this);
+
         // 碰撞忽略清單
         if (col != null && collidersToIgnore != null)
         {
