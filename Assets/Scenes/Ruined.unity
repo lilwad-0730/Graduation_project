@@ -8759,7 +8759,7 @@ MonoBehaviour:
   slopeIdleHoldSeconds: 1
   slopeIdleRollSpeed: 0.8
   slopeIdleRollAccel: 1.5
-  idleFlatBrake: 6
+  idleFlatBrake: 4
   slopeIdleMinAngle: 6
   debugPushGapLog: 0
 --- !u!1 &1488007601

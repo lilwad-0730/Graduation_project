@@ -893,6 +893,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         Debug.Log($"【影子怪物】★1016 怪物身後的 {added} 根燭火算吃過（共 {_candlesCollected}/{_totalCandles}），大小 ×{_currentScaleMultiplier:F2}");
     }
 
+    /// <summary>
+    /// ★1024 這根燭火在目前的中途存檔點前面＝玩家已經過關：重生時不刷新（維持已完成），並且算進收集數量。
+    /// 存檔點只會在「前面的燭火都點燃或吃過」時才存（見 UpdateChaseCheckpoints），所以存檔點前面的燭火一定是完成的。
+    /// 存檔點之後的燭火代表玩家失敗了：重生時照舊刷新、不算數。
+    /// </summary>
+    public bool IsCandleKeptByCheckpoint(CandleCollectible c)
+    {
+        if (c == null || !useChaseCheckpoints || chaseCheckpoints == null) return false;
+        if (_chaseCheckpointIndex < 0 || _chaseCheckpointIndex >= chaseCheckpoints.Length) return false;
+        return c.transform.position.x < chaseCheckpoints[_chaseCheckpointIndex].x;
+    }
+
     /// <summary>★1016 追逐中她站上中途存檔點 → 更新重生點。</summary>
     private bool CandlesBeforeAreLitOrCollected(float x)
     {
@@ -2456,11 +2468,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             foreach (var c in candles)
             {
-                if (c != null) c.ResetToInitialState();
+                if (c == null) continue;
+                // ★1024 存檔點前面的燭火玩家已經過關：不刷新、直接算已收集；存檔點之後的才刷新（不算數）
+                if (IsCandleKeptByCheckpoint(c)) { if (!c.isCollected) c.MarkCollectedSilently(); }
+                else c.ResetToInitialState();
             }
+
+            _candlesCollected = 0;
+            foreach (var c in candles) if (c != null && c.isCollected) _candlesCollected++;
+            _currentScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+            ApplyCurrentScale();
         }
 
-        Debug.Log("【影子怪物】已完整重置至初始狀態（含全部燭火與音樂）。");
+        Debug.Log($"【影子怪物】已完整重置至初始狀態（存檔點前 {_candlesCollected} 根燭火保留為已完成，其餘刷新）。");
     }
 
     // ──────────────────────────────────────────────────────────────────────────

@@ -13,6 +13,10 @@ public class CollectibleNote : MonoBehaviour
              "此時把這個值調小 (例如 0.6) 讓觸發框貼合實際看得到的紙")]
     [Range(0.1f, 1f)]
     public float colliderSizeMultiplier = 1f;
+    [Tooltip("★1024 觸發框世界尺寸下限（公尺）。再小的紙也至少這麼大，不用貼到臉上才撿得到")]
+    public float minTriggerWorldSize = 1.2f;
+    [Tooltip("★1024 觸發框世界尺寸上限（公尺）。再大或留白再多的紙也不超過這麼大，不會離很遠就撿到")]
+    public float maxTriggerWorldSize = 2.4f;
 
     [Header("★1013 水下提示")]
     [Tooltip("水下場景裡，日誌四周加一圈暖黃奶油色的微光（跟冰冷水底對比，代表安心）")]
@@ -57,10 +61,15 @@ public class CollectibleNote : MonoBehaviour
                 zThicknessInLocal = 1.2f / transform.lossyScale.z;
             }
 
-            box.size = new Vector3(
-                spriteSize.x * colliderSizeMultiplier,
-                spriteSize.y * colliderSizeMultiplier,
-                zThicknessInLocal);
+            // ★1024 觸發框統一尺寸：每張紙的圖片留白、縮放都不同，貼著圖片大小會變成有的紙離很遠就撿到、有的要貼很近。
+            //   把觸發框的「世界尺寸」夾在 [minTriggerWorldSize, maxTriggerWorldSize] 之間，大紙不會判太大、小紙不會判太小。
+            float sx = Mathf.Abs(transform.lossyScale.x) > 0.001f ? Mathf.Abs(transform.lossyScale.x) : 1f;
+            float sy = Mathf.Abs(transform.lossyScale.y) > 0.001f ? Mathf.Abs(transform.lossyScale.y) : 1f;
+            float worldW = Mathf.Clamp(spriteSize.x * colliderSizeMultiplier * sx, minTriggerWorldSize, maxTriggerWorldSize);
+            float worldH = Mathf.Clamp(spriteSize.y * colliderSizeMultiplier * sy, minTriggerWorldSize, maxTriggerWorldSize);
+            box.size = new Vector3(worldW / sx, worldH / sy, zThicknessInLocal);
+            if (Application.isPlaying && Application.isEditor)
+                Debug.Log($"【日誌觸發框】{name}：圖片世界尺寸 {spriteSize.x * sx:F2}×{spriteSize.y * sy:F2} → 觸發框 {worldW:F2}×{worldH:F2}");
         }
     }
 

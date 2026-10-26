@@ -515,9 +515,15 @@ public class PlayerMovement : MonoBehaviour
     public float ruinsFallBrakeDistance = 9f;
     [Tooltip("落地前的速度（米／秒）")]
     public float ruinsFallLandingSpeed = 6f;
+    [Tooltip("★1024 墜落開始後這幾秒內不做「接近地面放慢」。從平台邊進墜落區時腳下就有地面，會被誤判成快落地而一開始就慢下來")]
+    public float ruinsFallBrakeGraceSeconds = 0.6f;
+    [Tooltip("★1024 固定速度墜落開始後幾秒播落下動畫（每次都一樣，不看滯空計時）")]
+    public float controlledFallAnimDelay = 0.3f;
 
     private bool _controlledFall;
     private float _controlledFallVy;
+    private float _nextFallTelemetry;
+    private string _fallGroundSeen = "無";
     private float _savedDamping;
     private RigidbodyInterpolation _savedInterpolation;
     private bool _savedUseGravity = true;
@@ -572,6 +578,7 @@ public class PlayerMovement : MonoBehaviour
     private void EndControlledFall(string why)
     {
         if (!_controlledFall) return;
+        Debug.Log($"【墜落】耗時 {ControlledFallSeconds:F2} 秒、結束時速度 {_controlledFallVy:F1} 米／秒（{why}）");   // ★1024 方便比對每次墜落是否一致
         _controlledFall = false;
         if (rb != null)
         {
@@ -593,23 +600,40 @@ public class PlayerMovement : MonoBehaviour
 
         // 離地面近就固定放慢到落地速度
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
-        if (col != null)
+        if (col != null && ControlledFallSeconds >= ruinsFallBrakeGraceSeconds)
         {
             Bounds b = col.bounds;
             float reach = ruinsFallBrakeDistance + b.extents.y + 0.5f;
-            if (Physics.Raycast(b.center, Vector3.down, out RaycastHit hit, reach, ~0, QueryTriggerInteraction.Ignore)
-                && hit.collider != col && !hit.collider.transform.IsChildOf(transform))
+            bool grounded = Physics.Raycast(b.center, Vector3.down, out RaycastHit hit, reach, ~0, QueryTriggerInteraction.Ignore)
+                && hit.collider != col && !hit.collider.transform.IsChildOf(transform);
+            if (!grounded)
+            {
+                // ★1024 2.5D：地板的碰撞體不一定剛好蓋住她的 Z（-0.9）。細射線落空時，改用 Z 方向加厚的方塊掃，只認朝上的面（地板、平台頂）
+                if (Physics.BoxCast(b.center, new Vector3(b.extents.x * 0.5f, 0.05f, 15f), Vector3.down, out hit, Quaternion.identity, reach, ~0, QueryTriggerInteraction.Ignore)
+                    && hit.collider != col && !hit.collider.transform.IsChildOf(transform) && hit.normal.y > 0.5f)
+                    grounded = true;
+            }
+            if (grounded)
             {
                 float dist = Mathf.Max(0f, hit.distance - b.extents.y);
                 float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
                 target = -Mathf.Lerp(Mathf.Abs(ruinsFallLandingSpeed), Mathf.Abs(ruinsFallTerminalSpeed), k);
+                _fallGroundSeen = hit.collider.name;
             }
+            else _fallGroundSeen = "無";
         }
 
         float rate = target < _controlledFallVy ? ruinsFallAcceleration : ruinsFallAcceleration * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
         rb.linearVelocity = new Vector3(0f, _controlledFallVy, 0f);
+
+        // ★1024 墜落遙測：每 0.5 秒一行（遊戲時間、高度、速度、目標速度、腳下地面、timeScale），墜落慢的時候用來看是哪一段慢
+        if (Time.time >= _nextFallTelemetry)
+        {
+            _nextFallTelemetry = Time.time + 0.5f;
+            Debug.Log($"【墜落遙測】t={ControlledFallSeconds:F1}s y={transform.position.y:F1} vy={rb.linearVelocity.y:F1} 目標={target:F1} 地面={_fallGroundSeen} timeScale={Time.timeScale:F2} 凍結={isCutsceneFrozen} 硬鎖={IsHardCutsceneLocked}");
+        }
     }
 
     [Header("★1011 廢墟墜落特寫還給玩家")]
@@ -1319,10 +1343,15 @@ public class PlayerMovement : MonoBehaviour
             }
             bool rawFalling = !isGrounded && (currentAirTime >= fallDelay) && (rb.linearVelocity.y < fallVelocityThreshold);
 
+            // ★1024 固定速度墜落是演出：落下動畫從「墜落開始」算固定秒數就播，不看滯空計時、地面偵測、垂直速度（那些每次進墜落區的狀態都不同，
+            //   會讓動畫時間忽早忽晚）；傳送接力時 _controlledFall 不中斷，動畫也不會重播。
+            bool scriptedFall = _controlledFall;
+            if (scriptedFall) rawFalling = ControlledFallSeconds >= controlledFallAnimDelay;
+
             // ★1011 防抖：條件要連續成立 fallAnimDebounceSeconds 秒才真的切成落下動畫（速度剛好在門檻上下抖動時不會閃一下）；
             //   一落地（或條件消失）馬上放掉，落地不拖。
             _fallCandidateTime = rawFalling ? _fallCandidateTime + Time.deltaTime : 0f;
-            bool isFalling = rawFalling && _fallCandidateTime >= fallAnimDebounceSeconds;
+            bool isFalling = rawFalling && (scriptedFall || _fallCandidateTime >= fallAnimDebounceSeconds);
 
             // 判斷是否有水平速度或輸入
             bool hasHorizontalSpeed = Mathf.Abs(rb.linearVelocity.x) > 0.1f || Mathf.Abs(moveInput) > 0.1f;
@@ -1741,9 +1770,17 @@ public class PlayerMovement : MonoBehaviour
         if (isStrictLockingX)
         {
             Vector3 finalPos = transform.position;
-            finalPos.x = lockedXValue;
-            finalPos.z = initialZ;
-            transform.position = finalPos;
+            // ★1024 墜落快慢不一致的根因（Editor.log【墜落遙測】：指令速度 -17，實際每秒只掉 3.8 米）：
+            //   固定速度墜落開了剛體內插（Interpolate），內插時畫面上的 transform 永遠落後物理位置一小段。
+            //   這裡每一幀都 transform.position = finalPos（連 X、Z 本來就對的時候也寫），等於每幀把剛體拉回「落後的位置」，
+            //   走一步被拉回一步；畫面幀數越高（相對物理 50 Hz）被拉回越多，所以每次墜落快慢不同。
+            //   只有 X／Z 真的偏掉才寫；沒偏就完全不碰 transform，物理的下落就不會被打斷。
+            if (Mathf.Abs(finalPos.x - lockedXValue) > 0.001f || Mathf.Abs(finalPos.z - initialZ) > 0.001f)
+            {
+                finalPos.x = lockedXValue;
+                finalPos.z = initialZ;
+                transform.position = finalPos;
+            }
         }
         else if (Mathf.Abs(transform.position.z - initialZ) > 0.01f)
         {

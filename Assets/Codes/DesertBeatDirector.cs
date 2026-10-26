@@ -198,6 +198,11 @@ public class DesertBeatDirector : MonoBehaviour
     public float birdLateLockHoverHeight = 5f;
     [Tooltip("落點最多離她幾公尺（她一直走、剛好撞上的距離約 6 米）")]
     public float birdLateLockMaxLead = 6f;
+    [Tooltip("★1024 晚鎖定：鳥飛向她頭上的最高速度（公尺／秒）。0＝用對準速度（約 14）。\n" +
+             "10/24 實測 log：鳥從被放行到飛到她頭上要 1.5～2.3 秒（離她 5～18 米，速度 14），玩家看到的是「慢慢飛過來才開始攻擊」。調快讓鳥更快到位、意圖更早看得出來")]
+    public float birdLateLockApproachSpeed = 22f;
+    [Tooltip("★1024 晚鎖定：跟著她的平滑時間（秒）。越小越跟得緊、起飛越俐落（原本 0.22）")]
+    public float birdLateLockSmoothTime = 0.14f;
 
     [Header("★1010 取消護盾後減鳥（02 #36「攻擊頻率真的過不去再減鳥數」）")]
     [Tooltip("勾著＝拍三（沒有掩體那段）的攻擊鳥每 Beat3 Keep Every 隻留一隻，鳥群增援也減少。\n" +
@@ -556,6 +561,8 @@ public class DesertBeatDirector : MonoBehaviour
             b.lateLock = birdLateLock;                         // ★1020 晚鎖定（M：提前量太多）
             b.lateLockHoverHeight = birdLateLockHoverHeight;
             b.lateLockMaxLead = birdLateLockMaxLead;
+            b.lateLockApproachSpeed = birdLateLockApproachSpeed;   // ★1024 依實測 log 調快到位速度
+            b.lateLockSmoothTime = birdLateLockSmoothTime;
 
             if (x < beat1End)
             {
