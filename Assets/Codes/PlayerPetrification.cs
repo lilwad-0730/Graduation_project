@@ -8,7 +8,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Tooltip("【測試專用無敵模式】：開啟後免疫所有鳥怪攻擊致死、免疫風暴石化與倒數死亡，遊戲機制與動畫正常運行。")]
     public bool godMode = false;
 
-    [Tooltip("是否允許在測試時按 F10 鍵或 Ctrl+G 快速切換無敵模式 (方便在 Editor 或遊玩中即時測試)")]
+    [Tooltip("是否允許在測試時按 F3 鍵或 Ctrl+G 快速切換無敵模式 (方便在 Editor 或遊玩中即時測試；★1023 F10 改給「直接進結局漫畫」)")]
     public bool allowKeyboardToggle = true;
 
     [Tooltip("無敵模式開啟時，是否在螢幕角落顯示提示浮水印標籤")]
@@ -229,9 +229,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
     private void Update()
     {
-        // 1. 快捷鍵切換無敵模式 (F10 或 Ctrl+G)
+        // 1. 快捷鍵切換無敵模式 (F3 或 Ctrl+G)　★1023 原本 F10，跟測試鍵「F10 直接進結局漫畫」撞在一起，改 F3
         //    ★1016 正式打包版只有在遊戲旁邊放了測試檔（TesterMode）才按得出來；編輯器與 Development Build 照舊
-        if (allowKeyboardToggle && TesterMode.Enabled && (Input.GetKeyDown(KeyCode.F10) || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.G))))
+        if (allowKeyboardToggle && TesterMode.Enabled && (Input.GetKeyDown(KeyCode.F3) || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.G))))
         {
             IsGodMode = !IsGodMode;
             Debug.LogWarning($"🛡️【無敵模式】已{(IsGodMode ? "<color=green>【開啟】</color>" : "<color=red>【關閉】</color>")}！(測試專用：免疫鳥怪撞擊與風暴石化，關卡機制正常運作)");
@@ -251,7 +251,8 @@ public class PlayerPetrification : MonoBehaviour, IResettable
 
         // 3. 主動石化：按住 ⬇/S 變成石頭（抗風抗鳥、不能動）；放開立刻解除
         //    ★只有荒原吃這套；其他關卡的 ⬇/S 交還給移動系統（水下下潛等），這裡完全不攔。
-        if (holdToPetrify && IsPetrifyAllowedInCurrentScene())
+        //    ★1023 荒原要先拿到光球才能硬撐（DesertOrbDirector）：拿到之前按 S 沒有作用，風只能靠岩柱躲。
+        if (holdToPetrify && IsPetrifyAllowedInCurrentScene() && DesertOrbDirector.BraceAllowed)
         {
             bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow);
             if (holding && !isPetrified)
@@ -340,7 +341,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             style.alignment = TextAnchor.MiddleCenter;
             
             // 螢幕右上角半透明浮水印標籤
-            GUI.Box(new Rect(Screen.width - 240, 10, 230, 32), "🛡️ GOD MODE: ON (F10 切換)", style);
+            GUI.Box(new Rect(Screen.width - 240, 10, 230, 32), "🛡️ GOD MODE: ON (F3 切換)", style);
         }
     }
 

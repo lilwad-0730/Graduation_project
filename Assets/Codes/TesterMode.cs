@@ -16,7 +16,7 @@ using UnityEngine;
 ///       沒按之前整個遊戲卡住（1016 實測）。上面兩個位置不會跳這個詢問。
 ///
 /// 開了之後可以用：
-///   ・F10 或 Ctrl+G：無敵（免疫鳥與風暴石化，原本 PlayerPetrification 的測試開關）。正式版沒有這個檔就按不出來。
+///   ・F3 或 Ctrl+G：無敵（免疫鳥與風暴石化，原本 PlayerPetrification 的測試開關；★1023 從 F10 改 F3，F10 留給「直接進結局漫畫」）。正式版沒有這個檔就按不出來。
 ///   ・檔案裡寫一行 start=場景名（例如 start=dark glasses），主選單按「開始遊戲」會直接進那一關。
 ///     可用的場景名：CottonCastle（棉花堡）、SampleScene（墜落＋廢墟）、desert（荒原）、underwater（水下）、dark glasses（星空玻璃館）。
 ///     寫錯或沒寫就照常從第一關開始。
@@ -113,7 +113,7 @@ public static class TesterMode
         }
 
         if (_fileFound)
-            Debug.LogWarning($"【測試模式】★1016 找到 {_foundPath}：F10／Ctrl+G 無敵可用" + (_startScene != null ? $"；開始遊戲直接進「{_startScene}」" : "") + "。展場的電腦不要放這個檔。");
+            Debug.LogWarning($"【測試模式】★1016 找到 {_foundPath}：F3／Ctrl+G 無敵可用、F10 直接進結局漫畫" + (_startScene != null ? $"；開始遊戲直接進「{_startScene}」" : "") + "。展場的電腦不要放這個檔。");
     }
 
     /// <summary>只看不會觸發 macOS「取用桌面／文件檔案夾」詢問的位置。</summary>

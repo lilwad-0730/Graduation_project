@@ -121,6 +121,18 @@ public class GuidanceLight : MonoBehaviour, IResettable
             if (v != null && !string.IsNullOrWhiteSpace(v.subtitle)) { VoiceSubtitle.Show(v.subtitle, 30f, subtitleStyle); return; }
     }
     private readonly HashSet<string> _playedWaypointVoices = new HashSet<string>();
+    private float _voiceEndTime = 0f;
+
+    /// <summary>目前（最後一段）路徑點語音預計播完的時間（Time.unscaledTime）。沒在播就是過去的時間。</summary>
+    public float VoiceEndTime => _voiceEndTime;
+
+    /// <summary>播這個路徑點的語音和字幕（已經播過就不再播）。給外部演出用，例如廢墟 P14 的風暴轉場。</summary>
+    public void PlayVoiceForWaypoint(string waypointName)
+    {
+        if (waypoints == null) return;
+        foreach (Transform wp in waypoints)
+            if (wp != null && wp.name == waypointName) { PlayWaypointVoice(wp); return; }
+    }
 
     // 狀態屬性，便於外部偵測
     public bool IsAbsorbing { get; private set; } = false;
@@ -533,9 +545,10 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             if (v == null || v.clip == null || v.waypointName != wp.name) continue;
             if (!_playedWaypointVoices.Add(wp.name)) return;   // 已經播過（例如重生後再經過）
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(v.clip, v.volume);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayVoice(v.clip, v.volume);   // 語音專用音軌：播的時候其他聲音自動壓低
             else AudioSource.PlayClipAtPoint(v.clip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(v.volume));
             VoiceSubtitle.Show(v.subtitle, v.clip.length, subtitleStyle);
+            _voiceEndTime = Time.unscaledTime + v.clip.length;
             return;
         }
     }

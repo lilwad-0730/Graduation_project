@@ -74,6 +74,14 @@ public class RuinsOrbDirector : MonoBehaviour
     public float wolfFadeSeconds = 0.6f;
     [Tooltip("開場（拉近＋狼淡出）先演這麼久，龍捲風才從左邊出現")]
     public float stormLeadSeconds = 0.9f;
+    [Tooltip("P14 的語音（廢墟-3）播完才進文字卡；沒播完前龍捲風和沙霧會一直颳著")]
+    public bool waitVoiceBeforeCard = true;
+    [Tooltip("語音比龍捲風掃過來還長時：龍捲風配合語音長度慢慢逼近，在最後一句時吞沒她（關掉＝照原速掃過來、再停著等語音）")]
+    public bool stretchSweepToVoice = true;
+    [Tooltip("龍捲風慢慢逼近的期間，鏡頭推近到多大（正交大小，越小越近）。0＝不推")]
+    public float voicePushInOrtho = 6f;
+    [Tooltip("逼近的加速感（1＝等速，越大越是一開始慢、最後猛撲過來）")]
+    [Range(1f, 3f)] public float approachEase = 1.6f;
 
     [Header("★1015 先演完砸石牆、再讓光球飛")]
     [Tooltip("光球要起飛時，最多等巨石砸碎石牆多久（秒）。保底，避免石牆沒碎就卡住")]
@@ -552,6 +560,9 @@ public class RuinsOrbDirector : MonoBehaviour
 
         // 光球停在原地（之後淡掉）；修毅的 GuidanceLight 不再動它
         if (_stormWp != null && !OrbAt(_stormWp)) _orb.TeleportToWaypointName(stormWaypointName);
+        // 這裡的「碰到」範圍比光球自己的大，常常先觸發：先確定 P14 的語音有播（播過就不會重播）
+        _orb.PlayVoiceForWaypoint(stormWaypointName);
+        float voiceEnd = waitVoiceBeforeCard ? _orb.VoiceEndTime : 0f;
         _orb.enabled = false;
 
         // 她、狼群、巨石都停住
@@ -590,31 +601,46 @@ public class RuinsOrbDirector : MonoBehaviour
             if (fx != null) fx.Hit(0.8f);   // 龍捲風出現在畫面左邊的那一下
             float targetX = _pm.transform.position.x;
             float startX = tt.position.x;
+
+            // 語音還很長：龍捲風配合語音慢慢逼近（越來越快），在最後一句時吞沒她；鏡頭同時一路推近
+            float normalTime = (targetX - startX) / Mathf.Max(0.1f, sweepSpeed);
+            float approach = stretchSweepToVoice ? voiceEnd - Time.unscaledTime - sweepHoldSeconds : 0f;
+            bool slow = approach > normalTime + 0.5f;
+            if (slow && voicePushInOrtho > 0.1f) CameraTargetXFollower.SetCameraOverrideSmooth(_pm.transform, voicePushInOrtho, approach);
+
             float guard = 0f;
-            while (tt.position.x < targetX && guard < 10f)
+            float approachStart = Time.unscaledTime;   // 跟語音用同一個時鐘：遊戲掉幀時龍捲風也不會跟台詞脫節
+            while (tt.position.x < targetX && guard < (slow ? approach + 5f : 10f))
             {
                 float dt = Time.deltaTime;
-                guard += dt;
+                guard = slow ? Time.unscaledTime - approachStart : guard + dt;
                 float camY = cam.transform.position.y + _tornado.offsetY;
-                tt.position = new Vector3(tt.position.x + sweepSpeed * dt, Mathf.Lerp(tt.position.y, camY, dt * 6f), _tornado.fixedZ);
+                float nx = slow
+                    ? Mathf.Lerp(startX, targetX, Mathf.Pow(Mathf.Clamp01(guard / approach), approachEase))
+                    : tt.position.x + sweepSpeed * dt;
+                if (slow && guard >= approach) nx = targetX;
+                tt.position = new Vector3(nx, Mathf.Lerp(tt.position.y, camY, dt * 6f), _tornado.fixedZ);
                 FadeOrb(1f - Mathf.Clamp01((tt.position.x - (targetX - halfW)) / halfW));
                 if (fx != null) fx.SetManual(Mathf.Lerp(0.45f, 1f, Mathf.InverseLerp(startX, targetX, tt.position.x)), +1f, StormBoostFX.RuinsDustColor);
                 yield return null;
             }
-            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, sweepHoldSeconds + 8f); fx.Hit(1f); }   // 掃到她（罩到文字卡、黑幕）
+            float hold = Mathf.Max(sweepHoldSeconds, voiceEnd - Time.unscaledTime);   // 語音還沒播完就繼續颳風，播完才進文字卡
+            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, hold + 8f); fx.Hit(1f); }   // 掃到她（罩到文字卡、黑幕）
             float h = 0f;
-            while (h < sweepHoldSeconds)
+            while (h < sweepHoldSeconds || Time.unscaledTime < voiceEnd)
             {
                 float dt = Time.deltaTime;
                 h += dt;
-                tt.position += Vector3.right * (sweepSpeed * 0.15f * dt);
+                tt.position += Vector3.right * (sweepSpeed * (h <= sweepHoldSeconds ? 0.15f : 0.04f) * dt);   // 等語音時飄慢一點，別飄出畫面
                 yield return null;
             }
         }
         else
         {
-            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, sweepHoldSeconds + 8f); fx.Hit(1f); }
+            float hold = Mathf.Max(sweepHoldSeconds, voiceEnd - Time.unscaledTime);
+            if (fx != null) { fx.SetManual(1f, +1f, StormBoostFX.RuinsDustColor, hold + 8f); fx.Hit(1f); }
             yield return new WaitForSeconds(sweepHoldSeconds);
+            while (Time.unscaledTime < voiceEnd) yield return null;
         }
         FadeOrb(0f);
 

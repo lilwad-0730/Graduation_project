@@ -29,6 +29,24 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
     [Tooltip("鏡牆演完要播哪張卡（預設 M5）")]
     public string afterCutsceneCardId = "M5";
 
+    [Header("★1023 鏡牆碎掉之後先翻幾頁繪本（M：解釋怪物為什麼出現）")]
+    [Tooltip("勾著＝碎掉、鏡頭回到她之後，先翻下面這幾頁，再播 M5、再放黑影。\n" +
+             "★1023d：060 光交給鏡子 → 061 她和鏡中的她 → 鏡-1 鏡子留住了光 → 062 她撲向鏡中的光 → 鏡-2 裂縫劃過鏡中的她 → 鏡-3 鏡中的她變黑長大 → 鏡-4 黑影從碎鏡出來 → 067 黑影追她。\n" +
+             "每一行可以加「|停幾秒|推近|交叉淡化秒數」，例如 Pages/062_鏡-1|2.4|0＝停 2.4 秒、不推近（同一個鏡頭的四格用 0，淡入淡出時像動畫）")]
+    public bool playPagesAfterShatter = true;
+    [Tooltip("要翻的頁（Resources 路徑，不含副檔名）")]
+    public string[] pagesAfterShatter = new string[]
+    {
+        "Pages/060_館-1|4", "Pages/061_館-2|4",
+        "Pages/062_鏡-1|2.4|0", "Pages/063_館-3|3.5",
+        "Pages/064_鏡-2|2.2|0", "Pages/065_鏡-3|2.2|0", "Pages/066_鏡-4|2.8|0",
+        "Pages/067_結-7|4",
+    };
+    [Tooltip("每頁停幾秒（任意鍵可提早翻）")]
+    public float pageHoldSeconds = 5f;
+    [Tooltip("碎掉之後等幾秒再翻頁（等碎片飛完、白光退掉；碎片壽命 1.5～2.5 秒）")]
+    public float pagesDelayAfterShatter = 2.2f;
+
     [Header("🎯 目標物件設定")]
     [Tooltip("目標鏡牆物件 (可直接將 'mirror wall_001' 拖入；若為空則自動搜尋)")]
     public GameObject mirrorWall;
@@ -903,6 +921,16 @@ public class MirrorWallAbsorbCutscene : MonoBehaviour, IResettable
         {
             yield return StartCoroutine(SmoothZoomLens(originalLensSize, zoomTransitionSpeed * 0.8f));
         }
+
+        // ★1023 碎掉之後先翻繪本 060～062（她的光被鏡子吸走、鏡中的她走出來）＝怪物是從哪裡來的；之後才是 M5「我也可以求救」
+        if (playPagesAfterShatter && pagesAfterShatter != null && pagesAfterShatter.Length > 0)
+        {
+            if (cachedPlayer != null) cachedPlayer.isCutsceneFrozen = true;
+            if (pagesDelayAfterShatter > 0f) yield return new WaitForSeconds(pagesDelayAfterShatter);   // ★1023b 碎片飛完再翻（第一版碎片停在半空，翻完才繼續飛）
+            Debug.Log("📖【鏡牆】★1023 碎掉之後翻 " + pagesAfterShatter.Length + " 頁繪本，解釋怪物的來處");
+            yield return StoryPageCard.PlayRoutine(pagesAfterShatter, pageHoldSeconds, false, true);
+        }
+        StoryProgress.Unlock(StoryProgress.MirrorPagesEnd, "鏡牆碎掉（060～067）");   // ★1023d 繪本這幾頁等鏡子碎了才開（067 結-7＝黑影追她）
 
         // ★鏡牆吸入演完 → 過場文字 → 回到遊戲（黑幕自己收掉，不載場景）
         //   接下來玩家往前走會踩到 ShadowMonsterTrigger，黑影才開始追。

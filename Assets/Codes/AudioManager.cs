@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
+[DefaultExecutionOrder(10000)]   // 最後才跑：其他腳本在 LateUpdate 設的音量，壓低語音背景音時才能正確蓋過去
 public class AudioManager : MonoBehaviour
 {
     // 單例模式，讓全域都可以方便呼叫 AudioManager.Instance.PlayBGM(...)
@@ -65,6 +67,83 @@ public class AudioManager : MonoBehaviour
 
     private Coroutine _fadeCoroutine;
 
+    [Header("語音壓低背景音（播旁白時，其他聲音自動變小）")]
+    [Tooltip("播語音時，其他所有聲音（背景音樂、狼、風、腳步、音效）壓到原本的幾倍")]
+    [Range(0f, 1f)] public float voiceDuckLevel = 0.35f;
+    [Tooltip("語音開始時，其他聲音降下去花多久（秒）")]
+    public float voiceDuckDownSeconds = 0.35f;
+    [Tooltip("語音結束後，其他聲音回來花多久（秒）")]
+    public float voiceDuckUpSeconds = 0.9f;
+
+    private AudioSource _voiceSource;
+    private float _duck = 1f;            // 目前其他聲音的倍率（1＝沒壓）
+    private float _duckRescanAt;
+    private class DuckState { public float baseVolume; public float applied; }
+    private readonly Dictionary<AudioSource, DuckState> _ducked = new Dictionary<AudioSource, DuckState>();
+    private readonly List<AudioSource> _duckRemove = new List<AudioSource>();
+
+    /// <summary>旁白語音是否正在播。</summary>
+    public bool IsVoicePlaying => _voiceSource != null && _voiceSource.isPlaying;
+
+    /// <summary>
+    /// 播旁白語音（用自己的音軌，不受其他音效影響）；播放期間其他聲音自動壓低，播完再淡回來。
+    /// 音量照音效音量設定（SFX）縮放。新的語音會蓋掉還沒播完的舊語音。
+    /// </summary>
+    public void PlayVoice(AudioClip clip, float volume = 1.0f)
+    {
+        if (clip == null) return;
+        if (_voiceSource == null) return;
+        _voiceSource.Stop();
+        _voiceSource.clip = clip;
+        _voiceSource.volume = ScaleSfx(volume);
+        _voiceSource.Play();
+    }
+
+    public void StopVoice()
+    {
+        if (_voiceSource != null) _voiceSource.Stop();
+    }
+
+    /// <summary>
+    /// 壓低其他聲音：每幀把場景裡所有 AudioSource（語音除外）乘上倍率。
+    /// 其他程式中途自己改了音量（例如背景音樂交叉淡入、狼跑步聲忽大忽小），會被當成新的原始音量，所以不會打架；
+    /// 壓低結束後全部還原成原始音量。
+    /// </summary>
+    private void LateUpdate()
+    {
+        float target = IsVoicePlaying ? voiceDuckLevel : 1f;
+        float seconds = target < _duck ? voiceDuckDownSeconds : voiceDuckUpSeconds;
+        float span = Mathf.Max(0.01f, 1f - voiceDuckLevel);
+        _duck = Mathf.MoveTowards(_duck, target, Time.unscaledDeltaTime * span / Mathf.Max(0.01f, seconds));
+
+        if (_duck >= 0.999f && _ducked.Count == 0) return;
+
+        if (_duck < 0.999f && Time.unscaledTime >= _duckRescanAt)
+        {
+            _duckRescanAt = Time.unscaledTime + 0.25f;   // 新出現的聲音（例如 PlayClipAtPoint 的單次音效）每 0.25 秒補抓一次
+            foreach (AudioSource s in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                if (s == null || s == _voiceSource || _ducked.ContainsKey(s)) continue;
+                _ducked[s] = new DuckState { baseVolume = s.volume, applied = s.volume };
+            }
+        }
+
+        bool done = _duck >= 0.999f;
+        _duckRemove.Clear();
+        foreach (KeyValuePair<AudioSource, DuckState> kv in _ducked)
+        {
+            AudioSource s = kv.Key;
+            DuckState st = kv.Value;
+            if (s == null) { _duckRemove.Add(s); continue; }
+            if (!Mathf.Approximately(s.volume, st.applied)) st.baseVolume = s.volume;   // 別的程式改過音量
+            float v = done ? st.baseVolume : st.baseVolume * _duck;
+            s.volume = v;
+            st.applied = v;
+        }
+        foreach (AudioSource s in _duckRemove) _ducked.Remove(s);
+        if (done) _ducked.Clear();
+    }
+
     private void Awake()
     {
         // 確保整個遊戲中只有一個 AudioManager
@@ -98,6 +177,12 @@ public class AudioManager : MonoBehaviour
         _keepSfxSource.loop = false;
         _keepSfxSource.playOnAwake = false;
         _keepSfxSource.volume = 1f;
+
+        // 旁白語音專用（播的時候其他聲音會被壓低）
+        _voiceSource = gameObject.AddComponent<AudioSource>();
+        _voiceSource.loop = false;
+        _voiceSource.playOnAwake = false;
+        _voiceSource.spatialBlend = 0f;
     }
 
     private void OnEnable()
@@ -126,6 +211,7 @@ public class AudioManager : MonoBehaviour
         // ★1004 換場景時，上一關還沒播完的 SFX 一律停掉（例如荒原的石化長音效到下一關還在響）。
         //   原因：PlaySFX 用的是 DontDestroyOnLoad 的 _sfxSource.PlayOneShot，換場景不會被清掉。
         StopAllSfx();
+        StopVoice();   // 上一關的旁白不帶到下一關
 
         // 檢查新載入的場景中是否有任何已啟用的 BGMZone 且設定為開局播放音樂
         bool hasActiveSceneBGM = false;

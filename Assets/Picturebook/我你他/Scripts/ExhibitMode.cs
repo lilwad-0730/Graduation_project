@@ -62,7 +62,8 @@ public class ExhibitMode : MonoBehaviour
             if (!autoPlaying) { autoPlaying = true; nextAuto = Time.unscaledTime + 0.6f; }
             if (!book.IsBusy && Time.unscaledTime >= nextAuto)
             {
-                if (book.Index < book.PageCount - 1)
+                int lastOpen = book.maxPage >= 0 ? Mathf.Min(book.PageCount - 1, book.maxPage) : book.PageCount - 1;   // ★1023 只翻到開放的最後一頁
+                if (book.Index < lastOpen)
                 {
                     book.Next();
                     nextAuto = Time.unscaledTime + autoPageSeconds;

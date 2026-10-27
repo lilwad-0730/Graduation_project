@@ -215,6 +215,34 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("減鳥時，她靠近時額外增援最多幾隻（原本 2）")]
     [Range(0, 6)] public int reducedNearExtraCopies = 1;
 
+    [Header("★1023 鳥群節奏（M 10/23：先直衝、再加追蹤、越來越難；最難的一段之前拿到光球）")]
+    [Tooltip("勾著＝依她走到的 x 換一段鳥的打法；取消＝照上面的 Attack Pattern 一套到底")]
+    public bool enableBirdRhythm = true;
+    [Tooltip("第二段（加追蹤）從哪裡開始：-1＝Beat1 End 45")]
+    public float rhythmTrackX = -1f;
+    [Tooltip("第三段（拿到光球後）從哪裡開始：-1＝光球的位置（DesertOrbDirector；沒有光球門檻時＝Beat2 End 135）")]
+    public float rhythmStage2X = -1f;
+    [Tooltip("第四段（最密、最難）從哪裡開始")]
+    public float rhythmStage3X = 180f;
+    [Tooltip("第一段（開頭）：只有 C＝直衝她當下的位置，一直走就閃得掉")]
+    public string stage1Pattern = "C";
+    [Tooltip("第二段（光球前）：開始混進 P＝追蹤（預判她會走到哪），要停、要退；這時還不能按 S")]
+    public string trackPattern = "CCP";
+    [Tooltip("第三段（光球後）：追蹤變多，停、退或按住 S")]
+    public string stage2Pattern = "CPCPPC";
+    [Tooltip("第四段（最後一段，沒掩體）：追蹤為主")]
+    public string stage3Pattern = "CPPCPP";
+    [Tooltip("四段的同時攻擊上限（開頭／加追蹤／光球後／最難）")]
+    public int stage1MaxSimultaneous = 3;
+    public int trackMaxSimultaneous = 4;
+    public int stage2MaxSimultaneous = 5;
+    public int stage3MaxSimultaneous = 7;
+    [Tooltip("四段一波幾隻（0＝不分波）")]
+    public int stage1WaveSize = 2;
+    public int trackWaveSize = 3;
+    public int stage2WaveSize = 3;
+    public int stage3WaveSize = 4;
+
     /// <summary>程式層級開關（測試時切換改動前後用；重新進荒原才生效）。</summary>
     public static bool ReduceBirdsEnabled = true;
     private bool ReduceBirds => reduceBirdsNoShield && ReduceBirdsEnabled;
@@ -359,6 +387,7 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.requestKeepRangeMultiplier = requestKeepRangeMultiplier;
         BirdAttackScheduler.behindPenaltyMeters = behindPenaltyMeters;
         BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
+        ApplyRhythm(DesertOrbDirector.GateActive ? DesertOrbDirector.OrbX : -1f, log);
         ApplyBirdIntensitySettings();
 
         ApplyShelters(log);
@@ -372,6 +401,26 @@ public class DesertBeatDirector : MonoBehaviour
         if (enableBraceFrost)  { BraceFrostFX.Install();               log.Append(" 硬撐結霜；"); }
 
         Debug.Log(log.ToString());
+    }
+
+    /// <summary>★1023 依 x 分四段寫進排程器：直衝 → 加追蹤 → 拿到光球後 → 最難。orbX＜0＝沒有光球門檻，第三段從 rhythmStage2X（-1 時用 beat2End）開始。</summary>
+    public void ApplyRhythm(float orbX, System.Text.StringBuilder log = null)
+    {
+        if (!enableBirdRhythm) { BirdAttackScheduler.rhythm = null; return; }
+        float s2 = rhythmStage2X >= 0f ? rhythmStage2X : (orbX >= 0f ? orbX : beat2End);
+        float sT = rhythmTrackX >= 0f ? rhythmTrackX : beat1End;
+        if (sT > s2 - 1f) sT = s2 - 1f;                       // 加追蹤一定在光球之前
+        float s3 = Mathf.Max(s2 + 1f, rhythmStage3X);
+        var list = new System.Collections.Generic.List<BirdAttackScheduler.RhythmStage>
+        {
+            new BirdAttackScheduler.RhythmStage { name = "直衝", fromX = float.NegativeInfinity, pattern = stage1Pattern, maxSimultaneous = stage1MaxSimultaneous, waveSize = stage1WaveSize },
+            new BirdAttackScheduler.RhythmStage { name = "加追蹤（光球前）", fromX = sT, pattern = trackPattern, maxSimultaneous = trackMaxSimultaneous, waveSize = trackWaveSize },
+            new BirdAttackScheduler.RhythmStage { name = "拿到光球後", fromX = s2, pattern = stage2Pattern, maxSimultaneous = stage2MaxSimultaneous, waveSize = stage2WaveSize },
+            new BirdAttackScheduler.RhythmStage { name = "最難（最後一段）", fromX = s3, pattern = stage3Pattern, maxSimultaneous = stage3MaxSimultaneous, waveSize = stage3WaveSize },
+        };
+        BirdAttackScheduler.rhythm = list;
+        string msg = $" 鳥群節奏四段：x<{sT:F0} {stage1Pattern}／{sT:F0}～{s2:F0} {trackPattern}／{s2:F0}～{s3:F0} {stage2Pattern}／x≥{s3:F0} {stage3Pattern}（同時 {stage1MaxSimultaneous}／{trackMaxSimultaneous}／{stage2MaxSimultaneous}／{stage3MaxSimultaneous}）；";
+        if (log != null) log.Append(msg); else Debug.Log("[DesertBeatDirector]" + msg);
     }
 
     private void ApplyWindFreeZone(System.Text.StringBuilder log)

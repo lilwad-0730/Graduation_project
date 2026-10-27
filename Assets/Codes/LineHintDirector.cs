@@ -142,19 +142,30 @@ public class LineHintDirector : MonoBehaviour
             }
             Texture2D mine = Resources.Load<Texture2D>("Hints/Desert_Brace");
             Texture2D his = Resources.Load<Texture2D>("Hints/DesertGuide");
+            // ★1023 有光球門檻時（DesertOrbDirector）：「按住 S」與鳥的圖放到光球之後（拿到光球才有硬撐，M：吃到光球才有提示）。
+            //   修毅的說明圖（躲岩柱、被風石化三次、被鳥撲到）留在原處：光球之前就用得到。
+            //   等光球把位置算好（它會避開岩柱）。
+            float orbWait = 0f;
+            while (DesertOrbDirector.GateActive && float.IsNegativeInfinity(DesertOrbDirector.GuideLeftX) && orbWait < 3f)
+            { orbWait += Time.unscaledDeltaTime; yield return null; }
+            bool afterOrb = DesertOrbDirector.GateActive && !float.IsNegativeInfinity(DesertOrbDirector.GuideLeftX);
+            float braceRight = float.NegativeInfinity;
             if (guide != null && mine != null && his != null)
             {
                 float w = guide.worldWidth * mine.width / his.width;     // 同一個比例：她一樣大、地線對齊
                 Vector3 g = guide.transform.position;
-                Vector3 pos = new Vector3(g.x + guide.worldWidth * 0.5f + 1.2f + w * 0.5f, g.y, Mathf.Max(g.z, behindZ));
+                float px = afterOrb ? DesertOrbDirector.GuideLeftX + w * 0.5f                 // ★1023 左緣接在光球右邊
+                                    : g.x + guide.worldWidth * 0.5f + 1.2f + w * 0.5f;          // 沒有光球門檻：照舊接在修毅的圖右邊
+                Vector3 pos = new Vector3(px, g.y, Mathf.Max(g.z, behindZ));
                 LineHintSign s = LineHintSign.Create("LineHint_荒原按住S", "Hints/Desert_Brace", pos, w);
                 s.bobAmplitude = 0f;          // 跟修毅的圖並排，不各自漂
                 s.verticalRange = 14f;
+                braceRight = pos.x + w * 0.5f;
             }
             else Debug.LogWarning("【線條畫提示】荒原：找不到修毅的說明圖或 Hints/Desert_Brace，按住 S 的圖沒放");
 
-            // ★1020 荒原的鳥：掩體帶結束、開始有鳥的空地前
-            if (LaterLevels) PlaceDesertBird(guide, his, behindZ);
+            // ★1020 荒原的鳥：掩體帶結束、開始有鳥的空地前（★1023 有光球門檻時接在按住 S 的圖右邊）
+            if (LaterLevels) PlaceDesertBird(guide, his, behindZ, afterOrb ? braceRight : float.NegativeInfinity);
         }
 
         // ── 3　水下：出生點右邊放「W／S 上浮與下潛」──
@@ -242,16 +253,16 @@ public class LineHintDirector : MonoBehaviour
     }
 
     // ★1020 荒原的鳥
-    private static void PlaceDesertBird(DesertGuideHint guide, Texture2D guideTex, float behindZ)
+    private static void PlaceDesertBird(DesertGuideHint guide, Texture2D guideTex, float behindZ, float afterX = float.NegativeInfinity)
     {
         Texture2D mine = Resources.Load<Texture2D>("Hints/Desert_Bird");
         if (mine == null) { Debug.LogWarning("【線條畫提示】★1020 找不到 Hints/Desert_Bird，鳥的圖沒放"); return; }
         float w = mine.width / PxPerMeter, h = mine.height / PxPerMeter;
-        // x：最後一根掩體（掩體帶結束、後面是鳥多的空地）往左 4 米
+        // x：最後一根掩體（掩體帶結束、後面是鳥多的空地）往左 4 米；★1023 有光球門檻時接在「按住 S」右邊 1.5 米
         float lastX = float.NegativeInfinity;
         foreach (WindShelter ws in FindObjectsByType<WindShelter>(FindObjectsInactive.Exclude))
             if (ws != null) lastX = Mathf.Max(lastX, ws.transform.position.x);
-        if (float.IsNegativeInfinity(lastX)) { Debug.LogWarning("【線條畫提示】★1020 荒原：沒有掩體，鳥的圖沒放"); return; }
+        if (float.IsNegativeInfinity(lastX) && float.IsNegativeInfinity(afterX)) { Debug.LogWarning("【線條畫提示】★1020 荒原：沒有掩體，鳥的圖沒放"); return; }
         // y：跟修毅說明圖同一條地線（他的圖地線在 480/580 高的地方；我的在 452/470）
         float y;
         if (guide != null)
@@ -261,7 +272,8 @@ public class LineHintDirector : MonoBehaviour
             y = groundY - h * 0.5f + h * (452f / 470f);
         }
         else y = 3.6f;
-        Vector3 pos = new Vector3(lastX - 4f, y, behindZ);
+        float bx = float.IsNegativeInfinity(afterX) ? lastX - 4f : Mathf.Max(afterX + 1.5f + w * 0.5f, lastX - 4f);
+        Vector3 pos = new Vector3(bx, y, behindZ);
         LineHintSign s = LineHintSign.Create("LineHint_荒原鳥", "Hints/Desert_Bird", pos, w);
         s.bobAmplitude = 0f;
         s.verticalRange = 14f;

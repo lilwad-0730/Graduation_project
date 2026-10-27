@@ -142,6 +142,17 @@ public class CameraTargetXFollower : MonoBehaviour
     private int _boulderWeightFrame = -1;
 
     [Header("🎬 暫時性 Camera Override 狀態 (劇情/特寫用)")]
+    /// <summary>
+    /// 環境視線偏移（例如廢墟山坡上鏡頭往坡上看，由 RuinsSlopeAmbience 設定、自己做平滑）。
+    /// 只疊在一般跟隨模式上，X 仍經過背景邊界夾制、Y 仍受垂直跟隨區上下界限制；
+    /// 過場（CinematicOverride）、墜落等模式完全不受影響。
+    /// </summary>
+    public static Vector2 AmbientLookOffset;
+
+    // ★1027 廢墟背景板是階梯狀的（山坡左邊的背景比較矮）：這一幀鏡頭中心最高能到哪，畫面上緣才不會超出背景圖。
+    //   float.MaxValue＝不限制。只限制上方，下方照舊（推巨石的鏡頭下沉不受影響）。
+    private float _panelTopCapY = float.MaxValue;
+
     public bool isOverridden = false;
     public Transform overrideTarget;
     public float overrideOrthoSize = -1f;
@@ -848,13 +859,14 @@ public class CameraTargetXFollower : MonoBehaviour
                 _lastPlayerPos = playerPos;
                 _hasLastPlayerPos = true;
 
-                float clampedX = GetClampedX(playerPos.x, currentOrthoSize, playerY);
+                float clampedX = GetClampedX(playerPos.x + AmbientLookOffset.x, currentOrthoSize, playerY);
+                _panelTopCapY = GetPanelTopCapY(currentZone, clampedX);
                 UpdateMarioTargetY(currentZone, playerPos);
 
                 // ★1001 巨石重量回饋：在既有的 currentTargetY 之上疊一層「只影響 Y」的下沉量。
                 //   currentTargetY 本身（含 verticalFollow 的上下界夾制）完全沒有被改寫，
                 //   X 的 clamp、orthoSize、Falling／CinematicOverride 模式都不受影響。
-                float marioY = currentTargetY + StepBoulderWeightOffset(true);
+                float marioY = currentTargetY + StepBoulderWeightOffset(true) + AmbientLookOffset.y;
 
                 // 不讓下沉量突破既有的垂直邊界（與 UpdateMarioTargetY 用的是同一組界線）
                 if (verticalFollowActive)
@@ -864,6 +876,8 @@ public class CameraTargetXFollower : MonoBehaviour
                     float hiY = verticalFollowMaxY - halfH;
                     if (loY <= hiY) marioY = Mathf.Clamp(marioY, loY, hiY);
                 }
+                // 保險：畫面上緣絕不超出鏡頭目前涵蓋到的背景圖（平常已經在 UpdateMarioTargetY 裡平滑處理過了）
+                marioY = Mathf.Min(marioY, _panelTopCapY);
 
                 transform.position = new Vector3(clampedX, marioY, 0f);
 
@@ -1020,9 +1034,24 @@ public class CameraTargetXFollower : MonoBehaviour
             desiredY = (verticalFollowMinY + verticalFollowMaxY) * 0.5f;
         }
 
+        // ★1027 背景板上緣：鏡頭還照得到左邊較矮的背景時，先停在那個高度，不露出背景外的空白；
+        //   等鏡頭往右移、只剩較高的背景時，上限解除，鏡頭照原本的平滑速度慢慢升上去（不會一下子跳）
+        if (_panelTopCapY < float.MaxValue)
+            desiredY = Mathf.Min(desiredY, _panelTopCapY - Mathf.Max(0f, AmbientLookOffset.y));
+
         currentTargetY = Application.isPlaying
             ? Mathf.Lerp(currentTargetY, desiredY, Time.deltaTime * verticalFollowSpeed)
             : desiredY;
+    }
+
+    /// <summary>★1027 鏡頭中心 X 在 camX 時，鏡頭中心 Y 最高能到哪（畫面上緣貼齊涵蓋到的背景圖裡最矮的那張）。</summary>
+    private float GetPanelTopCapY(BackgroundZone zone, float camX)
+    {
+        if (!enableHorizontalBoundaryClamp || isDesertScene || zone != BackgroundZone.Ruins) return float.MaxValue;
+        float aspect = (_mainCam != null && _mainCam.aspect > 0.1f) ? _mainCam.aspect : (16f / 9f);
+        if (!TryGetRuinPanelVerticalBounds(new Vector3(camX, 0f, 0f), currentOrthoSize * aspect, out float minY, out float maxY)) return float.MaxValue;
+        if (maxY >= float.MaxValue * 0.5f || maxY - minY < currentOrthoSize * 2f - 0.5f) return float.MaxValue;   // 背景比畫面還矮就不管（交給原本的邏輯）
+        return maxY - currentOrthoSize;
     }
 
     /// <summary>取得該層手動指定的左右邊界背景圖設定（未指定時回傳 null）</summary>

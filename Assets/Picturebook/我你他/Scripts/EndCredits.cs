@@ -65,8 +65,8 @@ public class EndCredits : MonoBehaviour
     // 結局流程（玻璃館結束 → 這裡）
     // ══════════════════════════════════════════
     [Header("結局流程")]
-    [Tooltip("結尾漫畫的起始頁（0 起算）。第 63 頁＝62")]
-    public int endingStartPage = 62;
+    [Tooltip("結尾漫畫的起始頁（0 起算）。★1023d 繪本在 061 之後插了 4 頁鏡中的她；★1024 結局改從 068 結-1「她停下來面對黑影」開始＝67（067 結-7 黑影追她已經在鏡牆碎掉後翻過、追逐也玩過了，不再重看）")]
+    public int endingStartPage = 67;
     [Tooltip("結局模式下，翻到最後一頁後等這麼多秒自動捲名單（不必等玩家按鍵）")]
     public float endingAutoRollSeconds = 2.5f;
     [Tooltip("名單捲完後載入的場景。留空＝停在標題卡（展場模式）")]
@@ -699,7 +699,7 @@ public class EndCredits : MonoBehaviour
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "音樂與音效");
-        AddRole(L, "原創音樂・音效", "團隊自製");
+        AddRole(L, "原創音樂・音效", "王翊安");   // ★1024 跟主選單名單一致
         Add(L, Kind.Gap, "", 60f);
         AddRole(L, "Shadows and Dust", "Scott Buckley");
         AddRole(L, "Echoes", "chosic.com");
@@ -708,9 +708,10 @@ public class EndCredits : MonoBehaviour
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "字　型");
-        AddRole(L, "芫荽 ChenYuluoyan", "justfont");
-        AddRole(L, "Mamelon", "—");
-        AddRole(L, "UoqMunThenKhung", "—");
+        AddRole(L, "辰宇落雁體 ChenYuluoyan", "劉韋辰・王立宇");   // ★1024 字型檔是辰宇落雁體（OFL），不是芫荽
+        AddRole(L, "源泉圓體 GenSenRounded2 TW", "ButTaiwan");
+        AddRole(L, "Mamelon", "MJ-WORK");
+        AddRole(L, "宇文天穹 UoqMunThenKhung", "Moonlit Owen");
         Add(L, Kind.Gap, "", 220f);
 
         Add(L, Kind.Section, "使用素材");
