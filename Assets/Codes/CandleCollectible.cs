@@ -109,6 +109,14 @@ public class CandleCollectible : MonoBehaviour, IResettable
             {
                 Collect();
             }
+            else if (_unlitSince >= 0f)
+            {
+                // ★1029 怪物碰到時玩家還沒點燃，寬限還沒滿怪物就衝過去了（最後衝刺速度快、重疊不到 0.3 秒）：
+                //   以前這根燭火就永遠「不收也不漏」，最後一根卡住 → 怪物不消失、遊戲過不了關。
+                //   怪物離開後馬上定案：這時已點燃就算收集，還沒點燃就算漏掉。
+                if (IsLitByPlayer) TryCollect();
+                else MarkMissed();
+            }
         }
     }
 
