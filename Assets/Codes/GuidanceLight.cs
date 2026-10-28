@@ -25,6 +25,8 @@ public class GuidanceLight : MonoBehaviour, IResettable
     public float timedFlightSeconds = 3f;
     [Tooltip("光球特寫結束、鏡頭回到玩家的過渡時間（秒，0＝瞬間切回）")]
     public float cameraHandBackSeconds = 1.0f;
+    [Tooltip("★1028 碰到光球後，鏡頭從玩家移到光球、拉近到特寫大小的過渡時間（秒，0＝瞬間切過去）")]
+    public float cameraEnterSeconds = 0.6f;
     [Tooltip("距離路徑點多近算抵達？")]
     public float waypointThreshold = 0.5f;
 
@@ -139,6 +141,24 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     /// <summary>光球正在演出（帶路飛行或吸收）時為 true，別的系統不要搶鏡頭。</summary>
     public bool IsBusy => IsAbsorbing || _cutsceneFlightCoroutine != null;
+
+    /// <summary>
+    /// ★1028 鏡頭正跟著光球（Waypoint_TouchCloseup 借走鏡頭 → 鏡頭回到玩家身上為止）。
+    /// 任何一顆光球在演出就是 true。荒原鳥群看這個暫停（IndividualBirdEnemy.CutscenePaused）。
+    /// </summary>
+    public static bool IsAnyCameraOnOrb => _cameraOnOrbCount > 0;
+    private static int _cameraOnOrbCount = 0;
+    private bool _cameraOnOrb = false;
+
+    private void SetCameraOnOrb(bool on)
+    {
+        if (_cameraOnOrb == on) return;
+        _cameraOnOrb = on;
+        _cameraOnOrbCount = Mathf.Max(0, _cameraOnOrbCount + (on ? 1 : -1));
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetCameraOnOrbStatics() { _cameraOnOrbCount = 0; }
 
     /// <summary>
     /// ★1015 外部演出閘門：光球被碰到、玩家被鎖住之後、真正起飛（鏡頭跟過去）之前，會先把這段演完才放行。
@@ -574,7 +594,9 @@ public class GuidanceLight : MonoBehaviour, IResettable
             _usingCameraTargetOverride = useCloseup && Object.FindFirstObjectByType<CameraTargetXFollower>() != null;
             if (_usingCameraTargetOverride)
             {
-                CameraTargetXFollower.SetCameraOverride(transform, closeupLensSize);
+                // ★1028 位置與鏡頭大小一起在 cameraEnterSeconds 內慢慢過去（原本是瞬間切到特寫大小、位置靠 Cinemachine 阻尼慢慢追）
+                if (cameraEnterSeconds > 0.01f) CameraTargetXFollower.SetCameraOverrideSmooth(transform, closeupLensSize, cameraEnterSeconds);
+                else CameraTargetXFollower.SetCameraOverride(transform, closeupLensSize);
             }
 
             // 保留直接控制 Cinemachine 的 fallback：場景沒有 CameraTargetXFollower 時仍可運作。
@@ -610,6 +632,9 @@ public class GuidanceLight : MonoBehaviour, IResettable
                     _cutsceneVcam.Follow = transform;
                 }
             }
+
+            // ★1028 鏡頭借給光球了：通知別的系統（荒原鳥群會暫停到鏡頭回到玩家身上）
+            if (useCloseup) SetCameraOnOrb(true);
 
             // 3. 停頓一下 (讓玩家感覺到「觸發了」某件事)
             if (flyDelay > 0f) yield return new WaitForSeconds(flyDelay);
@@ -661,10 +686,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
             }
 
             // 6. 鏡頭還給玩家；等它「真的」回到玩家身上，才解鎖操作
+            bool handedBackViaFollower = false;
             if (_usingCameraTargetOverride)
             {
                 CameraTargetXFollower.ClearCameraOverrideSmooth(cameraHandBackSeconds);   // ★1011 慢慢回到玩家，不瞬間切
                 _usingCameraTargetOverride = false;
+                handedBackViaFollower = true;
             }
             else if (useCloseup)
             {
@@ -675,7 +702,14 @@ public class GuidanceLight : MonoBehaviour, IResettable
                 RestoreCutsceneLens();
             }
             RestoreCutsceneCameraFollow();
-            if (IsCameraReturningToPlayer())
+            if (handedBackViaFollower)
+            {
+                // ★1028 CameraTargetXFollower 的「回到玩家」過渡跑完就是回到了。
+                //   不能用下面的距離判定：荒原鏡頭平常就偏在玩家左邊 3（FollowOffset），dx<2.5 永遠不成立，每次都要等滿 4 秒。
+                float waitStart = Time.unscaledTime;
+                while (CameraTargetXFollower.IsBlending && Time.unscaledTime - waitStart < 4f) yield return null;
+            }
+            else if (IsCameraReturningToPlayer())
             {
                 float waitStart = Time.unscaledTime;
                 while (Time.unscaledTime - waitStart < 4f)   // 最多等 4 秒，防呆不卡死
@@ -688,10 +722,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
                     yield return null;
                 }
             }
+            SetCameraOnOrb(false);   // ★1028 鏡頭回到玩家身上了
             yield return new WaitForSeconds(0.1f);
         }
         finally
         {
+            SetCameraOnOrb(false);
             if (_usingCameraTargetOverride)
             {
                 CameraTargetXFollower.ClearCameraOverride();
@@ -803,6 +839,7 @@ public class GuidanceLight : MonoBehaviour, IResettable
     private void OnDisable()
     {
         // 保險：演出中途被停用／換場景時，把玩家鎖定與鏡頭 Follow 都還回去
+        SetCameraOnOrb(false);
         if (_usingCameraTargetOverride)
         {
             CameraTargetXFollower.ClearCameraOverride();
@@ -1197,8 +1234,37 @@ public class GuidanceLight : MonoBehaviour, IResettable
         }
 
         if (waypoints[nearestIndex] == null) return;
-        TeleportLight(waypoints[nearestIndex].position, nearestIndex);
-        Debug.Log($"💡【光絮重置】玩家重生，光絮已回到最近的路徑點 {nearestIndex} ({waypoints[nearestIndex].name})");
+
+        // ★1029 重生後光球不退回已觸發過的路徑點：maxWaypointReached 以前的點都觸發過，
+        //   再回去會讓同一個點重複停格／特寫／語音。光球只「出現」在離重生點最近的點，目標則跳到第一個還沒觸發的點。
+        int targetIdx = Mathf.Max(nearestIndex, FirstUntriggeredIndex());
+        if (targetIdx >= waypoints.Length)
+        {
+            // 全部路徑點都觸發過：放在最後一個有效路徑點，不再回頭
+            int lastIdx = waypoints.Length - 1;
+            while (lastIdx > 0 && waypoints[lastIdx] == null) lastIdx--;
+            Vector3 lastPos = waypoints[lastIdx] != null ? waypoints[lastIdx].position : waypoints[nearestIndex].position;
+            TeleportLight(lastPos, lastIdx);
+            currentWaypointIndex = waypoints.Length;
+            Debug.Log($"💡【光絮重置】玩家重生，所有路徑點都已觸發過，光絮停在最後一點 {lastIdx}，不再回頭");
+        }
+        else if (targetIdx > nearestIndex)
+        {
+            TeleportLight(waypoints[nearestIndex].position, targetIdx);
+            Debug.Log($"💡【光絮重置】玩家重生，最近的路徑點 {nearestIndex} 已觸發過而跳過，光絮改往未觸發的路徑點 {targetIdx} ({(waypoints[targetIdx] != null ? waypoints[targetIdx].name : "null")})");
+        }
+        else
+        {
+            TeleportLight(waypoints[nearestIndex].position, nearestIndex);
+            Debug.Log($"💡【光絮重置】玩家重生，光絮已回到最近的路徑點 {nearestIndex} ({waypoints[nearestIndex].name})");
+        }
+    }
+
+    // ★1029 第一個「還沒觸發過」的路徑點索引（= waypoints.Length 代表全部都觸發過）
+    private int FirstUntriggeredIndex()
+    {
+        int len = waypoints != null ? waypoints.Length : 0;
+        return Mathf.Clamp(maxWaypointReached, 0, len);
     }
 
     public void TeleportLight(Vector3 targetPosition, int newWaypointIndex)
@@ -1233,6 +1299,20 @@ public class GuidanceLight : MonoBehaviour, IResettable
         _touchCooldownWaypoint = null;
 
         if (waypoints == null || waypoints.Length == 0) return;
+
+        // ★1029 重生流程中（含 UpperCastleRespawnAssist 在重置後指定的索引）不可退回已觸發過的路徑點；
+        //   重生以外的傳送（TeleportTrigger 等）完全不受影響。
+        if (PlayerRespawnSystem.IsAnyRespawning && newWaypointIndex >= 0 && newWaypointIndex < FirstUntriggeredIndex())
+        {
+            int clamped = FirstUntriggeredIndex();
+            Debug.Log($"【光絮】重生中，目標點 {newWaypointIndex} 已觸發過，改為未觸發的 {clamped}");
+            newWaypointIndex = clamped;
+            if (clamped >= waypoints.Length)
+            {
+                currentWaypointIndex = waypoints.Length;
+                return;
+            }
+        }
 
         if (newWaypointIndex >= 0 && newWaypointIndex < waypoints.Length)
         {

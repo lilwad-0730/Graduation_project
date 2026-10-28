@@ -289,6 +289,7 @@ public class CameraTargetXFollower : MonoBehaviour
         Instance.isOverridden = true;
         Instance.overrideTarget = customFocusTarget;
         Instance.overrideOrthoSize = customOrthoSize ?? -1f;
+        Instance.BeginOverrideFollowTuning();   // ★1028 特寫期間鏡頭不延遲
         Debug.Log($"🎬【Camera Override 啟用】聚焦目標: {customFocusTarget?.name}");
     }
 
@@ -338,6 +339,9 @@ public class CameraTargetXFollower : MonoBehaviour
     private float _blendFromOrtho;
     private int _blendLastFrame = -1;
     private float _appliedOrtho = -1f;
+
+    /// <summary>★1028 鏡頭還在過渡中（例如特寫結束後慢慢回到玩家身上）。</summary>
+    public static bool IsBlending => Instance != null && Instance._blendActive;
 
     private float CurrentOrtho()
     {
@@ -762,6 +766,74 @@ public class CameraTargetXFollower : MonoBehaviour
     {
         UpdatePositionCore();
         StepBlend();   // ★1011 有鏡頭過渡時，把算好的位置與大小從舊的慢慢混過去
+        // ★1028 特寫結束、還原的過渡也走完了，才把鏡頭阻尼還回去（還原途中維持 0，鏡頭不會拖在後面）
+        if (_overrideFollowTuned && !isOverridden && !_blendActive) EndOverrideFollowTuning();
+    }
+
+    // ── ★1028 特寫時讓目標真的在畫面正中央 ──────────────────────────
+    // 鏡頭是 CinemachineFollow 跟著這個物件：畫面中心＝這個物件的位置＋FollowOffset，而且有 PositionDamping。
+    // 荒原平常設 FollowOffset x＝-3、阻尼 1（7/28「調整荒漠鏡頭移動模式」，平常跟玩家用的，保留）。
+    // 特寫時：位置扣掉 FollowOffset（畫面中心＝特寫目標），阻尼暫時歸零（光球飛的時候鏡頭不落後）。
+    // 另外 Main Camera 上的 SimpleCameraBounds（荒原、水下有）每幀最後會把 Y 鎖在背景正中央、把大小拉回背景高度，
+    // 會蓋掉特寫的位置與大小；特寫期間把它旁路（這裡自己的 GetClampedX/Y 已經會夾背景範圍，不會破圖）。
+    private CinemachineFollow _overrideFollow;
+    private Vector3 _savedFollowDamping;
+    private bool _overrideFollowTuned;
+    private bool _savedFollowDampingValid;
+    private bool _prevSimpleBoundsBypass;
+
+    private CinemachineFollow GetControlledFollow()
+    {
+        if (cameraToControl != null) _vcam = cameraToControl;
+        else if (_vcam == null) _vcam = Object.FindFirstObjectByType<CinemachineCamera>();
+        return _vcam != null ? _vcam.GetComponent<CinemachineFollow>() : null;
+    }
+
+    private void BeginOverrideFollowTuning()
+    {
+        if (_overrideFollowTuned) return;
+        _overrideFollowTuned = true;
+
+        _prevSimpleBoundsBypass = SimpleCameraBounds.isBypassed;
+        SimpleCameraBounds.isBypassed = true;
+
+        _overrideFollow = GetControlledFollow();
+        _savedFollowDampingValid = false;
+        if (_overrideFollow != null)
+        {
+            Unity.Cinemachine.TargetTracking.TrackerSettings ts = _overrideFollow.TrackerSettings;
+            _savedFollowDamping = ts.PositionDamping;
+            _savedFollowDampingValid = true;
+            ts.PositionDamping = Vector3.zero;
+            _overrideFollow.TrackerSettings = ts;
+        }
+    }
+
+    private void EndOverrideFollowTuning()
+    {
+        if (!_overrideFollowTuned) return;
+        if (_overrideFollow != null && _savedFollowDampingValid)
+        {
+            Unity.Cinemachine.TargetTracking.TrackerSettings ts = _overrideFollow.TrackerSettings;
+            ts.PositionDamping = _savedFollowDamping;
+            _overrideFollow.TrackerSettings = ts;
+        }
+        SimpleCameraBounds.isBypassed = _prevSimpleBoundsBypass;
+        _overrideFollow = null;
+        _savedFollowDampingValid = false;
+        _overrideFollowTuned = false;
+    }
+
+    /// <summary>CinemachineFollow 的 XY 偏移（畫面中心相對這個物件的位置）；沒有就是 0。</summary>
+    private Vector2 GetFollowOffsetXY()
+    {
+        CinemachineFollow f = _overrideFollow != null ? _overrideFollow : GetControlledFollow();
+        return f != null ? new Vector2(f.FollowOffset.x, f.FollowOffset.y) : Vector2.zero;
+    }
+
+    private void OnDisable()
+    {
+        EndOverrideFollowTuning();   // 換場景／停用時把阻尼還回去
     }
 
     void UpdatePositionCore()
@@ -825,7 +897,9 @@ public class CameraTargetXFollower : MonoBehaviour
                 if (overrideOrthoSize > 0f) ApplyOrthoSize(cinematicOrtho);
                 float cinematicX = GetClampedX(overridePos.x, cinematicOrtho, overridePos.y);
                 float cinematicY = GetClampedY(overridePos.y, cinematicOrtho, overridePos);
-                transform.position = new Vector3(cinematicX, cinematicY, 0f);
+                // ★1028 上面算的是「畫面中心」；鏡頭實際在這個物件＋FollowOffset，所以扣回去，特寫目標才會在正中央
+                Vector2 followOff = GetFollowOffsetXY();
+                transform.position = new Vector3(cinematicX - followOff.x, cinematicY - followOff.y, 0f);
                 break;
 
             case CameraMode.Falling:

@@ -49,6 +49,20 @@ public static class BirdAttackScheduler
     public static int waveSize = 3;
     public static float waveQuietSeconds = 1.2f;
 
+    // ★1029 綠洲收尾：玩家走到綠洲前，排隊的攻擊要全部放完（不能她到了綠洲、鳥還在排隊）。
+    //   玩家 x ≥ finaleOasisX - finaleStartDistance：改用較大的一波／同時上限／較短的波次空檔，加快放行。
+    //   玩家 x ≥ finaleOasisX - finaleFlushDistance：不再受放行間隔／同時上限／波次空檔限制，排隊的每幀放一隻直到清空，
+    //   且不再因為「離太遠」取消需求。風、傘、重生、陰影、光球鏡頭等全場阻擋仍然照舊。
+    //   DesertBeatDirector 開局寫入；finaleOasisX＝無限大就關閉（舊行為）。
+    public static float finaleOasisX = float.PositiveInfinity;   // 綠洲 x；無限大＝關閉
+    public static float finaleStartDistance = 35f;   // 離綠洲多近開始收尾
+    public static float finaleWaveQuietSeconds = 0.8f;
+    public static int finaleWaveSize = 6;
+    public static int finaleMaxSimultaneous = 6;
+    public static float finaleFlushDistance = 6f;    // 離綠洲這麼近還有排隊的就全部直接放
+    private static bool _finaleLogged = false;
+    private static bool _flushLogged = false;
+
     // ★1023 鳥群節奏（M 10/23：先直衝、後加預判追蹤、越來越密）：依玩家的 x 換一段設定。
     //   DesertBeatDirector 開局寫入；rhythm＝null 就照上面的全域值（舊行為）。
     public class RhythmStage
@@ -135,6 +149,7 @@ public static class BirdAttackScheduler
     private static void OnSceneLoaded(Scene s, LoadSceneMode m)
     {
         rhythm = null;   // ★1023 每個場景由 DesertBeatDirector 重新寫入；沒寫＝照全域值
+        finaleOasisX = float.PositiveInfinity;   // ★1029 綠洲收尾同理：每個場景重新寫入，沒寫＝關閉
         ClearQueueAndCancelBirds();
         _stats.Clear();
         ResetCounters();
@@ -160,6 +175,8 @@ public static class BirdAttackScheduler
         _lastBlock = "";
         _waveGranted = 0;
         _lastActiveTime = -999f;
+        _finaleLogged = false;   // ★1029 重生後玩家回到前面，收尾狀態重新判斷
+        _flushLogged = false;
     }
 
     private static void ClearQueueAndCancelBirds()
@@ -220,7 +237,7 @@ public static class BirdAttackScheduler
     {
         if (bird == null || IsQueued(bird)) return;
         EnsureRunner();
-        _queue.Add(new Request { bird = bird, time = Time.time, force = force });
+        _queue.Add(new Request { bird = bird, time = IndividualBirdEnemy.BirdTime, force = force });
         Stat("QUEUED");
         Log("QUEUED", bird, $"Distance={distance:F1} Queue={_queue.Count}{(force ? " Force" : "")}");
     }
@@ -263,8 +280,9 @@ public static class BirdAttackScheduler
 
     // 同時攻擊上限：基本值 maxSimultaneous；佇列越長（每 queuePressureStep 張需求）上限多 +1，最多到 maxSimultaneousHard。
     // 這樣鳥多的時候會自動多放幾隻、不會積一堆在身後；鳥少的時候維持基本值，不會變成整群一起衝。
-    private static int EffectiveCap()
+    private static int EffectiveCap(bool finale = false)
     {
+        if (finale) return Mathf.Max(1, finaleMaxSimultaneous);   // ★1029 收尾：直接用收尾的上限
         int bonus = queuePressureStep > 0 ? _queue.Count / queuePressureStep : 0;
         int baseCap = CurrentMaxSimultaneous();
         return Mathf.Clamp(Mathf.Max(1, baseCap) + bonus, 1, Mathf.Max(baseCap, maxSimultaneousHard));
@@ -287,14 +305,44 @@ public static class BirdAttackScheduler
     /// <summary>由 Runner 每幀呼叫一次。佇列為空時幾乎沒有成本。</summary>
     public static void Tick()
     {
+        if (IndividualBirdEnemy.CutscenePaused) return;   // ★1028 光球鏡頭演出中：不放行、不清需求，原樣等鏡頭回到玩家身上
         // 1. 清理無效需求／結束的攻擊
         _active.RemoveWhere(b => b == null || !b.IsAttacking);
-        if (_active.Count > 0) _lastActiveTime = Time.time;   // ★1018 波次空檔用：最後一次有鳥在攻擊的時間
+        if (_active.Count > 0) _lastActiveTime = IndividualBirdEnemy.BirdTime;   // ★1018 波次空檔用：最後一次有鳥在攻擊的時間
         for (int i = _queue.Count - 1; i >= 0; i--)
         {
             IndividualBirdEnemy b = _queue[i].bird;
             if (b == null || !b.isActiveAndEnabled || !b.IsPending) _queue.RemoveAt(i);
         }
+
+        // ★1029 綠洲收尾：判斷玩家離綠洲多近（找不到玩家＝不收尾）；進入收尾／全放各印一次
+        bool finale = false, flush = false;
+        if (!float.IsInfinity(finaleOasisX))
+        {
+            Transform fp = GetPlayer();
+            if (fp != null)
+            {
+                float px = fp.position.x;
+                finale = px >= finaleOasisX - finaleStartDistance;
+                flush = px >= finaleOasisX - finaleFlushDistance;
+            }
+        }
+        if (finale && !_finaleLogged)
+        {
+            _finaleLogged = true;
+            _waveGranted = 0;   // 進入收尾時把波次計數歸零，不讓舊的 WAVE 擋住
+            Stat("FINALE");
+            Log("FINALE", null, $"★1029 進入綠洲收尾：一波 {finaleWaveSize}、同時最多 {finaleMaxSimultaneous}、波次空檔 {finaleWaveQuietSeconds:F1}s Queue={_queue.Count}");
+        }
+        else if (!finale) _finaleLogged = false;
+        if (flush && !_flushLogged)
+        {
+            _flushLogged = true;
+            Stat("FLUSH");
+            Log("FLUSH", null, $"★1029 離綠洲 {finaleFlushDistance:F0} 米內：排隊的全部直接放 Queue={_queue.Count}");
+        }
+        else if (!flush) _flushLogged = false;
+
         if (_queue.Count == 0) { _lastBlock = ""; return; }
         UpdateStage();   // ★1023 依玩家 x 換段
 
@@ -305,11 +353,13 @@ public static class BirdAttackScheduler
         else if (UmbrellaZone.IsPlayerUnderUmbrella) block = "OTHER";
         else if (windPhase && !AnyWindFreeRequest()) block = "WIND";
         else if (IndividualBirdEnemy.IsAllSuppressed) block = "SHADOW";
-        else if (Time.time < _nextSlotTime || _active.Count >= EffectiveCap()) block = "BUSY";
-        else if (CurrentWaveSize() > 0 && _waveGranted >= CurrentWaveSize() && !AnyForceRequest())
+        else if (flush) { }   // ★1029 離綠洲很近：跳過放行間隔／同時上限／波次空檔，每幀放一隻直到佇列清空
+        else if (IndividualBirdEnemy.BirdTime < _nextSlotTime || _active.Count >= EffectiveCap(finale)) block = "BUSY";
+        else if ((finale ? finaleWaveSize : CurrentWaveSize()) > 0 && _waveGranted >= (finale ? finaleWaveSize : CurrentWaveSize()) && !AnyForceRequest())
         {
-            // ★1018 這一波放完了：等場上的鳥全部攻擊完，再安靜 waveQuietSeconds 秒才開下一波
-            if (_active.Count > 0 || Time.time - _lastActiveTime < Mathf.Max(0f, waveQuietSeconds)) block = "WAVE";
+            // ★1018 這一波放完了：等場上的鳥全部攻擊完，再安靜 waveQuietSeconds 秒才開下一波（★1029 收尾時改用 finaleWaveQuietSeconds）
+            float quiet = finale ? finaleWaveQuietSeconds : waveQuietSeconds;
+            if (_active.Count > 0 || IndividualBirdEnemy.BirdTime - _lastActiveTime < Mathf.Max(0f, quiet)) block = "WAVE";
             else _waveGranted = 0;
         }
 
@@ -333,7 +383,8 @@ public static class BirdAttackScheduler
             float dx = r.bird.transform.position.x - player.position.x;
 
             // 玩家早就跑出這隻鳥的有效範圍：取消需求（鳥回到待機，她再靠近會重新偵測）
-            if (!r.force && Mathf.Abs(dx) > r.bird.detectionRange * Mathf.Max(1f, requestKeepRangeMultiplier))
+            // ★1029 全放階段（離綠洲很近）不取消，排隊的鳥照放
+            if (!r.force && !flush && Mathf.Abs(dx) > r.bird.detectionRange * Mathf.Max(1f, requestKeepRangeMultiplier))
             {
                 Stat("CANCEL");
                 Log("CANCEL", r.bird, $"Reason=PlayerFar dx={dx:F1}");
@@ -346,7 +397,7 @@ public static class BirdAttackScheduler
             // 優先分數（越小越先）：離玩家越近越先；在她身後的加罰分；等越久扣越多（避免餓死）。
             // 這樣風停時「前方剛偵測到的鳥」不會被「早就排著、現在已在身後或很遠的鳥」搶走名額。
             bool behind = dx * fwd < 0f;
-            r.score = Mathf.Abs(dx) + (behind ? behindPenaltyMeters : 0f) - (Time.time - r.time) * agingMetersPerSecond;
+            r.score = Mathf.Abs(dx) + (behind ? behindPenaltyMeters : 0f) - (IndividualBirdEnemy.BirdTime - r.time) * agingMetersPerSecond;
 
             // ★1012 風期間只放行「最後一座掩體之後」的鳥（它們不受風起風停限制）
             if (windPhase && !r.bird.IgnoresWind) continue;
@@ -378,11 +429,11 @@ public static class BirdAttackScheduler
         _waveGranted++;
         float gap = Mathf.Max(0.05f, slotInterval);
         if (_slotCount % Mathf.Max(1, attacksPerRound) == 0) gap += Mathf.Max(0f, restSeconds);
-        _nextSlotTime = Time.time + gap;
+        _nextSlotTime = IndividualBirdEnemy.BirdTime + gap;
 
         _active.Add(chosen.bird);
         Stat("SLOT");
-        float wait = Time.time - chosen.time;
+        float wait = IndividualBirdEnemy.BirdTime - chosen.time;
         Log("SLOT", chosen.bird, $"Mode={(type == BirdAttackType.FixedPosition ? "Current" : "Predicted")} Zone={ZoneName(chosenZone)} QueueWait={wait:F1}s Queue={_queue.Count} Active={_active.Count}");
         chosen.bird.GrantAttack(type, wait);
     }

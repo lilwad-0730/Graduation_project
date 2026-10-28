@@ -129,6 +129,20 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("★1007 優先分數：每等待 1 秒扣多少公尺的分，避免排很久的鳥餓死。0＝純粹看距離")]
     public float agingMetersPerSecond = 2f;
 
+    [Header("★1029 綠洲收尾：到綠洲前把排隊的鳥放完")]
+    [Tooltip("★1029 勾選＝玩家走近場景裡名叫「oasis」的物件時，加快放行並把排隊中的鳥放完，不讓她到了綠洲還有鳥在排隊。找不到 oasis 就等於關閉")]
+    public bool enableOasisFinale = true;
+    [Tooltip("★1029 離綠洲多近 (公尺) 開始收尾：改用下面較大的一波／同時上限／較短的波次空檔")]
+    public float finaleStartDistance = 35f;
+    [Tooltip("★1029 收尾期間，一波結束後的安靜秒數（原本是 waveQuietSeconds）")]
+    public float finaleWaveQuietSeconds = 0.8f;
+    [Tooltip("★1029 收尾期間，一波放行幾次攻擊")]
+    [Range(0, 12)] public int finaleWaveSize = 6;
+    [Tooltip("★1029 收尾期間，同時「前搖＋俯衝中」的鳥最多幾隻")]
+    [Range(1, 12)] public int finaleMaxSimultaneous = 6;
+    [Tooltip("★1029 離綠洲這麼近 (公尺) 時，還排隊的鳥全部直接放（每幀一隻，不受間隔／上限／波次限制，也不因太遠取消）")]
+    public float finaleFlushDistance = 6f;
+
     [Tooltip("★1008 開局時若存檔裡的排程數值是舊版本，就自動換成程式裡最新的建議值（Inspector 存的舊值會蓋掉程式預設，這是上次放行名額一直不夠的原因）。勾選＝完全照你 Inspector 的數字，不再自動換")]
     public bool keepMyInspectorValues = false;
     [HideInInspector] public int tuningVersion = 0;
@@ -387,6 +401,22 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.requestKeepRangeMultiplier = requestKeepRangeMultiplier;
         BirdAttackScheduler.behindPenaltyMeters = behindPenaltyMeters;
         BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
+        // ★1029 綠洲收尾：找到「oasis」才啟用，x 無限大＝關閉
+        BirdAttackScheduler.finaleOasisX = float.PositiveInfinity;
+        if (enableOasisFinale)
+        {
+            GameObject oasisGo = GameObject.Find("oasis");
+            if (oasisGo != null)
+            {
+                BirdAttackScheduler.finaleOasisX = oasisGo.transform.position.x;
+                BirdAttackScheduler.finaleStartDistance = finaleStartDistance;
+                BirdAttackScheduler.finaleWaveQuietSeconds = finaleWaveQuietSeconds;
+                BirdAttackScheduler.finaleWaveSize = finaleWaveSize;
+                BirdAttackScheduler.finaleMaxSimultaneous = finaleMaxSimultaneous;
+                BirdAttackScheduler.finaleFlushDistance = finaleFlushDistance;
+                log.Append(" 綠洲收尾@x").Append(oasisGo.transform.position.x.ToString("F1")).Append("（前 ").Append(finaleStartDistance).Append(" 米加快、前 ").Append(finaleFlushDistance).Append(" 米全放）；");
+            }
+        }
         ApplyRhythm(DesertOrbDirector.GateActive ? DesertOrbDirector.OrbX : -1f, log);
         ApplyBirdIntensitySettings();
 

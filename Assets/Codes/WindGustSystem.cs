@@ -77,7 +77,11 @@ public class WindGustSystem : MonoBehaviour, IResettable
     private float _holdCalmUntil = -1f;
     private bool _stoppedForever = false;
     public bool IsStoppedForever => _stoppedForever;
-    public bool IsHoldingCalm => Time.time < _holdCalmUntil;
+    public bool IsHoldingCalm => Time.time < _holdCalmUntil || GuidanceLight.IsAnyCameraOnOrb;
+
+    // ★1028 鏡頭跟著光球飛的期間（GuidanceLight.IsAnyCameraOnOrb）風也屏息：正在吹就立刻停、計時凍在 0、沒有前兆和推力。
+    //   鏡頭回到玩家身上後從「風停」重新開始循環（她剛拿回操作，先給一整段 pauseDuration 再起風）。
+    private bool _orbCameraHold = false;
     private Rigidbody playerRb;
     private PlayerPetrification playerPetrify;
     private bool hasAppliedWindThisGust = false;
@@ -272,8 +276,25 @@ public class WindGustSystem : MonoBehaviour, IResettable
         if (windAudioSource != null)
             windAudioSource.volume = AudioManager.SfxVolume;
 
+        // ★1028 光球鏡頭演出開始／結束
+        bool orbHold = GuidanceLight.IsAnyCameraOnOrb;
+        if (orbHold != _orbCameraHold)
+        {
+            _orbCameraHold = orbHold;
+            if (orbHold)
+            {
+                if (currentState == WindState.Blowing) SwitchToState(WindState.Calm);
+                timer = 0f;
+                Debug.Log("【陣風系統】鏡頭跟著光球：風暫停");
+            }
+            else
+            {
+                Debug.Log("【陣風系統】鏡頭回到玩家：風的循環重新開始（先風停）");
+            }
+        }
+
         // ★0905：永久停風／屏息中——計時凍在 0，沒有前兆、沒有推力
-        if (_stoppedForever || Time.time < _holdCalmUntil)
+        if (_stoppedForever || Time.time < _holdCalmUntil || orbHold)
         {
             timer = 0f;
             return;
