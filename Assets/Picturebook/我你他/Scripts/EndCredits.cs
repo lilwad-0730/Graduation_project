@@ -73,7 +73,7 @@ public class EndCredits : MonoBehaviour
     public string sceneAfterCredits = "MainMenuScene";
     [Tooltip("名單結束後、切回主選單前，全黑停留幾秒")]
     public float endingTailHold = 1.2f;
-    [Tooltip("結局模式下，捲名單之前先播的文字卡（那是我的形狀 → 標題卡「我　你　他」）。留空＝不播")]
+    [Tooltip("結局模式下，捲名單之前先播的文字卡（那是我的形狀 → 標題卡「育　言」）。留空＝不播")]
     public string endingCardId = "E1";
 
     /// <summary>
@@ -350,7 +350,7 @@ public class EndCredits : MonoBehaviour
         // 黑幕淡入
         yield return Fade(0f, 1f, curtainIn);
 
-        // ★結局黑幕卡（人稱階梯的收束）：「那是我的形狀」→ 標題卡「我　你　他」→ 才捲名單。
+        // ★結局黑幕卡（人稱階梯的收束）：「那是我的形狀」→ 標題卡「育　言」→ 才捲名單。
         //   畫面此時已全黑，卡片不做黑幕進出；播完瞬間收掉它的層，底下就是我們的黑幕，接得無縫。
         if (EndingMode && !string.IsNullOrEmpty(endingCardId)
             && StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.HasCard(endingCardId))
@@ -685,7 +685,7 @@ public class EndCredits : MonoBehaviour
         List<Entry> L = new List<Entry>();
 
         Add(L, Kind.Gap, "", 420f);
-        Add(L, Kind.Title, "我　你　他");
+        Add(L, Kind.Title, "育　言");
         Add(L, Kind.Gap, "", 260f);
 
         Add(L, Kind.Section, "組　員");
@@ -744,7 +744,7 @@ public class EndCredits : MonoBehaviour
         //   由企劃拍板，我沒有自己改。
 
         Add(L, Kind.Gap, "", 400f);
-        Add(L, Kind.Title, "我　你　他");
+        Add(L, Kind.Title, "育　言");
         Add(L, Kind.Gap, "", 400f);
 
         return L;

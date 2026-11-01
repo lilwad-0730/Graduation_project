@@ -1219,6 +1219,9 @@ public class StoryCardPlayer : MonoBehaviour
         cards = BuildDefaultCards();
     }
 
+    /// <summary>★1031 晚：標題卡「育　言」後面要不要接兩頁謎底（育＝她、言＝陪在她身邊的人、那道光＝他）。關掉＝只剩標題卡。</summary>
+    public static bool RevealNameAfterTitle = true;
+
     public static List<Card> BuildDefaultCards()
     {
         List<Card> list = new List<Card>();
@@ -1270,9 +1273,19 @@ public class StoryCardPlayer : MonoBehaviour
         list.Add(NewCard("E1a", new string[] {
             "那是我的形狀"
         }));
-        Card ending = NewCard("E1", new string[] {
-            "我　你　他"
-        });
+        // ★1031 M：遊戲定名「育言」，「我你他」整個拿掉（10/29 會議）；標題卡改「育　言」。
+        // ★1031 晚 審核：謎底（育＝她、言＝陪在她身邊的人、那道光＝他）原本只在簡報第 10 頁和展板上，
+        //    攤位上只玩遊戲、沒聽簡報的人讀不到。標題卡後面補兩頁把它講完；字照簡報，不加句號、手排斷行（跟其他卡一樣）。
+        //    不想要就把 RevealNameAfterTitle 關掉（一行）。每頁最短停 4 秒。
+        Card ending = NewCard("E1", RevealNameAfterTitle
+            ? new string[] {
+                "育　言",
+                "育，是她\n言，是陪在她身邊的人",
+                "一路帶她走的那道光\n就是他"
+            }
+            : new string[] {
+                "育　言"
+            });
         ending.minHoldSeconds = 4.0f;
         list.Add(ending);
 
