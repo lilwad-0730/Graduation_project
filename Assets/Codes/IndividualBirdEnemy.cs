@@ -131,7 +131,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     
     [Header("🔴 攻擊前搖與路徑預告 (Telegraph)")]
     [Tooltip("警戒期間顯示紅色攻擊路徑：先亮路徑再俯衝。路徑鎖定「發現玩家當下」的方向，之後不再追蹤")]
-    public bool showAttackTelegraph = true;
+    public bool showAttackTelegraph = false;   // ★1029 紅線預告全面取消（改用姿勢預告＋落點影子）
 
     [Tooltip("紅色路徑顏色")]
     public Color telegraphColor = new Color(1f, 0.25f, 0.2f, 0.9f);
@@ -474,6 +474,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Range(0f, 1f)] public float landingShadowMaxAlpha = 0.8f;
     [Tooltip("鳥還在高處時影子的大小（相對最大寬度）")]
     [Range(0.1f, 1f)] public float landingShadowStartScale = 0.6f;
+    [Tooltip("開＝影子畫在鳥「正下方」的地面，跟著鳥移動（越接近落點越大越深）；關＝舊做法，影子固定在落點")]
+    public bool landingShadowFollowsBird = true;   // ★1029
 
     [Header("★1010 逼她往回走（1008 會議 荒原 a.II；DesertBeatDirector 會統一覆蓋）")]
     [Tooltip("開啟＝攻擊只落在她「前方」（關卡往右走的方向）或她身上，永遠不落在她身後：往前走會撞上，往回走才安全。\n" +
@@ -529,6 +531,54 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public float lateLockApproachSpeed = 0f;
     [Tooltip("晚鎖定：跟著她的平滑時間（秒）。越小跟得越緊")]
     public float lateLockSmoothTime = 0.22f;
+    [Tooltip("★1028 開＝追到她頭上那一刻就鎖定落點（落點＝鳥當下正下方），追的時候只跟著她正上方、不加預判提前量；之後抖動、落下都不再水平移動。\n" +
+             "原因：原本追的點含預判提前量（最多 6 米），她一換方向，追的點就跳到另一邊，鳥用最高速度衝過去，看起來像閃現。\n" +
+             "關＝原本的做法（追的點含預判，抖動時才鎖定、再水平移到落點上方）")]
+    public bool lateLockAtArrival = true;
+
+    [Header("★1028 攻擊她前方的地面")]
+    [Tooltip("開＝鳥決定攻擊的那一刻，在她移動方向的前方 aheadMinDistance～aheadMaxDistance 米隨機挑一點當落點，立刻鎖死、之後不再改；" +
+             "鳥飛到那一點正上方垂直落下（她走進落點才會被打到）。開的時候不走晚鎖定。示範俯衝（overrideTarget）不受影響。")]
+    public bool attackAheadOfPlayer = true;
+    [Tooltip("落點最少在她前方幾米")]
+    public float aheadMinDistance = 0f;
+    [Tooltip("落點最多在她前方幾米")]
+    public float aheadMaxDistance = 15f;
+    [Tooltip("開＝落點不只在她前方，每次攻擊隨機選她「前方或後方」（各一半機率），距離仍是 aheadMinDistance～aheadMaxDistance 米")]
+    public bool aheadEitherSide = false;   // ★1029
+    [Tooltip("aheadEitherSide 開時，落在她「後方」最多幾米。<0＝跟前方一樣用 aheadMaxDistance（前後對稱）")]
+    public float aheadBehindMaxDistance = -1f;   // ★1029
+    [Tooltip("開＝鳥鎖定落點時如果在她左邊（鳥 X < 她 X），落點改成她「右方」（世界 +X）leftBirdRightMin～leftBirdRightMax 米隨機一點，不看她面向")]
+    public bool leftBirdTargetsRight = false;   // ★1029
+    public float leftBirdRightMin = 10f;        // ★1029
+    public float leftBirdRightMax = 15f;        // ★1029
+    [Tooltip("開＝落點範圍的中心改成「她在鳥落地那一刻會在的位置」：她現在的 X ＋ 她的水平速度 × 到達時間（前搖＋俯衝）。一直往同一邊走會被打中，停下／放慢／回頭才躲得掉")]
+    public bool aheadLeadByVelocity = false;   // ★1029
+    [Tooltip("預測提前量最多幾米（防呆）")]
+    public float aheadLeadMaxDistance = 25f;   // ★1029
+    [Tooltip("出手後從原本的位置直線衝向落點的速度（公尺／秒）")]
+    public float aheadDiveSpeed = 14f;
+    [Tooltip("挑落點時最多試幾次，找一條直線上沒有岩柱擋住、會直接撞到地面的路線")]
+    public int aheadPlanTries = 8;
+
+    // ★1028 試算出來的撞擊點（影子就放這裡，俯衝也衝向這裡）
+    private bool _hasAheadImpact;
+    private Vector3 _aheadImpactPoint;
+    private Collider _aheadImpactCollider;
+
+    /// <summary>★1028 她的移動方向（-1／+1）：有在走就看速度，停著看面向，都沒有就用關卡前進方向。</summary>
+    private float PlayerMoveDirX()
+    {
+        if (_playerMove == null && playerTrans != null)
+        {
+            _playerMove = playerTrans.GetComponent<PlayerMovement>();
+            if (_playerMove == null) _playerMove = playerTrans.GetComponentInParent<PlayerMovement>();
+        }
+        if (_playerRb == null && playerTrans != null) _playerRb = playerTrans.GetComponent<Rigidbody>();
+        if (_playerRb != null && Mathf.Abs(_playerRb.linearVelocity.x) > 0.2f) return Mathf.Sign(_playerRb.linearVelocity.x);
+        if (_playerMove != null && Mathf.Abs(_playerMove.FacingDirection.x) > 0.01f) return Mathf.Sign(_playerMove.FacingDirection.x);
+        return levelForwardX >= 0f ? 1f : -1f;
+    }
     // 這一次攻擊的穩定亂數（開始時抽一次，跟著她更新落點時不會每幀亂跳）
     private bool _llPrecise = true, _llBlock;
     private float _llOffset, _llAhead;
@@ -704,6 +754,79 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public static float SuppressAllUntil = -1f;
     public static bool IsAllSuppressed => Time.time < SuppressAllUntil;
 
+    // ── ★1028 光球鏡頭演出時鳥群暫停 ─────────────────────────────
+    // 鏡頭跟著光球飛的期間（GuidanceLight.IsAnyCameraOnOrb），所有鳥定格：不盤旋、不偵測、俯衝停在半空、
+    // 動畫凍結、排程器不放行；鏡頭回到玩家身上就從原地接著動。
+    // 鳥的計時一律用 BirdTime（暫停的時間不算），暫停結束後不會因為「時間到了」一口氣全部觸發。
+
+    /// <summary>鳥群目前是否因光球演出而暫停。</summary>
+    public static bool CutscenePaused { get { TickPauseClock(); return _pauseStartTime >= 0f; } }
+
+    /// <summary>鳥用的時間：等於 Time.time 扣掉暫停過的總時間；暫停中不前進。</summary>
+    public static float BirdTime { get { TickPauseClock(); return (_pauseStartTime >= 0f ? _pauseStartTime : Time.time) - _pausedTotal; } }
+
+    private static float _pauseStartTime = -1f;
+    private static float _pausedTotal = 0f;
+
+    private static void TickPauseClock()
+    {
+        bool want = GuidanceLight.IsAnyCameraOnOrb;
+        if (want && _pauseStartTime < 0f)
+        {
+            _pauseStartTime = Time.time;
+            Debug.Log("【鳥群】鏡頭跟著光球：鳥群暫停");
+        }
+        else if (!want && _pauseStartTime >= 0f)
+        {
+            _pausedTotal += Time.time - _pauseStartTime;
+            Debug.Log($"【鳥群】鏡頭回到玩家：鳥群繼續（暫停了 {Time.time - _pauseStartTime:F1} 秒）");
+            _pauseStartTime = -1f;
+        }
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetPauseClock() { _pauseStartTime = -1f; _pausedTotal = 0f; }
+
+    /// <summary>跟 WaitForSeconds 一樣，但暫停期間不計時。</summary>
+    private static IEnumerator BirdWait(float seconds)
+    {
+        float t = 0f;
+        while (t < seconds)
+        {
+            do yield return null; while (CutscenePaused);
+            if (!CutscenePaused) t += Time.deltaTime;
+        }
+    }
+
+    private Animator[] _pauseAnimators;
+    private float[] _pauseAnimSpeeds;
+
+    /// <summary>暫停時把動畫凍結（記住原本的速度），恢復時還原。</summary>
+    private void SetAnimatorsPaused(bool paused)
+    {
+        if (paused)
+        {
+            if (_pauseAnimators != null) return;
+            _pauseAnimators = GetComponentsInChildren<Animator>(true);
+            _pauseAnimSpeeds = new float[_pauseAnimators.Length];
+            for (int i = 0; i < _pauseAnimators.Length; i++)
+            {
+                if (_pauseAnimators[i] == null) continue;
+                _pauseAnimSpeeds[i] = _pauseAnimators[i].speed;
+                _pauseAnimators[i].speed = 0f;
+            }
+        }
+        else
+        {
+            if (_pauseAnimators == null) return;
+            for (int i = 0; i < _pauseAnimators.Length; i++)
+                if (_pauseAnimators[i] != null) _pauseAnimators[i].speed = _pauseAnimSpeeds[i];
+            _pauseAnimators = null;
+            _pauseAnimSpeeds = null;
+        }
+    }
+    // ───────────────────────────────────────────────────────────
+
     private Vector3 GetWindReactionOffset()
     {
         if (!reactToWind) return Vector3.zero;
@@ -727,6 +850,10 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void Update()
     {
+        // ★1028 光球鏡頭演出中：整隻鳥定格（協程也在各自的 yield 處等）
+        if (CutscenePaused) { SetAnimatorsPaused(true); return; }
+        SetAnimatorsPaused(false);
+
         // 核心功能 1：3D 有機空中漂浮與自然微盤旋 (多頻率波形 + Perlin 氣流雜訊)
         if ((currentState == BirdState.Idle || currentState == BirdState.Pending) && enableIdleHover)
         {
@@ -826,7 +953,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // ★1024 像真鳥一樣隨機盤旋：原本相位是 時間×固定頻率，軌跡是固定的 8 字、每圈一模一樣，看起來像在跑軌道。
         //   改成「相位用累加」，每一刻的速度被慢慢變化的雜訊拉快拉慢（有時滑翔有時急轉），
         //   盤旋範圍也跟著雜訊忽大忽小，每隻鳥各自用自己的雜訊種子，不會同步。
-        float tNow = Time.time;
+        float tNow = BirdTime;
         float speedWobble = 1f + (Mathf.PerlinNoise(_noiseSeedY + 31.7f, tNow * 0.18f) - 0.5f) * 1.1f;   // 約 0.45～1.55 倍
         _hoverPhase += Time.deltaTime * hoverFrequency * _indivSpeedMult * speedWobble;
         float t = _hoverPhase + _indivPhase;
@@ -839,8 +966,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // 2. 疊加微幅平滑氣流雜訊 (不破壞主要可視巡航形狀)
         if (noiseStrength > 0.01f)
         {
-            float noiseX = (Mathf.PerlinNoise(_noiseSeedX, Time.time * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (patrolRadiusX * 0.15f);
-            float noiseY = (Mathf.PerlinNoise(_noiseSeedY, Time.time * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (hoverAmplitudeY * 0.15f);
+            float noiseX = (Mathf.PerlinNoise(_noiseSeedX, BirdTime * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (patrolRadiusX * 0.15f);
+            float noiseY = (Mathf.PerlinNoise(_noiseSeedY, BirdTime * 0.4f * _indivSpeedMult) - 0.5f) * 2f * noiseStrength * (hoverAmplitudeY * 0.15f);
             rawTargetPos += (_camRight * noiseX) + (_camUp * noiseY);
         }
 
@@ -1099,7 +1226,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private IEnumerator StartReinforcementAttackAfterDelay(float delay)
     {
-        if (delay > 0f) yield return new WaitForSeconds(delay);
+        if (delay > 0f) yield return BirdWait(delay);
         if (this != null && isActiveAndEnabled && currentState == BirdState.Idle)
         {
             StartAttackSequence();
@@ -1137,7 +1264,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 currentState = BirdState.Pending;
                 legacyWait += Time.deltaTime;
                 if (maxQueueWaitSeconds > 0f && legacyWait > maxQueueWaitSeconds) { currentState = BirdState.Idle; yield break; }
-                yield return null;
+                do yield return null; while (CutscenePaused);
             }
             if (UmbrellaZone.IsPlayerUnderUmbrella) { currentState = BirdState.Idle; yield break; }
             waited = legacyWait;
@@ -1154,6 +1281,81 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         // ★ 前搖鎖定：在「發現玩家的瞬間」鎖住攻擊方向——之後的紅色路徑與俯衝都沿這條線，不再追蹤
         UpdateTargetPosition();
         _lockedDiveTarget = targetPosition;
+        // ★1028 攻擊她前方：決定攻擊這一刻就挑好落點、鎖死（之後整段攻擊都不再改）
+        bool aheadAttack = attackAheadOfPlayer && overrideTarget == null && playerTrans != null;
+        if (aheadAttack)
+        {
+            float lo = Mathf.Max(0f, Mathf.Min(aheadMinDistance, aheadMaxDistance));
+            float hi = Mathf.Max(aheadMinDistance, aheadMaxDistance);
+            // ★1029 前方最遠 hiFront、後方最遠 hiBack；挑邊的機率正比於各自長度，加上距離均勻，落點就在 [-hiBack, +hiFront] 上均勻
+            float hiFront = hi;
+            float hiBack = (aheadBehindMaxDistance >= 0f) ? Mathf.Max(lo, aheadBehindMaxDistance) : hi;
+            bool behind = false;
+            if (aheadEitherSide)
+            {
+                float sum = hiFront + hiBack;
+                behind = Random.value < (sum > 0.0001f ? hiBack / sum : 0.5f);   // ★1029 這次攻擊的所有試算同一邊
+            }
+            float dirX = behind ? -PlayerMoveDirX() : PlayerMoveDirX();
+            float hiSide = behind ? hiBack : hiFront;                          // ★1029 這一邊的最遠距離
+            float loSide = lo;                                                 // ★1029 這一邊的最近距離
+            Vector3 pp0 = playerTrans.position;
+            bool leftRedirect = leftBirdTargetsRight && transform.position.x < pp0.x;   // ★1029 鳥在她左邊：改打她右方 10～15 米
+            if (leftRedirect)
+            {
+                behind = false;
+                dirX = 1f;   // ★1029 世界 +X，不看她面向
+                loSide = Mathf.Max(0f, Mathf.Min(leftBirdRightMin, leftBirdRightMax));
+                hiSide = Mathf.Max(leftBirdRightMin, leftBirdRightMax);
+            }
+
+            // ★1028 先沿「預告完的俯衝起點 → 落點」這條直線試算鳥實際會撞到哪：
+            //   優先挑直線上沒有岩柱、會直接撞到地面（loopable ground texture）的落點；試 aheadPlanTries 次都被擋，
+            //   就用第一個落點、影子放在實際會撞到的表面（例如岩柱）上。影子＝撞擊點，鳥一定會碰到影子。
+            Vector3 planStart = transform.position + (poseCue ? Vector3.up * Mathf.Max(0f, poseRiseHeight) : Vector3.zero);
+            bool gotFirst = false, clear = false;
+            RaycastHit firstHit = default, chosen = default;
+            float chosenDist = 0f, firstDist = 0f;
+            // ★1029 預測提前量：落點範圍中心＝她在鳥落地那一刻會在的位置（現在 X ＋ 水平速度 × (前搖＋俯衝時間)）；關掉或幾乎沒在走＝0，跟以前一樣
+            float leadVx = aheadLeadByVelocity ? LatePlayerVx() : 0f;
+            if (Mathf.Abs(leadVx) < 0.2f) leadVx = 0f;
+            float lastT = 0f, lastCenterX = pp0.x, firstT = 0f, firstCenterX = pp0.x;
+            for (int i = 0; i < Mathf.Max(1, aheadPlanTries); i++)
+            {
+                float d = Random.Range(loSide, hiSide);
+                float aimX = AheadLeadAimX(pp0, planStart, dirX, d, leadVx, out lastT, out lastCenterX);   // ★1029 落點 X（含預測提前量）
+                // 瞄落點正下方的地面（不是她身體中心的高度）：不然斜線要再往前延伸一段才碰到地面，實際落點會比 d 遠好幾米
+                float aimY = pp0.y;
+                if (RaycastSurface(new Vector3(aimX, pp0.y + 2f, planStart.z), Vector3.down, 30f, out RaycastHit g) && IsFloorCollider(g.collider)) aimY = g.point.y;
+                Vector3 aim = new Vector3(aimX, aimY, planStart.z);
+                Vector3 dir = aim - planStart; dir.z = 0f;
+                if (dir.sqrMagnitude < 0.01f) dir = Vector3.down;
+                if (dir.y > -0.15f * dir.magnitude) dir = new Vector3(dir.x, -0.15f * Mathf.Abs(dir.x) - 0.01f, 0f);   // 至少往下斜
+                if (!RaycastSurface(planStart, dir.normalized, dir.magnitude + 40f, out RaycastHit h)) continue;
+                if (!gotFirst) { gotFirst = true; firstHit = h; firstDist = d; firstT = lastT; firstCenterX = lastCenterX; }
+                if (IsFloorCollider(h.collider)) { chosen = h; chosenDist = d; clear = true; break; }
+            }
+            if (clear || gotFirst)
+            {
+                RaycastHit use = clear ? chosen : firstHit;
+                _aheadImpactPoint = use.point;
+                _aheadImpactCollider = use.collider;
+                _hasAheadImpact = true;
+                _lockedDiveTarget = new Vector3(use.point.x, use.point.y, originalPosition.z);
+                BirdAttackScheduler.Log("AHEAD", this, $"PlayerX={pp0.x:F1} 方向={(dirX > 0f ? "右" : "左")} 選{(leftRedirect ? "右方(鳥在左)" : (behind ? "後方" : "前方"))} {(clear ? chosenDist : firstDist):F1}m → 撞擊點({use.point.x:F1},{use.point.y:F1}) 撞到={(use.collider != null ? use.collider.name : "?")}{(clear ? "（地面）" : "（路上被擋）")} vx={leadVx:F1} T={(clear ? lastT : firstT):F2}s 預測中心={(clear ? lastCenterX : firstCenterX):F1}");
+            }
+            else
+            {
+                // 怎麼掃都沒碰到東西（理論上不會）：照原本挑一點
+                _hasAheadImpact = false;
+                // ★1028 原本落點高度用她的高度，她站岩柱／跳起時穿地防呆（lockY-2）會在地板上方，鳥就在半空淡出；改用落點 X 正下方的地板高度
+                float fx = AheadLeadAimX(pp0, planStart, dirX, Random.Range(loSide, hiSide), leadVx, out lastT, out lastCenterX);   // ★1029 含預測提前量
+                float fy = pp0.y;
+                if (RaycastSurface(new Vector3(fx, pp0.y + 30f, 0f), Vector3.down, 80f, out RaycastHit fg)) fy = fg.point.y;
+                _lockedDiveTarget = new Vector3(fx, fy, originalPosition.z);
+            }
+        }
+        else _hasAheadImpact = false;
         _hasLockedDiveTarget = true;
         if (showAttackTelegraph) SetTelegraphVisible(true);
         if (BirdAttackScheduler.debugEnabled)
@@ -1188,16 +1390,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         float warnT = 0f;
         float alignDist = Mathf.Abs(alignTargetX - transform.position.x);
         float alignTimeout = realWarnTime + alignDist / Mathf.Max(0.1f, _atkAlign) + 1.5f;
-        bool aligned = alignDist < 0.05f;
+        bool aligned = alignDist < 0.05f || aheadAttack;   // ★1028 攻擊她前方：不先飛到落點上方，前搖只在原地做預告
         float alignV = 0f;
-        float alignStartTime = Time.time;
-        string alignEndReason = aligned ? "已在落點上方" : "";
+        float alignStartTime = BirdTime;
+        string alignEndReason = aheadAttack ? "直線俯衝（不對準）" : (aligned ? "已在落點上方" : "");
         if (!aligned) BirdAttackScheduler.Log("ALIGN-START", this, $"BirdX={transform.position.x:F1} LockX={alignTargetX:F1} Distance={alignDist:F1}m AlignSpeed={diveAlignSpeed:F1}");
         // ★1010 姿勢預告的起點（紅線取消後，靠這個看出「牠要下來了、會落在哪」）
         Vector3 poseBaseScale = transform.localScale;
         float poseLift = 0f;
         Vector3 poseJitter = Vector3.zero;
-        bool late = lateLock && overrideTarget == null && playerTrans != null;   // ★1020 晚鎖定（示範俯衝不走這裡）
+        bool late = lateLock && !aheadAttack && overrideTarget == null && playerTrans != null;   // ★1020 晚鎖定（示範俯衝不走這裡；★1028 攻擊她前方時也不走）
         if (late)
         {
             // ★1020 晚鎖定：飛到她頭上 lateLockHoverHeight 米、一路跟著她（瞄的點每幀照她的位置和速度更新），
@@ -1219,7 +1421,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 lt += Time.deltaTime;
                 Vector3 pp = playerTrans.position;
                 LateTrackSample(pp.x);
-                float aimX = LateLockAimX(pp, shake + hoverFall);
+                // ★1028 到頭上就鎖定：追的點只是她正上方（不加預判），她換方向時追的點不會跳到另一邊
+                float aimX = lateLockAtArrival ? pp.x : LateLockAimX(pp, shake + hoverFall);
                 Vector3 goal = new Vector3(aimX, pp.y + lateLockHoverHeight, transform.position.z);
                 Vector3 cur = transform.position;
                 Vector3 next = Vector3.SmoothDamp(cur, goal, ref apVel, Mathf.Max(0.05f, lateLockSmoothTime), apSpeed);
@@ -1237,14 +1440,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 UpdateLandingShadow(aimX, false, 0f);   // 還在跟著她：淡淡的影子跟著瞄準點走
                 bool near = Mathf.Abs(goal.x - next.x) < 0.8f && Mathf.Abs(goal.y - next.y) < 0.8f;
                 if ((lt >= approachTime && near) || lt >= maxApproach) break;
-                yield return null;
+                do yield return null; while (CutscenePaused);
             }
 
             // 鎖定：從現在的高度落到她身上要多久，落點就只往前算這麼久（＋抖動）
             Vector3 pc = playerTrans.position;
             LateTrackSample(pc.x);
             float fallT = Mathf.Max(0f, transform.position.y - pc.y) / Mathf.Max(0.1f, _atkDescent);
-            alignTargetX = LateLockAimX(pc, shake + fallT);
+            // ★1028 到頭上就鎖定：落點＝鳥現在的正下方，之後不再水平移動（不會閃現）
+            alignTargetX = lateLockAtArrival ? transform.position.x : LateLockAimX(pc, shake + fallT);
             _lockedDiveTarget = new Vector3(alignTargetX, pc.y, originalPosition.z);
             if (BirdAttackScheduler.debugEnabled)
             {
@@ -1260,13 +1464,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             {
                 st += Time.deltaTime;
                 transform.position -= poseJitter;
-                Vector3 sp = transform.position;
-                sp.x = Mathf.MoveTowards(sp.x, alignTargetX, apSpeed * Time.deltaTime);
-                transform.position = sp;
+                if (!lateLockAtArrival)
+                {
+                    Vector3 sp = transform.position;
+                    sp.x = Mathf.MoveTowards(sp.x, alignTargetX, apSpeed * Time.deltaTime);
+                    transform.position = sp;
+                }
                 poseJitter = poseCue ? new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * poseShakeAmount : Vector3.zero;
                 transform.position += poseJitter;
                 UpdateLandingShadow(alignTargetX, true, 0f);   // 抖動時落點已鎖定：影子固定在落點
-                yield return null;
+                do yield return null; while (CutscenePaused);
             }
             transform.position -= poseJitter;
             poseJitter = Vector3.zero;
@@ -1282,9 +1489,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 Vector3 dir = new Vector3(Mathf.Sign(alignTargetX - cur.x), 0f, 0f);
                 if (SweepForSurface(dir, Mathf.Min(step, Mathf.Abs(alignTargetX - cur.x)) + 0.4f, out Vector3 _)) break;   // 前面有岩柱／掩體：就地落下
                 cur.x = Mathf.MoveTowards(cur.x, alignTargetX, step);
-                UpdateLandingShadow(alignTargetX, true, 0f);
                 transform.position = cur;
-                yield return null;
+                UpdateLandingShadow(alignTargetX, true, 0f);   // ★1029 先移動再更新，影子才不會慢一幀
+                do yield return null; while (CutscenePaused);
             }
             aligned = true;
             warnT = realWarnTime;
@@ -1327,11 +1534,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                     transform.position = ap;
                     if (Mathf.Abs(alignTargetX - ap.x) < 0.02f) { aligned = true; alignEndReason = "到位"; }
                 }
-                if (!aligned && Time.time - alignStartTime > alignTimeout) { aligned = true; alignEndReason = "逾時"; }
+                if (!aligned && BirdTime - alignStartTime > alignTimeout) { aligned = true; alignEndReason = "逾時"; }
             }
             if (showAttackTelegraph) UpdateTelegraphLine();
             UpdateLandingShadow(alignTargetX, true, 0f);   // 落點影子（一般前搖：落點一開始就鎖定）
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
         if (poseCue)
         {
@@ -1339,12 +1546,15 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             transform.localScale = poseBaseScale;
         }
         SetTelegraphVisible(false);   // 既有紅線：沒開（showAttackTelegraph=false）時這行只是保險；任何路徑都不會殘留
-        if (alignDist >= 0.05f) BirdAttackScheduler.Log("ALIGN-DONE", this, $"結果={alignEndReason} 花了{Time.time - alignStartTime:F1}s 最終X誤差={Mathf.Abs(alignTargetX - transform.position.x):F2}m");
+        if (alignDist >= 0.05f) BirdAttackScheduler.Log("ALIGN-DONE", this, $"結果={alignEndReason} 花了{BirdTime - alignStartTime:F1}s 最終X誤差={Mathf.Abs(alignTargetX - transform.position.x):F2}m");
 
         // 從鳥「現在的位置」垂直落下。對準被地形擋住、逾時、或晚鎖定沒追上時，鳥跟落點還有一段距離，
         //   下降迴圈每幀把 X 設成 alignTargetX 會讓牠瞬移過去，所以這裡把落點改成牠現在的 X。
-        alignTargetX = transform.position.x;
-        _lockedDiveTarget.x = alignTargetX;
+        if (!aheadAttack)   // ★1028 攻擊她前方：落點不改，直線衝過去
+        {
+            alignTargetX = transform.position.x;
+            _lockedDiveTarget.x = alignTargetX;
+        }
 
         // 4. 程式切換為飛行動畫並播放振翅音效
         PlayAnim(diveAnimName);
@@ -1364,17 +1574,34 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             _diveStartPos = transform.position;
         }
         _minPlayerDist = float.MaxValue;
-        _diveStartTime = Time.time;
+        _diveStartTime = BirdTime;
 
         // 垂直向下；X 鎖死在落點上方，下降期間完全不看玩家位置
         diveDirection = Vector3.down;
         float faceX = playerTrans != null ? Mathf.Sign(playerTrans.position.x - transform.position.x) : 1f;
         Vector3 lookDown = new Vector3(faceX * 0.35f, -1f, 0f).normalized;   // 稍微低頭朝玩家那側，避免 LookRotation 與 up 平行
 
+        // ★1028 攻擊她前方：從現在的位置沿直線衝向鎖定的落點（衝過落點就一路插進地面）
+        float diveSpd = _atkDescent;
+        if (aheadAttack)
+        {
+            Vector3 toTarget = new Vector3(alignTargetX - transform.position.x, lockY - transform.position.y, 0f);
+            if (toTarget.sqrMagnitude < 0.01f) toTarget = Vector3.down;
+            diveDirection = toTarget.normalized;
+            if (diveDirection.y > -0.15f) diveDirection = new Vector3(diveDirection.x, -0.15f, 0f).normalized;   // 落點比鳥還高（少見）：至少往下斜，一定會碰到地面
+            diveSpd = Mathf.Max(0.5f, aheadDiveSpeed);
+            if (Mathf.Abs(diveDirection.x) > 0.05f) lookDown = diveDirection;
+        }
+
         // 5. 垂直慢速下降，直到命中玩家、護盾或地面
         float diveTimer = 0f;
+        // ★1029 影子跟著鳥時的進度（斜衝）：起點到鎖定落點的總距離
+        Vector3 diveStartPos29 = transform.position;
+        float diveTotalDist29 = Vector2.Distance(new Vector2(diveStartPos29.x, diveStartPos29.y), new Vector2(alignTargetX, lockY));
         // 逾時：預估下降時間（從現在高度到玩家腳下 2.5 公尺）＋ 2 秒，最少 5 秒。慢速下降不會被舊的固定 5 秒誤判。
-        float expectedDescent = Mathf.Max(0f, descentStartY - (lockY - 2.5f)) / Mathf.Max(0.1f, _atkDescent);
+        float expectedDescent = aheadAttack
+            ? (Vector2.Distance(transform.position, new Vector2(alignTargetX, lockY)) + 2.5f) / diveSpd
+            : Mathf.Max(0f, descentStartY - (lockY - 2.5f)) / Mathf.Max(0.1f, _atkDescent);
         float maxDiveDuration = Mathf.Max(5.0f, expectedDescent + 2.0f);
         Vector3 lastCheckPos = transform.position;
         float stagnationTimer = 0f;
@@ -1396,7 +1623,8 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (stagnationTimer >= 0.5f)
             {
                 float movedDist = Vector3.Distance(transform.position, lastCheckPos);
-                if (movedDist < 0.08f && playerTrans != null && transform.position.y <= (playerTrans.position.y + 1.0f))
+                // ★1028 用「鎖定落點高度」判斷，不用玩家即時高度：她跳起或站在岩柱上時舊門檻會高過地面，鳥會在半空中就淡出
+                if (movedDist < 0.08f && transform.position.y <= (lockY + 1.0f))
                 {
                     Debug.LogWarning($"【鳥群系統】{gameObject.name} 下降觸地停滯，判定插地！");
                     OnHitGround();
@@ -1407,7 +1635,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
 
             // ★ 落地掃描：沿下降方向掃這一幀會走過的距離，碰到地面／岩石／掩體就停在表面，就地縮小消失
-            float sweepLen = _atkDescent * Time.deltaTime + 0.4f;
+            float sweepLen = diveSpd * Time.deltaTime + 0.4f;
             if (SweepForSurface(diveDirection, sweepLen, out Vector3 surfacePoint))
             {
                 transform.position = surfacePoint - diveDirection * 0.12f;
@@ -1423,19 +1651,31 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             }
 
             // 最低高度防穿防呆：若掉落到地表以下（掃描沒抓到的邊緣情況），也立刻就地消失
-            if (playerTrans != null && transform.position.y < (playerTrans.position.y - 2.0f))
+            // ★1028 用「鎖定落點高度」判斷，不用玩家即時高度：她跳起或站在岩柱上時舊門檻會高過地面，鳥會在半空中就淡出
+            float tunnelFloorY = (aheadAttack && _hasAheadImpact) ? (_aheadImpactPoint.y - 2.0f) : (lockY - 2.0f);
+            if (transform.position.y < tunnelFloorY)
             {
-                Debug.LogWarning($"【鳥群系統】{gameObject.name} 下降低於地表高度，觸發防穿插地！");
+                Debug.LogWarning($"【鳥群系統】{gameObject.name} 下降低於地表高度，觸發防穿插地！(門檻 y={tunnelFloorY:F1})");
                 OnHitGround();
                 yield break;
             }
 
             // 只動 Y：X 維持在鎖定落點上方（不追蹤玩家、不被物理推走）
             Vector3 dp = transform.position;
-            dp.x = alignTargetX;
-            dp.y -= _atkDescent * Time.deltaTime;
+            if (aheadAttack)
+            {
+                dp += diveDirection * diveSpd * Time.deltaTime;   // ★1028 直線衝向落點
+            }
+            else
+            {
+                dp.x = alignTargetX;
+                dp.y -= _atkDescent * Time.deltaTime;
+            }
             transform.position = dp;
-            UpdateLandingShadow(alignTargetX, true, heightToTarget > 0.01f ? (descentStartY - dp.y) / heightToTarget : 1f);   // 落點影子：越往下越大越深
+            float shadowProgress = heightToTarget > 0.01f ? (descentStartY - dp.y) / heightToTarget : 1f;
+            if (aheadAttack)   // ★1029 斜衝：用「離落點剩多遠」算進度，影子才會隨距離變大變深
+                shadowProgress = diveTotalDist29 > 0.01f ? 1f - Vector2.Distance(new Vector2(dp.x, dp.y), new Vector2(alignTargetX, lockY)) / diveTotalDist29 : 1f;
+            UpdateLandingShadow(alignTargetX, true, Mathf.Clamp01(shadowProgress));   // 落點影子：越往下越大越深
 
             FaceDirection(lookDown, Vector3.up, Vector3.zero, 8f);   // ★1022 翻面不破圖（俯衝：水平分量本來就只有 0.35）
 
@@ -1443,7 +1683,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (playerTrans != null)
             {
                 float distToPlayer = Vector2.Distance(new Vector2(transform.position.x, transform.position.y), new Vector2(playerTrans.position.x, playerTrans.position.y));
-                if (distToPlayer < _minPlayerDist) { _minPlayerDist = distToPlayer; _minDistPlayerX = playerTrans.position.x; _minDistBirdX = transform.position.x; _minDistTime = Time.time - _diveStartTime; }
+                if (distToPlayer < _minPlayerDist) { _minPlayerDist = distToPlayer; _minDistPlayerX = playerTrans.position.x; _minDistBirdX = transform.position.x; _minDistTime = BirdTime - _diveStartTime; }
                 
                 // 1. 優先檢查護盾：當護盾啟動時，只要鳥觸及護盾外圍 (2.4 米)，立刻在護盾表面彈飛！
                 PlayerShield shield = playerTrans.GetComponentInChildren<PlayerShield>();
@@ -1516,7 +1756,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 }
             }
 
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
     }
 
@@ -1535,6 +1775,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private void ClearAttackTelegraph()
     {
         _hasLockedDiveTarget = false;
+        _hasAheadImpact = false;
         SetTelegraphVisible(false);
         HideLandingShadow();
     }
@@ -1551,6 +1792,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private void UpdateLandingShadow(float x, bool locked, float progress)
     {
         if (!showLandingShadow) { HideLandingShadow(); return; }
+
+        // ★1029 影子跟著鳥：忽略傳進來的 x 與撞擊點固定，每幀用鳥現在的 X 往正下方找地面；前搖也用「已鎖定」濃度（比跟蹤中的淡影明顯）
+        if (landingShadowFollowsBird) { x = transform.position.x; locked = true; }
+
+        // ★1028 攻擊她前方（直線俯衝）：影子固定在試算出來的撞擊點，不再從落點往正下方找
+        if (_hasAheadImpact && !landingShadowFollowsBird)
+        {
+            PlaceLandingShadow(_aheadImpactPoint.x, _aheadImpactPoint, _aheadImpactCollider, locked, progress);
+            return;
+        }
 
         // 從鳥的高度往下掃，找第一個實體表面（跟俯衝撞地用同一套略過規則：自己、其他鳥、玩家、護盾、Trigger）
         Vector3 origin = new Vector3(x, transform.position.y, transform.position.z);
@@ -1569,7 +1820,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (hits[i].distance < best) { best = hits[i].distance; hit = hits[i]; found = true; }
         }
         if (!found) { HideLandingShadow(); return; }
+        PlaceLandingShadow(x, hit.point, hit.collider, locked, progress);
+    }
 
+    private void PlaceLandingShadow(float x, Vector3 hitPoint, Collider hitCollider, bool locked, float progress)
+    {
         if (_landingShadow == null)
         {
             GameObject go = new GameObject("[BirdLandingShadow] " + gameObject.name);
@@ -1578,17 +1833,17 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         }
 
         // 排序跟著底下的表面（地板、岩柱），z 往鏡頭靠一點點；主角在更前面，會蓋住影子
-        SpriteRenderer surface = hit.collider.GetComponentInParent<SpriteRenderer>();
+        SpriteRenderer surface = hitCollider != null ? hitCollider.GetComponentInParent<SpriteRenderer>() : null;
         _landingShadow.sortingLayerID = surface != null ? surface.sortingLayerID : 0;
         _landingShadow.sortingOrder = surface != null ? surface.sortingOrder + 1 : 1;
-        float z = (surface != null ? surface.transform.position.z : hit.point.z) - 0.02f;
+        float z = (surface != null ? surface.transform.position.z : hitPoint.z) - 0.02f;
 
         float p = Mathf.Clamp01(progress);
         float k = p * p;   // 前面變化慢、快落地時變化快，最後一刻最醒目
         float alpha = locked ? Mathf.Lerp(landingShadowLockedAlpha, landingShadowMaxAlpha, k) : landingShadowTrackingAlpha;
         float w = Mathf.Max(0.2f, hitRadius * landingShadowWidthScale) * (locked ? Mathf.Lerp(landingShadowStartScale, 1f, k) : landingShadowStartScale);
 
-        _landingShadow.transform.position = new Vector3(x, hit.point.y, z);
+        _landingShadow.transform.position = new Vector3(x, hitPoint.y, z);
         _landingShadow.transform.rotation = Quaternion.identity;
         _landingShadow.transform.localScale = new Vector3(w, w * landingShadowHeightRatio, 1f);
         _landingShadow.color = new Color(landingShadowColor.r, landingShadowColor.g, landingShadowColor.b, alpha);
@@ -1689,7 +1944,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         _telegraphLine.SetPosition(1, end);
 
         // 呼吸閃爍，醒目但不搶戲
-        float pulse = 0.55f + 0.45f * Mathf.Sin(Time.time * 11f);
+        float pulse = 0.55f + 0.45f * Mathf.Sin(BirdTime * 11f);
         Color head = telegraphColor; head.a = telegraphColor.a * pulse;
         Color tail = telegraphColor; tail.a = telegraphColor.a * pulse * 0.25f;
         _telegraphLine.startColor = head;
@@ -1702,9 +1957,31 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private bool SweepForSurface(Vector3 dir, float length, out Vector3 point)
     {
         point = Vector3.zero;
+        if (!RaycastSurface(transform.position, dir, length, out RaycastHit hit)) return false;
+        point = hit.point;
+        _lastSweepCollider = hit.collider;
+        return true;
+    }
+
+    /// <summary>從任意起點沿 dir 找第一個實體表面（略過規則同 SweepForSurface）。★1028 俯衝前試算撞擊點也用這個，兩邊判定一致。</summary>
+    private bool RaycastSurface(Vector3 origin, Vector3 dir, float length, out RaycastHit result)
+    {
+        if (RaycastSurfaceAt(origin, dir, length, out result)) return true;
+        // ★1028 地板在 Z 方向只有 ±0.13 厚、鳥停在 z≈-0.12，沿鳥的 z 打的射線可能擦過地板沒打到；改在 z=0 的遊玩平面再試一次
+        if (Mathf.Abs(origin.z) > 0.001f)
+        {
+            origin.z = 0f;
+            return RaycastSurfaceAt(origin, dir, length, out result);
+        }
+        return false;
+    }
+
+    private bool RaycastSurfaceAt(Vector3 origin, Vector3 dir, float length, out RaycastHit result)
+    {
+        result = default;
         if (dir.sqrMagnitude < 0.0001f) return false;
 
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, dir, length, ~0, QueryTriggerInteraction.Ignore);
+        RaycastHit[] hits = Physics.RaycastAll(origin, dir, length, ~0, QueryTriggerInteraction.Ignore);
         float best = float.MaxValue;
         bool found = false;
         for (int i = 0; i < hits.Length; i++)
@@ -1718,12 +1995,21 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (hits[i].distance < best)
             {
                 best = hits[i].distance;
-                point = hits[i].point;
+                result = hits[i];
                 found = true;
-                _lastSweepCollider = c;
             }
         }
         return found;
+    }
+
+    /// <summary>★1028 這個碰撞體是不是地面（loopable ground texture 這類 Floor／Ground）。</summary>
+    private static bool IsFloorCollider(Collider c)
+    {
+        if (c == null) return false;
+        string t = c.gameObject.tag;   // 用字串比較：Tag 沒定義時 CompareTag 會噴錯
+        if (t == "Floor" || t == "Ground") return true;
+        string n = c.gameObject.name.ToLowerInvariant();
+        return n.Contains("ground") || n.Contains("floor");
     }
 
     /// <summary>
@@ -1998,10 +2284,28 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         return 0f;
     }
 
+    /// <summary>★1029 攻擊她前方的落點 X：中心＝她現在 X ＋ 水平速度 × 到達時間 T（T＝前搖 _atkWarn ＋ 直線俯衝時間，互相依賴所以疊代 3 次），再加上隨機偏移 dirX*d。leadVx=0 時就是 pp0.x + dirX*d。</summary>
+    private float AheadLeadAimX(Vector3 pp0, Vector3 planStart, float dirX, float d, float leadVx, out float T, out float centerX)
+    {
+        centerX = pp0.x;
+        T = _atkWarn;
+        if (Mathf.Abs(leadVx) > 0f)
+        {
+            float maxLead = Mathf.Max(0f, aheadLeadMaxDistance);
+            for (int k = 0; k < 3; k++)
+            {
+                float ax = centerX + dirX * d;
+                T = _atkWarn + Vector2.Distance(planStart, new Vector2(ax, pp0.y)) / Mathf.Max(0.5f, aheadDiveSpeed);
+                centerX = pp0.x + Mathf.Clamp(leadVx * T, -maxLead, maxLead);
+            }
+        }
+        return centerX + dirX * d;
+    }
+
     /// <summary>★1020 記一筆她的位置（跟著她的每一幀）。</summary>
     private void LateTrackSample(float x)
     {
-        _llSampT[_llSampHead] = Time.time;
+        _llSampT[_llSampHead] = BirdTime;
         _llSampX[_llSampHead] = x;
         _llSampHead = (_llSampHead + 1) % LlSamples;
         if (_llSampN < LlSamples) _llSampN++;
@@ -2094,7 +2398,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         {
             pm.ApplyWindPush(pushX);
             t += Time.deltaTime;
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
     }
 
@@ -2107,10 +2411,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (BirdAttackScheduler.debugEnabled && playerTrans != null)
         {
             Rigidbody prb = playerTrans.GetComponent<Rigidbody>();
-            BirdAttackScheduler.Log("DIVE-RESULT", this, $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} 最近距離={_minPlayerDist:F1}m（第 {_minDistTime:F2}s，鳥X={_minDistBirdX:F1} 玩家X={_minDistPlayerX:F1}）鎖定落點X={_lockedDiveTarget.x:F1} 俯衝總時間={Time.time - _diveStartTime:F2}s 實際下降距離={(_diveStartPos.y - transform.position.y):F1}m 平均垂直速度={(_diveStartPos.y - transform.position.y) / Mathf.Max(0.01f, Time.time - _diveStartTime):F1}m/s 設定下降速度={diveDescentSpeed:F1} / 水平漂移={Mathf.Abs(transform.position.x - _diveStartPos.x):F2}m 現在玩家X={playerTrans.position.x:F1} 玩家vx={(prb != null ? prb.linearVelocity.x : 0f):F1}");
+            BirdAttackScheduler.Log("DIVE-RESULT", this, $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} 最近距離={_minPlayerDist:F1}m（第 {_minDistTime:F2}s，鳥X={_minDistBirdX:F1} 玩家X={_minDistPlayerX:F1}）鎖定落點X={_lockedDiveTarget.x:F1} 俯衝總時間={BirdTime - _diveStartTime:F2}s 實際下降距離={(_diveStartPos.y - transform.position.y):F1}m 平均垂直速度={(_diveStartPos.y - transform.position.y) / Mathf.Max(0.01f, BirdTime - _diveStartTime):F1}m/s 設定下降速度={diveDescentSpeed:F1} / 水平漂移={Mathf.Abs(transform.position.x - _diveStartPos.x):F2}m 現在玩家X={playerTrans.position.x:F1} 玩家vx={(prb != null ? prb.linearVelocity.x : 0f):F1}");
         }
 
         StopAllCoroutines(); // 立即停止俯衝攜程
+        if (_hasAheadImpact)   // ★1028 驗收：實際撞到的位置跟影子（試算撞擊點）差多少
+            BirdAttackScheduler.Log("AHEAD-HIT", this, $"撞到({transform.position.x:F2},{transform.position.y:F2}) 影子({_aheadImpactPoint.x:F2},{_aheadImpactPoint.y:F2}) 差 {Vector2.Distance(transform.position, _aheadImpactPoint):F2}m 撞到={(_lastSweepCollider != null ? _lastSweepCollider.name : "?")}");
         ClearAttackTelegraph();   // ★0920 任何中斷路徑都必須保證紅色路徑被關掉（見 ClearAttackTelegraph）
 
         // 校正插地深度：停滯/超時/直接碰撞等後備判定路徑觸發時，鳥當下位置可能已經穿入地面內部太深，
@@ -2147,7 +2453,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private IEnumerator RetryAfterMissCoroutine()
     {
         _retryCount++;
-        yield return new WaitForSeconds(Mathf.Max(0f, retryPauseSeconds));
+        yield return BirdWait(Mathf.Max(0f, retryPauseSeconds));
 
         if (animator != null) animator.speed = 1f;
         PlayAnim(idleAnimName);
@@ -2169,7 +2475,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             transform.position = Vector3.Lerp(start, target, k);
             stuckRotation = snapHorizontalFlip ? (k < 0.5f ? startRot : endRot) : Quaternion.Slerp(startRot, endRot, k);   // Stuck 狀態下 LateUpdate 會把姿態鎖在 stuckRotation，所以改這個才轉得動；★1022 翻面不破圖：拔起時一格翻到位
             transform.rotation = stuckRotation;
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
 
         transform.position = target;
@@ -2185,7 +2491,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private IEnumerator FadeAndDestroyCoroutine()
     {
         // 撞擊後停格一段時間（讓玩家看清楚牠釘在哪），才開始漸漸縮小消失
-        yield return new WaitForSeconds(Mathf.Max(stuckDuration, 0f));
+        yield return BirdWait(Mathf.Max(stuckDuration, 0f));
 
         // 啟動淡出前將材質設定為透明渲染模式
         SetupMaterialsForFade();
@@ -2204,7 +2510,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             // 2. 平滑縮放至 0 (雙重保障：即使 Shader 是 Opaque 也絕對能呈現絲滑縮小漸隱消失)
             transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
             
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
 
         SetAlpha(0f);
@@ -2350,6 +2656,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     private void HandleCollision(GameObject hitObj, Collider col)
     {
+        if (CutscenePaused) return;   // ★1028 光球鏡頭演出中鳥群定格，不算撞到
         if (currentState == BirdState.Bounced || currentState == BirdState.Stuck) return;
 
         // 0. 當處於待機狀態且玩家直接接觸此鳥時，單獨觸發攻擊
@@ -2487,7 +2794,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             transform.position = currentPos;
             transform.rotation = Quaternion.Slerp(startRot, endRot, t);
 
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
 
         // 確保完全觸地
@@ -2499,7 +2806,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             animator.speed = 0.5f;
         }
 
-        yield return new WaitForSeconds(0.4f);
+        yield return BirdWait(0.4f);
 
         // 漸漸隱形消失
         SetupMaterialsForFade();
@@ -2514,7 +2821,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             SetAlpha(alpha);
             transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
             
-            yield return null;
+            do yield return null; while (CutscenePaused);
         }
 
         SetAlpha(0f);

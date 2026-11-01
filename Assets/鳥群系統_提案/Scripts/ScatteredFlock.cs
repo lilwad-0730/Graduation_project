@@ -63,6 +63,12 @@ public class ScatteredFlock : MonoBehaviour
     [Tooltip("軸心追上玩家的遲滯秒數。0＝硬鎖；大一點會像被拖著走")]
     public float followLag = 0.55f;
 
+    [Tooltip("★1028 整團跟著她移動的最高速度（公尺／秒）。她走路約 5，限制在 3 會慢慢落後、她停下來再飄回來，像鳥群而不是跟隨的機器。0＝不限制")]
+    public float followMaxSpeed = 3f;
+
+    [Tooltip("★1028 她一幀內移動超過這個距離（公尺）＝重生／傳送，整團直接跟過去，不用慢慢追")]
+    public float teleportSnapDistance = 10f;
+
     [Tooltip("打勾＝整團只左右跟著她，高度固定在一開始的高度（她跳躍、上下坡，鳥群都不會跟著上下動）")]
     public bool lockFollowY = true;
 
@@ -165,6 +171,8 @@ public class ScatteredFlock : MonoBehaviour
     private Transform _player;
     private Camera _cam;
     private Vector3 _vel;
+    private Vector3 _lastAnchor;
+    private bool _hasLastAnchor;
     private Vector2 _flockSeedX, _flockSeedY;
     private float _nextAttackAt;
     private bool _spawned, _snapped;
@@ -368,6 +376,11 @@ public class ScatteredFlock : MonoBehaviour
         Vector3 want;
         if (!TryGetAnchorPoint(out want)) return;
 
+        // ★1028 重生／傳送：她一下子跳很遠，整團直接跟過去（不然最高速度 3 要追很久）
+        bool teleported = _hasLastAnchor && teleportSnapDistance > 0f && Vector2.Distance(want, _lastAnchor) > teleportSnapDistance;
+        _lastAnchor = want;
+        _hasLastAnchor = true;
+
         float t = Time.time * noiseSpeed * 0.6f;
         want.x += N(_flockSeedX, t) * 2f * flockWander;
         if (lockFollowY)
@@ -381,7 +394,7 @@ public class ScatteredFlock : MonoBehaviour
         }
         want.z = depthZ;
 
-        if (followLag <= 0.001f || !_snapped)
+        if (followLag <= 0.001f || !_snapped || teleported)
         {
             _snapped = true;
             transform.position = want;
@@ -389,7 +402,8 @@ public class ScatteredFlock : MonoBehaviour
         }
         else
         {
-            transform.position = Vector3.SmoothDamp(transform.position, want, ref _vel, followLag);
+            float maxSpeed = followMaxSpeed > 0.01f ? followMaxSpeed : Mathf.Infinity;
+            transform.position = Vector3.SmoothDamp(transform.position, want, ref _vel, followLag, maxSpeed);
         }
     }
 
