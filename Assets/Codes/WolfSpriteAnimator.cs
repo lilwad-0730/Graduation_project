@@ -37,6 +37,15 @@ public class WolfSpriteAnimator : MonoBehaviour
     [Tooltip("如果您的狼原圖朝向是反的 (例如主角在右邊，狼卻看左邊)，請勾選此欄位進行反轉修正")]
     public bool reverseFacingDirection = false;
 
+    [Header("★1031 紅線：狼不露眼、牙、嘴（整隻改成深色剪影）")]
+    [Tooltip("開啟後，狼身上所有 SpriteRenderer 的顏色設成下面的剪影色：原圖的眼白、牙、嘴角亮點全部沉進剪影裡，近看也看不到。\n" +
+             "繪本與命運之書裡的狼本來就是剪影，遊戲跟著一致。關掉＝回到原圖（有眼睛）。\n" +
+             "只改顏色，不動貼圖與動畫；WolfSpawner 的淡入只改 alpha，剪影色會保留。")]
+    public bool silhouetteTint = true;
+
+    [Tooltip("剪影色。預設 #2A2D36（深灰藍）：廢墟是灰白底，剪影看得清楚又不是純黑。")]
+    public Color silhouetteColor = new Color(0.165f, 0.176f, 0.212f, 1f);
+
     private Rigidbody rb;
     private WolfEnemy wolfEnemy;
     private Transform playerTransform;
@@ -66,6 +75,19 @@ public class WolfSpriteAnimator : MonoBehaviour
         if (pObj != null)
         {
             playerTransform = pObj.transform;
+        }
+
+        // ★1031 紅線：整隻狼改成剪影（直接設色，不用乘法：Spawner 複製模板狼時 Start 會再跑一次，乘法會越乘越黑）
+        if (silhouetteTint)
+        {
+            Transform root = (wolfEnemy != null) ? wolfEnemy.transform : transform;
+            SpriteRenderer[] all = root.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i] == null) continue;
+                float a = all[i].color.a;
+                all[i].color = new Color(silhouetteColor.r, silhouetteColor.g, silhouetteColor.b, a);
+            }
         }
 
         // 防呆警告

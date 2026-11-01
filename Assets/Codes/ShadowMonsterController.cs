@@ -287,6 +287,32 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("往前超過幾公尺才算「有往前進」")]
     public float progressStep = 0.5f;
 
+    [Header("★1031 點燭火時怪物不停下（10/29 老師：要有怪物的壓迫感）")]
+    [Tooltip("打開＝她在點燭火（按 S、進度條在跑）的時候，怪物不停在身後等，照樣朝她逼近；點完才回到原本的跟隨。\n" +
+             "關掉＝原本（她停下來點燭火時，怪物也停在身後 hoverLag 公尺）")]
+    public bool keepChasingWhileLighting = true;
+
+    [Tooltip("點燭火期間怪物用多快逼近（公尺/秒，固定，不受遠近加速影響）。點一根約 1.5 秒：3.2＝約走近 5 公尺。\n" +
+             "★1031 審查：原本取「平常追速」與此值的較大者，16 公尺外平常追速約 5.3、落後更遠最多 7.5，點一根會被拉近 8～11 公尺，連點兩根就容易被抓；改成固定值，好預期也好調。")]
+    public float lightingPressureSpeed = 3.2f;
+
+    private CandleAuraGlow[] _candleAuras;
+
+    /// <summary>★1031 她現在是不是正在點某一根燭火（任何一根的進度條在跑）。</summary>
+    private bool IsPlayerLightingCandle()
+    {
+        if (candles == null || candles.Length == 0) return false;
+        if (_candleAuras == null || _candleAuras.Length != candles.Length)
+        {
+            _candleAuras = new CandleAuraGlow[candles.Length];
+            for (int i = 0; i < candles.Length; i++)
+                _candleAuras[i] = candles[i] != null ? candles[i].GetComponent<CandleAuraGlow>() : null;
+        }
+        for (int i = 0; i < _candleAuras.Length; i++)
+            if (_candleAuras[i] != null && _candleAuras[i].IsLighting) return true;
+        return false;
+    }
+
     [Header("★1016 追逐中途存檔點")]
     [Tooltip("打開＝她站上下面這些位置之後，死掉就從那裡重生（不用從玻璃館起點重追 340 公尺），\n" +
              "怪物等她動了再從她身後出現；已經在怪物身後、牠吃不到的燭火算牠吃過。\n" +
@@ -1947,6 +1973,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             }
         }
 
+        // ★1031 她在點燭火：怪物不停下，用固定的 lightingPressureSpeed 逼近（不跟遠近加速疊加，避免一點燭火就被抓）
+        bool lightingPressure = keepChasingWhileLighting && IsPlayerLightingCandle();
+        if (lightingPressure && !_isHitShrinking)
+            currentSpeed = lightingPressureSpeed;
+
         // 玩家減速：距離小於 slowdownDistance 時降低玩家移動速度
         if (_pm != null)
         {
@@ -1983,7 +2014,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         // ★1016 耐心：她最近有往前進，就只跟到她身後 hoverLag 公尺（不後退，只是不再逼近）
-        if (holdBackWhilePlayerProgressing && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing))
+        if (holdBackWhilePlayerProgressing && !lightingPressure && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing))
         {
             UpdatePlayerProgress();
             if (Time.time - _lastProgressTime < chasePatienceSeconds)

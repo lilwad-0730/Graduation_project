@@ -90,6 +90,15 @@ public class DesertBeatDirector : MonoBehaviour
     public bool enableTelegraphHum = true;
     public bool enableBraceFrost = true;
 
+    [Header("★1031 荒原要玩久一點（10/29 老師：鳥群攻擊太快，加長荒原遊玩時間）")]
+    [Tooltip("荒原裡她走路的速度倍率（1＝原本）。0.9＝慢一成：風裡腳步沉。岩柱還跳得過（跳躍水平距離少一成）")]
+    [Range(0.6f, 1f)] public float desertWalkSpeedMultiplier = 0.9f;
+    [Tooltip("打開＝改風的節奏：吹 Wind Blow Seconds 秒、停 Wind Pause Seconds 秒（原本吹 2.5、停 3.5）。風吹時鳥不放行、她要躲或撐，停的時候才走得動，所以吹得久＝整段變長")]
+    public bool lengthenWind = true;
+    public float windBlowSeconds = 3.0f;
+    public float windPauseSeconds = 3.0f;
+    private bool _walkSpeedApplied = false;
+
     [Header("★1006 鳥攻擊排程（Request Queue：偵測 → 排隊 → 放行）")]
     [Tooltip("攻擊類型循環：C＝定點（鎖她發現當下的位置）、P＝預判（鎖她前方）。照字串順序一直循環，固定可學習、沒有亂數。\n" +
              "預設 CPCPPCCPCPPC：沒有連續超過 2 個同類型。想純交替就填 CP")]
@@ -132,7 +141,7 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("★1008 開局時若存檔裡的排程數值是舊版本，就自動換成程式裡最新的建議值（Inspector 存的舊值會蓋掉程式預設，這是上次放行名額一直不夠的原因）。勾選＝完全照你 Inspector 的數字，不再自動換")]
     public bool keepMyInspectorValues = false;
     [HideInInspector] public int tuningVersion = 0;
-    private const int CurrentTuningVersion = 5;
+    private const int CurrentTuningVersion = 6;   // ★1031 v6：10/29 老師「鳥群攻擊太快、荒原要玩久一點」
 
     [Header("★1006 Debug（預設關閉；事件才印 log，沒有每幀 log）")]
     [Tooltip("開啟後印 [BIRD DETECT]／[QUEUED]／[BLOCKED-WIND]／[BLOCKED-SHADOW]／[SLOT]／[LOCK]／[WARNING]／[DIVE]／[HIT]／[RETREAT]／[CANCEL]／[REMOVED]，" +
@@ -200,7 +209,7 @@ public class DesertBeatDirector : MonoBehaviour
     public float birdLateLockMaxLead = 6f;
     [Tooltip("★1024 晚鎖定：鳥飛向她頭上的最高速度（公尺／秒）。0＝用對準速度（約 14）。\n" +
              "10/24 實測 log：鳥從被放行到飛到她頭上要 1.5～2.3 秒（離她 5～18 米，速度 14），玩家看到的是「慢慢飛過來才開始攻擊」。調快讓鳥更快到位、意圖更早看得出來")]
-    public float birdLateLockApproachSpeed = 22f;
+    public float birdLateLockApproachSpeed = 16f;   // ★1031 22→16
     [Tooltip("★1024 晚鎖定：跟著她的平滑時間（秒）。越小越跟得緊、起飛越俐落（原本 0.22）")]
     public float birdLateLockSmoothTime = 0.14f;
 
@@ -233,15 +242,15 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("第四段（最後一段，沒掩體）：追蹤為主")]
     public string stage3Pattern = "CPPCPP";
     [Tooltip("四段的同時攻擊上限（開頭／加追蹤／光球後／最難）")]
-    public int stage1MaxSimultaneous = 3;
-    public int trackMaxSimultaneous = 4;
-    public int stage2MaxSimultaneous = 5;
-    public int stage3MaxSimultaneous = 7;
+    public int stage1MaxSimultaneous = 2;   // ★1031 3→2
+    public int trackMaxSimultaneous = 3;    // ★1031 4→3
+    public int stage2MaxSimultaneous = 4;   // ★1031 5→4
+    public int stage3MaxSimultaneous = 5;   // ★1031 7→5
     [Tooltip("四段一波幾隻（0＝不分波）")]
     public int stage1WaveSize = 2;
-    public int trackWaveSize = 3;
+    public int trackWaveSize = 2;    // ★1031 3→2
     public int stage2WaveSize = 3;
-    public int stage3WaveSize = 4;
+    public int stage3WaveSize = 3;   // ★1031 4→3
 
     /// <summary>程式層級開關（測試時切換改動前後用；重新進荒原才生效）。</summary>
     public static bool ReduceBirdsEnabled = true;
@@ -337,12 +346,13 @@ public class DesertBeatDirector : MonoBehaviour
 
         if (!keepMyInspectorValues && tuningVersion < CurrentTuningVersion)
         {
-            Debug.Log($"[DesertBeatDirector] 排程數值是舊版本（v{tuningVersion}），已換成最新建議值：v5 含鳥群增援、通過後退場、速度小幅提高、紅線暫時開回；間隔 {slotIntervalSeconds}→0.2、每輪空檔 {restAfterRoundSeconds}→0.4、每輪 {attacksPerRound}→4 次、同時上限 {maxSimultaneousAttacks}→6（壓力加成最多到 10）。想用自己的數字請勾 Keep My Inspector Values。");
-            slotIntervalSeconds = 0.2f;
-            restAfterRoundSeconds = 0.4f;
+            Debug.Log($"[DesertBeatDirector] 排程數值是舊版本（v{tuningVersion}），已換成最新建議值：v6（1031 老師：鳥群攻擊太快、荒原要玩久一點）放慢攻擊；間隔 {slotIntervalSeconds}→0.35、每輪空檔 {restAfterRoundSeconds}→0.9、一波後安靜 {waveQuietSeconds}→2、每輪 {attacksPerRound}→4 次、同時上限 {maxSimultaneousAttacks}→4（壓力加成最多到 6）、下降 {birdDescentSpeed}→5、前搖 +0.4 秒。想用自己的數字請勾 Keep My Inspector Values。");
+            slotIntervalSeconds = 0.35f;
+            restAfterRoundSeconds = 0.9f;
+            waveQuietSeconds = 2.0f;
             attacksPerRound = 4;
-            maxSimultaneousAttacks = 6;
-            maxSimultaneousHard = 10;
+            maxSimultaneousAttacks = 4;
+            maxSimultaneousHard = 6;
             queuePressureStep = 5;
             behindPenaltyMeters = 8f;
             agingMetersPerSecond = 2f;
@@ -350,10 +360,13 @@ public class DesertBeatDirector : MonoBehaviour
             requestKeepRangeMultiplier = 3f;
             birdMaxPredictionTime = 5f;
             birdPredictionDistanceLimit = 30f;
-            birdDescentSpeed = 7f;
-            birdAlignSpeed = 14f;
+            birdDescentSpeed = 5f;      // ★1031 7→5：落下慢一點，看得到、來得及反應
+            birdAlignSpeed = 10f;       // ★1031 14→10
+            birdLateLockApproachSpeed = 16f;   // ★1031 22→16：飛到她頭上慢一點
+            beat2WarningSeconds = 1.9f;        // ★1031 前搖 1.5→1.9
+            beat3WarningBase = 1.4f;           // ★1031 前搖 1.0→1.4
             birdShowTelegraph = true;
-            birdAttackIntensity = 1.2f;
+            birdAttackIntensity = 1.0f;        // ★1031 1.2→1.0：增援少一點、速度不再加成
             enableBirdReinforcements = true;
             birdReinforcementChance = 0.35f;
             birdReinforcementMinCopies = 0;
@@ -390,6 +403,7 @@ public class DesertBeatDirector : MonoBehaviour
         ApplyRhythm(DesertOrbDirector.GateActive ? DesertOrbDirector.OrbX : -1f, log);
         ApplyBirdIntensitySettings();
 
+        ApplyLongerDesert(log);
         ApplyShelters(log);
         ApplyWindFreeZone(log);
         ApplyBirds(log);
@@ -401,6 +415,33 @@ public class DesertBeatDirector : MonoBehaviour
         if (enableBraceFrost)  { BraceFrostFX.Install();               log.Append(" 硬撐結霜；"); }
 
         Debug.Log(log.ToString());
+    }
+
+    /// <summary>★1031 荒原要玩久一點：走路慢一成、風吹久一點（只在荒原，換場景就回到原本）。</summary>
+    private void ApplyLongerDesert(System.Text.StringBuilder log)
+    {
+        if (!_walkSpeedApplied && desertWalkSpeedMultiplier > 0.01f && desertWalkSpeedMultiplier < 0.999f)
+        {
+            PlayerMovement pm = FindFirstObjectByType<PlayerMovement>();
+            if (pm != null)
+            {
+                float before = pm.baseSpeed;
+                pm.baseSpeed = before * desertWalkSpeedMultiplier;
+                pm.currentSpeed = Mathf.Min(pm.currentSpeed, pm.baseSpeed);
+                _walkSpeedApplied = true;
+                if (log != null) log.Append(" 走路 ").Append(before.ToString("F1")).Append("→").Append(pm.baseSpeed.ToString("F1")).Append('；');
+            }
+        }
+        if (lengthenWind)
+        {
+            WindGustSystem wind = WindGustSystem.Instance != null ? WindGustSystem.Instance : FindFirstObjectByType<WindGustSystem>();
+            if (wind != null)
+            {
+                wind.blowDuration = Mathf.Max(0.5f, windBlowSeconds);
+                wind.pauseDuration = Mathf.Max(wind.telegraphSeconds + 0.5f, windPauseSeconds);
+                if (log != null) log.Append(" 風 吹").Append(wind.blowDuration.ToString("F1")).Append("／停").Append(wind.pauseDuration.ToString("F1")).Append('；');
+            }
+        }
     }
 
     /// <summary>★1023 依 x 分四段寫進排程器：直衝 → 加追蹤 → 拿到光球後 → 最難。orbX＜0＝沒有光球門檻，第三段從 rhythmStage2X（-1 時用 beat2End）開始。</summary>
