@@ -18,7 +18,7 @@ using UnityEngine;
 public class WoNiTa_DebugProbe : MonoBehaviour
 {
     /// <summary>★總開關：正式版關閉。要遠端監測時改成 true 再進 Play。</summary>
-    private const bool ProbeEnabled = true;    // ★0903 暫開：驗收荒原→水下，驗完關回 false
+    private const bool ProbeEnabled = false;   // ★正式版關閉（0903 驗收荒原→水下時暫開過）
     private const bool SaveFrames   = false;   // 這次只記 log 不截圖（截圖很佔空間）
 
     private const float FrameEverySeconds = 6f;   // 畫面快照間隔
