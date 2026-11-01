@@ -174,7 +174,8 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
 
         if (!_isLighting)
         {
-            if (canLight && Input.GetKeyDown(lightKey)) BeginLighting();
+            // ★1102 在空中（跳起來或掉落中）按 S 不開始點燃，落地後再按
+            if (canLight && !_player.IsAirborneForLighting && Input.GetKeyDown(lightKey)) BeginLighting();
             return;
         }
 

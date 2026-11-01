@@ -227,6 +227,10 @@ public static class BirdAttackScheduler
     }
 
     // ── 需求進出 ──
+    /// <summary>除錯探針用：目前排隊／同時攻擊中的鳥數。</summary>
+    public static int DebugQueueCount { get { return _queue.Count; } }
+    public static int DebugActiveCount { get { return _active.Count; } }
+
     public static bool IsQueued(IndividualBirdEnemy bird)
     {
         for (int i = 0; i < _queue.Count; i++) if (_queue[i].bird == bird) return true;
