@@ -260,6 +260,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private bool _finaleDash;
     private bool _vanishDone;
 
+    [Header("★1102 最後一根燭火：等玩家點完、卡關保險")]
+    [Tooltip("最後一根還沒點亮時，怪物停在離它多遠（公尺，已含 candleReachX）。不然玩家點到一半怪物就碰到，燭火被打碎卡死")]
+    public float finaleWaitMargin = 1.5f;
+    [Tooltip("玩家走過最後一根燭火多遠（公尺）還沒點，就放怪物衝過去，照「漏點」流程懲罰")]
+    public float finalePassMargin = 2.5f;
+    [Tooltip("最後衝刺最多持續幾秒。超過就強制定案（點亮算收集、沒點算漏掉），避免怪物一直跟著、關卡卡死")]
+    public float finaleMaxSeconds = 25f;
+    private float _finaleStartTime;
+
     [Header("★1016 重生後：不在黑幕裡出場，等她動了才從身後出現")]
     [Tooltip("重生點就在觸發區旁邊，重生的黑幕期間她一被放回去就踩到觸發區，怪物在黑幕裡就出場開追，畫面一亮牠已經貼上來。\n" +
              "打開＝黑幕期間先不出場，等重生完成、她開始移動（或等 respawnAppearMaxWait 秒）才從她身後 spawnDistanceBehindPlayer 公尺出現。\n" +
@@ -369,6 +378,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (candles != null) foreach (var c in candles) if (c != null && c.missed) n++;
         return n;
     }
+    /// <summary>★1102 直接數燭火的狀態，不靠累加的計數。重生、被懲罰中收集等情況下累加計數可能少算，少一根就永遠通不了關。</summary>
+    private int RecountCollected()
+    {
+        int n = 0;
+        if (candles != null) foreach (var c in candles) if (c != null && c.isCollected) n++;
+        return n;
+    }
+
     private int _totalCandles = 0;
     private CandleCollectible _lastCandleByX;
 
@@ -1060,7 +1077,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             return;
         }
 
-        _candlesCollected++;
+        // ★1102 重新數：這根的 isCollected 已經是 true，直接數就包含它；舊的計數若曾少算也會一併校正
+        int before = _candlesCollected;
+        _candlesCollected = RecountCollected();
+        if (_candlesCollected != before + 1)
+            Debug.LogWarning($"【影子怪物】★1102 燭火計數校正：累加是 {before + 1}，實際數到 {_candlesCollected}（{candle.gameObject.name}）");
         Debug.Log($"【影子怪物】燭火收集 {_candlesCollected}/{_totalCandles}（{candle.gameObject.name}）");
 
         float targetScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
@@ -1904,6 +1925,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void TryStartFinaleDash()
     {
         if (_revealActive || player == null || candles == null || _totalCandles <= 0) return;
+        _candlesCollected = RecountCollected();   // ★1102 以燭火實際狀態為準
         if (_candlesCollected != _totalCandles - 1) return;
         if (_doomed || MissedCount() > 0) return;   // ★1021 有漏點的燭火：不進「只嚇人不攻擊」的最後衝刺
 
@@ -1923,14 +1945,43 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         _finaleDash = true;
         _finaleSpeed = -1f;
+        _finaleStartTime = Time.time;
         if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;   // 別讓主角停在被減速的狀態
-        Debug.Log($"【影子怪物】主角接近最後一根燭火，怪物開始追回距離到主角身後 {finaleStopDistance} 公尺（不攻擊）。");
+        Debug.Log($"【影子怪物】主角接近最後一根燭火，怪物開始追回距離到主角身後 {finaleStopDistance} 公尺（不攻擊）。（收集 {_candlesCollected}/{_totalCandles}、漏 {MissedCount()}、剩下 {remaining.name} X={remaining.transform.position.x:F1}、怪物 X={mx:F1}）");
+    }
+
+    /// <summary>★1102 最後衝刺時還沒定案的那根燭火（沒被收、沒漏掉）。</summary>
+    private CandleCollectible FinaleRemainingCandle()
+    {
+        if (candles == null) return null;
+        foreach (var c in candles) if (c != null && !c.isCollected && !c.missed) return c;
+        return null;
     }
 
     private void FinaleDashMove()
     {
+        CandleCollectible rest = FinaleRemainingCandle();
+
+        // ★1102 保險：衝刺拖太久還沒結束（燭火卡在「沒收也沒漏」之類），強制定案，怪物才不會永遠跟著不攻擊
+        if (rest != null && Time.time - _finaleStartTime > Mathf.Max(5f, finaleMaxSeconds))
+        {
+            Debug.LogWarning($"【影子怪物】★1102 最後衝刺超過 {finaleMaxSeconds:F0} 秒，強制定案 {rest.name}（已點亮={rest.IsLitByPlayer}）");
+            _finaleStartTime = Time.time;
+            rest.ForceResolve();
+            if (!_finaleDash) return;   // 定案後衝刺已被關掉（收完或進懲罰）
+            rest = FinaleRemainingCandle();
+        }
+
         float dir = player.position.x >= transform.position.x ? 1f : -1f;
         float targetX = player.position.x - dir * finaleStopDistance;
+
+        // ★1102 最後一根還沒點亮：怪物停在燭火前面等玩家點完，不然點到一半怪物碰到、燭火被打碎，就再也定不了案。
+        //   玩家已經走過燭火還沒點，就放行讓怪物衝過去，照漏點處理。
+        if (rest != null && dir > 0f && !rest.IsLitByPlayer && player.position.x < rest.transform.position.x + finalePassMargin)
+        {
+            float holdX = rest.transform.position.x - candleReachX - finaleWaitMargin;
+            targetX = transform.position.x >= holdX ? transform.position.x : Mathf.Min(targetX, holdX);
+        }
         float gap = Mathf.Abs(targetX - transform.position.x);
         float playerSpeed = (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f;
         // 落後越多越快，越接近越緩：從「比主角快一點」平滑加到 finaleDashSpeed，不會突然暴衝

@@ -227,6 +227,10 @@ public static class BirdAttackScheduler
     }
 
     // ── 需求進出 ──
+    /// <summary>除錯探針用：目前排隊／同時攻擊中的鳥數。</summary>
+    public static int DebugQueueCount { get { return _queue.Count; } }
+    public static int DebugActiveCount { get { return _active.Count; } }
+
     public static bool IsQueued(IndividualBirdEnemy bird)
     {
         for (int i = 0; i < _queue.Count; i++) if (_queue[i].bird == bird) return true;
@@ -353,7 +357,12 @@ public static class BirdAttackScheduler
         else if (UmbrellaZone.IsPlayerUnderUmbrella) block = "OTHER";
         else if (windPhase && !AnyWindFreeRequest()) block = "WIND";
         else if (IndividualBirdEnemy.IsAllSuppressed) block = "SHADOW";
-        else if (flush) { }   // ★1029 離綠洲很近：跳過放行間隔／同時上限／波次空檔，每幀放一隻直到佇列清空
+        else if (flush)
+        {
+            // ★1029 離綠洲很近：跳過放行間隔／波次空檔，排隊的盡快放完；但同時攻擊上限仍然保留，
+            //   避免積壓的鳥在綠洲入口一次全部壓下來。
+            if (_active.Count >= EffectiveCap(finale)) block = "BUSY";
+        }
         else if (IndividualBirdEnemy.BirdTime < _nextSlotTime || _active.Count >= EffectiveCap(finale)) block = "BUSY";
         else if ((finale ? finaleWaveSize : CurrentWaveSize()) > 0 && _waveGranted >= (finale ? finaleWaveSize : CurrentWaveSize()) && !AnyForceRequest())
         {

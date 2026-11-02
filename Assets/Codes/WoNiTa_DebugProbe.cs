@@ -18,7 +18,7 @@ using UnityEngine;
 public class WoNiTa_DebugProbe : MonoBehaviour
 {
     /// <summary>★總開關：正式版關閉。要遠端監測時改成 true 再進 Play。</summary>
-    private const bool ProbeEnabled = true;    // ★0903 暫開：驗收荒原→水下，驗完關回 false
+    private const bool ProbeEnabled = false;   // ★正式版關閉；要測試時改 true，整輪機制快照會寫進 Logs/wonita_debug.log
     private const bool SaveFrames   = false;   // 這次只記 log 不截圖（截圖很佔空間）
 
     private const float FrameEverySeconds = 6f;   // 畫面快照間隔
@@ -119,6 +119,16 @@ public class WoNiTa_DebugProbe : MonoBehaviour
             _nextBeat = Time.unscaledTime + HeartbeatSeconds;
         }
 
+        // 卡頓偵測：單幀超過 100ms 就記一筆（只在發生時寫，不影響流暢度）
+        float dt = Time.unscaledDeltaTime;
+        if (dt > 0.1f) Write("HIT|卡頓 " + (dt * 1000f).ToString("F0") + "ms " + PosText());
+
+        if (Time.unscaledTime >= _nextMech)
+        {
+            _nextMech = Time.unscaledTime + 1f;
+            try { Write("MX |" + PosText() + " " + MechSnapshot()); } catch (Exception e) { Write("MX |快照失敗 " + e.Message); }
+        }
+
         if (Time.unscaledTime >= _nextFlush)
         {
             Flush();
@@ -193,6 +203,43 @@ public class WoNiTa_DebugProbe : MonoBehaviour
         if (_pm == null) return "位置=-";
         Vector3 p = _pm.transform.position;
         return "位置=" + p.x.ToString("F1") + "," + p.y.ToString("F1");
+    }
+
+    private float _nextMech;
+    private int _candleTick;
+    private int _candleTotal, _candleDone, _candleMissed, _candleLit;
+
+    /// <summary>每秒一行的機制快照：幀率、記憶體、燭火、鳥群、怪物、巨石、光球、重生點。</summary>
+    private string MechSnapshot()
+    {
+        BirdAttackScheduler.debugEnabled = true;   // 讓鳥群的 [BIRD …] 紀錄也寫進檔
+
+        // 燭火：每 3 秒才重新掃一次，避免每秒配置陣列
+        if ((_candleTick++ % 3) == 0)
+        {
+            var cs = FindObjectsByType<CandleCollectible>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            _candleTotal = cs.Length; _candleDone = 0; _candleMissed = 0; _candleLit = 0;
+            foreach (var c in cs)
+            {
+                if (c == null) continue;
+                if (c.isCollected) _candleDone++;
+                else if (c.missed) _candleMissed++;
+                if (c.IsLitByPlayer) _candleLit++;
+            }
+        }
+
+        float fps = Time.unscaledDeltaTime > 0f ? 1f / Time.unscaledDeltaTime : 0f;
+        string resp = PlayerRespawnSystem.Instance != null
+            ? PlayerRespawnSystem.ActiveRespawnPosition.x.ToString("F1") + "," + PlayerRespawnSystem.ActiveRespawnPosition.y.ToString("F1")
+            : "-";
+
+        return "fps=" + fps.ToString("F0")
+             + " mem=" + (GC.GetTotalMemory(false) / 1048576) + "MB"
+             + " 燭(收" + _candleDone + "/漏" + _candleMissed + "/亮" + _candleLit + "/共" + _candleTotal + ")"
+             + " 鳥(排" + BirdAttackScheduler.DebugQueueCount + "/攻" + BirdAttackScheduler.DebugActiveCount + ")"
+             + " 巨石失敗=" + B(BoulderChallengeController.IsFailing)
+             + " 光球閘=" + B(DesertOrbDirector.GateActive) + "/取" + B(DesertOrbDirector.Collected)
+             + " 重生點=" + resp;
     }
 
     /// <summary>不含座標的狀態（座標另外印，免得移動時每幀都算「有變化」）。</summary>

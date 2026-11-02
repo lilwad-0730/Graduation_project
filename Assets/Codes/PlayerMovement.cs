@@ -217,6 +217,13 @@ public class PlayerMovement : MonoBehaviour
         freezeHorizontal ||
         IsHardCutsceneLocked;
 
+    /// <summary>
+    /// ★1102 人在空中（起跳中、或明顯在升降）：點燭火不准開始，不然會在半空中鎖住、點燃動作在空中播。
+    /// 走路時地面偵測偶爾會閃一下（isGrounded 變 false），所以只看起跳旗標與垂直速度，不單看 isGrounded。
+    /// </summary>
+    public bool IsAirborneForLighting =>
+        isJumping || (!isGrounded && rb != null && Mathf.Abs(rb.linearVelocity.y) > 1.5f);
+
     [Header("📦 推動物件機制 (Pushing Object System)")]
     [Tooltip("推動物件偵測距離 (向前檢測 Pushable Tag 物件)")]
     public float pushDetectionDistance = 0.35f;

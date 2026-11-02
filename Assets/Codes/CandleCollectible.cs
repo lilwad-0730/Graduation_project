@@ -199,6 +199,14 @@ public class CandleCollectible : MonoBehaviour, IResettable
         TryCollect();
     }
 
+    /// <summary>★1102 保險用：立刻定案。已點亮算收集，沒點亮算漏掉。給「最後衝刺拖太久」之類卡關狀況用。</summary>
+    public void ForceResolve()
+    {
+        if (isCollected || missed) return;
+        if (IsLitByPlayer) TryCollect();
+        else MarkMissed();
+    }
+
     /// <summary>★1021 怪物經過時玩家還沒點燃：記成漏掉、通知怪物，火焰閃一下熄滅當作提示。</summary>
     private void MarkMissed()
     {
@@ -208,7 +216,7 @@ public class CandleCollectible : MonoBehaviour, IResettable
         Debug.Log($"🕯️【燭火漏掉】{gameObject.name}（X = {transform.position.x:F1}）怪物經過時玩家還沒點燃，不算數。");
         if (ShadowMonsterController.Instance != null)
             ShadowMonsterController.Instance.OnCandleMissed(this);
-        StartCoroutine(FlickerOutRoutine());
+        if (isActiveAndEnabled) StartCoroutine(FlickerOutRoutine());   // ★1102 物件已被關掉時開協程會報錯
     }
 
     private System.Collections.IEnumerator FlickerOutRoutine()

@@ -97,6 +97,17 @@ public class ShadowMonsterTriggerZone : MonoBehaviour, IResettable
         while (!PlayerRespawnSystem.IsPlayerMovingAfterRespawn && w < 15f) { w += Time.deltaTime; yield return null; }   // 等玩家動
         yield return new WaitForSeconds(Mathf.Max(0f, respawnForceSeconds));
 
+        // ★1029 文字卡／鏡牆演出「正在播」只是暫時忙：等它播完再判斷，不要一碰到就放棄
+        //   （玩家在觸發區後面不會再踩到觸發區，這條備援放棄＝怪物永遠不出場）。上限同 ActivateAfterCutscenes。
+        float busyWait = 0f;
+        while (busyWait < forceAfterSeconds + 90f
+               && (MirrorWallAbsorbCutscene.IsAnyCutsceneRunning
+                   || (StoryCardPlayer.Instance != null && StoryCardPlayer.Instance.IsPlaying)))
+        {
+            busyWait += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
         _respawnRoutine = null;
         if (_hasTriggered) yield break;                                       // 這段時間已經正常出場了
         ShadowMonsterController mon = ShadowMonsterController.Instance;

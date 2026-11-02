@@ -191,6 +191,9 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         if (candle != null)
         {
             candle.TryCollect(gameObject);
+            // ★1102 還沒點亮、還在寬限期的燭火先不打碎：碎了會關掉它的碰撞與更新，之後就再也定不了案（沒收也沒漏），最後一根會卡死關卡。
+            //   寬限結束後由燭火自己定案（點亮算收集、沒點算漏掉）。
+            if (!candle.isCollected && !candle.missed) return;
             Debug.Log($"【燭火摧毀】怪物 BoxCollider 碰到 '{candle.name}'，觸發碎裂！");
             Shatter(candle.transform);
             return;
