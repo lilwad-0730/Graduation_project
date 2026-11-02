@@ -298,6 +298,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     private CandleAuraGlow[] _candleAuras;
 
+    [Header("★1102 怪物靠近時不停下（M 11/2：「怪物靠近玩家時會停下來的機制，改成不要停」）")]
+    [Tooltip("打開＝怪物永遠不站著不動。她一直往前走：照舊跟在身後 hoverLag 公尺（跟著她走，不逼近）；她停下來、等平台、往回走：不再停在身後等，而是以 Creep Speed 慢慢逼近，超過 chasePatienceSeconds 沒前進才全速逼近；\n" +
+             "怪物已經進到 hoverLag 以內時也不會定住，她往前走就照「太近放慢」的速度跟著（距離慢慢拉回 hoverLag），她一停就繼續慢慢逼近。點燭火期間照 ★1031 的固定速度逼近。\n" +
+             "關掉＝1016 的做法（她一停，怪物停在身後 hoverLag 公尺站著等 9 秒）")]
+    public bool neverStopNearPlayer = true;
+
+    [Tooltip("她沒在前進時怪物慢慢逼近的速度（公尺/秒）。等移動平台最久約 6.4 秒：1.2×6.4≈7.7 公尺，從 16 公尺逼到約 8 公尺，還沒到 6 公尺的出爪距離；站著不動約 8 秒就會被出爪")]
+    public float creepSpeed = 1.2f;
+
+    private float _playerPrevX = float.NaN;
+    private float _playerForwardSpeed = 0f;   // ★1102 她這一幀往「遠離怪物」方向的速度（公尺/秒），往回走算 0
+
     /// <summary>★1031 她現在是不是正在點某一根燭火（任何一根的進度條在跑）。</summary>
     private bool IsPlayerLightingCandle()
     {
@@ -2013,7 +2025,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             return;
         }
 
+        // ★1102 量她這一幀往遠離怪物方向走多快（往回走＝0）
+        {
+            float dtp = Mathf.Max(Time.deltaTime, 0.0001f);
+            float sideNow = player.position.x >= transform.position.x ? 1f : -1f;
+            float vx = float.IsNaN(_playerPrevX) ? 0f : (player.position.x - _playerPrevX) / dtp * sideNow;
+            _playerForwardSpeed = Mathf.Max(0f, vx);
+            _playerPrevX = player.position.x;
+        }
+
         // ★1016 耐心：她最近有往前進，就只跟到她身後 hoverLag 公尺（不後退，只是不再逼近）
+        // ★1102 不停：到了 hoverLag 線不再站著等——她在走就跟著走，她停了就以 creepSpeed 慢慢逼近
         if (holdBackWhilePlayerProgressing && !lightingPressure && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing))
         {
             UpdatePlayerProgress();
@@ -2022,9 +2044,25 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
                 float side = player.position.x >= transform.position.x ? 1f : -1f;
                 float keep = Mathf.Max(hoverLag, attackTriggerDistance + 1f);
                 float hoverX = player.position.x - side * keep;
-                targetX = side > 0f
-                    ? Mathf.Max(transform.position.x, Mathf.Min(targetX, hoverX))
-                    : Mathf.Min(transform.position.x, Mathf.Max(targetX, hoverX));
+                bool insideHover = side > 0f ? transform.position.x >= hoverX - 0.05f : transform.position.x <= hoverX + 0.05f;
+                if (!neverStopNearPlayer || !insideHover)
+                {
+                    // 還在 hoverLag 線外面：照 1016 走到線上（她在走，線也跟著走，所以怪物不會停）
+                    targetX = side > 0f
+                        ? Mathf.Max(transform.position.x, Mathf.Min(targetX, hoverX))
+                        : Mathf.Min(transform.position.x, Mathf.Max(targetX, hoverX));
+                }
+                else if (_playerForwardSpeed > 0.3f)
+                {
+                    // ★1102 線內、她在往前走：不定住，照 SmartSpeed「太近就放慢」的速度跟著走（距離會慢慢拉回 hoverLag），目標仍是她
+                    //   SmartSpeed 在 idealLagMin 以內最低是 easeOffSpeed，不會停
+                }
+                else
+                {
+                    // ★1102 線內、她停著／等平台／往回走：不再站著等，慢慢逼近
+                    if (!_isHitShrinking) currentSpeed = Mathf.Min(currentSpeed, Mathf.Max(0.1f, creepSpeed));
+                    PlayAnimationByName(walkAnimationName);
+                }
             }
         }
 

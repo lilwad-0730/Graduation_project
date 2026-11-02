@@ -22,6 +22,14 @@ public class WindShelter : MonoBehaviour, IResettable
     [Range(0f, 5f)]
     public float collapseEscapeGrace = 1.5f;
 
+    [Header("★1101 碎前預兆（52 章 B1：假岩柱碎前 0.8 秒毫無預兆）")]
+    [Tooltip("假掩體開始崩解到碎裂的這段時間（collapseDelay），柱子抖動、顏色變暗，讓玩家看得出它要碎了。\n她離開保護區倒數取消時會還原。關掉＝原本行為（倒數期間畫面毫無變化）")]
+    public bool collapseWarning = true;
+    [Tooltip("抖動幅度（公尺），越接近碎裂越大。只抖沒有碰撞框的純視覺子物件；渲染器跟碰撞框在同一個物件上時只變色不抖，不會推到她")]
+    public float collapseWarningShake = 0.06f;
+    [Tooltip("碎裂前顏色壓暗到幾成（1＝不變色）")]
+    [Range(0.3f, 1f)] public float collapseWarningDarken = 0.72f;
+
     [Header("防風保護區域設定 (背風面躲避範圍)")]
     [Tooltip("【背風面/後面】保護延伸寬度 (公尺，預設 2.0，向左側/背風面延伸)")]
     public float protectBehindDistance = 2.0f;
@@ -43,6 +51,14 @@ public class WindShelter : MonoBehaviour, IResettable
     private Transform playerTrans;
     private Collider[] shelterColliders;
     private Renderer[] shelterRenderers;
+
+    // ★1101 碎前預兆用：純視覺子物件的原始位置、變色用的 PropertyBlock
+    private Transform[] _warnShakeTargets;
+    private Vector3[] _warnShakeBase;
+    private bool _warnVisualOn = false;
+    private static readonly int _ColorId = Shader.PropertyToID("_Color");
+    private static readonly int _BaseColorId = Shader.PropertyToID("_BaseColor");
+    private Color[] _warnBaseColors;
 
     private void Start()
     {
@@ -178,6 +194,7 @@ public class WindShelter : MonoBehaviour, IResettable
             {
                 StopCoroutine(collapseCoroutine);
                 collapseCoroutine = null;
+                RestoreWarningVisual();   // ★1101 她跑開、倒數取消：柱子回到原樣
             }
         }
     }
@@ -185,7 +202,23 @@ public class WindShelter : MonoBehaviour, IResettable
     private IEnumerator CollapseSequence()
     {
         Debug.LogWarning($"💥【假掩體警報】'{gameObject.name}' 開始崩解！於 {collapseDelay} 秒後碎裂！");
-        yield return new WaitForSeconds(collapseDelay);
+        if (collapseWarning && collapseDelay > 0.01f)
+        {
+            // ★1101 碎前預兆：倒數期間柱子越抖越厲害、越來越暗（原本這 0.8 秒畫面毫無變化，她沒有資訊可以跑）
+            BeginWarningVisual();
+            float t = 0f;
+            while (t < collapseDelay)
+            {
+                t += Time.deltaTime;
+                UpdateWarningVisual(Mathf.Clamp01(t / collapseDelay));
+                yield return null;
+            }
+            RestoreWarningVisual();   // 碎片效果照原本的樣子出
+        }
+        else
+        {
+            yield return new WaitForSeconds(collapseDelay);
+        }
 
         hasCollapsed = true;
 
@@ -211,6 +244,104 @@ public class WindShelter : MonoBehaviour, IResettable
             GrantEscapeGrace();
         }
         collapseCoroutine = null;
+    }
+
+    // ══════════════════════════════════════════
+    // ★1101 碎前預兆（抖動＋壓暗）
+    // ══════════════════════════════════════════
+    private void BeginWarningVisual()
+    {
+        if (_warnVisualOn) return;
+        if (shelterRenderers == null || shelterRenderers.Length == 0) shelterRenderers = GetComponentsInChildren<Renderer>(true);
+
+        // 只抖「沒有碰撞框」的純視覺子物件（抖到碰撞框會推她）；根物件本身不抖
+        var list = new System.Collections.Generic.List<Transform>();
+        for (int i = 0; i < shelterRenderers.Length; i++)
+        {
+            Renderer r = shelterRenderers[i];
+            if (r == null) continue;
+            Transform tr = r.transform;
+            if (tr == transform) continue;
+            if (tr.GetComponent<Collider>() != null) continue;
+            if (!list.Contains(tr)) list.Add(tr);
+        }
+        _warnShakeTargets = list.ToArray();
+        _warnShakeBase = new Vector3[_warnShakeTargets.Length];
+        for (int i = 0; i < _warnShakeTargets.Length; i++) _warnShakeBase[i] = _warnShakeTargets[i].localPosition;
+
+        _warnBaseColors = new Color[shelterRenderers.Length];
+        for (int i = 0; i < shelterRenderers.Length; i++)
+        {
+            Renderer r = shelterRenderers[i];
+            if (r == null) continue;
+            SpriteRenderer sr = r as SpriteRenderer;
+            if (sr != null) _warnBaseColors[i] = sr.color;
+            else
+            {
+                MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+                r.GetPropertyBlock(mpb);
+                Color c = Color.white;
+                if (r.sharedMaterial != null)
+                {
+                    if (r.sharedMaterial.HasProperty(_BaseColorId)) c = r.sharedMaterial.GetColor(_BaseColorId);
+                    else if (r.sharedMaterial.HasProperty(_ColorId)) c = r.sharedMaterial.GetColor(_ColorId);
+                }
+                _warnBaseColors[i] = c;
+            }
+        }
+        _warnVisualOn = true;
+    }
+
+    private void UpdateWarningVisual(float u)
+    {
+        if (!_warnVisualOn) return;
+        // 抖：幅度隨倒數加大（0.3 → 1 倍），每幀換方向
+        float amp = collapseWarningShake * Mathf.Lerp(0.3f, 1f, u);
+        if (_warnShakeTargets != null)
+        {
+            for (int i = 0; i < _warnShakeTargets.Length; i++)
+            {
+                if (_warnShakeTargets[i] == null) continue;
+                Vector2 o = Random.insideUnitCircle * amp;
+                _warnShakeTargets[i].localPosition = _warnShakeBase[i] + new Vector3(o.x, o.y * 0.5f, 0f);
+            }
+        }
+        // 暗：線性壓到 collapseWarningDarken，最後 0.15 秒再閃一下亮回來（像裂開前的最後一下）
+        float dark = Mathf.Lerp(1f, collapseWarningDarken, u);
+        if (u > 0.85f) dark = Mathf.Lerp(dark, 1f, (u - 0.85f) / 0.15f * 0.6f);
+        ApplyWarningTint(dark);
+    }
+
+    private void ApplyWarningTint(float mul)
+    {
+        if (shelterRenderers == null || _warnBaseColors == null) return;
+        for (int i = 0; i < shelterRenderers.Length && i < _warnBaseColors.Length; i++)
+        {
+            Renderer r = shelterRenderers[i];
+            if (r == null) continue;
+            Color b = _warnBaseColors[i];
+            Color c = new Color(b.r * mul, b.g * mul, b.b * mul, b.a);
+            SpriteRenderer sr = r as SpriteRenderer;
+            if (sr != null) { sr.color = c; continue; }
+            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+            r.GetPropertyBlock(mpb);
+            if (mul >= 0.999f) { mpb.Clear(); r.SetPropertyBlock(mpb); continue; }
+            mpb.SetColor(_ColorId, c);
+            mpb.SetColor(_BaseColorId, c);
+            r.SetPropertyBlock(mpb);
+        }
+    }
+
+    private void RestoreWarningVisual()
+    {
+        if (!_warnVisualOn) return;
+        if (_warnShakeTargets != null)
+        {
+            for (int i = 0; i < _warnShakeTargets.Length; i++)
+                if (_warnShakeTargets[i] != null) _warnShakeTargets[i].localPosition = _warnShakeBase[i];
+        }
+        ApplyWarningTint(1f);
+        _warnVisualOn = false;
     }
 
     /// <summary>假掩體碎在玩家頭上時，補一段免疫讓她跑得掉。</summary>
@@ -250,6 +381,7 @@ public class WindShelter : MonoBehaviour, IResettable
             StopCoroutine(collapseCoroutine);
             collapseCoroutine = null;
         }
+        RestoreWarningVisual();   // ★1101
         if (isPlayerInside && !hasCollapsed)
         {
             WindGustSystem.UnregisterPlayerShelter();

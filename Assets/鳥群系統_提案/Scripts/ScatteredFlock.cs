@@ -154,6 +154,18 @@ public class ScatteredFlock : MonoBehaviour
     public bool tintDistant = true;
     public Color distantTint = new Color(0.42f, 0.40f, 0.46f, 1f);
 
+    [Header("★1101 拍一不放背景鳥（52 章 D2）")]
+    [Tooltip("DesertBeatDirector 會把「拍一結束的 x」寫進 QuietUntilX：她還在那個 x 左邊時整團不顯示（軸心照跟），一過去就從上方飛進來。\n其他場景、或 DesertBeatDirector 關掉這項時不受影響。這裡關掉＝永遠照飛")]
+    public bool allowQuietZone = true;
+    [Tooltip("飛進來時從軸心上方多高開始（公尺），再以 followMaxSpeed 慢慢降到位")]
+    public float entranceHeight = 12f;
+    /// <summary>★1101 由 DesertBeatDirector 設定：這個場景裡、她的 x 小於這個值時背景鳥不顯示。</summary>
+    public static float QuietUntilX = float.NegativeInfinity;
+    public static string QuietScene = null;
+    public static void SetQuietZone(float untilX, string sceneName) { QuietUntilX = untilX; QuietScene = sceneName; }
+    private bool _quietHidden = false;
+    private bool _quietInit = false;
+
     // ── 內部 ─────────────────────────────────
     private class Member
     {
@@ -362,8 +374,44 @@ public class ScatteredFlock : MonoBehaviour
     private void LateUpdate()
     {
         MoveAxis();
+        UpdateQuietZone();   // ★1101
         Fly();
+        if (_quietHidden) return;
         TryAttack();
+    }
+
+    // ══════════════════════════════════════════
+    // ★1101 拍一不放：她在 QuietUntilX 左邊時整團藏起來，過了從上方飛進來
+    // ══════════════════════════════════════════
+    private void UpdateQuietZone()
+    {
+        bool wantHidden = false;
+        if (allowQuietZone && !float.IsNegativeInfinity(QuietUntilX) && !string.IsNullOrEmpty(QuietScene)
+            && QuietScene == gameObject.scene.name)
+        {
+            if (_player == null) _player = FindPlayer();
+            if (_player != null) wantHidden = _player.position.x < QuietUntilX;
+        }
+        bool first = !_quietInit;
+        if (first) { _quietInit = true; _quietHidden = !wantHidden; }   // 第一次一定套用一次（只設顯示與否，不做飛進來）
+        if (wantHidden == _quietHidden) return;
+        _quietHidden = wantHidden;
+
+        for (int i = 0; i < _birds.Count; i++)
+        {
+            Member m = _birds[i];
+            if (m == null || m.tr == null) continue;
+            Renderer[] rs = m.tr.GetComponentsInChildren<Renderer>(true);
+            for (int k = 0; k < rs.Length; k++) if (rs[k] != null) rs[k].enabled = !wantHidden;
+            m.hasLast = false;   // 重新出現時面向從頭算
+        }
+        if (!first && !wantHidden && entranceHeight > 0.01f && anchor != AnchorMode.Fixed)
+        {
+            // 從上方飛進來：軸心先抬高，MoveAxis 的 SmoothDamp 會以 followMaxSpeed 慢慢降回她頭上
+            transform.position += Vector3.up * entranceHeight;
+            _vel = Vector3.zero;
+            Debug.Log("[ScatteredFlock] ★1101 她過了拍一（x≥" + QuietUntilX.ToString("F0") + "），背景鳥從上方飛進來");
+        }
     }
 
     // ══════════════════════════════════════════

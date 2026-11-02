@@ -18,14 +18,55 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
     [Tooltip("震動幅度")]
     public float shakeIntensity = 0.05f;
 
+    [Header("★1101 看得出會碎（52 章 B4：會碎的 5 片跟一般玻璃同圖同透明度）")]
+    [Tooltip("踩上去之前，會碎的玻璃就跟一般玻璃不一樣：透明度慢慢忽明忽暗（Shimmer Min Alpha ～ 原本），每片相位不同。踩上、碎了、重置時回到原本。關掉＝跟原本一樣")]
+    public bool shimmerBeforeBreak = true;
+    [Tooltip("最暗時剩原本透明度的幾成")]
+    [Range(0.3f, 1f)] public float shimmerMinAlpha = 0.6f;
+    [Tooltip("一次明暗的秒數")]
+    public float shimmerPeriod = 1.7f;
+
     private bool isTriggered = false;
     private Vector3 originalPosition;
     private Destructible destructible;
+
+    private SpriteRenderer[] _shimmerSrs;
+    private Color[] _shimmerBase;
+    private float _shimmerPhase;
+    private bool _shimmerApplied;
 
     private void Awake()
     {
         originalPosition = transform.position;
         destructible = GetComponent<Destructible>();
+        _shimmerPhase = (Mathf.Abs(originalPosition.x * 7.31f + originalPosition.y * 3.17f)) % 6.2831853f;   // 每片不同相位
+    }
+
+    private void Update()
+    {
+        if (!shimmerBeforeBreak || isTriggered || shimmerPeriod <= 0.05f) { if (_shimmerApplied) RestoreShimmer(); return; }
+        if (_shimmerSrs == null)
+        {
+            _shimmerSrs = GetComponentsInChildren<SpriteRenderer>(true);
+            _shimmerBase = new Color[_shimmerSrs.Length];
+            for (int i = 0; i < _shimmerSrs.Length; i++) if (_shimmerSrs[i] != null) _shimmerBase[i] = _shimmerSrs[i].color;
+        }
+        float w = 0.5f + 0.5f * Mathf.Sin(Time.time * 6.2831853f / shimmerPeriod + _shimmerPhase);
+        float k = Mathf.Lerp(shimmerMinAlpha, 1f, w);
+        for (int i = 0; i < _shimmerSrs.Length; i++)
+        {
+            if (_shimmerSrs[i] == null) continue;
+            Color b = _shimmerBase[i];
+            _shimmerSrs[i].color = new Color(b.r, b.g, b.b, b.a * k);
+        }
+        _shimmerApplied = true;
+    }
+
+    private void RestoreShimmer()
+    {
+        if (_shimmerSrs != null)
+            for (int i = 0; i < _shimmerSrs.Length; i++) if (_shimmerSrs[i] != null) _shimmerSrs[i].color = _shimmerBase[i];
+        _shimmerApplied = false;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -56,6 +97,7 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
     {
         if (isTriggered) return;
         isTriggered = true;
+        RestoreShimmer();   // ★1101 碎片用原本的顏色
 
         GlassShatterFX fx = GetComponent<GlassShatterFX>();
         if (fx != null)
@@ -108,6 +150,7 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
 
         StopAllCoroutines();
         isTriggered = false;
+        RestoreShimmer();   // ★1101
         transform.position = originalPosition;
         if (destructible != null)
         {

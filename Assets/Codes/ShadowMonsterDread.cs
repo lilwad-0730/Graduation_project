@@ -69,7 +69,10 @@ public class ShadowMonsterDread : MonoBehaviour
     public float nearDistance = 2f;
     [Tooltip("它離她多遠以外完全不影響畫面")]
     public float farDistance = 30f;
-    [Range(0f, 1f)] public float maxDarkness = 0.75f;
+    [Tooltip("★1101 0.75→0.55（52 章 A2／C2：黑影出場時畫面幾乎全黑，她和要跳的平台一起被壓掉）。這支是開場時程式自己掛上的，這裡的數字就是實際用的數字")]
+    [Range(0f, 1f)] public float maxDarkness = 0.55f;
+    [Tooltip("★1101 暗角最多收到多近（貼圖取樣倍率）：1.28→1.15，中間留給她和腳下平台的亮區大一點")]
+    [Range(0.6f, 1.6f)] public float maxClose = 1.15f;
     [Range(0f, 0.5f)] public float maxGrain = 0.07f;
 
     // ── 黑影 ──
@@ -833,7 +836,7 @@ public class ShadowMonsterDread : MonoBehaviour
         // 暗角貼圖中間透明、邊緣黑；把取樣範圍放大（uvRect 變大）黑邊就往畫面裡收，超出貼圖的地方全黑
         float side = (_pm != null && _body != null) ? Mathf.Sign(_body.bounds.center.x - _pm.transform.position.x) : -1f;
         float close = _dread * (0.85f + 0.15f * beat);
-        float s = Mathf.Lerp(0.55f, 1.28f, close);
+        float s = Mathf.Lerp(0.55f, maxClose, close);   // ★1101 原本 1.28
         float shift = 0.13f * -side;   // 黑影在左 → 亮的中心往右偏 → 左邊（它那一側）更暗
         _vig.uvRect = new Rect(0.5f - s * 0.5f - shift * s, 0.5f - s * 0.5f, s, s);
         _vig.color = new Color(0.025f, 0.004f, 0.012f, Mathf.Clamp01(maxDarkness * _dread * (0.88f + 0.12f * beat)));

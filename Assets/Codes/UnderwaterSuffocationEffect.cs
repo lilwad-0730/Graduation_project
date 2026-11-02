@@ -75,6 +75,14 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
     [Range(0f, 1f)]
     public float maxDarknessIntensity = 1.0f;
 
+    [Header("★1101 圈外留一點亮（52 章 C1：圈外純黑，看不到路）")]
+    [Tooltip("打開＝光圈外面不是全黑，留 Outside Visibility 的亮度（三層疊起來算），看得到路的輪廓、還是看不清。\n快沒氣（半徑接近溺斃半徑）時這點亮會收掉，畫面照樣閉合成全黑。關掉＝原本行為")]
+    public bool keepOutsideVisible = true;
+    [Tooltip("圈外最多留幾成亮度（0.15＝圈外是 85% 暗）")]
+    [Range(0f, 0.4f)] public float outsideVisibility = 0.15f;
+    [Tooltip("半徑縮到「溺斃半徑＋這麼多」以內時開始把留亮收掉，到溺斃半徑時全黑")]
+    [Range(0.02f, 0.4f)] public float outsideFadeBand = 0.14f;
+
     [Header("【視覺 - 模糊邊緣模擬（多層疊加）】")]
     [Tooltip("邊緣柔化寬度 - 主層（越大越柔和，預設 0.22）")]
     [Range(0.01f, 1f)]
@@ -432,10 +440,21 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
             matRing.SetColor("_Color",     exhaustRingColor);
         }
 
+        // ★1101 圈外留亮：三層疊在一起時圈外的總不透明度 = 1 − (1−I)(1−0.38I)(1−0.55I)；
+        //   把 I 一起縮到「總不透明度 = 1 − 留亮」，邊緣的柔度不變，只有整體沒那麼黑。
+        //   快沒氣時留亮按 outsideFadeBand 收掉，溺斃前畫面照樣閉合成全黑。
+        float I = maxDarknessIntensity;
+        if (keepOutsideVisible && outsideVisibility > 0.001f)
+        {
+            float fade = Mathf.InverseLerp(deathRadius, deathRadius + outsideFadeBand, r);   // 0＝已到溺斃半徑
+            float vis = outsideVisibility * Mathf.Clamp01(fade);
+            if (vis > 0.001f) I = SolveIntensityForOutsideDarkness(1f - vis) * maxDarknessIntensity;
+        }
+
         // 主層：核心暗區（緊貼 currentRadius）
         matMain.SetFloat("_Radius",    r);
         matMain.SetFloat("_Softness",  mainSoftness);
-        matMain.SetFloat("_Intensity", maxDarknessIntensity);
+        matMain.SetFloat("_Intensity", I);
         matMain.SetColor("_Color",     vc);
 
         // 中暈層：半徑多加 blurSpread * 0.5，軟化寬度更大
@@ -443,7 +462,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         {
             matMid.SetFloat("_Radius",    r + blurSpread * 0.5f);
             matMid.SetFloat("_Softness",  mainSoftness + 0.12f);
-            matMid.SetFloat("_Intensity", midGlowOpacity * maxDarknessIntensity);
+            matMid.SetFloat("_Intensity", midGlowOpacity * I);
             matMid.SetColor("_Color",     vc);
         }
 
@@ -452,9 +471,25 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         {
             matOuter.SetFloat("_Radius",    r + blurSpread);
             matOuter.SetFloat("_Softness",  mainSoftness + 0.28f);
-            matOuter.SetFloat("_Intensity", outerGlowOpacity * maxDarknessIntensity);
+            matOuter.SetFloat("_Intensity", outerGlowOpacity * I);
             matOuter.SetColor("_Color",     vc);
         }
+    }
+
+    /// <summary>★1101 解 (1−I)(1−mid·I)(1−outer·I) = 1 − targetDark 的 I（0～1），二分法 24 次就夠。</summary>
+    private float SolveIntensityForOutsideDarkness(float targetDark)
+    {
+        targetDark = Mathf.Clamp01(targetDark);
+        float mid = (matMid != null) ? midGlowOpacity : 0f;
+        float outer = (matOuter != null) ? outerGlowOpacity : 0f;
+        float lo = 0f, hi = 1f;
+        for (int k = 0; k < 24; k++)
+        {
+            float m = (lo + hi) * 0.5f;
+            float dark = 1f - (1f - m) * (1f - mid * m) * (1f - outer * m);
+            if (dark < targetDark) lo = m; else hi = m;
+        }
+        return (lo + hi) * 0.5f;
     }
 
     // ==========================================

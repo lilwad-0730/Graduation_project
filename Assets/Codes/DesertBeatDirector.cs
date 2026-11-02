@@ -152,6 +152,10 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("★1029 離綠洲這麼近 (公尺) 時，還排隊的鳥全部直接放（每幀一隻，不受間隔／上限／波次限制，也不因太遠取消）")]
     public float finaleFlushDistance = 6f;
 
+    [Header("★1101 拍一不放背景鳥（52 章 D2：拍一沒有攻擊的鳥，但背景鳥群一開場就滿天飛，鳥的到來沒有意義）")]
+    [Tooltip("勾選＝她還在拍一（x＜beat1End）時，裝飾用的背景鳥群（ScatteredFlock）不顯示，過了 beat1End 才從上方飛進來，跟會攻擊的鳥一起出現。關掉＝照原本一開場就飛")]
+    public bool flockQuietInBeat1 = true;
+
     [Tooltip("★1008 開局時若存檔裡的排程數值是舊版本，就自動換成程式裡最新的建議值（Inspector 存的舊值會蓋掉程式預設，這是上次放行名額一直不夠的原因）。勾選＝完全照你 Inspector 的數字，不再自動換")]
     public bool keepMyInspectorValues = false;
     [HideInInspector] public int tuningVersion = 0;
@@ -432,6 +436,9 @@ public class DesertBeatDirector : MonoBehaviour
         }
         ApplyRhythm(DesertOrbDirector.GateActive ? DesertOrbDirector.OrbX : -1f, log);
         ApplyBirdIntensitySettings();
+        // ★1101 拍一不放背景鳥：把拍一結束的 x 交給 ScatteredFlock（只對這個場景生效）
+        ScatteredFlock.SetQuietZone(flockQuietInBeat1 ? beat1End : float.NegativeInfinity, gameObject.scene.name);
+        if (flockQuietInBeat1) log.Append(" 背景鳥 x≥").Append(beat1End.ToString("F0")).Append(" 才出現；");
 
         ApplyLongerDesert(log);
         ApplyShelters(log);
