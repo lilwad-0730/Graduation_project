@@ -44,6 +44,10 @@ public class DesertOrbDirector : MonoBehaviour
     public float pageHoldSeconds = 5f;
     [Tooltip("光飛進她身體要幾秒")]
     public float absorbSeconds = 0.8f;
+    [Tooltip("碰到光球後，水平方向滑行多久才停（秒）。像車子煞停的慣性；0.05＝幾乎瞬間停")]
+    public float glideSeconds = 0.6f;
+    [Tooltip("滑行起始速度上限（公尺/秒），避免衝刺中碰到滑太遠")]
+    public float glideMaxSpeed = 7f;
 
     [Header("繪本同步")]
     [Tooltip("她走到這個 x（鳥開始追蹤的地方），主選單的繪本開到 038（鳥影、她抬頭看鳥群）")]
@@ -341,6 +345,21 @@ public class DesertOrbDirector : MonoBehaviour
         // 1 她定住；★1023b 世界一起停（鳥、風）——光飛進身體這 1.3 秒不能被撲到
         pm.isCutsceneFrozen = true;
         Rigidbody prb = pm.GetComponent<Rigidbody>();
+        // ★1104 光球飄在半空，她常常是跳起來碰到的：先只擋住操作、水平停下來，讓她自然落地，再把世界停住。
+        //   原本直接 timeScale=0，她會整段演出（約 4～5 秒）掛在空中，演出結束才掉下來。
+        //   ★1105 水平方向不再瞬間歸零：像車子煞停，沿原本方向滑一小段、速度逐漸變小，動畫跟著自然收；Y 方向照重力。
+        float glideV0 = (prb != null && !prb.isKinematic) ? prb.linearVelocity.x : 0f;
+        glideV0 = Mathf.Clamp(glideV0, -glideMaxSpeed, glideMaxSpeed);
+        float glideT = 0f, glideDur = Mathf.Max(0.05f, glideSeconds);
+        float fallWait = 0f;
+        while ((glideT < glideDur && Mathf.Abs(glideV0) > 0.05f) || (!pm.isGrounded && fallWait < 1.5f))
+        {
+            glideT += Time.deltaTime; fallWait += Time.deltaTime;
+            float k = Mathf.Clamp01(glideT / glideDur);
+            pm.GlideVelocityX = glideV0 * (1f - k) * (1f - k);   // 二次遞減：一開始滑得明顯，最後輕輕停住
+            yield return null;
+        }
+        pm.GlideVelocityX = 0f;
         if (prb != null && !prb.isKinematic) prb.linearVelocity = Vector3.zero;
         float prevScale = Time.timeScale > 0f ? Time.timeScale : 1f;
         Time.timeScale = 0f;

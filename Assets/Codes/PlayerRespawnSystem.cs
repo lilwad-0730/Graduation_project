@@ -554,6 +554,23 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
+    [Header("★1104 死亡時自然落下")]
+    [Tooltip("在空中死亡（被鳥打到等）時，漸黑期間讓她照重力落下，而不是掛在半空。關掉＝照舊（速度整個歸零）")]
+    public bool fallNaturallyOnDeath = true;
+
+    [Tooltip("從死亡那一點最多往下落幾公尺就停住（掉進深淵的死亡不要讓鏡頭一路追下去）")]
+    public float deathFallMaxMeters = 12f;
+
+    /// <summary>★1104 死亡漸黑期間的速度：水平歸零；垂直保留（落地了、水下、或已經落夠遠就歸零）。</summary>
+    private Vector3 KeepFallVelocity(float deathY)
+    {
+        if (!fallNaturallyOnDeath || _playerRb == null || IsUnderwaterLevel()) return Vector3.zero;
+        float vy = _playerRb.linearVelocity.y;
+        if (vy >= 0f) vy = 0f;                                                   // 往上衝的也讓她直接開始落下
+        if (deathY - _playerRb.position.y >= Mathf.Max(1f, deathFallMaxMeters)) vy = 0f;   // 落夠遠了
+        return new Vector3(0f, vy, 0f);
+    }
+
     // ===================================
     // 電影級沉浸轉場演出 (Cinematic Respawn Sequence)
     // ===================================
@@ -583,9 +600,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // 清除物理動力
+        // ★1104 在空中被打到（鳥、爪子…）：只停水平，垂直速度保留，她會自然落下，不會整段漸黑都掛在半空。
+        //   水下由浮力系統接管，照舊整個歸零。
+        float deathY = _playerRb != null ? _playerRb.position.y : 0f;
         if (_playerRb != null && !_playerRb.isKinematic)
         {
-            _playerRb.linearVelocity = Vector3.zero;
+            _playerRb.linearVelocity = KeepFallVelocity(deathY);
             _playerRb.angularVelocity = Vector3.zero;
         }
 
@@ -612,11 +632,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             }
             if (_playerRb != null && !_playerRb.isKinematic)
             {
-                _playerRb.linearVelocity = Vector3.zero;
+                _playerRb.linearVelocity = KeepFallVelocity(deathY);   // ★1104 水平停住、垂直照重力落下
             }
             yield return null;
         }
-        
+
         if (_fadeImage != null)
             _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, 1f);
 

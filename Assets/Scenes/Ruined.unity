@@ -2899,7 +2899,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 14.138686
+  orthographic size: 14.144542
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -2924,7 +2924,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.30587, y: -28.103184, z: -10}
+  m_LocalPosition: {x: -24.30587, y: -28.10904, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11190,7 +11190,7 @@ MonoBehaviour:
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 34
-    OrthographicSize: 14.138686
+    OrthographicSize: 14.144542
     NearClipPlane: 0.1
     FarClipPlane: 1000
     Dutch: 0
@@ -11217,7 +11217,7 @@ Transform:
   m_GameObject: {fileID: 2041721726}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -24.30587, y: -28.103184, z: -10}
+  m_LocalPosition: {x: -24.30587, y: -28.10904, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -16205,6 +16205,7 @@ MonoBehaviour:
   timedFlightWaypointName: P14
   timedFlightSeconds: 3
   cameraHandBackSeconds: 1
+  cameraEnterSeconds: 0.6
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
   touchTriggerDistance: 1.5
@@ -17111,7 +17112,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.30587, y: -28.103184, z: 0}
+  m_LocalPosition: {x: -24.30587, y: -28.10904, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17358,7 +17359,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -16.226686
+      value: -16.227623
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.z

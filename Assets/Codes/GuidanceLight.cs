@@ -23,6 +23,11 @@ public class GuidanceLight : MonoBehaviour, IResettable
     [Tooltip("飛往這個路徑點（名稱）時，固定花 timedFlightSeconds 秒飛到（太遠就加速，不會比原本慢）。留空＝不用")]
     public string timedFlightWaypointName = "P14";
     public float timedFlightSeconds = 3f;
+    [Tooltip("★1104 任何一段飛行最久花幾秒：路程太遠就自動加速飛，不會比原本慢。0＝關閉。\n" +
+             "荒原最後一顆（waypoints_4）離上一顆約 90 公尺，原本用 moveSpeed 9 飛要 10 秒、整段演出 13 秒左右。")]
+    public float maxFlightSeconds = 5f;
+    [Tooltip("只在荒原場景才套用 maxFlightSeconds（其他關的光球節奏不動）")]
+    public bool maxFlightOnlyInDesert = true;
     [Tooltip("光球特寫結束、鏡頭回到玩家的過渡時間（秒，0＝瞬間切回）")]
     public float cameraHandBackSeconds = 1.0f;
     [Tooltip("★1028 碰到光球後，鏡頭從玩家移到光球、拉近到特寫大小的過渡時間（秒，0＝瞬間切過去）")]
@@ -490,6 +495,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
 
     private float _timedFlightSpeed = 0f;
 
+    private static bool IsDesertScene()
+    {
+        string sn = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower();
+        return sn.Contains("desert") || sn.Contains("荒漠") || sn.Contains("荒原");
+    }
+
     private void CachePlayerCollider()
     {
         _playerCollider = null;
@@ -652,6 +663,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
             if (!string.IsNullOrEmpty(timedFlightWaypointName) && nextWP.name == timedFlightWaypointName && timedFlightSeconds > 0.1f)
             {
                 _timedFlightSpeed = startDistance / timedFlightSeconds;   // 剛好 timedFlightSeconds 秒到（路程太短就維持原速度，不會變慢）
+            }
+            // ★1104 太遠的一段（荒原最後一顆約 90 公尺）自動加速，整段不超過 maxFlightSeconds
+            if (maxFlightSeconds > 0.1f && _timedFlightSpeed <= 0f && (!maxFlightOnlyInDesert || IsDesertScene()))
+            {
+                float needSpeed = startDistance / maxFlightSeconds;
+                if (needSpeed > CurrentMoveSpeed()) _timedFlightSpeed = needSpeed;
             }
             float safeMoveSpeed = Mathf.Max(0.01f, CurrentMoveSpeed());
             float timeout = Mathf.Max(3f, startDistance / safeMoveSpeed + 3f);

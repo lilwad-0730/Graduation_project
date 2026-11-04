@@ -192,17 +192,25 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         {
             _isLighting = false;
             _lightTimer = _lightDuration;
+            LightingReleaseAt = Time.time;
             if (_player != null) _player.EndCandleLightAnim(true);
             PlayFadeInAnimation();
             if (LightingCompleted != null) LightingCompleted(this);
         }
     }
 
+    /// <summary>★1102 目前這次點燃預計放開玩家的時間點（Time.time）。怪物用它預估「玩家被鎖住多久」來悄悄調速；沒在點燃＝過去的時間。</summary>
+    public static float LightingReleaseAt = -999f;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() { LightingReleaseAt = -999f; }
+
     private void BeginLighting()
     {
         _isLighting = true;
         _lightTimer = 0f;
         _lightDuration = GetLightDuration();
+        LightingReleaseAt = Time.time + _lightDuration;
         Debug.Log($"🕯️【點燃】開始點燃 {gameObject.name}，需要 {_lightDuration:F1} 秒");
         // 燭火位置＝光暈圓心（燭台上方的火焰處）
         if (_player != null) _player.BeginCandleLightAnim(_lightDuration, transform.position + new Vector3(auraCenterOffset.x, auraCenterOffset.y, 0f));
@@ -215,6 +223,7 @@ public class CandleAuraGlow : MonoBehaviour, IResettable
         if (!_isLighting) return;
         _isLighting = false;
         _lightTimer = 0f;
+        LightingReleaseAt = Time.time;
         if (_player != null) _player.EndCandleLightAnim(false);
         if (LightingCanceled != null) LightingCanceled(this);
     }

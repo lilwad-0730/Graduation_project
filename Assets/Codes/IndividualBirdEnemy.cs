@@ -561,6 +561,20 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     [Tooltip("挑落點時最多試幾次，找一條直線上沒有岩柱擋住、會直接撞到地面的路線")]
     public int aheadPlanTries = 8;
 
+    [Header("★1105 半追蹤（攻擊她前方時）")]
+    [Tooltip("0＝關閉（落點出手時就鎖死）。大於 0＝前搖期間落點慢慢滑向她「會在的位置」；1＝完全瞄她，0.6＝偏向她但保留一些亂數")]
+    [Range(0f, 1f)] public float aheadTrackStrength = 0.65f;
+    [Tooltip("這個機率的攻擊追得緊（用完整強度），其餘只用 45% 強度，讓難度有起伏")]
+    [Range(0f, 1f)] public float aheadTrackTightChance = 0.6f;
+    [Tooltip("落點跟著她滑動的速度（公尺／秒）。越慢越看得出影子在移動")]
+    public float aheadTrackSpeed = 9f;
+    [Tooltip("前搖最後幾秒鎖死落點，不再跟她（她有這段時間反應）")]
+    public float aheadTrackLockSeconds = 0.4f;
+    [Tooltip("預判她位置時，速度提前量最多幾米")]
+    public float aheadTrackMaxLead = 14f;
+    [Tooltip("每次攻擊再隨機加 ±這麼多米的偏移（雜湊值）")]
+    public float aheadTrackJitter = 2.5f;
+
     // ★1028 試算出來的撞擊點（影子就放這裡，俯衝也衝向這裡）
     private bool _hasAheadImpact;
     private Vector3 _aheadImpactPoint;
@@ -1399,6 +1413,12 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         Vector3 poseBaseScale = transform.localScale;
         float poseLift = 0f;
         Vector3 poseJitter = Vector3.zero;
+        // ★1105 半追蹤的每次攻擊亂數：有的攻擊追得緊、有的鬆；再加一個固定的左右偏移（雜湊值），不會每次都剛好打在腳下
+        float trackStartX = alignTargetX;
+        float trackJitter = aheadAttack ? Random.Range(-aheadTrackJitter, aheadTrackJitter) : 0f;
+        float trackStrength = (aheadAttack && aheadTrackStrength > 0f)
+            ? (Random.value < Mathf.Clamp01(aheadTrackTightChance) ? aheadTrackStrength : aheadTrackStrength * 0.45f)
+            : 0f;
         bool late = lateLock && !aheadAttack && overrideTarget == null && playerTrans != null;   // ★1020 晚鎖定（示範俯衝不走這裡；★1028 攻擊她前方時也不走）
         if (late)
         {
@@ -1535,6 +1555,25 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                     if (Mathf.Abs(alignTargetX - ap.x) < 0.02f) { aligned = true; alignEndReason = "到位"; }
                 }
                 if (!aligned && BirdTime - alignStartTime > alignTimeout) { aligned = true; alignEndReason = "逾時"; }
+            }
+            // ★1105 半追蹤：前搖期間落點（影子）慢慢滑向她「會在的位置」，最後 aheadTrackLockSeconds 秒才鎖死，所以看得到、躲得掉
+            if (aheadAttack && trackStrength > 0f && playerTrans != null && warnT < realWarnTime - aheadTrackLockSeconds)
+            {
+                Vector3 tp = playerTrans.position;
+                float tvx = LatePlayerVx();
+                float remain = Mathf.Max(0f, realWarnTime - warnT);
+                float fly = Vector2.Distance(new Vector2(transform.position.x, transform.position.y), new Vector2(tp.x, tp.y)) / Mathf.Max(0.5f, aheadDiveSpeed);
+                float predX = tp.x + Mathf.Clamp(tvx * (remain + fly), -aheadTrackMaxLead, aheadTrackMaxLead);
+                float wantX = Mathf.Lerp(trackStartX, predX + trackJitter, trackStrength);
+                alignTargetX = Mathf.MoveTowards(alignTargetX, wantX, Mathf.Max(0.5f, aheadTrackSpeed) * Time.deltaTime);
+                if (RaycastSurface(new Vector3(alignTargetX, tp.y + 2f, transform.position.z), Vector3.down, 30f, out RaycastHit tg) && IsFloorCollider(tg.collider))
+                {
+                    _aheadImpactPoint = tg.point;
+                    _aheadImpactCollider = tg.collider;
+                    _hasAheadImpact = true;
+                    _lockedDiveTarget = new Vector3(alignTargetX, tg.point.y, originalPosition.z);
+                }
+                else _lockedDiveTarget.x = alignTargetX;
             }
             if (showAttackTelegraph) UpdateTelegraphLine();
             UpdateLandingShadow(alignTargetX, true, 0f);   // 落點影子（一般前搖：落點一開始就鎖定）

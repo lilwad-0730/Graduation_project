@@ -333,6 +333,47 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             if (_candleAuras[i] != null && _candleAuras[i].IsLighting) return true;
         return false;
     }
+    [Header("★1102 難度與節奏：悄悄調速，不讓怪物停住放水")]
+    [Tooltip("打開＝點燭火時的安全網：照 ★1031 怪物照樣逼近，但預估她被放開時怪物會離她不到 safeLagAtRelease 公尺，才悄悄壓速度到剛好夠；本來夠遠就完全不干預。關掉＝只剩 ★1031 的固定逼近速度")]
+    public bool smartPacing = true;
+
+    [Tooltip("追逐速度整體倍率（只影響追逐／登場／最後衝刺，不含懲罰）。<1＝比原本慢")]
+    public float difficultyScale = 0.9f;
+
+    [Tooltip("追逐時速度上限（公尺/秒）。玩家約 5，6 左右追得回來但不會一直暴衝")]
+    public float maxChaseSpeed = 6.2f;
+
+    [Tooltip("玩家被放開（點完燭火）那一刻，怪物最少還離她幾公尺。要大於 attackTriggerDistance + 一段起跑空間")]
+    public float safeLagAtRelease = 12f;
+
+    [Tooltip("放開後多算幾秒（她起跑加速的時間）")]
+    public float postLightGrace = 0.8f;
+
+    [Tooltip("調節時最低速度 ＝ 玩家速度 × 這個值。不會降到 0，所以不會看起來停住")]
+    [Range(0.1f, 1f)] public float paceMinSpeedFactor = 0.35f;
+
+    [Tooltip("調節速度每秒最多變化多少（公尺/秒²）。越小越看不出來在調")]
+    public float paceAccel = 2.5f;
+
+    [Tooltip("★1104 預先拉開：她接近還沒點的燭火時，怪物提前、很緩地把距離拉開到「點完剛好還安全」，而不是點燭火那一刻才突然掉速。這是開始預備的距離（公尺），0＝關閉")]
+    public float anticipateDistance = 40f;
+
+    [Tooltip("預先拉開時，怪物最多比她慢多少（公尺/秒）。1.6 以內肉眼看不出在放慢")]
+    public float anticipateMaxSlow = 1.6f;
+
+    [Tooltip("預估點一根燭火她被鎖住多久（秒）")]
+    public float anticipateLockSeconds = 2.6f;
+
+    private float _paceCap = -1f;
+    private float _paceLastCapAt = -999f;
+    private bool _paceBusyPrev;
+    private float _paceBusyStartLag;
+    private float _paceBusyStartAt;
+    private float _paceMinLag = float.PositiveInfinity;
+    /// <summary>探針用：怪物目前落後距離、調節後速度、是否在調節。</summary>
+    public float DebugLag { get; private set; }
+    public float DebugSpeed { get; private set; }
+    public string DebugPace { get; private set; } = "-";
 
     [Header("★1016 追逐中途存檔點")]
     [Tooltip("打開＝她站上下面這些位置之後，死掉就從那裡重生（不用從玻璃館起點重追 340 公尺），\n" +
@@ -906,7 +947,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   等於一開始怪物就貼在臉上，沒有跑的空間。
         //   只改 X，Y／Z 保持美術擺好的樣子（牠是半身埋在玻璃地板下的巨影）。
         EnsurePlayerReference();
-        _smoothedChaseSpeed = -1f;   // 每次重新開追都從當下的目標速度起步
+        _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;   // 每次重新開追都從當下的目標速度起步
         if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
         {
             Vector3 sp = transform.position;
@@ -1986,7 +2027,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         float playerSpeed = (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f;
         // 落後越多越快，越接近越緩：從「比主角快一點」平滑加到 finaleDashSpeed，不會突然暴衝
         float k = Mathf.Clamp01(gap / Mathf.Max(1f, finaleEaseDistance));
-        float want = gap > 0.3f ? Mathf.Lerp(playerSpeed * 1.0f, Mathf.Max(finaleDashSpeed, playerSpeed * 1.05f), k) : playerSpeed;
+        float want = gap > 0.3f ? Mathf.Lerp(playerSpeed * 1.0f, Mathf.Max(finaleDashSpeed * difficultyScale, playerSpeed * 1.05f), k) : playerSpeed;
         if (_finaleSpeed < 0f) _finaleSpeed = _smoothedChaseSpeed > 0f ? _smoothedChaseSpeed : playerSpeed * 0.98f;
         _finaleSpeed = Mathf.MoveTowards(_finaleSpeed, want, Mathf.Max(0.1f, finaleAccel) * Time.deltaTime);   // 速度只能慢慢升降
         float spd = _finaleSpeed;
@@ -1997,6 +2038,79 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         if (player.position.x > transform.position.x + 0.2f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         else if (player.position.x < transform.position.x - 0.2f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+    }
+
+    /// <summary>★1104 實際安全距離：至少要比揮爪起手距離（場景裡實際用的怪物是 10 公尺）再多 6 公尺，不然「放開時還有 9 公尺」其實已經在爪子範圍內。</summary>
+    private float SafeLag() { return Mathf.Max(safeLagAtRelease, attackTriggerDistance + 6f); }
+
+    /// <summary>
+    /// ★1102 點燭火的安全網（不改 ★1031 的「點燭火時怪物照樣逼近」）：
+    /// 預估「她被放開那一刻」怪物離她多遠，夠遠（≥ SafeLag()）就完全不干預；
+    /// 會太近才把速度壓到「剛好落在 SafeLag()」，而且有加速度限制、不會降到 0，看起來是怪物自己的步調。
+    /// 沒有在點燭火時原樣放行速度（不影響 ★1102 不停下的其他邏輯）。
+    /// </summary>
+    private float PaceGovernor(float speed, float lag)
+    {
+        float dt = Time.deltaTime;
+        float playerSpeed = (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f;
+        float dist = Mathf.Abs(lag);
+        float cap = float.PositiveInfinity;
+        string why = "-";
+
+        float busy = CandleAuraGlow.LightingReleaseAt + postLightGrace - Time.time;
+        bool busyNow = lag > 0f && busy > 0f;
+        if (busyNow)
+        {
+            float allowed = (dist - SafeLag()) / busy;
+            cap = Mathf.Max(playerSpeed * paceMinSpeedFactor, allowed);
+            if (cap < speed) { why = "點燭安全網"; _paceLastCapAt = Time.time; }
+            else why = "點燭";
+        }
+
+        if (!busyNow && anticipateDistance > 0f && lag > 0f && candles != null)
+        {
+            // ★1104 她正走向下一根還沒點的燭火：提前很緩地把距離拉開，點燭火那一刻就不用突然掉速
+            float px2 = player.position.x, nx = float.MaxValue;
+            for (int i = 0; i < candles.Length; i++)
+            {
+                CandleCollectible c = candles[i];
+                if (c == null || c.isCollected || c.missed || c.IsLitByPlayer) continue;
+                float cx = c.transform.position.x;
+                if (cx >= px2 - 1f && cx < nx) nx = cx;
+            }
+            float toCandle = nx - px2;
+            if (nx < float.MaxValue && toCandle > 0.5f && toCandle <= anticipateDistance)
+            {
+                float t = toCandle / playerSpeed;
+                float need = SafeLag() + speed * anticipateLockSeconds - dist;   // 到燭火前還要多拉開幾公尺
+                if (need > 0f)
+                {
+                    float slow = Mathf.Min(need / Mathf.Max(0.5f, t), anticipateMaxSlow);
+                    cap = Mathf.Max(playerSpeed * paceMinSpeedFactor, playerSpeed - slow);
+                    if (cap < speed) { why = "預先拉開"; _paceLastCapAt = Time.time; }
+                }
+            }
+        }
+
+        float target = Mathf.Min(speed, cap);
+        if (_paceCap < 0f) _paceCap = speed;
+        if (cap < speed) _paceCap = Mathf.MoveTowards(_paceCap, target, Mathf.Max(0.1f, paceAccel) * dt);
+        else if (_paceCap < speed - 0.01f && Time.time < _paceLastCapAt + 2f) _paceCap = Mathf.MoveTowards(_paceCap, speed, Mathf.Max(0.1f, paceAccel) * dt);   // 剛解除安全網：速度緩緩回升
+        else _paceCap = speed;
+
+        // 事件紀錄：點燭火開始／結束時的距離，探針才抓得到「放開時到底剩幾公尺」
+        if (busyNow && !_paceBusyPrev) { _paceBusyStartLag = dist; _paceBusyStartAt = Time.time; _paceMinLag = dist; }
+        if (busyNow) _paceMinLag = Mathf.Min(_paceMinLag, dist);
+        if (!busyNow && _paceBusyPrev)
+        {
+            string msg = $"【怪物節奏】點燭結束：開始時落後 {_paceBusyStartLag:F1}m → 放開時 {dist:F1}m（目標≥{SafeLag():F0}m、歷時 {Time.time - _paceBusyStartAt:F1}s、調節後速度 {_paceCap:F1}）";
+            if (dist < SafeLag()) Debug.LogWarning(msg + " ★太近，節奏調節沒顧到");
+            else Debug.Log(msg);
+        }
+        _paceBusyPrev = busyNow;
+
+        DebugLag = lag; DebugSpeed = _paceCap; DebugPace = why;
+        return _paceCap;
     }
 
     private void MoveTowardPlayer(float speed)
@@ -2039,7 +2153,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // ★1031 她在點燭火：怪物不停下，用固定的 lightingPressureSpeed 逼近（不跟遠近加速疊加，避免一點燭火就被抓）
         bool lightingPressure = keepChasingWhileLighting && IsPlayerLightingCandle();
         if (lightingPressure && !_isHitShrinking)
-            currentSpeed = lightingPressureSpeed;
+            currentSpeed = Mathf.Max(currentSpeed, lightingPressureSpeed);   // ★1104 點燭火時只保底、不再壓低：原本一點燭火就從 5.5 掉到 3.2，看起來像在等她
+        // ★1102 難度倍率與上限、節奏調節（懲罰階段不動）
+        if (!_isHitShrinking && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing))
+        {
+            if (!lightingPressure) currentSpeed = Mathf.Min(currentSpeed * difficultyScale, maxChaseSpeed);   // 點燭火時用 ★1031 的固定逼近速度，不再打折
+            if (smartPacing) currentSpeed = PaceGovernor(currentSpeed, lagDistance);
+        }
 
         // 玩家減速：距離小於 slowdownDistance 時降低玩家移動速度
         if (_pm != null)
@@ -2196,6 +2316,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // ★ 核心修復：純粹以水平 X 軸距離為準 (不受怪物腳底 Pivot 與主角走道 Y 軸高差影響)！
         if (xDist <= attackTriggerDistance)
         {
+            if (CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time)
+                Debug.LogWarning($"【怪物節奏】★點燭火期間被抓：距離 {xDist:F1}m、節奏調節={smartPacing}、調節後速度 {DebugSpeed:F1}、狀態 {DebugPace}");
             TriggerDevour();
         }
     }
@@ -2569,7 +2691,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _doomed = false;          // ★1021 倒數與注定失敗的標記一起清掉（漏掉的燭火在下面 ResetToInitialState 時刷新，數量自動重算）
         _doomRoutine = null;
         _currentScaleMultiplier = 1f;
-        _smoothedChaseSpeed = -1f;
+        _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;
 
         RemoveFear();
         UnlockCamera();

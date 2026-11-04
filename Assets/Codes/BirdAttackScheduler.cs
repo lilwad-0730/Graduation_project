@@ -49,6 +49,12 @@ public static class BirdAttackScheduler
     public static int waveSize = 3;
     public static float waveQuietSeconds = 1.2f;
 
+    // ★1104 風停加快（老師／組員：風一停，鳥可以再快一點攻擊，讓「抓緊時間前進」真的有壓力）
+    public static float windEndBoostSeconds = 4f;     // 風停後幾秒內加快（0＝關閉）
+    public static float windEndBoostFactor = 0.55f;   // 放行間隔、波次空檔乘這個值（越小越密）
+    private static bool _windPrev;
+    private static float _windEndedAt = -999f;
+
     // ★1029 綠洲收尾：玩家走到綠洲前，排隊的攻擊要全部放完（不能她到了綠洲、鳥還在排隊）。
     //   玩家 x ≥ finaleOasisX - finaleStartDistance：改用較大的一波／同時上限／較短的波次空檔，加快放行。
     //   玩家 x ≥ finaleOasisX - finaleFlushDistance：不再受放行間隔／同時上限／波次空檔限制，排隊的每幀放一隻直到清空，
@@ -347,6 +353,20 @@ public static class BirdAttackScheduler
         }
         else if (!flush) _flushLogged = false;
 
+        // ★1104 風一停就加快：風停那一刻起，放行間隔／波次空檔縮短一陣子，並且立刻開新的一波（不留風期間的舊間隔）。
+        //   要先於「佇列為空就 return」判斷，風停那一瞬間才不會漏掉。
+        bool windNow = IndividualBirdEnemy.IsWindPhase();
+        if (_windPrev && !windNow)
+        {
+            _windEndedAt = IndividualBirdEnemy.BirdTime;
+            _nextSlotTime = Mathf.Min(_nextSlotTime, IndividualBirdEnemy.BirdTime);
+            _waveGranted = 0;
+            Log("WINDEND", null, $"★1104 風停：{windEndBoostSeconds:F0} 秒內放行間隔×{windEndBoostFactor:F2} Queue={_queue.Count}");
+        }
+        _windPrev = windNow;
+        float sinceWind = IndividualBirdEnemy.BirdTime - _windEndedAt;
+        float boost = (sinceWind >= 0f && sinceWind < windEndBoostSeconds) ? Mathf.Clamp(windEndBoostFactor, 0.2f, 1f) : 1f;
+
         if (_queue.Count == 0) { _lastBlock = ""; return; }
         UpdateStage();   // ★1023 依玩家 x 換段
 
@@ -367,7 +387,7 @@ public static class BirdAttackScheduler
         else if ((finale ? finaleWaveSize : CurrentWaveSize()) > 0 && _waveGranted >= (finale ? finaleWaveSize : CurrentWaveSize()) && !AnyForceRequest())
         {
             // ★1018 這一波放完了：等場上的鳥全部攻擊完，再安靜 waveQuietSeconds 秒才開下一波（★1029 收尾時改用 finaleWaveQuietSeconds）
-            float quiet = finale ? finaleWaveQuietSeconds : waveQuietSeconds;
+            float quiet = (finale ? finaleWaveQuietSeconds : waveQuietSeconds) * boost;
             if (_active.Count > 0 || IndividualBirdEnemy.BirdTime - _lastActiveTime < Mathf.Max(0f, quiet)) block = "WAVE";
             else _waveGranted = 0;
         }
@@ -438,6 +458,7 @@ public static class BirdAttackScheduler
         _waveGranted++;
         float gap = Mathf.Max(0.05f, slotInterval);
         if (_slotCount % Mathf.Max(1, attacksPerRound) == 0) gap += Mathf.Max(0f, restSeconds);
+        gap = Mathf.Max(0.05f, gap * boost);   // ★1104 風停後一小段時間放行得更密
         _nextSlotTime = IndividualBirdEnemy.BirdTime + gap;
 
         _active.Add(chosen.bird);

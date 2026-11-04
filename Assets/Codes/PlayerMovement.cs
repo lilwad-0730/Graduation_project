@@ -1660,6 +1660,12 @@ public class PlayerMovement : MonoBehaviour
                     targetX = (_externalPushVelocity.x * 0.85f) + windOffset;
                 }
 
+                // ★1105 劇情滑行：被鎖住操作時（例如碰到光球觸發漫畫），由外部給一個逐漸變小的水平速度，像車子煞停的慣性，不是瞬間定住
+                if (Mathf.Abs(moveInput) <= 0.05f && Mathf.Abs(GlideVelocityX) > 0.01f)
+                {
+                    targetX = GlideVelocityX + windOffset;
+                }
+
                 // ★★★ 實體障礙物/石柱防穿透夾角緩衝判定 (防止強風或推力把玩家頂進不可推動石柱牆面造成的 PhysX 每幀穿透反彈劇烈抖動)
                 if (IsBlockedByObstacle(targetX))
                 {
@@ -2093,6 +2099,8 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    /// <summary>★1105 劇情滑行速度（公尺/秒）。0＝不作用。由 DesertOrbDirector 這類演出逐幀遞減到 0，沒按移動鍵時才生效。</summary>
+    [System.NonSerialized] public float GlideVelocityX = 0f;
     private Vector3 _externalPushVelocity = Vector3.zero;
     private float _externalPushTimer = 0f;
     private float _windPushVelocityX = 0f;

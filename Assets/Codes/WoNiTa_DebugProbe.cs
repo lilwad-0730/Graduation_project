@@ -18,7 +18,7 @@ using UnityEngine;
 public class WoNiTa_DebugProbe : MonoBehaviour
 {
     /// <summary>★總開關：正式版關閉。要遠端監測時改成 true 再進 Play。</summary>
-    private const bool ProbeEnabled = false;   // ★正式版關閉；要測試時改 true，整輪機制快照會寫進 Logs/wonita_debug.log
+    private static bool ProbeEnabled { get { return Application.isEditor || Debug.isDebugBuild; } }   // ★編輯器與 Development Build 才開；正式（非 Development）打包自動關閉
     private const bool SaveFrames   = false;   // 這次只記 log 不截圖（截圖很佔空間）
 
     private const float FrameEverySeconds = 6f;   // 畫面快照間隔
@@ -237,9 +237,19 @@ public class WoNiTa_DebugProbe : MonoBehaviour
              + " mem=" + (GC.GetTotalMemory(false) / 1048576) + "MB"
              + " 燭(收" + _candleDone + "/漏" + _candleMissed + "/亮" + _candleLit + "/共" + _candleTotal + ")"
              + " 鳥(排" + BirdAttackScheduler.DebugQueueCount + "/攻" + BirdAttackScheduler.DebugActiveCount + ")"
+             + MonsterPaceText()
              + " 巨石失敗=" + B(BoulderChallengeController.IsFailing)
              + " 光球閘=" + B(DesertOrbDirector.GateActive) + "/取" + B(DesertOrbDirector.Collected)
              + " 重生點=" + resp;
+    }
+
+    private static string MonsterPaceText()
+    {
+        var m = ShadowMonsterController.Instance;
+        if (m == null || (m.currentState != ShadowMonsterController.MonsterState.Chasing
+                          && m.currentState != ShadowMonsterController.MonsterState.Appearing
+                          && m.currentState != ShadowMonsterController.MonsterState.Punishing)) return "";
+        return " 怪(落後" + m.DebugLag.ToString("F1") + "m 速" + m.DebugSpeed.ToString("F1") + " 調節=" + m.DebugPace + ")";
     }
 
     /// <summary>不含座標的狀態（座標另外印，免得移動時每幀都算「有變化」）。</summary>

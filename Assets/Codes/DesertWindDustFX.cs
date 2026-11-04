@@ -39,6 +39,10 @@ public class DesertWindDustFX : MonoBehaviour
     [Range(2f, 15f)]
     public float streakLengthScale = 6.5f;
 
+    [Header("👁 畫面（★1104）")]
+    [Tooltip("關閉＝這套手做的風線／飛沙粒子完全不畫出來（風暴視覺改用 [風暴加強 StormBoostFX]）。物件、被動石化觸發區、風的推力都照舊，只是看不到粒子。想看回舊的就打勾。")]
+    public bool showVisuals = false;
+
     [Header("📐 發射範圍 (Emitter Box Size)")]
     [Tooltip("發射盒尺寸 (寬度 X, 高度 Y, 深度 Z)")]
     public Vector3 emitterSize = new Vector3(50f, 22f, 1f);
@@ -126,6 +130,15 @@ public class DesertWindDustFX : MonoBehaviour
 
         SetupWindStreaks();
         SetupSandGrains();
+        ApplyVisibility();
+    }
+
+    /// <summary>★1104 只關「畫」：關掉發射，粒子就不再出現。物件、石化觸發區、風的推力不受影響。
+    /// （不去動 Renderer.enabled：在 OnValidate／Awake 裡改它會讓 Unity 噴 SendMessage 錯誤。）</summary>
+    private void ApplyVisibility()
+    {
+        if (_mainStreakPS != null) { var e = _mainStreakPS.emission; e.enabled = showVisuals; }
+        if (_sandGrainPS != null) { var e = _sandGrainPS.emission; e.enabled = showVisuals; }
     }
 
     private void SetupWindStreaks()
