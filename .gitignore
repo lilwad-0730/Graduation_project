@@ -105,3 +105,7 @@ InitTestScene*.unity*
 .DS_Store
 **/.DS_Store
 Poster
+
+# Local Codex pstack installation
+/.agents/
+/skills-lock.json
