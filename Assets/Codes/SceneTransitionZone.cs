@@ -59,6 +59,14 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
     [Tooltip("沉水深度 (米，預設 2.5 米)")]
     public float targetSinkDepth = 2.5f;
 
+    [Header("✨ 電影式下沉（程式生成，不用美術檔、不含音效）")]
+    [Tooltip("★1106 勾選＝沉水模式改用 OasisSinkFX 的完整演出（水波、慢動作、氣泡、變色、光柱）；取消＝回到原本的黑屏淡出下沉")]
+    public bool cinematicSink = true;
+    [Tooltip("電影式下沉總共幾秒（含最後轉黑）")]
+    public float cinematicSeconds = 2.8f;
+    [Tooltip("電影式下沉往下沉幾米")]
+    public float cinematicDepth = 4.0f;
+
     [Header("🎵 轉場音效 (可選)")]
     [Tooltip("觸發轉場時播放的音效 (例如水聲或轉場氛圍音)")]
     public AudioClip transitionSFX;
@@ -226,6 +234,15 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
             Collider playerCol = playerTransform.GetComponent<Collider>();
             if (playerCol != null) playerCol.isTrigger = true;
 
+            // ★1106 電影式下沉：慢慢沉、入水水波／慢動作、氣泡、隨深度變色、光柱，最後才黑屏。全程式生成。
+            if (cinematicSink)
+            {
+                yield return OasisSinkFX.PlaySink(playerTransform, nextSceneName, cinematicSeconds, cinematicDepth, cp =>
+                {
+                    if (fadeImage != null) fadeImage.color = new Color(0, 0, 0, Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.72f, 1f, cp)));   // 最後 28% 才轉黑
+                });
+            }
+            else
             while (playerTransform != null && sinkTimer < maxSinkDuration)
             {
                 sinkTimer += Time.deltaTime;
@@ -342,6 +359,7 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
     public void ResetToInitialState()
     {
         StopAllCoroutines();
+        OasisSinkFX.CancelAll();   // ★1106
         isTransitioning = false;
 
         if (fadeImage != null)

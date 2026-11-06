@@ -205,6 +205,24 @@ public class StoryCardPlayer : MonoBehaviour
     /// <summary>正在播卡片。轉場程式可以用這個判斷要不要放行。</summary>
     public bool IsPlaying { get { return _playing; } }
 
+    /// <summary>
+    /// ★1106 估算一張卡從開始到最後一頁淡出的秒數（黑幕淡入＋每頁淡入／停留／淡出＋頁間空白）。
+    /// 讓同時進行的演出（綠洲下沉）可以把節奏排成「剛好跟字一起結束」。不含最後 0.35 秒的交接。
+    /// </summary>
+    public float EstimateSeconds(string cardId)
+    {
+        Card c = FindCard(cardId);
+        if (c == null || c.pages == null || c.pages.Length == 0) return 6f;
+        float s = curtainIn;
+        for (int i = 0; i < c.pages.Length; i++)
+        {
+            string pg = c.pages[i] != null ? c.pages[i] : "";
+            s += fadeIn + Mathf.Max(HoldSecondsFor(pg), c.minHoldSeconds) + fadeOut;
+            if (i < c.pages.Length - 1) s += gap;
+        }
+        return Mathf.Max(3f, s);
+    }
+
     public static StoryCardPlayer Instance
     {
         get

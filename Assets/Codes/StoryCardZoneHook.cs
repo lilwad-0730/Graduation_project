@@ -173,7 +173,8 @@ public class StoryCardZoneHook : MonoBehaviour
         if (_zone.transitionMode == SceneTransitionZone.TransitionMode.SinkWater && playerObj != null)
         {
             if (rb != null) rb.useGravity = false;
-            yield return Sink(playerObj.transform, _zone.sinkSpeed, _zone.targetSinkDepth);
+            // ★1106 電影式下沉改成「跟文字卡同時開始」（下面第 4 步一起啟動），這裡只有舊式下沉才先沉
+            if (!_zone.cinematicSink) yield return Sink(playerObj.transform, _zone.sinkSpeed, _zone.targetSinkDepth);
         }
 
         // 4　淡黑 → 播文字卡 → 維持全黑
@@ -181,21 +182,38 @@ public class StoryCardZoneHook : MonoBehaviour
         //      黑屏重生疊在半透明的卡上（老師看到的「破圖／被鳥群攻擊的畫面」）。暫停後鳥、風、風暴全停。
         float prevTimeScale = Time.timeScale;
         if (prevTimeScale <= 0f) prevTimeScale = 1f;
-        Time.timeScale = 0f;
+        // ★1106 綠洲電影式下沉：跟文字卡同時開始。文字卡本來就是疊在畫面上演（字在她後面），
+        //   水波、下沉、變色、深藍就在字的後面一起發生，最後直接用深藍接漫畫，不再多一段獨立的下沉＋淡黑。
+        OasisSinkFX cardFx = null;
+        Coroutine freezeRamp = null;
+        if (_zone.transitionMode == SceneTransitionZone.TransitionMode.SinkWater && _zone.cinematicSink && playerObj != null)
+        {
+            float est = StoryCardPlayer.Instance.EstimateSeconds(cardId);
+            cardFx = OasisSinkFX.BeginCardSink(playerObj.transform, _zone.nextSceneName, est, _zone.cinematicDepth);
+            freezeRamp = StartCoroutine(RampTimeDown(0.35f));   // 世界在入水那一下輕輕慢下來、停住（鳥與風暴一起凍結）
+        }
+        else
+        {
+            Time.timeScale = 0f;
+        }
         try
         {
             yield return StoryCardPlayer.Instance.Play(cardId, true, false);
         }
         finally
         {
+            if (freezeRamp != null) StopCoroutine(freezeRamp);
             Time.timeScale = prevTimeScale;   // 一定要在載入下一個場景前恢復，繪本翻頁用的是 deltaTime
         }
+        if (cardFx != null) cardFx.FinishCard();
 
         string targetScene = _zone.nextSceneName != null ? _zone.nextSceneName.Trim() : "";
         if (string.IsNullOrEmpty(targetScene))
         {
             Debug.LogError("[StoryCardZoneHook] SceneTransitionZone 的 nextSceneName 是空的，無法載入。");
             StoryCardPlayer.Instance.ReleaseCurtain();
+            OasisSinkFX.CancelAll();
+            if (rb != null) rb.isKinematic = false;
             if (pm != null) pm.isCutsceneFrozen = false;
             yield break;
         }
@@ -243,6 +261,19 @@ public class StoryCardZoneHook : MonoBehaviour
 
         Debug.Log("[StoryCardZoneHook] 文字卡 " + cardId + " 播完，載入場景 " + targetScene);
         SceneLoader.Load(targetScene);
+    }
+
+    private IEnumerator RampTimeDown(float seconds)
+    {
+        float from = Time.timeScale;
+        float t = 0f;
+        while (t < seconds)
+        {
+            t += Time.unscaledDeltaTime;
+            Time.timeScale = Mathf.Lerp(from, 0f, Mathf.SmoothStep(0f, 1f, t / seconds));
+            yield return null;
+        }
+        Time.timeScale = 0f;
     }
 
     private IEnumerator Sink(Transform t, float speed, float depth)

@@ -8675,7 +8675,7 @@ Transform:
   m_GameObject: {fileID: 308089449}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.54348, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.529015, y: 5.29, z: -10}
   m_LocalScale: {x: 0.24425057, y: 0.24425057, z: 0.24425057}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11556,6 +11556,9 @@ MonoBehaviour:
   fadeDuration: 1.2
   sinkSpeed: 1.2
   targetSinkDepth: 2.5
+  cinematicSink: 1
+  cinematicSeconds: 2.8
+  cinematicDepth: 4
   transitionSFX: {fileID: 0}
   sfxVolume: 0.9
   stopBgmOnTransition: 0
@@ -16371,7 +16374,7 @@ Transform:
   m_GameObject: {fileID: 747122038}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.54348, y: 5.29, z: 0}
+  m_LocalPosition: {x: 16.529015, y: 5.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -63183,7 +63186,7 @@ Transform:
   m_GameObject: {fileID: 1978253942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.54348, y: 5.29, z: -10}
+  m_LocalPosition: {x: 13.529015, y: 5.29, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66307,7 +66310,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 40.765995
+      value: 40.73851
       objectReference: {fileID: 0}
     - target: {fileID: 3858134583240750440, guid: b64b2590d8896a64694c23a94f5b742c, type: 3}
       propertyPath: m_LocalPosition.y

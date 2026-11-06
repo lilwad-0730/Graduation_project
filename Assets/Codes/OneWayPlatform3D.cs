@@ -15,6 +15,11 @@ public class OneWayPlatform3D : MonoBehaviour
     [Tooltip("容錯高度，允許腳底低於平台表面多少以內仍判定為站立（預設 0.15）")]
     public float surfaceTolerance = 0.15f;
 
+    [Tooltip("★1107 已經站在平台上時，向上速度要超過這個值才算「起跳」而開始穿透（小於它視為落地推擠）")]
+    public float jumpVelocity = 2f;
+
+    private bool _solid;
+
     void Start()
     {
         platformCollider = GetComponent<Collider>();
@@ -42,37 +47,46 @@ public class OneWayPlatform3D : MonoBehaviour
     {
         if (playerCollider == null || platformCollider == null || playerRb == null) return;
 
-        // 1. 取得玩家腳底的 Y 座標
-        float playerFeetY = playerCollider.bounds.min.y;
-        
-        // 2. 從玩家中心點發射一條向下的射線，精確探測平台表面高度
-        Vector3 rayStart = playerCollider.bounds.center;
-        RaycastHit hit;
-        
-        // 射線長度設為玩家高度的一倍半，確保在跳躍頂點準備落下時能掃描到平台
-        float rayDistance = playerCollider.bounds.size.y * 1.5f;
-
-        if (Physics.Raycast(rayStart, Vector3.down, out hit, rayDistance, platformLayer))
+        // ★1107 站上去會掉下去的三個原因，一起處理：
+        //   (1) 只從玩家正中心打一條射線：站在台階邊緣、中心已經踩空時，判成「不在平台上」→ 關碰撞 → 掉下去。改成左／中／右三條。
+        //   (2) 射線被別的碰撞體先擋住就判失敗 → 改用 RaycastAll，忽略觸發區，只找自己這個平台。
+        //   (3) 站在上面時，剛落地／走上台階的物理推擠會讓向上速度冒出 0.05 以上 → 以前這一格就把碰撞關掉、人整個沉下去。
+        //       現在「已經站在上面」時，向上速度要超過 jumpVelocity（真的起跳）才放開。
+        Bounds pb = playerCollider.bounds;
+        float playerFeetY = pb.min.y;
+        float rayDistance = pb.size.y * 1.5f;   // 射線長度設為玩家高度的一倍半，確保在跳躍頂點準備落下時能掃描到平台
+        float inset = Mathf.Min(0.05f, pb.extents.x * 0.2f);
+        float[] xs = { pb.center.x, pb.min.x + inset, pb.max.x - inset };
+        float platformSurfaceY = 0f;
+        bool found = false;
+        for (int i = 0; i < xs.Length; i++)
         {
-            // 確保掃描到的是「自己這個平台」的碰撞體
-            if (hit.collider == platformCollider)
+            Vector3 rayStart = new Vector3(xs[i], pb.center.y, pb.center.z);
+            RaycastHit[] hits = Physics.RaycastAll(rayStart, Vector3.down, rayDistance, platformLayer, QueryTriggerInteraction.Ignore);
+            for (int k = 0; k < hits.Length; k++)
             {
-                float platformSurfaceY = hit.point.y;
-
-                // 啟用碰撞的黃金條件：
-                // A. 玩家腳底的 Y 軸高於（或等於）射線打到的平台表面（加上容錯值）
-                // B. 玩家此時沒有明顯的向上運動速度（即：處於站立、水平移動或下落狀態，速度 <= 0.05f）
-                if (playerFeetY >= platformSurfaceY - surfaceTolerance && playerRb.linearVelocity.y <= 0.05f)
-                {
-                    // 恢復碰撞關係（實體化）
-                    Physics.IgnoreCollision(playerCollider, platformCollider, false);
-                    return;
-                }
+                if (hits[k].collider != platformCollider) continue;
+                if (!found || hits[k].point.y > platformSurfaceY) platformSurfaceY = hits[k].point.y;
+                found = true;
             }
         }
 
-        // 其他所有情況（例如：玩家在平台下方、正在跳躍上升中、或者已經離開平台範圍）：
-        // 忽略碰撞關係（虛無化），讓玩家可以自由穿透
+        if (found)
+        {
+            float vy = playerRb.linearVelocity.y;
+            bool feetOnTop = playerFeetY >= platformSurfaceY - surfaceTolerance;
+            // 啟用碰撞：腳底在平台表面之上，而且沒有在往上衝（站立、走動、下落）；
+            // 已經站在上面時，容許小於 jumpVelocity 的向上速度（落地推擠），真的跳起來才穿透
+            if (feetOnTop && (vy <= 0.05f || (_solid && vy < jumpVelocity)))
+            {
+                _solid = true;
+                Physics.IgnoreCollision(playerCollider, platformCollider, false);
+                return;
+            }
+        }
+
+        // 其他所有情況（玩家在平台下方、正在跳躍上升中、已離開平台範圍）：忽略碰撞，讓玩家可以穿透
+        _solid = false;
         Physics.IgnoreCollision(playerCollider, platformCollider, true);
     }
 }

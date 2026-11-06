@@ -159,6 +159,11 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
     [Tooltip("紅光心跳的速度（每秒幾下）")]
     public float exhaustRingBeatsPerSecond = 1.6f;
     private Material matRing;
+    [Tooltip("★1107 紅框最外只會貼到這個半徑（螢幕上下緣約 1.0）。黑圈還很大時紅圈本來會跑到螢幕外，要等圈縮小才看得到，像「過一下才出現」；現在大圈時紅框固定貼在畫面邊緣")]
+    public float exhaustRingMaxPeak = 0.95f;
+    [Tooltip("★1107 紅框淡入速度（每秒；原本 5＝0.2 秒才滿，現在 14＝約 0.07 秒）")]
+    public float exhaustRingFadeSpeed = 14f;
+
     private float _exhaustTarget;
     private float _exhaustShown;
 
@@ -425,14 +430,14 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         // 力竭紅圈：貼在黑圈內緣，比主層早一點點開始漸變，被主層的黑蓋住外側，只露出內側一小圈紅
         if (matRing != null)
         {
-            _exhaustShown = Mathf.MoveTowards(_exhaustShown, _exhaustTarget, Time.unscaledDeltaTime * 5f);
+            _exhaustShown = Mathf.MoveTowards(_exhaustShown, _exhaustTarget, Time.unscaledDeltaTime * exhaustRingFadeSpeed);
             // 心跳：咚—咚（一強一弱）
             float ph = Mathf.Repeat(Time.time * exhaustRingBeatsPerSecond, 1f);
             float b1 = Mathf.Exp(-Mathf.Pow((ph - 0.05f) * 9f, 2f));
             float b2 = 0.6f * Mathf.Exp(-Mathf.Pow((ph - 0.30f) * 9f, 2f));
             float pulse = 0.65f + 0.35f * Mathf.Clamp01(b1 + b2);
             float w = Mathf.Max(0.02f, exhaustRingWidth);
-            float peak = r + exhaustRingOffset;
+            float peak = Mathf.Min(r + exhaustRingOffset, exhaustRingMaxPeak);
             matRing.SetFloat("_Radius",    Mathf.Max(0f, peak - w));
             matRing.SetFloat("_Softness",  w);
             matRing.SetFloat("_Band",      Mathf.Max(0.02f, exhaustRingOutward));
