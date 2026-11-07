@@ -64,8 +64,106 @@ public static class AutoFixBridge
         set { EditorPrefs.SetBool(PrefEnabled, value); }
     }
 
+    // ───────────── 一鍵全自動展示（還原 bug → Play → 製造錯誤 → 等 Claude 修 → 停止編譯 → 重開 → 驗證）─────────────
+    private const string DemoStep = "AutoFix.Demo.Step";
+    private const string DemoStepT = "AutoFix.Demo.StepTime";
+    private const double DemoStepTimeout = 780;   // 每一步最多等 13 分鐘（Claude 本身最多 10 分鐘）
+    private static bool _sawScore, _sawException;
+
+    [MenuItem("Tools/AutoFix/示範：一鍵全自動（約 5 分鐘，全程不用動手）")]
+    private static void StartDemoLoop()
+    {
+        if (!Enabled) { Debug.LogWarning("[AutoFix] 自動修復目前是關閉的，請先到 Tools → AutoFix → 啟用自動修復 打勾。"); return; }
+        if (EditorApplication.isPlaying) { Debug.LogWarning("[AutoFix] 請先按 Stop 再開始一鍵全自動。"); return; }
+        Debug.Log("[AutoFix] ▶ 一鍵全自動展示開始：還原 bug → Play → 製造錯誤 → 等 Claude 修 → 自動停止編譯 → 自動重開驗證。全程不用動手，約 5 分鐘，結果會印在 Console。");
+        SessionState.SetString(SessAttempted, "");
+        SessionState.SetInt(SessCount, 0);
+        SessionState.SetFloat(SessLast, -9999f);
+        SessionState.SetFloat(SessRetryAfter, 0f);
+        DemoNext("WAIT_COMPILE_1");
+        AutoFixDemoMenu.RestoreBug();
+    }
+
+    private static void DemoNext(string step)
+    {
+        SessionState.SetString(DemoStep, step);
+        SessionState.SetFloat(DemoStepT, (float)EditorApplication.timeSinceStartup);
+    }
+
+    private static bool DemoActive { get { return !string.IsNullOrEmpty(SessionState.GetString(DemoStep, "")); } }
+
+    private static void DemoEnd(bool ok, string msg)
+    {
+        SessionState.SetString(DemoStep, "");
+        if (EditorApplication.isPlaying) { EditorApplication.isPaused = false; EditorApplication.isPlaying = false; }
+        if (ok) Debug.Log("[AutoFix] ✅ 一鍵全自動展示通過：" + msg);
+        else Debug.LogError("[AutoFix] ❌ 一鍵全自動展示失敗：" + msg);
+    }
+
+    private static void OnLogForDemo(string cond, string stack, LogType type)
+    {
+        if (SessionState.GetString(DemoStep, "") != "VERIFY") return;
+        if (cond.Contains("【示範】分數已記錄")) _sawScore = true;
+        if (type == LogType.Exception) _sawException = true;
+    }
+
+    private static void DemoTick()
+    {
+        string s = SessionState.GetString(DemoStep, "");
+        if (s == "") return;
+        double now = EditorApplication.timeSinceStartup;
+        double since = now - SessionState.GetFloat(DemoStepT, (float)now);
+        if (since > DemoStepTimeout) { DemoEnd(false, "卡在步驟「" + s + "」超過 " + (DemoStepTimeout / 60) + " 分鐘"); return; }
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+
+        switch (s)
+        {
+            case "WAIT_COMPILE_1":      // 還原 bug 後等編譯（檔案沒變就不會編譯，所以至少等 4 秒）
+                if (since > 4 && !EditorApplication.isPlaying) DemoNext("ENTER_PLAY_1");
+                break;
+            case "ENTER_PLAY_1":
+                if (!EditorApplication.isPlayingOrWillChangePlaymode) EditorApplication.EnterPlaymode();
+                DemoNext("WAIT_PLAYING_1");
+                break;
+            case "WAIT_PLAYING_1":      // 進 Play 後等場景穩定 8 秒再製造錯誤
+                if (EditorApplication.isPlaying && since > 8)
+                {
+                    AutoFixDemoMenu.Make();
+                    DemoNext("WAIT_FIX");
+                }
+                break;
+            case "WAIT_FIX":            // 等 Claude（Finish 會把步驟改成 STOP_FOR_COMPILE，或判定失敗）
+                break;
+            case "STOP_FOR_COMPILE":    // 修好了：停止遊戲 → 解鎖編譯
+                if (EditorApplication.isPlaying) { EditorApplication.isPaused = false; EditorApplication.isPlaying = false; }
+                else DemoNext("WAIT_COMPILE_2");
+                break;
+            case "WAIT_COMPILE_2":      // 等編譯結束、而且 AutoFix 已確認編譯結果
+                if (since > 3 && string.IsNullOrEmpty(SessionState.GetString(SessPending, ""))) DemoNext("ENTER_PLAY_2");
+                break;
+            case "ENTER_PLAY_2":
+                if (!EditorApplication.isPlayingOrWillChangePlaymode) EditorApplication.EnterPlaymode();
+                DemoNext("WAIT_PLAYING_2");
+                break;
+            case "WAIT_PLAYING_2":
+                if (EditorApplication.isPlaying && since > 8)
+                {
+                    _sawScore = false; _sawException = false;
+                    DemoNext("VERIFY");
+                    AutoFixDemoMenu.Make();
+                }
+                break;
+            case "VERIFY":
+                if (_sawException) DemoEnd(false, "修復後同一個錯誤又出現了");
+                else if (_sawScore) DemoEnd(true, "Claude 修好了，重開後「分數已記錄」正常、沒有紅字。要再來一次：先用「還原示範錯誤」或直接再按一鍵全自動。");
+                else if (since > 40) DemoEnd(false, "重開後 40 秒內沒看到「分數已記錄」");
+                break;
+        }
+    }
+
     static AutoFixBridge()
     {
+        Application.logMessageReceived += OnLogForDemo;
         EditorApplication.update += Update;
         EditorApplication.playModeStateChanged += OnPlayMode;
         CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompiled;
@@ -103,6 +201,7 @@ public static class AutoFixBridge
     private static void Update()
     {
         while (Main.TryDequeue(out Action a)) { try { a(); } catch (Exception e) { Debug.LogException(e); } }
+        try { DemoTick(); } catch (Exception e) { Debug.LogWarning("[AutoFix] 一鍵展示出錯：" + e.Message); SessionState.SetString(DemoStep, ""); }
         if (EditorApplication.timeSinceStartup < _nextPoll) return;
         _nextPoll = EditorApplication.timeSinceStartup + 2.0;
         if (!Enabled || _running || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
@@ -274,7 +373,12 @@ public static class AutoFixBridge
         // 驗收途中任何地方出錯，都不能讓「正在處理中」的旗標卡住（不然之後所有回報都不會再處理）
         try { FinishInner(r, id, snap, resultPath, output, err, code, timedOut, reportPath); }
         catch (Exception e) { Debug.LogError("[AutoFix] 驗收過程出錯：" + e.Message + "\n  如果懷疑改動不對，用 Tools → AutoFix → 還原上一次自動修復 就能退回。"); }
-        finally { _running = false; }
+        finally
+        {
+            _running = false;
+            // 一鍵展示：Claude 結束後還停在「等修復」＝沒有可套用的修復（沒改檔、被還原、沒登入…），直接宣告失敗，不要乾等
+            if (SessionState.GetString(DemoStep, "") == "WAIT_FIX") DemoEnd(false, "Claude 沒有提出可套用的修復，原因看上面的 [AutoFix] 訊息。");
+        }
     }
 
     private static void FinishInner(Report r, string id, string snap, string resultPath, string output, string err, int code, bool timedOut, string reportPath)
@@ -350,7 +454,12 @@ public static class AutoFixBridge
         if (EditorApplication.isPlaying)
         {
             EditorApplication.LockReloadAssemblies();
-            Debug.Log(msg + "\n  ⏸ 你正在 Play：修改已寫進檔案，等你按 Stop 後才會編譯生效（不會中途打斷遊戲）。");
+            if (SessionState.GetString(DemoStep, "") == "WAIT_FIX")
+            {
+                Debug.Log(msg + "\n  ⏩ 一鍵展示：自動停止遊戲、編譯、重開驗證。");
+                DemoNext("STOP_FOR_COMPILE");
+            }
+            else Debug.Log(msg + "\n  ⏸ 你正在 Play：修改已寫進檔案，等你按 Stop 後才會編譯生效（不會中途打斷遊戲）。");
         }
         else
         {

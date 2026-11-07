@@ -38,7 +38,9 @@ public class AutoFixDemo : MonoBehaviour
 ";
 
     [MenuItem("Tools/AutoFix/示範：還原示範錯誤（讓 bug 回來，可重複展示）")]
-    private static void RestoreBug()
+    private static void RestoreBugMenu() { RestoreBug(); }
+
+    internal static void RestoreBug()
     {
         if (EditorApplication.isPlaying) { Debug.LogWarning("請先按 Stop，再還原示範錯誤。"); return; }
         string path = System.IO.Path.Combine(Application.dataPath, "Codes", "AutoFixDemo.cs");
@@ -48,7 +50,9 @@ public class AutoFixDemo : MonoBehaviour
     }
 
     [MenuItem("Tools/AutoFix/示範：製造一個程式錯誤（Play 中使用）")]
-    private static void Make()
+    private static void MakeMenu() { Make(); }
+
+    internal static void Make()
     {
         if (!EditorApplication.isPlaying) { Debug.LogWarning("請先按 Play，再選這個選單。"); return; }
         // 展示要能重複做：清掉「這個錯誤已經試修過」的記憶，不然第二次會被略過（實測發生過）
