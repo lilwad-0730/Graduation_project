@@ -28,6 +28,56 @@ public class PlayerRespawnSystem : MonoBehaviour
     /// <summary>【Static 全域旗標】不需要物件參考，任何腳本都能直接讀取。重生期間為 true。</summary>
     public static bool IsAnyRespawning = false;
     private bool _isTeleporting = false;
+
+    // ───── ★1108 防崩潰／續玩用的小接口（只讀＋一個強制收尾，不改原本流程）─────
+    /// <summary>重生或傳送轉場進行中。</summary>
+    public bool IsBusy => _isRespawning || _isTeleporting;
+    /// <summary>目前的存檔點（重生位置）。</summary>
+    public Vector3 ActivePosition => _activeRespawnPos;
+    /// <summary>這個場景的起始位置。</summary>
+    public Vector3 InitialPosition => _initialPlayPos;
+    /// <summary>存檔點改變時通知（進度存檔用）。參數＝新的存檔點。</summary>
+    public static event System.Action<Vector3> OnCheckpointChanged;
+    private Vector3 _lastNotifiedCheckpoint = new Vector3(float.NaN, 0f, 0f);
+
+    /// <summary>
+    /// ★1108 最後一道保險：轉場卡住（例如中途出錯被砍斷）時，由「重生看門狗」呼叫。
+    /// 把黑幕收掉、解開玩家凍結與全域旗標，保證玩家一定拿回控制權。
+    /// </summary>
+    public void ForceFinishRespawn(string reason)
+    {
+        PlayerRespawnSystem real = ForwardTarget();
+        if (real != null) { real.ForceFinishRespawn(reason); return; }
+
+        Debug.LogWarning($"【重生保險】強制收尾重生／傳送轉場：{reason}");
+        StopAllCoroutines();
+        try
+        {
+            if (_audioFilter != null) { _audioFilter.cutoffFrequency = 22000f; _audioFilter.enabled = false; }
+            if (_fadeImage != null)
+            {
+                _fadeImage.color = new Color(_fadeImage.color.r, _fadeImage.color.g, _fadeImage.color.b, 0f);
+                _fadeImage.gameObject.SetActive(false);
+            }
+            Rigidbody rb = GetPlayerRigidbody();
+            if (rb != null) { rb.isKinematic = false; rb.useGravity = !IsUnderwaterLevel(); }
+            PlayerMovement pm = GetMovement();
+            if (pm != null) { pm.enabled = true; pm.freezeHorizontal = false; pm.isCutsceneFrozen = false; }
+        }
+        catch (System.Exception e) { GameRecoveryGuard.ReportCaught(e, "強制收尾"); }
+        _isRespawning = false;
+        _isTeleporting = false;
+        IsAnyRespawning = false;
+        _isWaitingForPlayerMove = true;
+        StartCoroutine(PostRespawnGuard());
+    }
+
+    /// <summary>★1108 做一件「失敗也不能讓整段轉場中斷」的小事：出錯就記錄（會被防崩潰系統收進錯誤回報），然後繼續。</summary>
+    private static void SafeStep(string what, System.Action a)
+    {
+        try { a(); }
+        catch (System.Exception e) { Debug.LogWarning($"【重生保護】「{what}」出錯，已略過這一步、轉場繼續：{e.GetType().Name}: {e.Message}"); GameRecoveryGuard.ReportCaught(e, what); }
+    }
     private Rigidbody _playerRb;
     private Camera _mainCam;
     
@@ -388,6 +438,13 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     void Update()
     {
+        // ★1108 存檔點有變就通知（九個地方會改它，這裡統一偵測，不用一個一個加）
+        if (HasPlayer && !_isRespawning && _activeRespawnPos != _lastNotifiedCheckpoint)
+        {
+            _lastNotifiedCheckpoint = _activeRespawnPos;
+            try { OnCheckpointChanged?.Invoke(_activeRespawnPos); }
+            catch (System.Exception e) { GameRecoveryGuard.ReportCaught(e, "存檔點通知"); }
+        }
 
         // ===================================
         // 重生點紀錄 (已改為觸發器 Checkpoint 模式)
@@ -618,7 +675,7 @@ public class PlayerRespawnSystem : MonoBehaviour
 
         // 取得關卡專屬大氣深淵色與啟動聽覺沉水濾波
         Color abyssColor = enableAtmosphericAbyssColor ? GetAtmosphericAbyssColor() : Color.black;
-        SetAudioMuffle(true, fadeDuration);
+        SafeStep("死亡悶音", () => SetAudioMuffle(true, fadeDuration));
 
         // 1. S型非線性電影沉入深淵 (SmoothStep Easing)
         float timer = 0f;
@@ -641,11 +698,11 @@ public class PlayerRespawnSystem : MonoBehaviour
             _fadeImage.color = new Color(abyssColor.r, abyssColor.g, abyssColor.b, 1f);
 
         // --- 【重生規則】先清除所有負面效果，再傳送 ---
-        PlayerPetrification petrify = GetPetrification();
-        if (petrify != null)
+        SafeStep("清除負面效果", () =>
         {
-            petrify.ClearAllNegativeEffects();
-        }
+            PlayerPetrification petrify = GetPetrification();
+            if (petrify != null) petrify.ClearAllNegativeEffects();
+        });
 
         // --- 呼叫全場景所有 IResettable 物件進行重置 (包含鏡牆演出、光球、黑影怪物、燭火、可破壞地板等) ---
         // ★1011 廢墟：在企劃放的重生點重生，只重置狼（光球、石牆、巨石進度都不復原）
@@ -657,13 +714,27 @@ public class PlayerRespawnSystem : MonoBehaviour
             if (wolvesOnly && !(script is WolfEnemy) && !(script is WolfSpawner)) continue;
             if (script is IResettable resettable && script.gameObject != this.gameObject)
             {
-                resettable.ResetToInitialState();
+                // ★1108 任何一個機關重置出錯，只略過它自己，不能讓整段重生被砍斷（玩家會卡在黑幕）
+                try { resettable.ResetToInitialState(); }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"【重生保護】機關「{script.GetType().Name}（{script.gameObject.name}）」重置出錯，已略過、重生繼續：{e.GetType().Name}: {e.Message}");
+                    GameRecoveryGuard.ReportCaught(e, "重置機關 " + script.GetType().Name);
+                }
             }
         }
 
         // ★1002 全場景 IResettable 跑完、玩家還沒傳送的這一刻（黑屏中）通知外部。
         //   BoulderChallengeController 用它把巨石放回 Boulder Spawn——必須在這之後，否則會被拉桿的重置蓋回原位。
-        OnResettablesReset?.Invoke();
+        // ★1108 每個訂閱者各包一層，其中一個出錯不影響其他人與後面的傳送
+        if (OnResettablesReset != null)
+        {
+            foreach (System.Delegate d in OnResettablesReset.GetInvocationList())
+            {
+                System.Action handler = (System.Action)d;
+                SafeStep("重置完成通知（" + handler.Method.DeclaringType?.Name + "）", handler);
+            }
+        }
 
         // --- 傳送至明確存檔點並精準貼合地表 ---
         PlayerMovement pmComponent = GetMovement();
@@ -729,6 +800,8 @@ public class PlayerRespawnSystem : MonoBehaviour
 
         if (_mainCam != null)
         {
+          try   // ★1108 攝影機重新對位出錯不能砍斷整段重生
+          {
             GameObject customTarget = GameObject.Find("CameraFollowTarget");
             if (customTarget != null) {
                 customTarget.SendMessage("UpdatePosition", SendMessageOptions.DontRequireReceiver);
@@ -766,6 +839,12 @@ public class PlayerRespawnSystem : MonoBehaviour
                 vcam.PreviousStateIsValid = false;
                 vcam.Follow = targetFollow;
             }
+          }
+          catch (System.Exception e)
+          {
+            Debug.LogWarning("【重生保護】攝影機重新對位出錯，已略過、重生繼續：" + e.GetType().Name + ": " + e.Message);
+            GameRecoveryGuard.ReportCaught(e, "重生攝影機對位");
+          }
         }
 
         // --- 詩意微光文字 (可自由在 Inspector 開關) ---
@@ -789,12 +868,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
 
         // 聽覺破曉恢復
-        SetAudioMuffle(false, fadeDuration);
+        SafeStep("聽覺恢復", () => SetAudioMuffle(false, fadeDuration));
 
         // ★【重生音效】在畫面黑化停頓後、開始漸漸變亮破曉甦醒時播放 (重生的一半)
         if (respawnSFX != null)
         {
-            PlayDirectSFX(respawnSFX, sfxVolume);
+            SafeStep("重生音效", () => PlayDirectSFX(respawnSFX, sfxVolume));
             Debug.Log($"✨【重生系統】黑屏甦醒，開始漸漸變亮並播放重生音效: {respawnSFX.name}");
         }
 
@@ -1079,10 +1158,14 @@ public class PlayerRespawnSystem : MonoBehaviour
             {
                 if (f != UnderwaterDepthAudio.OwnedFilter) { _audioFilter = f; break; }
             }
-            if (_audioFilter == null)
+            // ★1108 Unity 一台相機只能掛一個 AudioLowPassFilter：水下深度音效已經掛了，再 AddComponent 會被拒絕並回傳 null，
+            //   下一行 .cutoffFrequency 就 NullReference，整段溺水重生（漸黑→傳送→漸亮）被砍掉。
+            //   所以只有「相機上完全沒有」才自己加；已經有別人的就不加、這次不做悶音（水下深度音效本來就在悶音）。
+            if (_audioFilter == null && cam.GetComponent<AudioLowPassFilter>() == null)
             {
                 _audioFilter = cam.gameObject.AddComponent<AudioLowPassFilter>();
             }
+            if (_audioFilter == null) return;
             _audioFilter.cutoffFrequency = 22000f;
             _audioFilter.enabled = false;
         }

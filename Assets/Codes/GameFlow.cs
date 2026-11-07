@@ -112,6 +112,18 @@ public static class GameFlow
         Log("新的一輪開始");
     }
 
+    /// <summary>
+    /// ★1108 主選單「繼續」：算新的一輪，但「不」把故事進度（繪本頁數）歸零。
+    /// 呼叫完之後才可以指定出生點（ResetRunState 會清掉待處理的出生點）再載入場景。
+    /// </summary>
+    public static void ContinueRun()
+    {
+        RunIndex++;
+        State = FlowState.Playing;
+        ResetRunState("繼續上次進度（第 " + RunIndex + " 輪）");
+        Log("繼續上次進度");
+    }
+
     /// <summary>統一的「回主選單」出口（結局名單結束、任何需要退回主選單的地方都走這裡）。</summary>
     public static void ReturnToMainMenu(string reason)
     {
