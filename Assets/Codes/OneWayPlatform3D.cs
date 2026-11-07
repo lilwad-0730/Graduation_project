@@ -61,7 +61,10 @@ public class OneWayPlatform3D : MonoBehaviour
         bool found = false;
         for (int i = 0; i < xs.Length; i++)
         {
-            Vector3 rayStart = new Vector3(xs[i], pb.center.y, pb.center.z);
+            // ★1107 真正的根因：台階的碰撞盒只有 0.06 米厚（Z 在 0），玩家的 Z 在 -0.92，
+            //   從玩家中心往下打的射線永遠從台階「前面」擦過去打不到 → 一律判成「不在平台上」→ 關碰撞 → 站不住。
+            //   所以射線的 Z 要對準平台自己的 Z。
+            Vector3 rayStart = new Vector3(xs[i], pb.center.y, platformCollider.bounds.center.z);
             RaycastHit[] hits = Physics.RaycastAll(rayStart, Vector3.down, rayDistance, platformLayer, QueryTriggerInteraction.Ignore);
             for (int k = 0; k < hits.Length; k++)
             {
