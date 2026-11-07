@@ -9,6 +9,11 @@ public static class AutoFixDemoMenu
     private static void Make()
     {
         if (!EditorApplication.isPlaying) { Debug.LogWarning("請先按 Play，再選這個選單。"); return; }
+        // 展示要能重複做：清掉「這個錯誤已經試修過」的記憶，不然第二次會被略過（實測發生過）
+        SessionState.SetString("AutoFix.Attempted", "");
+        SessionState.SetInt("AutoFix.RunCount", 0);
+        SessionState.SetFloat("AutoFix.LastRunTime", -9999f);
+        SessionState.SetFloat("AutoFix.RetryAfter", 0f);
         new GameObject("[AutoFix 示範錯誤]").AddComponent<AutoFixDemo>();
     }
 }

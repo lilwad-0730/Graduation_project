@@ -77,8 +77,12 @@ public class GameRecoveryGuard : MonoBehaviour
         _sigCount[sig] = n;
 
         // 崩潰迴圈：同一個錯誤在同一個存檔點又發生 → 記進存檔，下次繼續時避開這裡
-        ProgressSave.RecordCrash(sig);
-        if (ProgressSave.CrashCountHere(sig) >= 2) ActivateSafeMode("同一個錯誤在同一個存檔點重複發生：" + first);
+        // （展示用的假錯誤不算：不然展示一次，玩家真的存檔就被標成「這裡會崩潰」、還會誤開安全模式）
+        if (!file.EndsWith("AutoFixDemo.cs"))
+        {
+            ProgressSave.RecordCrash(sig);
+            if (ProgressSave.CrashCountHere(sig) >= 2) ActivateSafeMode("同一個錯誤在同一個存檔點重複發生：" + first);
+        }
 
         if (n == 1 || n == 3)
         {
