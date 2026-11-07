@@ -378,7 +378,7 @@ public class EmotionAtmosphereFX : MonoBehaviour
                 float ny = (y / (float)(H - 1) - 0.5f) * 2f;
                 float r = Mathf.Sqrt(nx * nx + ny * ny);
                 float ring = Mathf.Exp(-Mathf.Pow((r - 0.72f) / 0.14f, 2f));
-                float fill = 0.22f * Mathf.Clamp01(1f - r);
+                float fill = 0.12f * Mathf.Clamp01(1f - r);
                 _ringTex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(ring + fill) * Mathf.Clamp01(1.15f - r)));
             }
         _ringTex.Apply();
@@ -412,8 +412,8 @@ public class EmotionAtmosphereFX : MonoBehaviour
             if (r.t >= 1f) { Destroy(r.go); _ripples.RemoveAt(i); continue; }
             float e = 1f - Mathf.Pow(1f - r.t, 2.2f);                       // 先快後慢地擴開
             float w = Mathf.Lerp(1.4f, 6.2f, e);
-            r.go.transform.localScale = new Vector3(w, w, 1f);
-            r.sr.color = new Color(1f, 0.74f, 0.42f, 0.8f * Mathf.Pow(1f - r.t, 1.4f));
+            r.go.transform.localScale = new Vector3(w, w * 0.4f, 1f);       // 壓扁：貼在雲面上的薄薄一圈，不是立起來的橢圓
+            r.sr.color = new Color(1f, 0.82f, 0.66f, 0.56f * Mathf.Pow(1f - r.t, 1.5f));   // 柔和蜜桃色，比奶油色看得出來、比原本橘色淡
             _ripples[i] = r;
         }
     }
@@ -430,7 +430,7 @@ public class EmotionAtmosphereFX : MonoBehaviour
         float feetY = col != null ? col.bounds.min.y : _player.position.y;
         GameObject go = new GameObject("踩雲漣漪");
         go.transform.SetParent(transform, false);
-        go.transform.position = new Vector3(_player.position.x, feetY + 0.3f, _player.position.z - 0.4f);
+        go.transform.position = new Vector3(_player.position.x, feetY + 0.08f, _player.position.z - 0.4f);
         SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = _ringSprite;
         if (_ringMat != null) sr.sharedMaterial = _ringMat;

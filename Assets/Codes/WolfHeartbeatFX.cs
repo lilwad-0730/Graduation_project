@@ -58,7 +58,7 @@ public class WolfHeartbeatFX : MonoBehaviour
     private void Start()
     {
         _hv = HeartbeatVignette.Create(transform, "狼心跳暗角");
-        _hv.MaxAlpha = 0.5f;
+        _hv.MaxAlpha = 1f;
         _hv.Intensity = 0f;
     }
 
@@ -73,15 +73,23 @@ public class WolfHeartbeatFX : MonoBehaviour
             _targetLevel = ScanThreat();
         }
 
-        // 上升快（約 0.4 秒）、下降慢（約 1.6 秒）
+        // 上升與下降都慢：黑邊要像「慢慢逼近」，不是切換
         _level = _targetLevel > _level
-            ? Mathf.MoveTowards(_level, _targetLevel, dt * 2.5f)
-            : Mathf.MoveTowards(_level, _targetLevel, dt * 0.6f);
+            ? Mathf.MoveTowards(_level, _targetLevel, dt * 0.4f)    // 約 2.5 秒從無到最濃：慢慢長出來
+            : Mathf.MoveTowards(_level, _targetLevel, dt * 0.3f);   // 退得更慢（約 3 秒）
 
-        float k = Mathf.SmoothStep(0f, 1f, _level);
-        _hv.Intensity = k;
+        // 兩層設計：
+        //  底層＝深色黑邊，狼一盯上就從四個角冒出來（有感），越近越往中間擴大，黑的部分「不閃」；
+        //  外圈＝比較淺的暗紅，等狼夠近（緊張度過半）才開始隨心跳一閃一閃，越近越快。
+        float k = _level;
+        _hv.PulseRingAlpha = 0.4f;
+        _hv.SolidAt = 0.9f;
+        _hv.Intensity = Mathf.Pow(k, 0.85f);       // 從 0 開始一路慢慢變黑，沒有「突然黑掉」的底值
+        _hv.Spread = HeartbeatPulse.Smooth(0f, 0.95f, k);
+        _hv.Pulse = HeartbeatPulse.Smooth(0.45f, 0.7f, k);
         _hv.Bps = HeartbeatPulse.Bps(k, 0.9f, 2.1f);
-        _hv.Color = Color.Lerp(new Color(0.02f, 0.01f, 0.04f, 1f), new Color(0.24f, 0.01f, 0.03f, 1f), k * 0.8f);
+        _hv.Color = Color.Lerp(new Color(0.01f, 0.005f, 0.015f, 1f), new Color(0.03f, 0.008f, 0.015f, 1f), k);
+        _hv.PulseColor = new Color(0.4f, 0.2f, 0.22f, 1f);      // 亮度跟之前差不多，但紅少一點（偏灰紫褐）
     }
 
     private float ScanThreat()
