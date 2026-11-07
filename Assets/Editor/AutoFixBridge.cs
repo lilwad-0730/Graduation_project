@@ -239,7 +239,7 @@ public static class AutoFixBridge
                 var psi = new ProcessStartInfo
                 {
                     FileName = claudeExe,
-                    Arguments = "-p --max-turns 30 --allowedTools \"Read,Grep,Glob,Edit(/Assets/Codes/**),Write(/Assets/Codes/**)\"",
+                    Arguments = "-p --max-turns 30 --allowedTools \"Read,Grep,Glob,Edit(/Assets/Codes/**)\"",   // Edit 規則已涵蓋所有寫檔工具（真 Claude 實測：Write 規則無效會被警告）
                     WorkingDirectory = Root,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -399,7 +399,11 @@ public static class AutoFixBridge
     private static void OnAssemblyCompiled(string assembly, CompilerMessage[] msgs)
     {
         if (string.IsNullOrEmpty(SessionState.GetString(SessPending, ""))) return;
-        if (msgs.Any(m => m.type == CompilerMessageType.Error)) _compileFailed = true;
+        // 只有「編譯錯誤出在被 AI 改過的檔案」才算它的錯；別的檔案的編譯錯（例如人手改壞的）不能賴給 AI 的修復
+        string manifest = Path.Combine(Base, "last.txt");
+        string[] touched = File.Exists(manifest) ? File.ReadAllLines(manifest).Where(s => s.Length > 0).ToArray() : new string[0];
+        if (msgs.Any(m => m.type == CompilerMessageType.Error && touched.Any(t => (m.file ?? "").Replace('\\', '/').EndsWith(t))))
+            _compileFailed = true;
     }
 
     private static void OnCompilationFinished(object o)
