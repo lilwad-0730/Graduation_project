@@ -57,6 +57,9 @@ public class OasisSinkFX : MonoBehaviour
     private float _greyT;
 
     private Image _tint, _vignette, _navyImg;
+    private Image _flash;                 // ★入水瞬間的一閃（配合停格）
+    private float _cardAge;
+    private readonly HeartbeatClock _hb = new HeartbeatClock();
     private readonly List<Image> _shafts = new List<Image>();
     private readonly List<float> _shaftBaseX = new List<float>();
     private readonly List<Image> _specks = new List<Image>();
@@ -458,6 +461,8 @@ public class OasisSinkFX : MonoBehaviour
         _vignette.color = new Color(0f, 0.02f, 0.06f, 0f);
         _navyImg = MakeFull(cv.transform, "深藍蓋板", null);
         _navyImg.color = new Color(0.02f, 0.07f, 0.15f, 0f);
+        _flash = MakeFull(cv.transform, "入水一閃", null);
+        _flash.color = new Color(0.85f, 0.97f, 1f, 0f);
     }
 
     private static Image MakeImage(Transform parent, string name, Sprite sp)
@@ -484,6 +489,14 @@ public class OasisSinkFX : MonoBehaviour
         float p = Mathf.Clamp01(_p);
         float m = _hidden ? 0f : _master;
 
+        // ★入水停格的視覺：接觸水面那一下，畫面閃一下冷白光，很快退掉（世界同時被 StoryCardZoneHook 瞬間停住約 0.12 秒）
+        if (_cardMode && _flash != null)
+        {
+            _cardAge += Time.unscaledDeltaTime;
+            float fl = Mathf.Exp(-_cardAge * 9f) * Mathf.SmoothStep(0f, 1f, _cardAge / 0.03f) * 0.5f;
+            _flash.color = new Color(0.85f, 0.97f, 1f, _hidden ? 0f : fl);
+        }
+
         // 色調：暖色 → 青綠 → 深藍（越深越濃）
         Color a = new Color(0.35f, 0.85f, 0.8f, 0f);
         Color b = new Color(0.15f, 0.6f, 0.65f, 0.17f);
@@ -497,9 +510,7 @@ public class OasisSinkFX : MonoBehaviour
         _tint.color = col;
 
         // 心跳：越沉越快，暗角跟著一縮一縮
-        _beat += Time.unscaledDeltaTime * Mathf.Lerp(0.9f, 1.8f, p);
-        float ph = _beat - Mathf.Floor(_beat);
-        float pulse = Mathf.Exp(-ph * 9f) + 0.5f * Mathf.Exp(-Mathf.Abs(ph - 0.28f) * 14f);
+        float pulse = _hb.Tick(Time.unscaledDeltaTime, Mathf.Lerp(0.9f, 1.8f, p)) * 1.2f;   // ★共用心跳語言（HeartbeatPulse）
         float pulseAmt = Mathf.SmoothStep(0.12f, 0.5f, p) * 0.4f;
         _vignette.color = new Color(0f, 0.02f, 0.06f, Mathf.Clamp01(p * 0.78f * (1f + pulseAmt * pulse)) * m);          // 越深邊角越暗
 

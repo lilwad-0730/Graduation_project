@@ -270,7 +270,12 @@ public class StoryCardZoneHook : MonoBehaviour
         while (t < seconds)
         {
             t += Time.unscaledDeltaTime;
-            Time.timeScale = Mathf.Lerp(from, 0f, Mathf.SmoothStep(0f, 1f, t / seconds));
+            // ★入水停格（hit-stop）：接觸水面的瞬間（0.03 秒）幾乎凍住，停約 0.12 秒讓那一下有重量，再順順地收到完全靜止
+            float ts;
+            if (t < 0.03f) ts = Mathf.Lerp(from, 0.05f, t / 0.03f);
+            else if (t < 0.15f) ts = 0.05f;
+            else ts = Mathf.Lerp(0.05f, 0f, Mathf.SmoothStep(0f, 1f, (t - 0.15f) / Mathf.Max(0.05f, seconds - 0.15f)));
+            Time.timeScale = ts;
             yield return null;
         }
         Time.timeScale = 0f;

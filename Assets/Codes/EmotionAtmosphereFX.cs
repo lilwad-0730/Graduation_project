@@ -70,7 +70,14 @@ public class EmotionAtmosphereFX : MonoBehaviour
     {
         _cam = Camera.main;
         FindPlayer();
-        if (_kind == Kind.Underwater) { BuildSnow(); BuildSurfaceGlow(); }
+        if (_kind == Kind.Underwater)
+        {
+            BuildSnow(); BuildSurfaceGlow();
+            gameObject.AddComponent<DeepGiantShadowFX>();                       // 遠景巨大影子
+            _breathVig = HeartbeatVignette.Create(transform, "缺氧心跳暗角");   // 快沒氣時的心跳暗角
+            _breathVig.Color = new Color(0f, 0.02f, 0.07f, 1f);
+            _breathVig.MaxAlpha = 0.34f;
+        }
         else
         {
             BuildRisingMotes();
@@ -208,6 +215,11 @@ public class EmotionAtmosphereFX : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_bubbles != null && _bubbleBaseInterval >= 0f) _bubbles.spawnInterval = _bubbleBaseInterval;   // 還原泡泡間隔
+        for (int i = 0; i < _ripples.Count; i++) if (_ripples[i].go != null) Destroy(_ripples[i].go);
+        if (_ringMat != null) Destroy(_ringMat);
+        if (_ringTex != null) Destroy(_ringTex);
+        if (_ringSprite != null) Destroy(_ringSprite);
         StopGrade();
         if (_psMat != null) Destroy(_psMat);
         if (_dotTex != null) Destroy(_dotTex);
@@ -218,6 +230,12 @@ public class EmotionAtmosphereFX : MonoBehaviour
     // ───────────────────────── 水下 ─────────────────────────
     private const float SurfaceY = -5f, DeepY = -130f;
     private float _depth01 = -1f;
+
+    // 氧氣連動（越缺氧，數字越大）
+    private HeartbeatVignette _breathVig;
+    private float _o;
+    private PlayerSwimBubbles _bubbles;
+    private float _bubbleBaseInterval = -1f;
 
     private Image _glow;
     private Texture2D _glowTex;
@@ -281,18 +299,39 @@ public class EmotionAtmosphereFX : MonoBehaviour
         _depth01 = _depth01 < 0f ? target : Mathf.Lerp(_depth01, target, 1f - Mathf.Exp(-1.4f * Time.unscaledDeltaTime));
         float fadeIn = Mathf.SmoothStep(0f, 1f, _tIn / 3f);
 
-        // 海雪：淺處幾乎看不見，越深越明顯（上限很低）
+        // ★氧氣連動：缺氧程度 0～1（上升快、回復慢一點），來源是窒息系統的 Danger01，這裡只讀不改
+        float oTarget = UnderwaterSuffocationEffect.Instance != null ? UnderwaterSuffocationEffect.Instance.Danger01 : 0f;
+        _o = Mathf.MoveTowards(_o, oTarget, Time.unscaledDeltaTime * (oTarget > _o ? 1.5f : 3f));
+        float oo = Mathf.SmoothStep(0f, 1f, _o);
+
+        // 泡泡變稀：氣越少，嘴邊冒的泡越少（間隔最多拉長到 3 倍），沒氣時像在憋
+        if (_bubbles == null) _bubbles = _player.GetComponent<PlayerSwimBubbles>();
+        if (_bubbles != null)
+        {
+            if (_bubbleBaseInterval < 0f) _bubbleBaseInterval = _bubbles.spawnInterval;
+            _bubbles.spawnInterval = _bubbleBaseInterval * (1f + 2f * oo * oo);
+        }
+
+        // 快沒氣（約剩 45% 以下）才開始有心跳暗角，越缺氧越快越濃
+        if (_breathVig != null)
+        {
+            float hv = HeartbeatPulse.Smooth(0.45f, 1f, _o);
+            _breathVig.Intensity = hv;
+            _breathVig.Bps = HeartbeatPulse.Bps(hv, 1.0f, 2.1f);
+        }
+
+        // 海雪：淺處幾乎看不見，越深越明顯（上限很低）；缺氧時再多一點、亮一點
         if (_psMat != null)
-            _psMat.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.22f, 0.62f, Mathf.SmoothStep(0f, 1f, _depth01)) * fadeIn);
+            _psMat.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.22f, 0.62f, Mathf.SmoothStep(0f, 1f, _depth01)) * (1f + 0.45f * oo) * fadeIn);
 
         // 水面微光
         if (_glow != null)
         {
             float H = Screen.height;
             float k = Mathf.SmoothStep(0f, 1f, _depth01);
-            float w = Mathf.Lerp(0.62f, 0.2f, k) * H;                       // 越深越小
+            float w = Mathf.Lerp(0.62f, 0.2f, k) * H * (1f - 0.25f * oo);   // 越深越小；缺氧時再縮（希望在遠離）
             float shimmer = 1f + 0.07f * Mathf.Sin(Time.unscaledTime * 0.9f) + 0.04f * Mathf.Sin(Time.unscaledTime * 2.3f + 1.7f);
-            float a = Mathf.Lerp(0.05f, 0.17f, Mathf.SmoothStep(0.08f, 0.6f, _depth01)) * shimmer * fadeIn;
+            float a = Mathf.Lerp(0.05f, 0.17f, HeartbeatPulse.Smooth(0.08f, 0.6f, _depth01)) * shimmer * fadeIn * (1f - 0.45f * oo);
             _glowRt.sizeDelta = new Vector2(w * 1.8f, w * 0.9f);
             _glowRt.anchoredPosition = new Vector2(0f, w * 0.18f);          // 一半露在畫面外：像頭頂遠遠的一個開口
             _glow.color = new Color(1f, 1f, 1f, a);
@@ -313,6 +352,91 @@ public class EmotionAtmosphereFX : MonoBehaviour
         if (_psMat != null)
             _psMat.color = new Color(1f, 1f, 1f, 0.55f * Mathf.SmoothStep(0f, 1f, (_tIn - 1.5f) / 5f));   // 顏色開始回來之後，光點才慢慢出現
         BreatheClouds();
+        UpdateStompRipples();
+    }
+
+    // ───────── 踩雲柔光漣漪：落地的瞬間，腳下擴散一圈很淡的暖光 ─────────
+    private struct Ripple { public GameObject go; public SpriteRenderer sr; public float t; }
+    private readonly System.Collections.Generic.List<Ripple> _ripples = new System.Collections.Generic.List<Ripple>();
+    private Texture2D _ringTex;
+    private Sprite _ringSprite;
+    private Material _ringMat;
+    private PlayerMovement _pm;
+    private bool _wasGrounded = true;
+    private float _airTime;
+
+    private void BuildRingSprite()
+    {
+        const int W = 128, H = 64;
+        _ringTex = new Texture2D(W, H, TextureFormat.RGBA32, false);
+        _ringTex.wrapMode = TextureWrapMode.Clamp;
+        _ringTex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < H; y++)
+            for (int x = 0; x < W; x++)
+            {
+                float nx = (x / (float)(W - 1) - 0.5f) * 2f;
+                float ny = (y / (float)(H - 1) - 0.5f) * 2f;
+                float r = Mathf.Sqrt(nx * nx + ny * ny);
+                float ring = Mathf.Exp(-Mathf.Pow((r - 0.72f) / 0.14f, 2f));
+                float fill = 0.22f * Mathf.Clamp01(1f - r);
+                _ringTex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(ring + fill) * Mathf.Clamp01(1.15f - r)));
+            }
+        _ringTex.Apply();
+        _ringSprite = Sprite.Create(_ringTex, new Rect(0, 0, W, H), new Vector2(0.5f, 0.5f), W);   // 寬 1 單位
+        Shader sh = Shader.Find("Sprites/Default");
+        if (sh != null) _ringMat = new Material(sh) { name = "Mat_StompRipple (runtime)" };
+    }
+
+    private void UpdateStompRipples()
+    {
+        if (_player == null) { FindPlayer(); if (_player == null) return; }
+        // 自己偵測落地（CloudStepFluffVFX 不一定掛在主角身上）：騰空超過 0.15 秒之後接地 ＝ 一次落地
+        if (_pm == null) _pm = _player.GetComponent<PlayerMovement>();
+        if (_pm != null)
+        {
+            bool g = _pm.isGrounded;
+            if (!g) _airTime += Time.deltaTime;
+            else
+            {
+                if (!_wasGrounded && _airTime >= 0.15f && _tIn > 1f) SpawnRipple();
+                _airTime = 0f;
+            }
+            _wasGrounded = g;
+        }
+
+        for (int i = _ripples.Count - 1; i >= 0; i--)
+        {
+            Ripple r = _ripples[i];
+            if (r.go == null) { _ripples.RemoveAt(i); continue; }
+            r.t += Time.deltaTime / 0.85f;
+            if (r.t >= 1f) { Destroy(r.go); _ripples.RemoveAt(i); continue; }
+            float e = 1f - Mathf.Pow(1f - r.t, 2.2f);                       // 先快後慢地擴開
+            float w = Mathf.Lerp(1.4f, 6.2f, e);
+            r.go.transform.localScale = new Vector3(w, w, 1f);
+            r.sr.color = new Color(1f, 0.74f, 0.42f, 0.8f * Mathf.Pow(1f - r.t, 1.4f));
+            _ripples[i] = r;
+        }
+    }
+
+    /// <summary>已經放出幾次踩雲漣漪（驗收／除錯用）。</summary>
+    public static int RippleCount;
+
+    private void SpawnRipple()
+    {
+        RippleCount++;
+        if (_ringSprite == null) BuildRingSprite();
+        if (_ringSprite == null) return;
+        Collider col = _player.GetComponent<Collider>();
+        float feetY = col != null ? col.bounds.min.y : _player.position.y;
+        GameObject go = new GameObject("踩雲漣漪");
+        go.transform.SetParent(transform, false);
+        go.transform.position = new Vector3(_player.position.x, feetY + 0.3f, _player.position.z - 0.4f);
+        SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = _ringSprite;
+        if (_ringMat != null) sr.sharedMaterial = _ringMat;
+        sr.sortingOrder = 40;                                                // 要畫在前景雲層之上才看得到
+        sr.color = new Color(1f, 0.92f, 0.74f, 0f);
+        _ripples.Add(new Ripple { go = go, sr = sr, t = 0f });
     }
 
     // 顏色回來：臨時開後處理，用 Volume 權重從 1 → 0，結束後整個移除，回到場景原樣

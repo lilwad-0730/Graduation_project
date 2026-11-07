@@ -432,10 +432,7 @@ public class UnderwaterSuffocationEffect : MonoBehaviour, IResettable
         {
             _exhaustShown = Mathf.MoveTowards(_exhaustShown, _exhaustTarget, Time.unscaledDeltaTime * exhaustRingFadeSpeed);
             // 心跳：咚—咚（一強一弱）
-            float ph = Mathf.Repeat(Time.time * exhaustRingBeatsPerSecond, 1f);
-            float b1 = Mathf.Exp(-Mathf.Pow((ph - 0.05f) * 9f, 2f));
-            float b2 = 0.6f * Mathf.Exp(-Mathf.Pow((ph - 0.30f) * 9f, 2f));
-            float pulse = 0.65f + 0.35f * Mathf.Clamp01(b1 + b2);
+            float pulse = 0.65f + 0.35f * HeartbeatPulse.Beat(Time.time, exhaustRingBeatsPerSecond);   // ★共用心跳語言
             float w = Mathf.Max(0.02f, exhaustRingWidth);
             float peak = Mathf.Min(r + exhaustRingOffset, exhaustRingMaxPeak);
             matRing.SetFloat("_Radius",    Mathf.Max(0f, peak - w));
