@@ -411,15 +411,26 @@ public class EmotionAtmosphereFX : MonoBehaviour
             r.t += Time.deltaTime / 0.85f;
             if (r.t >= 1f) { Destroy(r.go); _ripples.RemoveAt(i); continue; }
             float e = 1f - Mathf.Pow(1f - r.t, 2.2f);                       // 先快後慢地擴開
-            float w = Mathf.Lerp(1.4f, 6.2f, e);
-            r.go.transform.localScale = new Vector3(w, w * 0.4f, 1f);       // 壓扁：貼在雲面上的薄薄一圈，不是立起來的橢圓
-            r.sr.color = new Color(1f, 0.82f, 0.66f, 0.56f * Mathf.Pow(1f - r.t, 1.5f));   // 柔和蜜桃色，比奶油色看得出來、比原本橘色淡
+            float w = Mathf.Lerp(RippleStartWidth, RippleEndWidth, e);
+            r.go.transform.localScale = new Vector3(w, w * RippleSquash, 1f);   // 壓扁：貼在雲面上的薄薄一圈，不是立起來的橢圓
+            r.sr.color = new Color(RippleTint.r, RippleTint.g, RippleTint.b, RippleAlpha * Mathf.Pow(1f - r.t, 1.5f));
             _ripples[i] = r;
         }
     }
 
     /// <summary>已經放出幾次踩雲漣漪（驗收／除錯用）。</summary>
     public static int RippleCount;
+
+    /// <summary>踩雲漣漪的顏色與最濃時的不透明度（企劃可以直接調）。</summary>
+    // ★1108 用截圖實測決定（慢動作拍擴散中的畫面）：
+    //   蜜桃色 α0.56、寬 1.4→6.2 時，漣漪在畫面上只有 55×11 像素、落在奶油白雲上幾乎看不見；
+    //   改成玫瑰桃色、寬 2.2→10、壓扁 0.5，畫面上看得出腳下一圈柔和的橢圓光，又不像最早的橘色那麼搶。
+    public static Color RippleTint = new Color(1f, 0.64f, 0.56f, 1f);
+    public static float RippleAlpha = 0.6f;
+    /// <summary>漣漪從多寬擴到多寬（世界單位）、壓扁程度（高＝寬×這個值×0.5）。</summary>
+    public static float RippleStartWidth = 2.2f;
+    public static float RippleEndWidth = 10f;
+    public static float RippleSquash = 0.5f;
 
     private void SpawnRipple()
     {
