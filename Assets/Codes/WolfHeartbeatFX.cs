@@ -74,8 +74,10 @@ public class WolfHeartbeatFX : MonoBehaviour
         }
 
         // 上升與下降都慢：黑邊要像「慢慢逼近」，不是切換
+        // 落差大（狼其實已經很近）時追得快一點，避免暗角慢半拍；落差小就維持慢慢長
+        float riseRate = 0.4f + 1.0f * Mathf.Max(0f, _targetLevel - _level - 0.25f);
         _level = _targetLevel > _level
-            ? Mathf.MoveTowards(_level, _targetLevel, dt * 0.4f)    // 約 2.5 秒從無到最濃：慢慢長出來
+            ? Mathf.MoveTowards(_level, _targetLevel, dt * riseRate)    // 平常約 2.5 秒從無到最濃：慢慢長出來
             : Mathf.MoveTowards(_level, _targetLevel, dt * 0.3f);   // 退得更慢（約 3 秒）
 
         // 兩層設計：
@@ -112,7 +114,10 @@ public class WolfHeartbeatFX : MonoBehaviour
             bool chasing = s_chasing != null && (bool)s_chasing.GetValue(w);
             if (!attached && !chasing) continue;
             if (attached) return 1f;
-            float d = Vector2.Distance(pp, w.transform.position);
+            // 狼自己是看「水平距離」決定追不追；這裡也以水平為主，高低差只算 35%。
+            // 以前用直線距離：上下坡時高低差白白拉長距離，狼明明貼很近卻算成還很遠，暗角就慢半拍。
+            Vector2 dv = (Vector2)w.transform.position - pp;
+            float d = Mathf.Abs(dv.x) + 0.35f * Mathf.Abs(dv.y);
             float t = 1f - Mathf.InverseLerp(nearDistance, farDistance, d);
             if (t > best) best = t;
         }
