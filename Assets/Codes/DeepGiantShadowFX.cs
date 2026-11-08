@@ -28,9 +28,12 @@ public class DeepGiantShadowFX : MonoBehaviour
     [Header("外觀")]
     [Tooltip("身長（公尺）")]
     public float length = 34f;
-    public Color color = new Color(0.02f, 0.06f, 0.12f, 1f);
+    public Color color = new Color(0.01f, 0.03f, 0.07f, 1f);   // 比之前更深一點，才壓得過深水背景
     [Tooltip("最濃時的不透明度")]
-    [Range(0f, 0.6f)] public float maxAlpha = 0.24f;
+    [Range(0f, 0.6f)] public float maxAlpha = 0.4f;            // 實測 0.24 在深處幾乎看不見
+
+    /// <summary>影子現在「在場」的程度 0～1（給別的特效讀：影子經過時水面光變暗）。</summary>
+    public static float Presence { get; private set; }
     [Tooltip("跟著鏡頭的比例（1＝黏在畫面上，越小越像固定在遠處的世界）")]
     [Range(0f, 1f)] public float follow = 0.85f;
 
@@ -155,11 +158,12 @@ public class DeepGiantShadowFX : MonoBehaviour
         float target = Mathf.InverseLerp(startY, fullY, _player.position.y);
         _depth = _depth < 0f ? target : Mathf.Lerp(_depth, target, 1f - Mathf.Exp(-1.2f * Time.unscaledDeltaTime));
 
-        if (!Enabled) { _sr.enabled = false; _active = false; return; }
+        if (!Enabled) { _sr.enabled = false; _active = false; Presence = 0f; return; }
 
         if (!_active)
         {
             _sr.enabled = false;
+            Presence = 0f;
             if (_depth > 0.15f)                // 夠深才倒數
             {
                 _timer -= Time.deltaTime;
@@ -169,7 +173,7 @@ public class DeepGiantShadowFX : MonoBehaviour
         }
 
         _t += Time.deltaTime / Mathf.Max(5f, crossSeconds);
-        if (_t >= 1f) { _active = false; _timer = Random.Range(interval.x, interval.y); _sr.enabled = false; return; }
+        if (_t >= 1f) { _active = false; _timer = Random.Range(interval.x, interval.y); _sr.enabled = false; Presence = 0f; return; }
 
         Vector3 c = _cam.transform.position;
         float viewH = _cam.orthographic ? _cam.orthographicSize * 2f : 14f;
@@ -189,6 +193,7 @@ public class DeepGiantShadowFX : MonoBehaviour
         float a = maxAlpha * fade * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_depth * 1.4f));
         _sr.color = new Color(color.r, color.g, color.b, a);
         _sr.enabled = a > 0.002f;
+        Presence = Mathf.Clamp01(a / Mathf.Max(0.01f, maxAlpha));
     }
 
     private void StartPass()
@@ -203,6 +208,7 @@ public class DeepGiantShadowFX : MonoBehaviour
 
     private void OnDestroy()
     {
+        Presence = 0f;   // 被安全模式收掉時，水面光不能卡在半暗
         if (_tex != null) Destroy(_tex);
         if (_sprite != null) Destroy(_sprite);
         if (_mat != null) Destroy(_mat);

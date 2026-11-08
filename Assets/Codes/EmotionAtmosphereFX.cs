@@ -331,7 +331,8 @@ public class EmotionAtmosphereFX : MonoBehaviour
             float k = Mathf.SmoothStep(0f, 1f, _depth01);
             float w = Mathf.Lerp(0.62f, 0.2f, k) * H * (1f - 0.25f * oo);   // 越深越小；缺氧時再縮（希望在遠離）
             float shimmer = 1f + 0.07f * Mathf.Sin(Time.unscaledTime * 0.9f) + 0.04f * Mathf.Sin(Time.unscaledTime * 2.3f + 1.7f);
-            float a = Mathf.Lerp(0.05f, 0.17f, HeartbeatPulse.Smooth(0.08f, 0.6f, _depth01)) * shimmer * fadeIn * (1f - 0.45f * oo);
+            float a = Mathf.Lerp(0.05f, 0.17f, HeartbeatPulse.Smooth(0.08f, 0.6f, _depth01)) * shimmer * fadeIn * (1f - 0.45f * oo)
+                      * (1f - 0.5f * DeepGiantShadowFX.Presence);   // 巨影經過時，頭頂的光被遮住一半
             _glowRt.sizeDelta = new Vector2(w * 1.8f, w * 0.9f);
             _glowRt.anchoredPosition = new Vector2(0f, w * 0.18f);          // 一半露在畫面外：像頭頂遠遠的一個開口
             _glow.color = new Color(1f, 1f, 1f, a);

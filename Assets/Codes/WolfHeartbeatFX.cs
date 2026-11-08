@@ -84,7 +84,7 @@ public class WolfHeartbeatFX : MonoBehaviour
         float k = _level;
         _hv.PulseRingAlpha = 0.4f;
         _hv.SolidAt = 0.9f;
-        _hv.Intensity = Mathf.Pow(k, 0.85f);       // 從 0 開始一路慢慢變黑，沒有「突然黑掉」的底值
+        _hv.Intensity = Mathf.Pow(k, 0.6f);        // 從 0 開始，前段長得比較快（實測 0.2 時幾乎看不到），但仍沒有「突然黑掉」的底值
         _hv.Spread = HeartbeatPulse.Smooth(0f, 0.95f, k);
         _hv.Pulse = HeartbeatPulse.Smooth(0.45f, 0.7f, k);
         _hv.Bps = HeartbeatPulse.Bps(k, 0.9f, 2.1f);
