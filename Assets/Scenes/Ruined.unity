@@ -16250,15 +16250,15 @@ MonoBehaviour:
     lineSpacing: 25
     boldness: 0.05
     textColor: {r: 0.2, g: 0.22, b: 0.31, a: 1}
-    glowColor: {r: 0.9, g: 0.906, b: 0.92, a: 0.85}
-    glowWidth: 0.25
-    glowSoftness: 0.2
+    glowColor: {r: 1, g: 1, b: 1, a: 0.85}
+    glowWidth: 0.26
+    glowSoftness: 0.25
     bottom: 0.08
     top: 0.2
     sideMargin: 0.15
     fadeIn: 0.4
     fadeOut: 0.6
-    showPanel: 1
+    showPanel: 0
     panelColor: {r: 0.875, g: 0.878, b: 0.898, a: 0.4}
     panelPadding: {x: 90, y: 42}
     panelEdgeFade: 48
