@@ -43,6 +43,12 @@ public static class BirdAttackScheduler
     public static float behindPenaltyMeters = 8f;
     public static float agingMetersPerSecond = 2f;
 
+    // ★1109b 放行視窗（依位置）：只有「鳥在她右前方 releaseAheadMeters 以內、左後方 releaseBehindMeters 以內」的需求才會被放行，
+    //   太遠的鳥留在佇列裡繼續盤旋（不取消，不然會每幀重新偵測），等她走近才輪到。≤0＝該側不限制。強制需求、收尾全放階段不受限。
+    //   用世界 x（+x＝關卡方向），不看玩家面向／速度。
+    public static float releaseAheadMeters = 10f;
+    public static float releaseBehindMeters = 10f;
+
     // ★1018 波次空檔：一波放行 waveSize 次攻擊後，等「場上沒有任何鳥在前搖／俯衝」再安靜 waveQuietSeconds 秒才放下一波。
     //   原本的 restSeconds 只是放行時間往後挪，不代表攻擊已經結束（前一隻還在落下，下一隻就來了），玩家躲掉之後沒有喘息。
     //   增援鳥、失手回頭再攻的鳥也是走這個佇列，所以一起遵守空檔。waveSize＝0 關閉（回到舊的節奏）。
@@ -227,7 +233,7 @@ public static class BirdAttackScheduler
         int detect = S("DETECT"), queued = S("QUEUED"), slot = S("SLOT"), lockn = S("LOCK"), dive = S("DIVE");
         int hit = S("HIT"), retreat = S("RETREAT"), cancel = S("CANCEL"), removed = S("REMOVED");
         Debug.Log($"[BIRD STATS @{when}] Detection={detect} Queue={queued} WindBlock={S("BLOCK-WIND")} ShadowBlock={S("BLOCK-SHADOW")} " +
-                  $"SchedulerBusy={S("BLOCK-BUSY")} OtherBlock={S("BLOCK-OTHER")} AttackStart(Slot)={slot} Lock={lockn} Dive={dive} " +
+                  $"SchedulerBusy={S("BLOCK-BUSY")} WindowBlock={S("BLOCK-WINDOW")} OtherBlock={S("BLOCK-OTHER")} AttackStart(Slot)={slot} Lock={lockn} Dive={dive} " +
                   $"Hit={hit} Retreat={retreat} Cancel={cancel} Removed={removed} DiveEndedByEnvironment={S("DIVE-ENV")} ResetRefresh={S("RESET-REFRESH")} ResetDecor={S("RESET-DECOR")} ResetGone={S("RESET-GONE")}\n" +
                   $"  Detection→Queue={Pct(queued, detect)}  Queue→Attack={Pct(slot, queued)}  Attack→Dive={Pct(dive, slot)}  Dive→Hit/Retreat={Pct(hit + retreat, dive)}  佇列剩餘={_queue.Count}");
     }
@@ -392,12 +398,7 @@ public static class BirdAttackScheduler
             else _waveGranted = 0;
         }
 
-        if (block != _lastBlock)
-        {
-            if (block != "") { Stat("BLOCK-" + block); Log("BLOCKED-" + block, null, $"Queue={_queue.Count} Active={_active.Count}"); }
-            _lastBlock = block;
-        }
-        if (block != "") return;
+        if (block != "") { NoteBlock(block); return; }   // ★1109b _lastBlock 的重置移到步驟 3 結尾（WINDOW 要在挑完才知道）
 
         // 3. 挑一張需求
         Transform player = GetPlayer();
@@ -406,6 +407,7 @@ public static class BirdAttackScheduler
         float fwd = PlayerForwardSign(player);
         int pick = -1;
         int oldestAny = -1;
+        int windowSkipped = 0;   // ★1109b 因為超出放行視窗而跳過的需求數
         for (int i = 0; i < _queue.Count; i++)
         {
             Request r = _queue[i];
@@ -428,6 +430,14 @@ public static class BirdAttackScheduler
             bool behind = dx * fwd < 0f;
             r.score = Mathf.Abs(dx) + (behind ? behindPenaltyMeters : 0f) - (IndividualBirdEnemy.BirdTime - r.time) * agingMetersPerSecond;
 
+            // ★1109b 放行視窗：太遠（右邊超過 ahead／左邊超過 behind）的鳥先留在佇列，不取消、不參與挑選
+            if (!r.force && !flush
+                && ((releaseAheadMeters > 0f && dx > releaseAheadMeters) || (releaseBehindMeters > 0f && dx < -releaseBehindMeters)))
+            {
+                windowSkipped++;
+                continue;
+            }
+
             // ★1012 風期間只放行「最後一座掩體之後」的鳥（它們不受風起風停限制）
             if (windPhase && !r.bird.IgnoresWind) continue;
 
@@ -438,6 +448,9 @@ public static class BirdAttackScheduler
             if (!zoneBlocked && IsBetter(r, pick >= 0 ? _queue[pick] : null)) pick = i;
         }
         if (pick < 0) pick = oldestAny;       // 全部都在同一區：照最早的
+
+        // ★1109b 有排隊但全被視窗擋住＝WINDOW 阻擋（一樣只在狀態改變時記一次）；有放行或佇列空了就重置
+        NoteBlock(pick < 0 && windowSkipped > 0 ? "WINDOW" : "");
         if (pick < 0) return;
 
         Request chosen = _queue[pick];
@@ -464,8 +477,16 @@ public static class BirdAttackScheduler
         _active.Add(chosen.bird);
         Stat("SLOT");
         float wait = IndividualBirdEnemy.BirdTime - chosen.time;
-        Log("SLOT", chosen.bird, $"Mode={(type == BirdAttackType.FixedPosition ? "Current" : "Predicted")} Zone={ZoneName(chosenZone)} QueueWait={wait:F1}s Queue={_queue.Count} Active={_active.Count}");
+        Log("SLOT", chosen.bird, $"Mode={(type == BirdAttackType.FixedPosition ? "Current" : "Predicted")} Zone={ZoneName(chosenZone)} QueueWait={wait:F1}s Queue={_queue.Count} Active={_active.Count} BirdX={chosen.bird.transform.position.x:F1} PlayerX={player.position.x:F1}");
         chosen.bird.GrantAttack(type, wait);
+    }
+
+    // ★1109b 阻擋事件只在「狀態改變」那一刻記一次；block＝"" 表示沒被擋（重置）
+    private static void NoteBlock(string block)
+    {
+        if (block == _lastBlock) return;
+        if (block != "") { Stat("BLOCK-" + block); Log("BLOCKED-" + block, null, $"Queue={_queue.Count} Active={_active.Count}"); }
+        _lastBlock = block;
     }
 
     // 排序：強制需求優先；其次優先分數（近＞遠、前方＞身後、等越久越優先）；同分用 InstanceID 穩定決勝（可重現）
