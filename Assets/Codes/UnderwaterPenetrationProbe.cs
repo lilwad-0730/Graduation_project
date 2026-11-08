@@ -471,6 +471,8 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         if (respawn == null) respawn = GetComponentInParent<PlayerRespawnSystem>();
         if (respawn == null) respawn = FindFirstObjectByType<PlayerRespawnSystem>();
         if (respawn != null) respawn.TriggerRespawn();
-        Debug.LogError($"[卡石救援] 玩家卡在石頭「{rockName}」，{why}，改用現有 Respawn fallback。\n{context}");
+        // ★1108 LogError → LogWarning：編輯器開著 Error Pause 時，LogError 會把遊戲整個暫停，
+        // 剛啟動的重生流程被凍在一半，看起來就像「救援沒用、完全卡死」（實測就是這樣）。救援本身有成功，不該算錯誤。
+        Debug.LogWarning($"[卡石救援] 玩家卡在石頭「{rockName}」，{why}，改用現有 Respawn fallback。\n{context}");
     }
 }
