@@ -15,8 +15,9 @@ using UnityEngine.UI;
 /// 救援是「逐級加重」，同一個 40 秒內連續卡住就往下一級：
 ///  1. 放回最近一個「確定沒插在東西裡」且離卡住處至少 1 公尺的安全位置
 ///  2. 放回安全位置清單裡最遠（最早）的那一個
-///  3. 回存檔點重生（走重生轉場，已有例外保護與看門狗）
-///  4. 回這一關的起點
+///  3. 回存檔點救援：先「只搬人」（不死、不重置任何機關，已做過的事不會被洗掉）；
+///     40 秒內再卡才走完整重生（存檔點之後的機關重置）；再不行搬回這一關起點。
+///     （階梯在 PlayerRespawnSystem.RescueToCheckpoint，石頭救援也走同一條）
 /// 第 3 級之後會留一份「需要人看」的錯誤回報（不會叫 AI 自動改，因為通常是場景碰撞的問題）。
 /// 關掉：PlayerUnstuck.Enabled = false。
 /// </summary>
@@ -296,17 +297,17 @@ public class PlayerUnstuck : MonoBehaviour
         }
 
         PlayerRespawnSystem rs = PlayerRespawnSystem.Instance;
-        if (stage == 3 && rs != null)
+        // 第 3 級起交給重生系統的救援階梯（只搬到存檔點 → 完整重生 → 搬回起點），升級邏輯只在那邊有一份
+        if (rs != null)
         {
-            how = "回存檔點重生";
-            Report(stage, reason, how, manual, cur);
-            rs.TriggerRespawn();
+            how = "回存檔點救援（先只搬人、不重置世界；再卡才走完整重生）";
+            Report(Mathf.Max(stage, 3), reason, how, manual, cur);
+            rs.RescueToCheckpoint("脫困系統：" + reason);
             return;
         }
-        how = "回這一關的起點";
+        how = "沒有重生系統，往上抬 3 公尺";
         Report(4, reason, how, manual, cur);
-        if (rs != null) rs.TriggerRespawn(rs.InitialPosition);
-        else Warp(cur + Vector3.up * 3f);
+        Warp(cur + Vector3.up * 3f);
     }
 
     private void Warp(Vector3 target)

@@ -312,6 +312,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         if (NextSceneCustomSpawnPos.HasValue)
         {
             Vector3 targetPos = NextSceneCustomSpawnPos.Value;
+            // ★1108 「繼續」讀回來的存檔點若剛好被包在石頭／牆裡，就改放最近的空位（沒問題時原樣不動）
+            SafeStep("續玩落點檢查", () =>
+            {
+                Vector3 free = PlayerSafeSpot.FindFree(GetPlayerCollider(), transform, targetPos, out bool moved);
+                if (moved) { Debug.Log($"【跨場景出生點】指定座標 {targetPos.ToString("F2")} 被包在固體裡，改放最近的空位 {free.ToString("F2")}"); targetPos = free; }
+            });
             PlayerMovement pm = GetMovement();
             if (pm != null) pm.WarpTo(targetPos);
             else transform.position = targetPos;
@@ -611,6 +617,82 @@ public class PlayerRespawnSystem : MonoBehaviour
         }
     }
 
+    // ───────────── ★1108 救援（卡石、卡 BUG）：只搬人，不死、不重置世界 ─────────────
+    private readonly System.Collections.Generic.List<float> _rescueTimes = new System.Collections.Generic.List<float>();
+    private const float RescueEscalateWindow = 40f;
+
+    private Collider GetPlayerCollider()
+    {
+        Collider c = GetComponent<Collider>();
+        if (c == null) c = GetComponentInChildren<Collider>();
+        return c;
+    }
+
+    /// <summary>
+    /// 把玩家直接搬到 pos 附近（被石頭包住就找最近的空位）。沒有死亡演出、沒有任何機關被重置，
+    /// 世界維持原樣——玩家已經做過的事不會被洗掉。轉場進行中回傳 false。
+    /// </summary>
+    public bool RescueTo(Vector3 pos, string reason)
+    {
+        PlayerRespawnSystem real = ForwardTarget();
+        if (real != null) return real.RescueTo(pos, reason);
+        if (_isRespawning || _isTeleporting) return false;
+
+        Vector3 target = pos;
+        SafeStep("救援落點檢查", () =>
+        {
+            target = PlayerSafeSpot.FindFree(GetPlayerCollider(), transform, pos, out bool moved);
+            if (moved) Debug.Log($"【救援】原落點 {pos.ToString("F2")} 被包在固體裡，改放最近的空位 {target.ToString("F2")}");
+        });
+
+        Rigidbody rb = GetPlayerRigidbody();
+        PlayerMovement pm = GetMovement();
+        if (pm != null) pm.WarpTo(target); else transform.position = target;
+        if (rb != null)
+        {
+            rb.position = target;
+            if (!rb.isKinematic) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
+        }
+        SafeStep("救援鏡頭對位", () =>
+        {
+            foreach (CinemachineCamera vcam in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+                vcam.PreviousStateIsValid = false;   // 不讓鏡頭從卡住處「甩」過去
+        });
+        Debug.Log($"【救援】{reason} → 搬到 {target.ToString("F2")}（沒有死亡、沒有重置機關）");
+        return true;
+    }
+
+    /// <summary>
+    /// 救援回存檔點，逐級加重（同一個 40 秒內再次需要救援就升級）：
+    ///  1. 只搬到存檔點（世界不動）
+    ///  2. 走完整重生（存檔點之後的機關重置，各機關自己的「存檔點之前保留」規則照常生效）——卡 BUG 的機關也靠這步復原
+    ///  3. 搬回這一關起點
+    /// 所有卡住的救援（石頭救援、脫困系統）都走這裡，升級邏輯只有一份，不會各自重複升級。
+    /// </summary>
+    public void RescueToCheckpoint(string reason)
+    {
+        PlayerRespawnSystem real = ForwardTarget();
+        if (real != null) { real.RescueToCheckpoint(reason); return; }
+        if (_isRespawning || _isTeleporting) return;
+
+        float now = Time.unscaledTime;
+        _rescueTimes.RemoveAll(t => now - t > RescueEscalateWindow);
+        _rescueTimes.Add(now);
+        int n = _rescueTimes.Count;
+
+        if (n == 1) { RescueTo(_activeRespawnPos, reason); return; }
+        if (n == 2)
+        {
+            Debug.LogWarning($"【救援】{RescueEscalateWindow:F0} 秒內第 2 次卡住（{reason}）→ 改走完整重生，把存檔點之後的機關也重置");
+            GameRecoveryGuard.ReportSoftLock("RescueEscalated", reason + "\n（只搬人沒用，已改走完整重生）");
+            TriggerRespawn();
+            return;
+        }
+        Debug.LogWarning($"【救援】{RescueEscalateWindow:F0} 秒內第 {n} 次卡住（{reason}）→ 搬回這一關起點");
+        GameRecoveryGuard.ReportSoftLock("RescueEscalated", reason + "\n（完整重生也沒用，已搬回這一關起點，需要人看）");
+        RescueTo(_initialPlayPos, reason);
+    }
+
     [Header("★1104 死亡時自然落下")]
     [Tooltip("在空中死亡（被鳥打到等）時，漸黑期間讓她照重力落下，而不是掛在半空。關掉＝照舊（速度整個歸零）")]
     public bool fallNaturallyOnDeath = true;
@@ -765,6 +847,13 @@ public class PlayerRespawnSystem : MonoBehaviour
         {
             Debug.Log($"🌊【重生系統】水下關卡：跳過向下貼地，直接重生於存檔座標 {targetPos}");
         }
+
+        // ★1108 存檔點如果剛好被包在石頭／牆裡，玩家重生就會再卡一次：找最近的空位。本來就沒問題時原樣不動。
+        SafeStep("重生點檢查", () =>
+        {
+            Vector3 free = PlayerSafeSpot.FindFree(GetPlayerCollider(), transform, targetPos, out bool moved);
+            if (moved) { Debug.Log($"【重生系統】重生點 {targetPos.ToString("F2")} 被包在固體裡，改放最近的空位 {free.ToString("F2")}"); targetPos = free; }
+        });
 
         transform.position = targetPos;
         if (_playerRb != null)

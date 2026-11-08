@@ -349,6 +349,12 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         return null;
     }
 
+    /// <summary>★1108 給重生／救援挑落點用：這個位置是不是被包在石頭殼裡（跟石頭救援同一套判斷）。</summary>
+    public bool IsInsideRockShell(Vector3 worldCenter)
+    {
+        return FindShellRock(worldCenter) != null;
+    }
+
     /// <summary>
     /// 從玩家中心往 8 個方向打射線（連背面也打），數「最近的東西是同一顆石頭的內側」有幾個方向。
     /// 內側的判斷：只打正面時，在同一個距離打不到那顆石頭＝剛才打到的是背面。
@@ -470,9 +476,10 @@ public class UnderwaterPenetrationProbe : MonoBehaviour
         PlayerRespawnSystem respawn = GetComponentInChildren<PlayerRespawnSystem>();
         if (respawn == null) respawn = GetComponentInParent<PlayerRespawnSystem>();
         if (respawn == null) respawn = FindFirstObjectByType<PlayerRespawnSystem>();
-        if (respawn != null) respawn.TriggerRespawn();
+        // ★1108 原本直接呼叫完整重生（播死亡、重置全場景機關＝「重玩」）。改走救援階梯：先只搬人，再卡才升級。
+        if (respawn != null) respawn.RescueToCheckpoint($"卡石救援（{rockName}）：{why}");
         // ★1108 LogError → LogWarning：編輯器開著 Error Pause 時，LogError 會把遊戲整個暫停，
         // 剛啟動的重生流程被凍在一半，看起來就像「救援沒用、完全卡死」（實測就是這樣）。救援本身有成功，不該算錯誤。
-        Debug.LogWarning($"[卡石救援] 玩家卡在石頭「{rockName}」，{why}，改用現有 Respawn fallback。\n{context}");
+        Debug.LogWarning($"[卡石救援] 玩家卡在石頭「{rockName}」，{why}，改走救援階梯（先只搬到存檔點，不重置世界）。\n{context}");
     }
 }
