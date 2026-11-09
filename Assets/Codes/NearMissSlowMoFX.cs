@@ -23,7 +23,9 @@ public class NearMissSlowMoFX : MonoBehaviour
     public static float SlowScale = 0.3f;
     public static float HoldSeconds = 0.16f;       // 真實時間
     public static float RecoverSeconds = 0.22f;    // 真實時間，慢慢加速回 1
-    public static float Cooldown = 10f;            // 兩次之間至少隔幾秒
+    public static float ImminentGap = 1.6f;        // 狼追到身體縫隙小於幾公尺，就在咬到之前先慢下來
+    public static float ImminentHold = 0.45f;      // 咬之前的慢動作停留（真實時間）
+    public static float Cooldown = 10f;           // 兩次之間至少隔幾秒
     public static float CloseGap = 0.7f;           // 身體縫隙小於幾公尺算「貼到身上」（0＝已經碰到＝咬住）
     public static float EscapeGap = 0.8f;          // 縫隙拉開多少算「甩開」
     /// <summary>已經演過幾次（驗收／除錯用）。</summary>
@@ -130,6 +132,7 @@ public class NearMissSlowMoFX : MonoBehaviour
 
             // 用兩個身體之間的「縫隙」算（狼身體很寬，中心距離 1.8 就已經碰到並咬住了）
             float gap = BodyGap(w);
+            if (chasing && gap < ImminentGap && PlayerRecentlyReachable(w)) { _pendingHold = ImminentHold; return true; }   // ★狼快咬到了：咬之前先慢下來
             bool near = chasing && gap < CloseGap;
             if (near)
             {
@@ -185,6 +188,13 @@ public class NearMissSlowMoFX : MonoBehaviour
     }
 
     private Collider _pCol;
+    private float _pendingHold = -1f, _hold = 0.16f;
+
+    /// <summary>狼跟她差不多同一層高度（上下差太多是在別的平台，不算快咬到）。</summary>
+    private bool PlayerRecentlyReachable(WolfEnemy w)
+    {
+        return Mathf.Abs(w.transform.position.y - _player.position.y) < 3f;
+    }
 
     private Track GetTrack(Object o)
     {
@@ -214,6 +224,8 @@ public class NearMissSlowMoFX : MonoBehaviour
         if (!CanStart()) return;
         _active = true;
         _t = 0f;
+        _hold = _pendingHold > 0f ? _pendingHold : HoldSeconds;
+        _pendingHold = -1f;
         _lastTrigger = Time.unscaledTime;
         PlayCount++;
         if (_hv == null)
@@ -236,14 +248,14 @@ public class NearMissSlowMoFX : MonoBehaviour
         if (rs != null && rs.IsRespawning) { ForceRestore(); return; }
 
         _t += dt;
-        if (_t < HoldSeconds)
+        if (_t < _hold)
         {
             Set(SlowScale);
             if (_hv != null) _hv.Intensity = Mathf.MoveTowards(_hv.Intensity, 0.85f, dt * 8f);
         }
         else
         {
-            float k = (_t - HoldSeconds) / RecoverSeconds;
+            float k = (_t - _hold) / RecoverSeconds;
             if (k >= 1f) { ForceRestore(); return; }
             Set(Mathf.Lerp(SlowScale, 1f, k * k));
             if (_hv != null) _hv.Intensity = Mathf.MoveTowards(_hv.Intensity, 0f, dt * 2.5f);
