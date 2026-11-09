@@ -24,7 +24,8 @@ public class WolfShadowForewarnFX : MonoBehaviour
     /// <summary>左右兩側目前的濃度（驗收／除錯用）。</summary>
     public static float LeftLevel, RightLevel;
 
-    private static FieldInfo s_chasing, s_attached;
+    public static float PreSpawnRange = 22f;    // 離出生點多少公尺開始浮出影子（狼出現之前）
+    private static FieldInfo s_chasing, s_attached, s_spawned;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
@@ -52,6 +53,7 @@ public class WolfShadowForewarnFX : MonoBehaviour
     private Transform _player;
     private float _nextScan;
     private WolfEnemy[] _wolves = new WolfEnemy[0];
+    private WolfSpawner[] _spawners = new WolfSpawner[0];
     private readonly System.Collections.Generic.Dictionary<WolfEnemy, float> _waitingSince = new System.Collections.Generic.Dictionary<WolfEnemy, float>();
 
     private struct Dust { public Image img; public float x, y, vx, vy, life, age, size; public bool left; }
@@ -64,6 +66,7 @@ public class WolfShadowForewarnFX : MonoBehaviour
         {
             s_chasing = typeof(WolfEnemy).GetField("isChasing", BindingFlags.NonPublic | BindingFlags.Instance);
             s_attached = typeof(WolfEnemy).GetField("isAttached", BindingFlags.NonPublic | BindingFlags.Instance);
+            s_spawned = typeof(WolfSpawner).GetField("hasSpawned", BindingFlags.NonPublic | BindingFlags.Instance);
         }
         BuildUi();
     }
@@ -155,9 +158,28 @@ public class WolfShadowForewarnFX : MonoBehaviour
         {
             _nextScan = Time.unscaledTime + 0.25f;
             _wolves = FindObjectsByType<WolfEnemy>(FindObjectsSortMode.None);
+            _spawners = FindObjectsByType<WolfSpawner>(FindObjectsSortMode.None);
         }
 
         float lt = 0f, rt = 0f;
+
+        // ★狼還沒生出來之前就先有影子：她快走到出生點時，身後（左邊）先浮出暗影，越靠近越濃；
+        // 走到出生點狼才冒出來，接著由下面「蓄勢中的狼」接手，影子不會斷。
+        if (s_spawned != null)
+        {
+            for (int i = 0; i < _spawners.Length; i++)
+            {
+                WolfSpawner sp = _spawners[i];
+                if (sp == null || !sp.isActiveAndEnabled) continue;
+                if ((bool)s_spawned.GetValue(sp)) continue;                      // 已經生過了
+                float sdx = sp.transform.position.x - _player.position.x;       // 出生點在她前方多遠
+                if (sdx < -1f || sdx > PreSpawnRange) continue;
+                if (Mathf.Abs(sp.transform.position.y - _player.position.y) > 10f) continue;
+                float pt = 1f - Mathf.InverseLerp(1f, PreSpawnRange, Mathf.Max(sdx, 0f));
+                pt = pt * pt * (3f - 2f * pt);
+                lt = Mathf.Max(lt, pt);
+            }
+        }
         for (int i = 0; i < _wolves.Length; i++)
         {
             WolfEnemy w = _wolves[i];
