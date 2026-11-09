@@ -146,8 +146,9 @@ public static class HangRescue
     public class HangRescueRunner : MonoBehaviour
     {
         private float _hold;
-        private Text _ui;
         private bool _leaving;
+        private bool _simDone;
+        private float _simAt = -1f;
         private float _autoContinueAt = -1f;
 
         private void Start()
@@ -196,6 +197,26 @@ public static class HangRescue
                 catch (Exception e) { Debug.LogWarning("【緊急救援】自動繼續失敗：" + e.Message); }
             }
 
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+            // 只有開發版／編輯器才有的測試開關：-simulatehang 秒數 → 進入關卡後過這麼多秒，故意把整個遊戲卡死（驗收看門狗用，正式版不含這段）
+            if (!_simDone && s_chain == 0 && ProgressSave.IsGameplay(SceneManager.GetActiveScene().name))
+            {
+                if (_simAt < 0f)
+                {
+                    string[] a = Environment.GetCommandLineArgs();
+                    float sec = -1f;
+                    for (int i = 0; i < a.Length - 1; i++) if (a[i] == "-simulatehang") float.TryParse(a[i + 1], out sec);
+                    _simAt = sec > 0f ? Time.unscaledTime + sec : float.MaxValue;
+                }
+                if (Time.unscaledTime >= _simAt)
+                {
+                    _simDone = true;
+                    Debug.LogWarning("【緊急救援】（測試開關）故意把主執行緒卡死，等看門狗來救");
+                    Thread.Sleep(Timeout.Infinite);
+                }
+            }
+#endif
+
             // ── 第一層：長按 Backspace 回主選單 ──
             if (!Enabled || _leaving) return;
             string sn = SceneManager.GetActiveScene().name;
@@ -205,27 +226,19 @@ public static class HangRescue
             {
                 _hold += Time.unscaledDeltaTime;
                 float menuAt = Mathf.Max(MenuHoldSeconds, 2f);
-                if (_hold >= 2.0f)
-                {
-                    float left = Mathf.Max(0f, menuAt - _hold);
-                    ShowUi("再按住 " + left.ToString("0.0") + " 秒回到主選單　" + Bar(_hold / menuAt));
-                }
-                if (_hold >= menuAt) { _hold = 0f; StartCoroutine(LeaveRoutine()); }
+                RescuePrompt.HoldActive = true;
+                float mark = 1.2f / menuAt;                          // 1.2 秒是原本的「脫困」節點
+                if (_hold < 1.2f) RescuePrompt.Show("嘗試脫困", "持續按住 Backspace", _hold / menuAt, mark, true);
+                else RescuePrompt.Show("已嘗試脫困", "若仍無法行動，繼續按住 " + Mathf.Max(0f, menuAt - _hold).ToString("0.0") + " 秒返回主選單", _hold / menuAt, mark, true);
+                if (_hold >= menuAt) { _hold = 0f; RescuePrompt.Show("正在返回主選單", "", 1f, -1f, true); StartCoroutine(LeaveRoutine()); }
             }
             else { _hold = 0f; HideUi(); }
-        }
-
-        private static string Bar(float f)
-        {
-            int n = Mathf.Clamp(Mathf.RoundToInt(f * 10f), 0, 10);
-            return new string('▮', n) + new string('▯', 10 - n);
         }
 
         /// <summary>逐級加重：走正常出口 → 直接載入主選單 → 還是不行就重開遊戲。</summary>
         private IEnumerator LeaveRoutine()
         {
             _leaving = true;
-            HideUi();
             Debug.LogWarning("【緊急救援】玩家長按 Backspace，緊急回主選單");
             ProgressSave.NoteAbnormalExit();   // 下次繼續從最近的安全位置接
             try { Time.timeScale = 1f; AudioListener.pause = false; } catch { }
@@ -248,37 +261,10 @@ public static class HangRescue
                 RelaunchProcess();
             }
             _leaving = false;
+            HideUi();
         }
 
-        // ── 簡單提示（程式長出來的，不依賴場景裡的任何 UI）──
-        private void ShowUi(string s)
-        {
-            if (_ui == null)
-            {
-                GameObject cv = new GameObject("緊急回主選單提示");
-                cv.transform.SetParent(transform, false);
-                Canvas c = cv.AddComponent<Canvas>();
-                c.renderMode = RenderMode.ScreenSpaceOverlay;
-                c.sortingOrder = 20000;
-                GameObject tg = new GameObject("Text");
-                tg.transform.SetParent(cv.transform, false);
-                _ui = tg.AddComponent<Text>();
-                _ui.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                _ui.fontSize = 30;
-                _ui.alignment = TextAnchor.LowerCenter;
-                _ui.color = new Color(1f, 0.93f, 0.8f, 0.95f);
-                _ui.raycastTarget = false;
-                RectTransform rt = _ui.rectTransform;
-                rt.anchorMin = new Vector2(0f, 0f); rt.anchorMax = new Vector2(1f, 0f);
-                rt.pivot = new Vector2(0.5f, 0f);
-                rt.anchoredPosition = new Vector2(0f, 90f);
-                rt.sizeDelta = new Vector2(0f, 60f);
-            }
-            _ui.text = s;
-            _ui.enabled = true;
-        }
-
-        private void HideUi() { if (_ui != null) _ui.enabled = false; }
+        private void HideUi() { if (RescuePrompt.HoldActive) { RescuePrompt.Hide(true); RescuePrompt.HoldActive = false; } }
     }
 }
 

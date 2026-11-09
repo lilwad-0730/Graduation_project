@@ -60,8 +60,6 @@ public class PlayerUnstuck : MonoBehaviour
     private readonly List<float> _rescues = new List<float>();
     private string _lastEmbeddedName = "";
 
-    private GameObject _uiRoot;
-    private Text _uiText;
     private float _hintUntil;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -128,8 +126,7 @@ public class PlayerUnstuck : MonoBehaviour
         // ───── 手動：按住鍵 ─────
         if (Input.GetKey(manualKey))
         {
-            _hold += Time.unscaledDeltaTime;
-            ShowUi("脫困中… " + Bar(_hold / manualHoldSeconds));
+            _hold += Time.unscaledDeltaTime;     // 按住時的提示面板由 HangRescue 統一畫（含後面的「回主選單」倒數）
             if (_hold >= manualHoldSeconds)
             {
                 _hold = 0f;
@@ -181,7 +178,7 @@ public class PlayerUnstuck : MonoBehaviour
         if (_embeddedT > embeddedSeconds * 0.5f * slow || _pinnedT > pinnedSeconds * 0.5f * slow)
         {
             _hintUntil = Time.unscaledTime + 0.4f;
-            if (_hold <= 0f) ShowUi("卡住了嗎？按住 " + manualKey + " 脫困");
+            if (_hold <= 0f) RescuePrompt.Show("似乎被卡住了", "按住 " + manualKey + " 嘗試脫困");
         }
 
         if (_embeddedT >= embeddedSeconds * slow) { Rescue("身體插在「" + _lastEmbeddedName + "」裡面超過 " + (embeddedSeconds * slow).ToString("F1") + " 秒", false); return; }
@@ -325,46 +322,12 @@ public class PlayerUnstuck : MonoBehaviour
         sb.Append("【脫困】第 ").Append(stage).Append(" 級：").Append(how).Append("\n  原因：").Append(reason).Append("\n  卡住位置：").Append(at.ToString("F2"));
         if (!string.IsNullOrEmpty(_lastEmbeddedName)) sb.Append("\n  附近碰撞體：").Append(_lastEmbeddedName);
         Debug.LogWarning(sb.ToString());
-        ShowUi(how);
+        RescuePrompt.Show("已嘗試脫困", how);
         _hintUntil = Time.unscaledTime + 1.2f;
         if (stage >= 3 && !manual)
             GameRecoveryGuard.ReportSoftLock("StuckPlayer", sb.ToString() + "\n  （前兩級自動脫困沒用，通常是場景碰撞或石頭殼的問題，需要人看）");
         ResetTimers();
     }
 
-    // ───────────── 小提示 UI ─────────────
-    private static string Bar(float t)
-    {
-        int n = Mathf.Clamp(Mathf.RoundToInt(t * 12f), 0, 12);
-        return new string('█', n) + new string('░', 12 - n);
-    }
-
-    private void EnsureUi()
-    {
-        if (_uiRoot != null) return;
-        _uiRoot = new GameObject("脫困提示");
-        _uiRoot.transform.SetParent(transform, false);
-        Canvas cv = _uiRoot.AddComponent<Canvas>();
-        cv.renderMode = RenderMode.ScreenSpaceOverlay;
-        cv.sortingOrder = 9000;
-        GameObject t = new GameObject("字");
-        t.transform.SetParent(_uiRoot.transform, false);
-        _uiText = t.AddComponent<Text>();
-        Font f = Resources.Load<Font>("Fonts/ChenYuluoyan-2.0-Thin");
-        if (f == null) f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        _uiText.font = f;
-        _uiText.fontSize = 30;
-        _uiText.alignment = TextAnchor.LowerCenter;
-        _uiText.color = new Color(0.95f, 0.92f, 0.85f, 0.9f);
-        _uiText.raycastTarget = false;
-        _uiText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        RectTransform rt = _uiText.rectTransform;
-        rt.anchorMin = new Vector2(0f, 0f); rt.anchorMax = new Vector2(1f, 0f);
-        rt.pivot = new Vector2(0.5f, 0f);
-        rt.anchoredPosition = new Vector2(0f, 70f);
-        rt.sizeDelta = new Vector2(0f, 60f);
-    }
-
-    private void ShowUi(string s) { EnsureUi(); _uiText.text = s; _uiRoot.SetActive(true); }
-    private void HideUi() { if (_uiRoot != null && _uiRoot.activeSelf) _uiRoot.SetActive(false); }
+    private void HideUi() { RescuePrompt.Hide(); }
 }
