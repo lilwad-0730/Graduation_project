@@ -17,8 +17,8 @@ public class WolfShadowForewarnFX : MonoBehaviour
     // 企劃可調
     public static float WaitingSeconds = 8f;    // 蓄勢中的狼，出現後多久內有影子
     public static float FadeOutRange = 16f;    // 狼離畫面邊緣多少公尺以外，影子完全沒有（剛好在邊緣外最濃）
-    public static float MaxAlpha = 0.5f;
-    public static float EdgeWidth01 = 0.24f;    // 影子佔畫面寬度的比例
+    public static float MaxAlpha = 0.88f;       // ★實測 0.5 在亮的廢墟畫面幾乎看不到，拉高
+    public static float EdgeWidth01 = 0.40f;   // 影子佔畫面寬度的比例
     public static Color ShadowColor = new Color(0.03f, 0.02f, 0.05f, 1f);
     public static int SortingOrder = 36;
     /// <summary>左右兩側目前的濃度（驗收／除錯用）。</summary>
@@ -87,7 +87,7 @@ public class WolfShadowForewarnFX : MonoBehaviour
             {
                 float u = x / (float)(W - 1);                  // 0＝畫面邊緣，1＝往內
                 float v = y / (float)(H - 1);
-                float a = Mathf.Pow(1f - u, 2.2f);
+                float a = Mathf.Pow(1f - u, 1.5f);
                 a *= 0.4f + 0.6f * Mathf.Sin(v * Mathf.PI);
                 _tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(a)));
             }
