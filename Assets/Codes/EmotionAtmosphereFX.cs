@@ -15,6 +15,8 @@ public class EmotionAtmosphereFX : MonoBehaviour
     public static bool Enabled = true;
     public static bool UnderwaterEnabled = true;
     public static bool CottonEnabled = true;
+    /// <summary>目前顯示的缺氧程度 0～1（唯讀給 EmotionDirector 用；不在水下為 0）。</summary>
+    public static float Suffocation01;
     /// <summary>棉花堡「灰色慢慢回到有顏色」：隊友還沒同意，先關掉，想法與程式保留。要開改成 true。</summary>
     public static bool CottonColorReturn = false;
 
@@ -221,6 +223,7 @@ public class EmotionAtmosphereFX : MonoBehaviour
         if (_ringTex != null) Destroy(_ringTex);
         if (_ringSprite != null) Destroy(_ringSprite);
         StopGrade();
+        Suffocation01 = 0f;
         if (_psMat != null) Destroy(_psMat);
         if (_dotTex != null) Destroy(_dotTex);
         if (_glowTex != null) Destroy(_glowTex);
@@ -303,6 +306,7 @@ public class EmotionAtmosphereFX : MonoBehaviour
         float oTarget = UnderwaterSuffocationEffect.Instance != null ? UnderwaterSuffocationEffect.Instance.Danger01 : 0f;
         _o = Mathf.MoveTowards(_o, oTarget, Time.unscaledDeltaTime * (oTarget > _o ? 1.5f : 3f));
         float oo = Mathf.SmoothStep(0f, 1f, _o);
+        Suffocation01 = _o;
 
         // 泡泡變稀：氣越少，嘴邊冒的泡越少（間隔最多拉長到 3 倍），沒氣時像在憋
         if (_bubbles == null) _bubbles = _player.GetComponent<PlayerSwimBubbles>();

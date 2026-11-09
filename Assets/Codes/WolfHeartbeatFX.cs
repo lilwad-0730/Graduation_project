@@ -11,6 +11,8 @@ using UnityEngine.SceneManagement;
 public class WolfHeartbeatFX : MonoBehaviour
 {
     public static bool Enabled = true;
+    /// <summary>目前顯示的狼緊張度 0～1（唯讀給 EmotionDirector 用；不在廢墟或狼不追時為 0）。</summary>
+    public static float Level;
 
     [Tooltip("狼離主角多近（公尺）時最緊張")]
     public float nearDistance = 4f;
@@ -84,6 +86,7 @@ public class WolfHeartbeatFX : MonoBehaviour
         //  底層＝深色黑邊，狼一盯上就從四個角冒出來（有感），越近越往中間擴大，黑的部分「不閃」；
         //  外圈＝比較淺的暗紅，等狼夠近（緊張度過半）才開始隨心跳一閃一閃，越近越快。
         float k = _level;
+        Level = _level;
         _hv.PulseRingAlpha = 0.4f;
         _hv.SolidAt = 0.9f;
         _hv.Intensity = Mathf.Pow(k, 0.6f);        // 從 0 開始，前段長得比較快（實測 0.2 時幾乎看不到），但仍沒有「突然黑掉」的底值
@@ -93,6 +96,8 @@ public class WolfHeartbeatFX : MonoBehaviour
         _hv.Color = Color.Lerp(new Color(0.01f, 0.005f, 0.015f, 1f), new Color(0.03f, 0.008f, 0.015f, 1f), k);
         _hv.PulseColor = new Color(0.4f, 0.2f, 0.22f, 1f);      // 亮度跟之前差不多，但紅少一點（偏灰紫褐）
     }
+
+    private void OnDestroy() { Level = 0f; }
 
     private float ScanThreat()
     {
