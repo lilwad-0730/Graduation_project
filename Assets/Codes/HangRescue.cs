@@ -199,13 +199,17 @@ public static class HangRescue
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
             // 只有開發版／編輯器才有的測試開關：-simulatehang 秒數 → 進入關卡後過這麼多秒，故意把整個遊戲卡死（驗收看門狗用，正式版不含這段）
-            if (!_simDone && s_chain == 0 && ProgressSave.IsGameplay(SceneManager.GetActiveScene().name))
+            if (!_simDone && ProgressSave.IsGameplay(SceneManager.GetActiveScene().name))
             {
                 if (_simAt < 0f)
                 {
                     string[] a = Environment.GetCommandLineArgs();
                     float sec = -1f;
-                    for (int i = 0; i < a.Length - 1; i++) if (a[i] == "-simulatehang") float.TryParse(a[i + 1], out sec);
+                    for (int i = 0; i < a.Length - 1; i++)
+                    {
+                        if (a[i] == "-simulatehang") float.TryParse(a[i + 1], out sec);
+                        if (a[i] == "-hangseconds") { float hs; if (float.TryParse(a[i + 1], out hs) && hs >= 3f) HangSeconds = hs; }   // 測試用：縮短判定秒數
+                    }
                     _simAt = sec > 0f ? Time.unscaledTime + sec : float.MaxValue;
                 }
                 if (Time.unscaledTime >= _simAt)
