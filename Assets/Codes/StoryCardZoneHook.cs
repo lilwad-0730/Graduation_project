@@ -131,6 +131,7 @@ public class StoryCardZoneHook : MonoBehaviour
         if (!takeOver || _fired || _zone == null) return;
         if (PlayerRespawnSystem.IsAnyRespawning) return;
         if (!IsPlayer(hitObj)) return;
+        if (!_zone.FeetReady(hitObj)) return;   // ★1109g 腳還沒踩進水就先不觸發，下個物理步再試
 
         _fired = true;
         StartCoroutine(Run(hitObj));

@@ -79,6 +79,16 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
              "  這種情況請把這個選項打開。")]
     public bool stopBgmOnTransition = false;
 
+    [Header("🦶 腳要踩進水才觸發 (可選)")]
+    [Tooltip("★1109g 勾選＝玩家的『腳』（身體中心 x、碰撞盒底部 y）要進到下面的範圍才轉場。碰撞盒會比身體往前伸 1~2 米，不勾會在腳碰到水前就開始下沉")]
+    public bool requireFeetInZone = false;
+    [Tooltip("腳的世界 x 下限（左邊界）")]
+    public float feetMinX = 0f;
+    [Tooltip("腳的世界 x 上限（右邊界）")]
+    public float feetMaxX = 0f;
+    [Tooltip("腳的世界 y 上限：腳要在這個高度以下（已站定／落地），跳在水面上方不算")]
+    public float feetMaxY = 0f;
+
     // ──────────────── 內部狀態 ────────────────
     private bool isTransitioning = false;
     private Transform playerTransform;
@@ -152,6 +162,26 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
         TryStartTransition(collision != null ? collision.gameObject : null);
     }
 
+    // ★1109g 腳是否已踩進範圍（不勾 requireFeetInZone 一律 true）；StoryCardZoneHook 也會呼叫（本腳本被停用也能用）
+    public bool FeetReady(GameObject playerObj)
+    {
+        if (!requireFeetInZone) return true;
+        if (playerObj == null) return false;
+
+        PlayerMovement pm = playerObj.GetComponentInParent<PlayerMovement>();
+        if (pm == null) pm = playerObj.GetComponentInChildren<PlayerMovement>();
+        Transform root = pm != null ? pm.transform : playerObj.transform;
+
+        float x = root.position.x;   // 樞紐＝身體中心
+        float y = root.position.y - 1.45f;   // 找不到碰撞盒時的備用腳底
+        Collider[] cols = root.GetComponents<Collider>();
+        for (int i = 0; i < cols.Length; i++)
+        {
+            if (cols[i] != null && !cols[i].isTrigger && cols[i].enabled) { y = cols[i].bounds.min.y; break; }
+        }
+        return x >= feetMinX && x <= feetMaxX && y <= feetMaxY;
+    }
+
     private void TryStartTransition(GameObject hitObj)
     {
         // ★ Unity 就算腳本被停用，OnTriggerEnter/Stay 照樣會被呼叫——
@@ -164,12 +194,14 @@ public class SceneTransitionZone : MonoBehaviour, IResettable
 
         if (pm != null)
         {
+            if (!FeetReady(pm.gameObject)) return;   // ★1109g
             StartTransition(pm.gameObject);
             return;
         }
 
         if (hitObj.CompareTag("Player") || hitObj.name == "Player" || (hitObj.transform.root != null && hitObj.transform.root.name.Contains("Player")))
         {
+            if (!FeetReady(hitObj)) return;   // ★1109g
             StartTransition(hitObj);
         }
     }
