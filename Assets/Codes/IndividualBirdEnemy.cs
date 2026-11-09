@@ -212,6 +212,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             Destroy(this);
             return;
         }
+
+        // ★1109j 每隻鳥各自的大小／亮度／拍翅節奏（含 Instantiate 出來的增援複本；Awake 先於 Start，所以 originalScale 會讀到縮放後的值）
+        if (GetComponent<BirdVariation>() == null) gameObject.AddComponent<BirdVariation>();
     }
 
     private void Start()
@@ -224,6 +227,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
 
         EnsureComponents();
+
+        // ★1109c 發光紅眼（增援複本已帶著元件，不重複加）
+        if (GetComponent<BirdHostileEyes>() == null) gameObject.AddComponent<BirdHostileEyes>();
 
         originalPosition = transform.position;
         originalRotation = transform.rotation;
@@ -442,6 +448,16 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     public float predictionLooseMax = 5f;
     [Tooltip("俯衝命中玩家的距離 (公尺)。原本固定 1.1；稍微加大就是「剛好又稍微多一點打到」")]
     public float hitRadius = 1.1f;
+
+    [Header("★1109 命中改看身體外框（鳥尖碰到她身體才算，不再用以腳為圓心的大圓）")]
+    [Tooltip("開＝鳥尖要碰到她的身體外框（矩形）才算命中；關＝舊的圓形判定（鳥尖離玩家原點 ≤ hitRadius）")]
+    public bool bodyHitTest = true;
+    [Tooltip("身體外框半寬（公尺）。她的剪影約寬 1.9 公尺，中心取模型外框中心")]
+    public float bodyHalfWidth = 0.9f;
+    [Tooltip("身體外框半高（公尺）。她的剪影約高 2.8 公尺")]
+    public float bodyHalfHeight = 1.4f;
+    [Tooltip("身體外框外再多給的容許距離（公尺）。鳥尖離外框 ≤ 這個值才算命中")]
+    public float bodyHitMargin = 0.25f;
 
     [Header("★1010 用鳥的姿勢預告（取代紅線，02 #39；DesertBeatDirector 會統一覆蓋）")]
     [Tooltip("前搖時：先往上一提（蓄力）、身體張大、頭對準落點（showAttackAngleCue），下墜前抖一下。關掉＝只有轉頭")]
@@ -678,6 +694,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
     private float _grantedQueueWait = 0f;
     private float _dbgPredT = 0f;                 // 診斷：最近一次預判實際用的預判時間／領先量
     private float _dbgPredLead = 0f;
+    private float _minBodyGap = float.MaxValue;   // ★1109 最近的身體外框距離（給 DIVE-RESULT 記錄）
     private float _minPlayerDist = float.MaxValue, _minDistPlayerX, _minDistBirdX, _minDistTime, _diveStartTime;
 
     /// <summary>已偵測到玩家、需求在排程器佇列裡等待放行（盤旋中，不鎖座標、不亮紅線）。</summary>
@@ -685,6 +702,11 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
     /// <summary>已放行：前搖或俯衝中。排程器用它算「同時攻擊上限」。</summary>
     public bool IsAttacking => currentState == BirdState.Warning || currentState == BirdState.Diving;
+
+    // ★1109c 已偵測到玩家、還沒結束：排隊／前搖／俯衝。Idle、Bounced、Stuck 不算。給 BirdHostileEyes 亮紅眼用
+    [Tooltip("偵測到玩家後眼睛亮起發光紅眼（BirdHostileEyes）。由 DesertBeatDirector.birdHostileEyes 統一設定。")]
+    public bool hostileEyes = true;
+    public bool IsHostile => currentState == BirdState.Pending || currentState == BirdState.Warning || currentState == BirdState.Diving;
 
     /// <summary>排程器放行。鳥進入前搖（lock-on → 紅線 → 俯衝）。</summary>
     public void GrantAttack(BirdAttackType type, float queueWait)
@@ -1157,7 +1179,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (pendingFaceTarget) PlayAnim(warningAnimName);   // 偵測到了：換警戒動畫，不再看起來像沒反應
             float d = Mathf.Abs(transform.position.x - playerTrans.position.x);
             // 由 BirdAttackTriggerZone／TriggerAllBirdsAttack 直接呼叫的屬於強制需求，插隊
-            BirdAttackScheduler.Enqueue(this, !autoDetectPlayer || triggerMode == BirdTriggerMode.TriggerZoneOrCollisionOnly, d);
+            // ★1109b 增援鳥不算強制（牠們只是關掉自動偵測）：照一般需求排隊，遵守放行視窗與波次空檔
+            bool force = (!autoDetectPlayer && !_isReinforcement) || triggerMode == BirdTriggerMode.TriggerZoneOrCollisionOnly;
+            BirdAttackScheduler.Enqueue(this, force, d);
             return;
         }
         StartCoroutine(AttackCoroutine());
@@ -1613,6 +1637,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             _diveStartPos = transform.position;
         }
         _minPlayerDist = float.MaxValue;
+        _minBodyGap = float.MaxValue;
         _diveStartTime = BirdTime;
 
         // 垂直向下；X 鎖死在落點上方，下降期間完全不看玩家位置
@@ -1722,6 +1747,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             if (playerTrans != null)
             {
                 float distToPlayer = Vector2.Distance(new Vector2(transform.position.x, transform.position.y), new Vector2(playerTrans.position.x, playerTrans.position.y));
+                // ★1109 身體外框距離：鳥尖到「玩家模型外框中心 ± 半寬半高」矩形的距離（在框內＝0）
+                float bodyGap = BodyGap(new Vector2(transform.position.x, transform.position.y), GetPlayerBodyCenter(playerTrans), bodyHalfWidth, bodyHalfHeight);
+                if (bodyGap < _minBodyGap) _minBodyGap = bodyGap;
                 if (distToPlayer < _minPlayerDist) { _minPlayerDist = distToPlayer; _minDistPlayerX = playerTrans.position.x; _minDistBirdX = transform.position.x; _minDistTime = BirdTime - _diveStartTime; }
                 
                 // 1. 優先檢查護盾：當護盾啟動時，只要鳥觸及護盾外圍 (2.4 米)，立刻在護盾表面彈飛！
@@ -1739,8 +1767,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                 }
                 else
                 {
-                    // 2. 護盾未開啟：鳥衝撞到玩家本體 (1.1 米)
-                    if (distToPlayer <= hitRadius)
+                    // 2. 護盾未開啟：★1109 鳥尖碰到玩家身體外框才算（bodyHitTest 關＝舊的圓形 hitRadius）
+                    bool bodyHit = bodyHitTest ? bodyGap <= bodyHitMargin : distToPlayer <= hitRadius;
+                    if (bodyHit)
                     {
                         // 主動石化硬撐中：她是石頭，啄不動，直接彈飛（企劃：按住不放＝抗風抗鳥）
                         PlayerPetrification pet = playerTrans.GetComponentInParent<PlayerPetrification>();
@@ -1777,14 +1806,14 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
                             //   行為完全沒變；這裡只取代最後那條「命中即死」。
                             BirdAttackScheduler.Stat("HIT");
                             BirdAttackScheduler.Stat("RETREAT");
-                            BirdAttackScheduler.Log("HIT", this, "");
+                            BirdAttackScheduler.Log("HIT", this, $"bodyGap={bodyGap:F2}m pivotDist={distToPlayer:F2}m");
                             BirdAttackScheduler.Log("RETREAT", this, $"push={retreatPushSpeed:F1}x{retreatPushDuration:F2}s");
                             ApplyPlayerRetreat();
                         }
                         else
                         {
                             BirdAttackScheduler.Stat("HIT");
-                            BirdAttackScheduler.Log("HIT", this, "Kill→Respawn");
+                            BirdAttackScheduler.Log("HIT", this, $"Kill→Respawn bodyGap={bodyGap:F2}m pivotDist={distToPlayer:F2}m");
                             PlayerRespawnSystem respawn = playerTrans.GetComponentInChildren<PlayerRespawnSystem>();
                             if (respawn == null) respawn = playerTrans.GetComponentInParent<PlayerRespawnSystem>();
                             if (respawn != null) respawn.TriggerRespawn();
@@ -1797,6 +1826,43 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
 
             do yield return null; while (CutscenePaused);
         }
+    }
+
+    // ── ★1109 身體外框命中 ─────────────────────────────────
+    // 玩家模型（SkinnedMeshRenderer）的外框中心才是她真正的身體中心，不是腳下的原點；快取起來不每幀搜尋
+    private static Transform s_bodyOwner;
+    private static Renderer s_bodyRend;
+    private static Collider s_bodyCol;
+
+    /// <summary>玩家身體中心（世界座標 x,y）：優先模型外框中心，沒有就用 Collider 中心，再沒有用原點。</summary>
+    public static Vector2 GetPlayerBodyCenter(Transform player)
+    {
+        if (player == null) return Vector2.zero;
+        // 換人／換場景／模型被銷毀或關掉 → 重新找
+        if (s_bodyOwner != player || (s_bodyRend == null && s_bodyCol == null) || (s_bodyRend != null && !s_bodyRend.gameObject.activeInHierarchy))
+        {
+            s_bodyOwner = player; s_bodyRend = null; s_bodyCol = null;
+            float best = 0f;
+            foreach (SkinnedMeshRenderer r in player.GetComponentsInChildren<SkinnedMeshRenderer>(false))
+            {
+                if (!r.enabled) continue;
+                float a = r.bounds.size.x * r.bounds.size.y;
+                if (r.name == "model") a += 1000000f;   // 名叫 model 的優先
+                if (a > best) { best = a; s_bodyRend = r; }
+            }
+            if (s_bodyRend == null) s_bodyCol = player.GetComponentInChildren<Collider>();
+        }
+        if (s_bodyRend != null) { Vector3 c = s_bodyRend.bounds.center; return new Vector2(c.x, c.y); }
+        if (s_bodyCol != null) { Vector3 c = s_bodyCol.bounds.center; return new Vector2(c.x, c.y); }
+        return new Vector2(player.position.x, player.position.y);
+    }
+
+    /// <summary>點到以 center 為中心、半寬半高的矩形之距離（在框內＝0）。</summary>
+    public static float BodyGap(Vector2 point, Vector2 center, float halfW, float halfH)
+    {
+        float dx = Mathf.Max(0f, Mathf.Abs(point.x - center.x) - halfW);
+        float dy = Mathf.Max(0f, Mathf.Abs(point.y - center.y) - halfH);
+        return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
     /// <summary>
@@ -2450,7 +2516,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         if (BirdAttackScheduler.debugEnabled && playerTrans != null)
         {
             Rigidbody prb = playerTrans.GetComponent<Rigidbody>();
-            BirdAttackScheduler.Log("DIVE-RESULT", this, $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} 最近距離={_minPlayerDist:F1}m（第 {_minDistTime:F2}s，鳥X={_minDistBirdX:F1} 玩家X={_minDistPlayerX:F1}）鎖定落點X={_lockedDiveTarget.x:F1} 俯衝總時間={BirdTime - _diveStartTime:F2}s 實際下降距離={(_diveStartPos.y - transform.position.y):F1}m 平均垂直速度={(_diveStartPos.y - transform.position.y) / Mathf.Max(0.01f, BirdTime - _diveStartTime):F1}m/s 設定下降速度={diveDescentSpeed:F1} / 水平漂移={Mathf.Abs(transform.position.x - _diveStartPos.x):F2}m 現在玩家X={playerTrans.position.x:F1} 玩家vx={(prb != null ? prb.linearVelocity.x : 0f):F1}");
+            BirdAttackScheduler.Log("DIVE-RESULT", this, $"Mode={(_currentAttackType == BirdAttackType.FixedPosition ? "Current" : "Predicted")} 最近距離={_minPlayerDist:F1}m 最近身體外框距離={_minBodyGap:F2}m（第 {_minDistTime:F2}s，鳥X={_minDistBirdX:F1} 玩家X={_minDistPlayerX:F1}）鎖定落點X={_lockedDiveTarget.x:F1} 俯衝總時間={BirdTime - _diveStartTime:F2}s 實際下降距離={(_diveStartPos.y - transform.position.y):F1}m 平均垂直速度={(_diveStartPos.y - transform.position.y) / Mathf.Max(0.01f, BirdTime - _diveStartTime):F1}m/s 設定下降速度={diveDescentSpeed:F1} / 水平漂移={Mathf.Abs(transform.position.x - _diveStartPos.x):F2}m 現在玩家X={playerTrans.position.x:F1} 玩家vx={(prb != null ? prb.linearVelocity.x : 0f):F1}");
         }
 
         StopAllCoroutines(); // 立即停止俯衝攜程
@@ -2909,6 +2975,7 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
         hasAttackedOrDied = false;
         gameObject.SetActive(true);
         currentState = BirdState.Idle;
+        { var eyes = GetComponent<BirdHostileEyes>(); if (eyes != null) eyes.HideImmediate(); }   // ★1109c 重生：紅眼立刻熄掉
         InitializeHoverProfile();
         transform.position = originalPosition;
         transform.rotation = originalRotation;

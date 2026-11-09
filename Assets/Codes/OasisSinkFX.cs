@@ -343,6 +343,21 @@ public class OasisSinkFX : MonoBehaviour
         RestoreTime();
     }
 
+    // ★1109f 水面遮罩：每次入水只找一次，找不到就維持原樣
+    private SpriteMask[] _masks;
+    private bool FindWaterMask(Vector3 pos)
+    {
+        if (_masks == null) _masks = FindObjectsOfType<SpriteMask>();
+        for (int i = 0; i < _masks.Length; i++)
+        {
+            SpriteMask m = _masks[i];
+            if (m == null || !m.gameObject.activeInHierarchy || !m.enabled) continue;
+            Bounds b = m.bounds;
+            if (pos.x >= b.min.x && pos.x <= b.max.x && pos.y >= b.min.y - 3f && pos.y <= b.max.y + 3f) return true;
+        }
+        return false;
+    }
+
     private IEnumerator Ripple(Vector3 pos, Texture2D ringTex, float delay, float strength)
     {
         float d = 0f;
@@ -355,13 +370,14 @@ public class OasisSinkFX : MonoBehaviour
         Shader sh = Shader.Find("Sprites/Default");
         if (sh != null) sr.sharedMaterial = new Material(sh);
         sr.sortingOrder = _cardMode ? 10050 : 30;   // 卡模式：文字卡的畫布是 10000，水波要畫在它上面才看得到
+        if (FindWaterMask(pos)) sr.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;   // ★1109f 水波只畫在水裡
         float t = 0f, dur = _cardMode ? 2.6f : 1.7f;   // 卡模式水波散得更慢，一路淡到接上變色
         while (t < dur)
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / dur);
             float e = 1f - (1f - k) * (1f - k);                       // 先快後慢地擴散
-            o.transform.localScale = new Vector3(Mathf.Lerp(0.5f, 6.5f, e), Mathf.Lerp(0.14f, 1.2f, e), 1f);   // 壓扁的橢圓＝水面上的圈
+            o.transform.localScale = new Vector3(Mathf.Lerp(0.5f, 5.0f, e), Mathf.Lerp(0.14f, 0.85f, e), 1f);   // 壓扁的橢圓＝水面上的圈
             sr.color = new Color(0.85f, 1f, 1f, (1f - k) * (1f - k) * 0.8f * strength);
             yield return null;
         }

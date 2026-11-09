@@ -32,7 +32,7 @@ public class DesertRelics : MonoBehaviour
         new Relic { resource = "shoe",      x = 30f,  height = 1.4f, bury = 0.30f, sortingOrder = 2 },
         new Relic { resource = "glove",     x = 62.5f, height = 1.5f, bury = 0.33f, sortingOrder = 2, atFirstFakeShelterLee = true, offsetFromShelter = -1.4f },
         new Relic { resource = "cup",       x = 160f, height = 1.2f, bury = 0.33f, sortingOrder = 2 },
-        new Relic { resource = "doorframe", x = 226f, height = 6.0f, bury = 0.35f, sortingOrder = 2 },
+        new Relic { resource = "doorframe", x = 256f, height = 6.0f, bury = 0.35f, sortingOrder = 2 }, // 225+30：荒原後段往右延長 30
     };
 
     private readonly List<GameObject> _spawned = new List<GameObject>();

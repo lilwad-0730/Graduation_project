@@ -137,6 +137,10 @@ public class DesertBeatDirector : MonoBehaviour
     public float behindPenaltyMeters = 8f;
     [Tooltip("★1007 優先分數：每等待 1 秒扣多少公尺的分，避免排很久的鳥餓死。0＝純粹看距離")]
     public float agingMetersPerSecond = 2f;
+    [Tooltip("★1109b 放行視窗（前）：只有在她右前方這麼多公尺（世界 x）以內的鳥才會被放行；更遠的鳥留在佇列盤旋，等她走近才輪到。0＝不限制")]
+    public float releaseAheadMeters = 10f;
+    [Tooltip("★1109b 放行視窗（後）：只有在她左後方這麼多公尺（世界 x）以內的鳥才會被放行；更遠的鳥留在佇列盤旋，等她走近才輪到。0＝不限制")]
+    public float releaseBehindMeters = 10f;
 
     [Header("★1029 綠洲收尾：到綠洲前把排隊的鳥放完")]
     [Tooltip("★1029 勾選＝玩家走近場景裡名叫「oasis」的物件時，加快放行並把排隊中的鳥放完，不讓她到了綠洲還有鳥在排隊。找不到 oasis 就等於關閉")]
@@ -195,6 +199,14 @@ public class DesertBeatDirector : MonoBehaviour
     public float predictionLooseMax = 5f;
     [Tooltip("俯衝命中玩家的距離 (公尺)，原本固定 1.1。稍微加大＝「剛好又稍微多一點打到」；不建議超過 2")]
     public float birdHitRadius = 1.4f;
+    [Tooltip("★1109 開＝鳥尖要碰到她的身體外框才算命中（鳥背後那一側不再提早被打到）；關＝舊的圓形 birdHitRadius")]
+    public bool birdBodyHitTest = true;
+    [Tooltip("★1109 身體外框半寬（公尺），中心取她模型外框中心")]
+    public float birdBodyHalfWidth = 0.9f;
+    [Tooltip("★1109 身體外框半高（公尺）")]
+    public float birdBodyHalfHeight = 1.4f;
+    [Tooltip("★1109 外框外多給的容許距離（公尺）")]
+    public float birdBodyHitMargin = 0.25f;
 
     [Header("★1015 垂直慢速墜落（開局統一覆蓋每隻鳥）")]
     [Tooltip("下降階段垂直速度 (公尺/秒)。0＝不覆蓋。3＝慢速彈幕，想更慢 2.5、更快 4")]
@@ -209,6 +221,8 @@ public class DesertBeatDirector : MonoBehaviour
     public bool cancelRedLine = true;
     [Tooltip("用鳥的姿勢預告攻擊：前搖時先往上一提、身體張大、頭對準落點，下墜前抖一下（IndividualBirdEnemy.poseCue）")]
     public bool birdPoseCue = true;
+    [Tooltip("★1109c 鳥偵測到玩家後眼睛亮起發光紅眼（IndividualBirdEnemy.hostileEyes / BirdHostileEyes）")]
+    public bool birdHostileEyes = true;
     [Tooltip("逼她往回走（會議 a.II「不得不往回走的感覺要加強」）：攻擊只落在她前方或她身上、不落在身後。\n往前走會撞上，往回走才安全（IndividualBirdEnemy.pushBackMode）")]
     public bool birdPushBack = true;
     [Tooltip("她停著時，這個比例的攻擊落在她前方一兩步擋路（其餘打她）")]
@@ -418,6 +432,8 @@ public class DesertBeatDirector : MonoBehaviour
         BirdAttackScheduler.requestKeepRangeMultiplier = requestKeepRangeMultiplier;
         BirdAttackScheduler.behindPenaltyMeters = behindPenaltyMeters;
         BirdAttackScheduler.agingMetersPerSecond = agingMetersPerSecond;
+        BirdAttackScheduler.releaseAheadMeters = releaseAheadMeters;   // ★1109b
+        BirdAttackScheduler.releaseBehindMeters = releaseBehindMeters;
         // ★1029 綠洲收尾：找到「oasis」才啟用，x 無限大＝關閉
         BirdAttackScheduler.finaleOasisX = float.PositiveInfinity;
         if (enableOasisFinale)
@@ -622,6 +638,10 @@ public class DesertBeatDirector : MonoBehaviour
             b.predictionLooseMin = predictionLooseMin;
             b.predictionLooseMax = predictionLooseMax;
             b.hitRadius = birdHitRadius;
+            b.bodyHitTest = birdBodyHitTest;           // ★1109 命中改看身體外框
+            b.bodyHalfWidth = birdBodyHalfWidth;
+            b.bodyHalfHeight = birdBodyHalfHeight;
+            b.bodyHitMargin = birdBodyHitMargin;
             b.retryChance = birdRetryChance;           // ★1018 場景裡每隻鳥存的是舊值，統一由導演決定
             b.retryMax = birdRetryMax;
             b.attackSpeedJitter = birdAttackSpeedJitter;
@@ -630,6 +650,7 @@ public class DesertBeatDirector : MonoBehaviour
             if (birdDescentSpeed > 0f) b.diveDescentSpeed = birdDescentSpeed * speedBoost;
             if (birdAlignSpeed > 0f) b.diveAlignSpeed = birdAlignSpeed * speedBoost;
             b.showAttackTelegraph = birdShowTelegraph && !cancelRedLine;   // ★1010 02 #39 取消紅線
+            b.hostileEyes = birdHostileEyes;                   // ★1109c 偵測到玩家的鳥亮發光紅眼
             b.poseCue = birdPoseCue;
             if (birdPoseCue) b.showAttackAngleCue = true;
             b.pushBackMode = birdPushBack;

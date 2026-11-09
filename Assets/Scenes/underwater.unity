@@ -406,6 +406,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!1 &13003295 stripped
 GameObject:
@@ -5370,6 +5372,8 @@ MonoBehaviour:
   customMessageText: {fileID: 0}
   customMessageCanvasGroup: {fileID: 0}
   resetOnlyWolvesInRuins: 1
+  fallNaturallyOnDeath: 1
+  deathFallMaxMeters: 12
 --- !u!114 &381597746
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5414,6 +5418,16 @@ MonoBehaviour:
   pushDetectionDistance: 0.35
   logWindBlockDebug: 0
   isPushing: 0
+  lightCandleAnimState: LightCandle
+  lightAnimPlaySeconds: 1.5
+  lightAnimYawOffset: 15
+  lightTurnDegreesPerSecond: 300
+  aimLightHandAtCandle: 1
+  lightHandBone: 29
+  lightHandLocalOffset: {x: -0.157, y: 0.521, z: 0.684}
+  candleAimDepthOffset: 0
+  lightAimFacingTieTolerance: 0.05
+  lightCandleClipName: Light Candle
   isWindSuctionActive: 0
   windSuctionTargetX: 0
   windSuctionSpeed: 3
@@ -5436,12 +5450,16 @@ MonoBehaviour:
   fallAnimBlendSeconds: 0.12
   swimToTreadBlendSeconds: 0.8
   treadToSwimBlendSeconds: 0.3
+  runToIdleBlendSeconds: 0.25
+  idleToRunBlendSeconds: 0.15
   controlledRuinsFall: 1
   ruinsFallStartSpeed: 9
   ruinsFallTerminalSpeed: 17
   ruinsFallAcceleration: 12
   ruinsFallBrakeDistance: 9
   ruinsFallLandingSpeed: 6
+  ruinsFallBrakeGraceSeconds: 0.6
+  controlledFallAnimDelay: 0.3
   ruinsIntroHandBackSeconds: 1
   ruinsIntroCloseupBlendSeconds: 1
   waterDetectionMode: 0
@@ -8808,6 +8826,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!95 &611399233
 Animator:
@@ -10415,6 +10435,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   crossfadeDuration: 1.5
+  voiceDuckLevel: 0.35
+  voiceDuckDownSeconds: 0.35
+  voiceDuckUpSeconds: 0.9
 --- !u!4 &724163927
 Transform:
   m_ObjectHideFlags: 0
@@ -12617,6 +12640,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!95 &904978190
 Animator:
@@ -13699,6 +13724,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!1 &948525785 stripped
 GameObject:
@@ -13812,6 +13839,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!114 &956479048
 MonoBehaviour:
@@ -15024,9 +15053,16 @@ MonoBehaviour:
   fadeDuration: 1.2
   sinkSpeed: 1.2
   targetSinkDepth: 2.5
+  cinematicSink: 1
+  cinematicSeconds: 2.8
+  cinematicDepth: 4
   transitionSFX: {fileID: 0}
   sfxVolume: 0.9
   stopBgmOnTransition: 1
+  requireFeetInZone: 0
+  feetMinX: 0
+  feetMaxX: 0
+  feetMaxY: 0
 --- !u!65 &999162386
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18706,7 +18742,10 @@ MonoBehaviour:
   ruinsBelowY: -60
   timedFlightWaypointName: P14
   timedFlightSeconds: 3
+  maxFlightSeconds: 5
+  maxFlightOnlyInDesert: 1
   cameraHandBackSeconds: 1
+  cameraEnterSeconds: 0.6
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
   touchTriggerDistance: 2.2
@@ -18731,6 +18770,55 @@ MonoBehaviour:
   fadeInDuration: 1
   absorbSFX: {fileID: 8300000, guid: a713f28395c464f4f82be46d25c65a8e, type: 3}
   sfxVolume: 0.9
+  waypointVoices:
+  - waypointName: WP (1)
+    clip: {fileID: 8300000, guid: 68aaa5ec98737a64a90514ad024768d0, type: 3}
+    volume: 1
+    subtitle: "\u6211\u8D8A\u60F3\u628A\u65E5\u5B50\u904E\u597D\uFF0C\u5C31\u8D8A\u5598\u4E0D\u904E\u6C23\uFF0C\n\u53EA\u60F3\u6709\u4E00\u523B\uFF0C\u4EC0\u9EBC\u90FD\u4E0D\u7528\u56DE\u61C9\u3002"
+  - waypointName: WP (4)
+    clip: {fileID: 8300000, guid: a6726ab35784ce344826dc5df685b62a, type: 3}
+    volume: 1
+    subtitle: "\u4F60\u5011\u8AAA\u904E\u7684\u8A71\uFF0C\u548C\u6211\u8CAC\u602A\u81EA\u5DF1\u7684\u8072\u97F3\uFF0C\n\u4E0D\u65B7\u7D93\u904E\uFF0C\u8B93\u6211\u7121\u8655\u53EF\u8EB2\u3002"
+  - waypointName: WP (6)
+    clip: {fileID: 8300000, guid: 07318da31606ede4c9000265d90fd0db, type: 3}
+    volume: 1
+    subtitle: "\u6211\u77E5\u9053\u90A3\u4E9B\u8A71\u50B7\u4E86\u4F60\uFF0C\u4E5F\u60F3\u505C\u4E0B\uFF0C\n\u53EF\u60C5\u7DD2\u6E67\u4F86\u6642\uFF0C\u6211\u53C8\u63A7\u5236\u4E0D\u4E86\u81EA\u5DF1\u3002"
+  - waypointName: WP (9)
+    clip: {fileID: 8300000, guid: e9c379fc3bec16542960bdbca43ac3ae, type: 3}
+    volume: 1
+    subtitle: "\u770B\u8457\u4EE5\u524D\u6211\u5011\u5169\u500B\u4EBA\u7684\u7167\u7247\uFF0C\u6211\u60F3\u8D77\u90A3\u6642\u5019\uFF0C\n\u53EF\u4EE5\u4E00\u8D77\u51FA\u9580\uFF0C\u4E5F\u53EF\u4EE5\u4E00\u89BA\u7761\u5230\u5929\u4EAE\u3002\n\u73FE\u5728\uFF0C\u6211\u9023\u6628\u665A\u9192\u4E86\u5E7E\u6B21\u90FD\u8A18\u4E0D\u6E05\u4E86\u3002"
+  subtitleStyle:
+    font: {fileID: 11400000, guid: 762e567ebcaba0145afecc68607d176c, type: 2}
+    fontSize: 46.3
+    characterSpacing: 8.5
+    lineSpacing: 27.5
+    boldness: 0.057
+    textColor: {r: 0.12363034, g: 0.2043496, b: 0.29559743, a: 1}
+    glowColor: {r: 1, g: 1, b: 1, a: 0.1882}
+    glowWidth: 0.305
+    glowSoftness: 0.356
+    shadowOn: 1
+    shadowColor: {r: 0.08, g: 0.06, b: 0.1, a: 0.5255}
+    shadowOffset: {x: 1, y: -1}
+    shadowSoftness: 0.823
+    shadowDilate: 0.076
+    bottom: 0.08
+    top: 0.2
+    sideMargin: 0.15
+    fadeIn: 0.613
+    fadeOut: 0.91
+    showPanel: 0
+    panelColor: {r: 0.82, g: 0.92, b: 0.97, a: 0.4}
+    panelPadding: {x: 90, y: 42}
+    panelEdgeFade: 43.3
+    panelPuffiness: 0.697
+    fadeWhenPlayerOverlaps: 1
+    overlapAlpha: 0.3
+    overlapFadeTime: 0.25
+    overlapPadding: 0
+    playerBodyMargin: 0.15
+    playerBodyMarginX: 0.55
+    showOverlapDebug: 0
   orbRelievesBreath: 1
   orbBreathAmount: 0.15
 --- !u!199 &1200656985
@@ -23623,6 +23711,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!95 &1204498366
 Animator:
@@ -27221,6 +27311,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!4 &1382254971
 Transform:
@@ -27824,6 +27916,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!95 &1417918048
 Animator:
@@ -30309,6 +30403,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!95 &1579960760
 Animator:
@@ -32973,6 +33069,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!114 &1732344108
 MonoBehaviour:
@@ -33166,6 +33264,9 @@ MonoBehaviour:
   sfxVolume: 0.9
   vignetteColor: {r: 0, g: 0, b: 0, a: 1}
   maxDarknessIntensity: 0.927
+  keepOutsideVisible: 1
+  outsideVisibility: 0.15
+  outsideFadeBand: 0.14
   mainSoftness: 0.22
   blurSpread: 0.18
   outerGlowOpacity: 0.55
@@ -33180,6 +33281,8 @@ MonoBehaviour:
   exhaustRingOffset: 0.17
   exhaustRingOpacity: 0.45
   exhaustRingBeatsPerSecond: 1.6
+  exhaustRingMaxPeak: 0.95
+  exhaustRingFadeSpeed: 14
 --- !u!1001 &1740012424
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34807,6 +34910,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!1001 &1773088503
 PrefabInstance:
@@ -35230,6 +35335,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!4 &1814843139
 Transform:
@@ -37148,6 +37255,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!1 &1926140693
 GameObject:
@@ -43841,6 +43950,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleNote
   shrinkDuration: 0.35
   colliderSizeMultiplier: 1
+  minTriggerWorldSize: 1.2
+  maxTriggerWorldSize: 2.4
   warmGlow: 1
 --- !u!4 &2065086600
 Transform:

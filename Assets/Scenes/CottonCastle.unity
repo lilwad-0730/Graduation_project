@@ -24883,15 +24883,20 @@ MonoBehaviour:
     lineSpacing: 25
     boldness: 0.05
     textColor: {r: 0.3, g: 0.32, b: 0.52, a: 1}
-    glowColor: {r: 1, g: 0.97, b: 0.94, a: 0.9}
-    glowWidth: 0.25
-    glowSoftness: 0.2
+    glowColor: {r: 1, g: 1, b: 1, a: 0.25490198}
+    glowWidth: 0.276
+    glowSoftness: 0.177
+    shadowOn: 1
+    shadowColor: {r: 0.08, g: 0.06, b: 0.1, a: 0.5254902}
+    shadowOffset: {x: 1, y: -1}
+    shadowSoftness: 0.836
+    shadowDilate: 0.45
     bottom: 0.08
     top: 0.2
     sideMargin: 0.15
     fadeIn: 0.4
     fadeOut: 0.6
-    showPanel: 1
+    showPanel: 0
     panelColor: {r: 1, g: 0.97, b: 0.94, a: 0.38}
     panelPadding: {x: 90, y: 42}
     panelEdgeFade: 48
