@@ -108,6 +108,7 @@ public class GlassShatterFX : MonoBehaviour, IResettable
     public void TriggerBreakSequence()
     {
         if (isTriggered || isShattered) return;
+        if (CandlePlatformGuard.IsHeld(this)) return;   // ★1110 燭火還沒點燃完成：這片先不崩落（見 CandlePlatformGuard）
         isTriggered = true;
         StartCoroutine(ShatterSequenceRoutine());
     }

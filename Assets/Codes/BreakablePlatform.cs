@@ -194,6 +194,7 @@ public class BreakablePlatform : MonoBehaviour, IResettable
     public void StartBreakSequence()
     {
         if (currentState != BreakState.Intact) return;
+        if (CandlePlatformGuard.IsHeld(this)) return;   // ★1110 燭火還沒點燃完成：這片先不崩落（見 CandlePlatformGuard）
 
         if (breakCoroutine != null)
         {
