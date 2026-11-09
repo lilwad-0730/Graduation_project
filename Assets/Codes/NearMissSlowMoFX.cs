@@ -25,7 +25,8 @@ public class NearMissSlowMoFX : MonoBehaviour
     public static float RecoverSeconds = 0.22f;    // 真實時間，慢慢加速回 1
     public static float ImminentGap = 1.6f;        // 狼追到身體縫隙小於幾公尺，就在咬到之前先慢下來
     public static float ImminentHold = 0.45f;      // 咬之前的慢動作停留（真實時間）
-    public static float Cooldown = 10f;           // 兩次之間至少隔幾秒
+    public static float Cooldown = 10f;           // 「甩開」那種：兩次之間至少隔幾秒
+    public static float ImminentCooldown = 1.0f;  // 「快咬到」那種：每次要咬到都會慢，只留這點間隔避免一直閃（每一口都有）
     public static float CloseGap = 0.7f;           // 身體縫隙小於幾公尺算「貼到身上」（0＝已經碰到＝咬住）
     public static float EscapeGap = 0.8f;          // 縫隙拉開多少算「甩開」
     /// <summary>已經演過幾次（驗收／除錯用）。</summary>
@@ -120,6 +121,7 @@ public class NearMissSlowMoFX : MonoBehaviour
     {
         Vector2 pp = _player.position;
         bool miss = false;
+        _pendingHold = -1f;     // 每次重新判斷：只有這一幀真的「快咬到」才會再設成咬前慢動作
 
         for (int i = 0; i < _wolves.Length; i++)
         {
@@ -209,7 +211,7 @@ public class NearMissSlowMoFX : MonoBehaviour
     private bool CanStart()
     {
         if (!Mathf.Approximately(Time.timeScale, 1f)) return false;                 // 暫停、文字卡、別人的慢動作
-        if (Time.unscaledTime - _lastTrigger < Cooldown) return false;
+        if (Time.unscaledTime - _lastTrigger < (_pendingHold > 0f ? ImminentCooldown : Cooldown)) return false;
         if (Time.unscaledTime - s_sceneStart < 3f) return false;
         PlayerRespawnSystem rs = PlayerRespawnSystem.Instance;
         if (rs != null && rs.IsRespawning) return false;
