@@ -15,7 +15,8 @@ public class WolfShadowForewarnFX : MonoBehaviour
     public static bool Enabled = true;
 
     // 企劃可調
-    public static float FadeOutRange = 16f;     // 狼離畫面邊緣多少公尺以外，影子完全沒有（剛好在邊緣外最濃）
+    public static float WaitingSeconds = 8f;    // 蓄勢中的狼，出現後多久內有影子
+    public static float FadeOutRange = 16f;    // 狼離畫面邊緣多少公尺以外，影子完全沒有（剛好在邊緣外最濃）
     public static float MaxAlpha = 0.5f;
     public static float EdgeWidth01 = 0.24f;    // 影子佔畫面寬度的比例
     public static Color ShadowColor = new Color(0.03f, 0.02f, 0.05f, 1f);
@@ -51,6 +52,7 @@ public class WolfShadowForewarnFX : MonoBehaviour
     private Transform _player;
     private float _nextScan;
     private WolfEnemy[] _wolves = new WolfEnemy[0];
+    private readonly System.Collections.Generic.Dictionary<WolfEnemy, float> _waitingSince = new System.Collections.Generic.Dictionary<WolfEnemy, float>();
 
     private struct Dust { public Image img; public float x, y, vx, vy, life, age, size; public bool left; }
     private Dust[] _dust;
@@ -159,7 +161,22 @@ public class WolfShadowForewarnFX : MonoBehaviour
         for (int i = 0; i < _wolves.Length; i++)
         {
             WolfEnemy w = _wolves[i];
-            if (w == null || !w.isActiveAndEnabled) continue;
+            if (w == null || !w.gameObject.activeInHierarchy) continue;
+            if (!w.enabled)
+            {
+                // 蓄勢中的狼：出生點把狼生在她身後（約 8 公尺）、狼腳本先關著、淡入等她跑遠才放出去追。
+                // 這段時間牠其實就在畫面裡，但「看不太到、卻知道有東西在後面」——從牠那一側浮出影子。
+                // 只算剛出現後 WaitingSeconds 秒內，避免被別的原因關掉的狼讓影子永遠不退。
+                float first;
+                if (!_waitingSince.TryGetValue(w, out first)) { first = Time.unscaledTime; _waitingSince[w] = first; }
+                if (Time.unscaledTime - first > WaitingSeconds) continue;
+                float wdx = w.transform.position.x - _player.position.x;
+                float wt = 1f - Mathf.InverseLerp(3f, 18f, Mathf.Abs(wdx));
+                wt = wt * wt * (3f - 2f * wt);
+                if (wdx < 0f) lt = Mathf.Max(lt, wt); else rt = Mathf.Max(rt, wt);
+                continue;
+            }
+            _waitingSince.Remove(w);
             bool chasing = s_chasing != null && (bool)s_chasing.GetValue(w);
             bool attached = s_attached != null && (bool)s_attached.GetValue(w);
             if (chasing || attached) continue;                       // 開始追了：交給心跳暗角
@@ -184,8 +201,8 @@ public class WolfShadowForewarnFX : MonoBehaviour
         float quiet = EmotionDirector.Enabled ? Mathf.Clamp01(1f - 1.6f * EmotionDirector.Tension) : 1f;
         lt *= quiet; rt *= quiet;
 
-        _lv = Mathf.MoveTowards(_lv, lt, dt * (lt > _lv ? 0.5f : 1.0f));   // 慢慢浮出來、退得快一點
-        _rv = Mathf.MoveTowards(_rv, rt, dt * (rt > _rv ? 0.5f : 1.0f));
+        _lv = Mathf.MoveTowards(_lv, lt, dt * (lt > _lv ? 1.2f : 0.8f));   // 蓄勢的時間只有一兩秒，要在這之內浮出來；退得稍慢，跟心跳暗角交棒
+        _rv = Mathf.MoveTowards(_rv, rt, dt * (rt > _rv ? 1.2f : 0.8f));
         SetAlpha(_lv, _rv);
         UpdateDust(dt);
     }
