@@ -29,12 +29,25 @@ public class VoiceSubtitle : MonoBehaviour
         [Header("顏色")]
         [Tooltip("字的顏色。預設 #4D5285 暮色藍紫（取自棉花堡雲朵的陰影色）")]
         public Color textColor = new Color(0.30f, 0.32f, 0.52f, 1f);
-        [Tooltip("字外圍光暈的顏色（A 是濃淡）。預設 #FFF7F0 晨光暖白（呼應日出的天色）")]
-        public Color glowColor = new Color(1f, 0.97f, 0.94f, 0.9f);
+        [Tooltip("字外圍白邊的顏色（A 是濃淡）。預設純白不透明")]
+        public Color glowColor = new Color(1f, 1f, 1f, 1f);   // ★1109l 白邊加強：不透明
         [Tooltip("光暈寬度（0＝沒有光暈）")]
-        [Range(0f, 0.5f)] public float glowWidth = 0.25f;
+        [Range(0f, 0.5f)] public float glowWidth = 0.30f;   // ★1109l 加粗（受字型圖集 padding 8 限制，再大陰影就沒空間）
         [Tooltip("光暈邊緣柔和度（0＝硬邊，越大越朦朧）")]
-        [Range(0f, 1f)] public float glowSoftness = 0.2f;
+        [Range(0f, 1f)] public float glowSoftness = 0.05f;   // ★1109l 邊緣更銳利，視覺上更強
+
+        // ★1109l 陰影：字（含白邊）右下方一圈柔和的深色投影，讓字幕在亮底和雜亂背景上都能讀
+        [Header("陰影")]
+        [Tooltip("要不要顯示陰影")]
+        public bool shadowOn = true;
+        [Tooltip("陰影顏色（A 是濃淡）。會跟著字幕一起淡入淡出")]
+        public Color shadowColor = new Color(0.08f, 0.06f, 0.10f, 0.8f);
+        [Tooltip("陰影偏移（X 正＝往右，Y 負＝往下；TMP Underlay 單位，字型圖集 padding 只有 8，實際位移會被自動壓縮，所以要設大一點才看得出來）")]
+        public Vector2 shadowOffset = new Vector2(1f, -1f);
+        [Tooltip("陰影邊緣柔和度（0＝硬邊，越大越朦朧）")]
+        [Range(0f, 1f)] public float shadowSoftness = 0.4f;
+        [Tooltip("陰影膨脹（讓陰影蓋住白邊的範圍；0＝只有字本體大小）")]
+        [Range(-1f, 1f)] public float shadowDilate = 0.45f;
 
         [Header("位置（畫面比例，0＝下／左，1＝上／右）")]
         [Tooltip("字幕區的下緣")]
@@ -59,15 +72,49 @@ public class VoiceSubtitle : MonoBehaviour
         [Range(0f, 80f)] public float panelEdgeFade = 48f;
         [Tooltip("雲朵的蓬鬆程度（0＝圓滑膠囊形，1＝上下緣一團一團很明顯）")]
         [Range(0f, 1f)] public float panelPuffiness = 0.6f;
+
+        // ★1109m 玩家模型走到字幕後面時，字幕整體（字、白邊、陰影、底板）淡成半透明，離開再淡回來
+        [Header("玩家重疊時淡化")]
+        [Tooltip("玩家模型在畫面上和字幕文字範圍重疊時，字幕要不要自動變淡")]
+        public bool fadeWhenPlayerOverlaps = true;
+        [Tooltip("重疊時字幕的不透明度倍率（1＝不變淡，0＝完全消失）")]
+        [Range(0f, 1f)] public float overlapAlpha = 0.3f;
+        [Tooltip("淡化／恢復所需的時間（秒，不受 Time.timeScale 影響）")]
+        [Range(0f, 1f)] public float overlapFadeTime = 0.25f;
+        // ★1109n overlapPadding 預設 20 → 0，範圍開放負值（可縮小文字判定框）
+        [Tooltip("判定重疊時，文字範圍往外多留的邊距（以 1920×1080 畫面為準的畫布單位）。0＝剛好貼齊文字，正數＝玩家快碰到字就先淡化，負數＝縮小文字判定框")]
+        [Range(-40f, 100f)] public float overlapPadding = 0f;
+        // ★1109n 玩家判定框改用人形骨架，這裡是身體厚度（世界公尺），四周都加
+        [Tooltip("玩家判定框（由人形骨架算出）四周加的身體厚度，單位是世界公尺")]
+        [Range(0f, 1f)] public float playerBodyMargin = 0.15f;
+        // ★1109o 側面視角骨頭幾乎疊成一直線，頭髮和帽T的寬度要另外補
+        [Tooltip("玩家判定框左右各加的寬度（世界公尺）。側面看骨頭擠在一起，要靠這個補上頭髮、衣服的寬度")]
+        [Range(0f, 1.5f)] public float playerBodyMarginX = 0.55f;
+        [Tooltip("Play 中在畫面上畫出玩家判定框（綠/紅）與字幕判定框（黃），調整用")]
+        public bool showOverlapDebug = false;
     }
 
     private static VoiceSubtitle _instance;
     private TextMeshProUGUI _label;
     private Image _panel;
-    private float _alpha;
+    private float _alpha;   // 淡入淡出的基礎 alpha（不含玩家重疊倍率）
+    private float _overlapMul = 1f;   // ★1109m 玩家重疊淡化倍率（1 → overlapAlpha，平滑移動）
+    private Canvas _canvas;
+    private Transform _player;   // ★1109m 玩家（Tag=Player），被銷毀就重找
+    private readonly System.Collections.Generic.List<Renderer> _playerRenderers = new System.Collections.Generic.List<Renderer>();
+    private readonly System.Collections.Generic.List<Renderer> _rendererScratch = new System.Collections.Generic.List<Renderer>();
+    private float _nextRendererRefresh;
+    // ★1109n 人形骨架判定 + 除錯框
+    private readonly System.Collections.Generic.List<Transform> _playerBones = new System.Collections.Generic.List<Transform>();
+    private Transform _headBone, _neckBone;
+    private Rect _dbgPlayerRect, _dbgSubRect;
+    private bool _dbgHasPlayer, _dbgHasSub, _dbgOverlap;
+    private Texture2D _dbgTex;
     private Vector4 _panelKey = new Vector4(-1f, -1f, -1f, -1f);
+    private Vector4 _padKey = new Vector4(-9f, -9f, -9f, -9f);   // ★1109l 上次通知 TMP 重算 padding 時的參數
     private Coroutine _routine;
     private Style _style;
+
 
     public static void Show(string text, float seconds, Style style)
     {
@@ -111,6 +158,7 @@ public class VoiceSubtitle : MonoBehaviour
         VoiceSubtitle s = canvasObj.AddComponent<VoiceSubtitle>();
         s._label = label;
         s._panel = panel;
+        s._canvas = canvas;
         return s;
     }
 
@@ -126,10 +174,35 @@ public class VoiceSubtitle : MonoBehaviour
 
         // 只改這個字幕自己的材質，不影響其他文字
         Material m = _label.fontMaterial;
-        m.SetFloat("_FaceDilate", st.boldness);
+        // ★1109l TMP 的描邊是「跨在字邊緣上」往內外各長一半，描邊越寬字身越被吃掉（細字會變灰白）。
+        //        字身多膨脹 glowWidth 把內側那一半補回來，描邊就只往外長，字身維持原本粗細（再加 boldness）
+        m.SetFloat("_FaceDilate", st.boldness + (st.glowWidth > 0f ? st.glowWidth : 0f));
         m.SetColor("_OutlineColor", st.glowColor);
         m.SetFloat("_OutlineWidth", st.glowWidth);
         m.SetFloat("_OutlineSoftness", st.glowSoftness);
+        // ★1109l 這個 shader 的白邊要開 OUTLINE_ON 才會畫（只用 SetFloat 設寬度不會開）
+        if (st.glowWidth > 0f) m.EnableKeyword(ShaderUtilities.Keyword_Outline);
+        else m.DisableKeyword(ShaderUtilities.Keyword_Outline);
+
+        // ★1109l 陰影＝TMP 的 Underlay；shader 會把 Underlay 乘上頂點 alpha，所以自動跟著字幕淡入淡出
+        if (st.shadowOn) m.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+        else m.DisableKeyword(ShaderUtilities.Keyword_Underlay);
+        m.SetColor("_UnderlayColor", st.shadowColor);
+        m.SetFloat("_UnderlayOffsetX", st.shadowOffset.x);
+        m.SetFloat("_UnderlayOffsetY", st.shadowOffset.y);
+        m.SetFloat("_UnderlaySoftness", st.shadowSoftness);
+        m.SetFloat("_UnderlayDilate", st.shadowDilate);
+        // 材質參數是直接寫的，字的外擴範圍（padding）要自己通知 TMP 重算，不然陰影會被字框裁掉
+        Vector4 padKey = new Vector4(st.glowWidth * 3f + st.glowSoftness, st.shadowOn ? 1f : 0f,
+                                     st.shadowOffset.x + st.shadowOffset.y * 3f + st.shadowSoftness * 7f, st.shadowDilate + st.boldness * 5f);
+        if (padKey != _padKey)
+        {
+            _padKey = padKey;
+            ShaderUtilities.GetShaderPropertyIDs();
+            _label.UpdateMeshPadding();
+            _label.havePropertiesChanged = true;
+            _label.SetVerticesDirty();
+        }
 
         RectTransform rt = _label.rectTransform;
         rt.anchorMin = new Vector2(st.sideMargin, st.bottom);
@@ -170,7 +243,7 @@ public class VoiceSubtitle : MonoBehaviour
         prt.anchoredPosition = b.center;
         prt.sizeDelta = new Vector2(w + margin * 2f, h + margin * 2f);
 
-        _panel.color = new Color(st.panelColor.r, st.panelColor.g, st.panelColor.b, st.panelColor.a * _alpha);
+        _panel.color = new Color(st.panelColor.r, st.panelColor.g, st.panelColor.b, st.panelColor.a * _alpha * _overlapMul);
     }
 
     /// <summary>
@@ -261,10 +334,11 @@ public class VoiceSubtitle : MonoBehaviour
     private IEnumerator Run(float seconds)
     {
         float t = 0f;
-        float startA = _label.color.a;
+        float startA = _alpha;   // ★1109m 用基礎 alpha，不把重疊倍率算進淡入起點
         while (true)
         {
             t += Time.unscaledDeltaTime;
+            UpdateOverlap();
             float fadeIn = _style.fadeIn, fadeOut = _style.fadeOut;
             if (t >= seconds + fadeOut) break;
             float a = t < fadeIn ? Mathf.Lerp(startA, 1f, t / fadeIn)
@@ -278,21 +352,252 @@ public class VoiceSubtitle : MonoBehaviour
         _routine = null;
     }
 
+    /// <summary>a＝淡入淡出的基礎 alpha；實際畫出來的 alpha ＝ a × 玩家重疊倍率。</summary>
     private void SetAlpha(float a)
     {
         _alpha = a;
+        float eff = a * _overlapMul;
         Color c = _label.color;
-        c.a = a;
+        c.a = eff;   // 字面、白邊、陰影（Underlay）都吃頂點 alpha，一起淡
         _label.color = c;
         if (_panel != null && _style != null)
         {
             Color pc = _style.panelColor;
-            _panel.color = new Color(pc.r, pc.g, pc.b, pc.a * a);
+            _panel.color = new Color(pc.r, pc.g, pc.b, pc.a * eff);
         }
+    }
+
+    // ───────── ★1109m 玩家重疊淡化 ─────────
+
+    /// <summary>每幀更新重疊倍率：玩家螢幕範圍和字幕文字範圍（含 padding）重疊就往 overlapAlpha 走，否則回 1。</summary>
+    private void UpdateOverlap()
+    {
+        Style st = _style;
+        if (st == null) return;
+        float target = 1f;
+        // ★1109n 除錯框開著時，就算不淡化也要算判定框
+        bool overlap = (st.fadeWhenPlayerOverlaps || st.showOverlapDebug) && PlayerOverlapsSubtitle(st);
+        if (st.fadeWhenPlayerOverlaps && overlap) target = Mathf.Clamp01(st.overlapAlpha);
+        float rate = Time.unscaledDeltaTime / Mathf.Max(0.0001f, st.overlapFadeTime) * Mathf.Max(0.05f, 1f - st.overlapAlpha);   // 淡出與恢復速度一致（走完 1 - overlapAlpha 的距離剛好 overlapFadeTime）
+        _overlapMul = Mathf.MoveTowards(_overlapMul, target, rate);
+    }
+
+    private bool PlayerOverlapsSubtitle(Style st)
+    {
+        _dbgHasPlayer = _dbgHasSub = _dbgOverlap = false;
+        if (_label == null || string.IsNullOrEmpty(_label.text) || _canvas == null) return false;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+
+        // 字幕螢幕範圍：textBounds 是字幕物件的本地座標，轉世界座標（Overlay 畫布的世界座標＝螢幕像素），再往外加 padding
+        Bounds tb = _label.textBounds;
+        if (tb.size.x <= 0f || tb.size.y <= 0f) return false;
+        RectTransform lrt = _label.rectTransform;
+        Vector3 p0 = lrt.TransformPoint(new Vector3(tb.min.x, tb.min.y, 0f));
+        Vector3 p1 = lrt.TransformPoint(new Vector3(tb.max.x, tb.max.y, 0f));
+        float pad = st.overlapPadding * _canvas.scaleFactor;
+        float sx0 = Mathf.Min(p0.x, p1.x) - pad, sx1 = Mathf.Max(p0.x, p1.x) + pad;
+        float sy0 = Mathf.Min(p0.y, p1.y) - pad, sy1 = Mathf.Max(p0.y, p1.y) + pad;
+        if (sx1 < sx0) sx0 = sx1 = (sx0 + sx1) * 0.5f;   // padding 為負且縮過頭時收成一條線，不要出現負寬度
+        if (sy1 < sy0) sy0 = sy1 = (sy0 + sy1) * 0.5f;
+        Rect subRect = Rect.MinMaxRect(sx0, sy0, sx1, sy1);
+        _dbgSubRect = subRect;
+        _dbgHasSub = true;
+
+        Rect playerRect;
+        if (!TryGetPlayerScreenRect(cam, st, out playerRect)) return false;
+        _dbgPlayerRect = playerRect;
+        _dbgHasPlayer = true;
+        _dbgOverlap = subRect.Overlaps(playerRect);
+        return _dbgOverlap;
+    }
+
+    /// <summary>
+    /// ★1109n 玩家螢幕外框。有人形骨架就用骨頭位置（頭頂另外補上頭高、四周補身體厚度），
+    /// 沒有才退回 renderer bounds（bounds 常常比身體鬆很多，會誤判重疊）。
+    /// </summary>
+    private bool TryGetPlayerScreenRect(Camera cam, Style st, out Rect rect)
+    {
+        rect = default(Rect);
+        if (_player == null)   // 場景會換，玩家被銷毀就重找（每 1 秒最多找一次）
+        {
+            if (Time.unscaledTime < _nextRendererRefresh) return false;
+            _nextRendererRefresh = Time.unscaledTime + 1f;
+            GameObject go = null;
+            try { go = GameObject.FindGameObjectWithTag("Player"); } catch (UnityException) { }
+            if (go == null) { _playerRenderers.Clear(); return false; }
+            _player = go.transform;
+            RefreshPlayerRenderers();
+        }
+        else if (Time.unscaledTime >= _nextRendererRefresh)   // 定期重抓 renderer 清單（換裝、特效物件開關）
+        {
+            _nextRendererRefresh = Time.unscaledTime + 1f;
+            RefreshPlayerRenderers();
+        }
+
+        float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+        bool any = false;
+
+        if (_playerBones.Count > 0)
+        {
+            Vector3 center = Vector3.zero;
+            int n = 0;
+            for (int i = 0; i < _playerBones.Count; i++)
+            {
+                Transform t = _playerBones[i];
+                if (t == null) continue;
+                Vector3 wp = t.position;
+                center += wp; n++;
+                Vector3 sp = cam.WorldToScreenPoint(wp);
+                if (sp.z <= 0f) continue;
+                any = true;
+                if (sp.x < minX) minX = sp.x;
+                if (sp.x > maxX) maxX = sp.x;
+                if (sp.y < minY) minY = sp.y;
+                if (sp.y > maxY) maxY = sp.y;
+            }
+            if (!any || n == 0) return false;
+
+            // 頭頂：Head 骨頭只在脖子上端，往上補 1.6 × |Head − Neck|（世界公尺）
+            if (_headBone != null && _neckBone != null)
+            {
+                Vector3 hp = _headBone.position;
+                float headH = 1.6f * Vector3.Distance(hp, _neckBone.position);
+                Vector3 sp = cam.WorldToScreenPoint(hp + Vector3.up * headH);
+                if (sp.z > 0f)
+                {
+                    if (sp.y > maxY) maxY = sp.y;
+                    if (sp.y < minY) minY = sp.y;
+                }
+            }
+
+            // 身體厚度：用「身體中心 1 公尺在螢幕上多少像素」換算（正交相機精確，透視相機是近似）
+            center /= n;
+            Vector3 s0 = cam.WorldToScreenPoint(center);
+            Vector3 s1 = cam.WorldToScreenPoint(center + cam.transform.right);
+            float pxPerM = Mathf.Abs(s1.x - s0.x);
+            float m = st.playerBodyMargin * pxPerM;
+            float mx = st.playerBodyMarginX * pxPerM;   // ★1109o 左右另外加寬
+            minX -= mx; maxX += mx; minY -= m; maxY += m;
+            rect = Rect.MinMaxRect(minX, minY, maxX, maxY);
+            return true;
+        }
+
+        // 退路：renderer bounds（略過沒有 mesh／零大小的 renderer）
+        bool has = false;
+        Bounds b = default(Bounds);
+        for (int i = 0; i < _playerRenderers.Count; i++)
+        {
+            Renderer r = _playerRenderers[i];
+            if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+            Bounds rb = r.bounds;
+            if (rb.size.sqrMagnitude <= 1e-6f) continue;
+            if (!has) { b = rb; has = true; }
+            else b.Encapsulate(rb);
+        }
+        if (!has) return false;
+
+        Vector3 c = b.center, e = b.extents;
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 corner = c + new Vector3((i & 1) == 0 ? -e.x : e.x, (i & 2) == 0 ? -e.y : e.y, (i & 4) == 0 ? -e.z : e.z);
+            Vector3 sp = cam.WorldToScreenPoint(corner);
+            if (sp.z <= 0f) continue;   // 在相機後面的角不算
+            any = true;
+            if (sp.x < minX) minX = sp.x;
+            if (sp.x > maxX) maxX = sp.x;
+            if (sp.y < minY) minY = sp.y;
+            if (sp.y > maxY) maxY = sp.y;
+        }
+        if (!any) return false;
+        rect = Rect.MinMaxRect(minX, minY, maxX, maxY);
+        return true;
+    }
+
+    /// <summary>只收「看得到的模型」：SkinnedMeshRenderer／MeshRenderer。粒子、拖尾、線、Sprite（護盾弧、影子）一律不算。</summary>
+    private void RefreshPlayerRenderers()
+    {
+        _playerRenderers.Clear();
+        if (_player == null) return;
+        _player.GetComponentsInChildren<Renderer>(false, _rendererScratch);
+        for (int i = 0; i < _rendererScratch.Count; i++)
+        {
+            Renderer r = _rendererScratch[i];
+            if (r == null || !r.enabled) continue;
+            // ★1109n 沒有 mesh 的 renderer（例如空的 SkinnedMeshRenderer）bounds 是零大小，不收
+            SkinnedMeshRenderer smr = r as SkinnedMeshRenderer;
+            if (smr != null) { if (smr.sharedMesh != null) _playerRenderers.Add(r); continue; }
+            if (r is MeshRenderer)
+            {
+                MeshFilter mf = r.GetComponent<MeshFilter>();
+                if (mf != null && mf.sharedMesh != null) _playerRenderers.Add(r);
+            }
+        }
+        _rendererScratch.Clear();
+
+        // ★1109n 人形骨架（有的話優先用來算判定框）
+        _playerBones.Clear();
+        _headBone = _neckBone = null;
+        Animator anim = _player.GetComponentInChildren<Animator>(true);
+        if (anim != null && anim.isHuman)
+        {
+            _headBone = anim.GetBoneTransform(HumanBodyBones.Head);
+            _neckBone = anim.GetBoneTransform(HumanBodyBones.Neck);
+            for (int i = 0; i < s_boneIds.Length; i++)
+            {
+                Transform t = anim.GetBoneTransform(s_boneIds[i]);
+                if (t != null) _playerBones.Add(t);
+            }
+        }
+    }
+
+    private static readonly HumanBodyBones[] s_boneIds =
+    {
+        HumanBodyBones.Head, HumanBodyBones.Neck, HumanBodyBones.Hips,
+        HumanBodyBones.Spine, HumanBodyBones.Chest, HumanBodyBones.UpperChest,
+        HumanBodyBones.LeftUpperArm, HumanBodyBones.RightUpperArm,
+        HumanBodyBones.LeftLowerArm, HumanBodyBones.RightLowerArm,
+        HumanBodyBones.LeftHand, HumanBodyBones.RightHand,
+        HumanBodyBones.LeftUpperLeg, HumanBodyBones.RightUpperLeg,
+        HumanBodyBones.LeftLowerLeg, HumanBodyBones.RightLowerLeg,
+        HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot,
+        HumanBodyBones.LeftToes, HumanBodyBones.RightToes,
+    };
+
+    // ───────── ★1109n 判定框除錯顯示 ─────────
+
+    private void OnGUI()
+    {
+        Style st = _style;
+        if (st == null || !st.showOverlapDebug || _routine == null || _alpha <= 0.01f) return;
+        if (Event.current.type != EventType.Repaint) return;
+        if (_dbgTex == null)
+        {
+            _dbgTex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            _dbgTex.SetPixel(0, 0, Color.white);
+            _dbgTex.Apply();
+            _dbgTex.hideFlags = HideFlags.HideAndDontSave;
+        }
+        if (_dbgHasSub) DrawDebugRect(_dbgSubRect, Color.yellow);
+        if (_dbgHasPlayer) DrawDebugRect(_dbgPlayerRect, _dbgOverlap ? Color.red : Color.green);
+    }
+
+    /// <summary>畫螢幕座標（左下為原點）的矩形外框；GUI 的 y 是由上往下，這裡轉換。</summary>
+    private void DrawDebugRect(Rect r, Color color)
+    {
+        float x = r.xMin, y = Screen.height - r.yMax, w = r.width, h = r.height, t = 2f;
+        Color old = GUI.color;
+        GUI.color = color;
+        GUI.DrawTexture(new Rect(x, y, w, t), _dbgTex);
+        GUI.DrawTexture(new Rect(x, y + h - t, w, t), _dbgTex);
+        GUI.DrawTexture(new Rect(x, y, t, h), _dbgTex);
+        GUI.DrawTexture(new Rect(x + w - t, y, t, h), _dbgTex);
+        GUI.color = old;
     }
 
     private void OnDestroy()
     {
         if (_instance == this) _instance = null;
+        if (_dbgTex != null) Destroy(_dbgTex);
     }
 }

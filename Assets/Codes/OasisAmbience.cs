@@ -40,6 +40,8 @@ public class OasisAmbience : MonoBehaviour
 
     void Update()
     {
+        if (mpb == null) mpb = new MaterialPropertyBlock(); // ★1108 AutoFix：遊玩中重新編譯程式後 MPB 會變 null、Start 不會再跑，這裡補建避免 GetPropertyBlock 丟例外
+        if (glowMpb == null) glowMpb = new MaterialPropertyBlock(); // ★1108 AutoFix：同上，水面光暈的 MPB 也一起補建
         if (player == null)
         {
             var go = GameObject.FindGameObjectWithTag("Player");

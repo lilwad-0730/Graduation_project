@@ -18755,9 +18755,14 @@ MonoBehaviour:
     lineSpacing: 25
     boldness: 0.05
     textColor: {r: 0.12, g: 0.22, b: 0.32, a: 1}
-    glowColor: {r: 1, g: 1, b: 1, a: 0.85}
-    glowWidth: 0.26
-    glowSoftness: 0.25
+    glowColor: {r: 1, g: 1, b: 1, a: 0.25490198}
+    glowWidth: 0.276
+    glowSoftness: 0.177
+    shadowOn: 1
+    shadowColor: {r: 0.08, g: 0.06, b: 0.1, a: 0.5254902}
+    shadowOffset: {x: 1, y: -1}
+    shadowSoftness: 0.836
+    shadowDilate: 0.45
     bottom: 0.08
     top: 0.2
     sideMargin: 0.15
