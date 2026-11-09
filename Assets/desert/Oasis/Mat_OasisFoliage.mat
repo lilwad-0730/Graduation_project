@@ -38,6 +38,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _Amp: 0.006
+    - _CutRim: 1.25
+    - _CutShadow: 1.4
     - _EdgeFade: 1
     - _EdgeTintAmount: 0.8
     - _FlutterAmp: 0.0015
@@ -48,6 +50,8 @@ Material:
     - _WarmAmount: 0.06
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _CutRimColor: {r: 0.55, g: 0.36, b: 0.28, a: 1}
+    - _CutShadowColor: {r: 0.14, g: 0.055, b: 0.03, a: 1}
     - _DstMean: {r: 0.8485, g: 0.2849, b: 0.109, a: 0}
     - _DstStd: {r: 0.0904, g: 0.0883, b: 0.0678, a: 0}
     - _EdgeSoil: {r: 0.69, g: 0.26, b: 0.094, a: 1}

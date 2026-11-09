@@ -212,6 +212,9 @@ public class IndividualBirdEnemy : MonoBehaviour, IResettable
             Destroy(this);
             return;
         }
+
+        // ★1109j 每隻鳥各自的大小／亮度／拍翅節奏（含 Instantiate 出來的增援複本；Awake 先於 Start，所以 originalScale 會讀到縮放後的值）
+        if (GetComponent<BirdVariation>() == null) gameObject.AddComponent<BirdVariation>();
     }
 
     private void Start()
