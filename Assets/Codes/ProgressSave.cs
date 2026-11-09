@@ -21,10 +21,15 @@ public static class ProgressSave
 
     [Serializable] private class CheckpointRec { public string scene; public float x, y, z; public string timeTaipei; }
     [Serializable] private class CrashRec { public string sig, scene; public int cx, cy, count; }
+    [Serializable] private class SafeRec { public string scene; public float x, y, z; public double t; }
+    [Serializable] private class HangRec { public string scene; public int cx, cy, count; }
     [Serializable]
     private class Data
     {
         public int version = 1;
+        public bool running;                                   // ★1110 遊戲進行中＝true；正常離開／回主選單才改回 false。開機時還是 true＝上次是異常結束（卡死被重開、當機、被砍）
+        public List<SafeRec> safe = new List<SafeRec>();       // ★1110 「最近安全站著的位置」，約每 2 秒一筆，留最近 12 筆
+        public List<HangRec> hangs = new List<HangRec>();      // ★1110 異常結束發生過的地點（同地點反覆出事就改回存檔點）
         public string savedAtTaipei = "";
         public string scene = "";
         public float x, y, z;
@@ -49,7 +54,44 @@ public static class ProgressSave
     {
         if (_d != null) return _d;
         _d = TryRead(MainPath) ?? TryRead(BakPath) ?? new Data();
+        _prevAbnormal = _d.running;     // 開機時 running 還是 true＝上次沒有正常離開
         return _d;
+    }
+
+    // ───────────── ★1110 異常結束與「最近安全位置」 ─────────────
+    private static bool _prevAbnormal;
+
+    /// <summary>上一次是不是異常結束（卡死被重開、當機、被砍）。下次「繼續」會從最近的安全位置接著玩，不是存檔點。</summary>
+    public static bool PreviousExitAbnormal { get { Load(); return _prevAbnormal; } }
+
+    /// <summary>手動標記：這次是被緊急手段拉回主選單的，下次繼續也從安全位置接。</summary>
+    public static void NoteAbnormalExit() { Load(); _prevAbnormal = true; }
+
+    internal static bool IsGameplay(string n) { return IsGameplayScene(n); }
+
+    /// <summary>遊戲進行中標成 true、正常離開標回 false（立刻寫進磁碟，因為下一秒可能就被砍了）。</summary>
+    internal static void MarkRunning(bool on)
+    {
+        if (!Enabled || TesterMode.StartScene != null) return;
+        Data d = Load();
+        if (d.running == on) return;
+        d.running = on; _dirty = true; Flush(true);
+    }
+
+    /// <summary>記一筆「安全站著的位置」。位置幾乎沒動就只更新時間。</summary>
+    internal static void OnSafeSample(string scene, Vector3 pos)
+    {
+        if (!Enabled || TesterMode.StartScene != null || !IsGameplayScene(scene)) return;
+        Data d = Load();
+        double now = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
+        SafeRec last = d.safe.Count > 0 ? d.safe[d.safe.Count - 1] : null;
+        if (last != null && last.scene == scene && Vector2.Distance(new Vector2(last.x, last.y), new Vector2(pos.x, pos.y)) < 0.3f) { last.t = now; }
+        else
+        {
+            d.safe.Add(new SafeRec { scene = scene, x = pos.x, y = pos.y, z = pos.z, t = now });
+            while (d.safe.Count > 12) d.safe.RemoveAt(0);
+        }
+        _dirty = true;
     }
 
     private static Data TryRead(string path)
@@ -192,12 +234,55 @@ public static class ProgressSave
             _dirty = true; Flush(true);
         }
 
+        // ★1110 上次是異常結束（卡死被重開、當機）→ 從「最近安全站著的位置」接著玩（刻意往回退幾秒，避開出事的那一點）
+        string scene = d.scene;
+        string how = "存檔點";
+        if (_prevAbnormal && !useDefaultStart && loop == null)
+        {
+            _prevAbnormal = false;
+            SafeRec pick = PickSafeSample(d);
+            if (pick != null)
+            {
+                scene = pick.scene; pos = new Vector3(pick.x, pick.y, pick.z); how = "最近安全位置（避開出事點）";
+            }
+        }
+        _prevAbnormal = false;
+
         GameFlow.ContinueRun();                                   // 會清掉待處理的出生點，所以要先呼叫
         if (useDefaultStart) PlayerRespawnSystem.ClearPendingSceneSpawn();
         else PlayerRespawnSystem.QueueNextSceneSpawn(pos);
-        Debug.Log("【進度存檔】繼續：" + d.scene + " " + (useDefaultStart ? "（關卡起點）" : pos.ToString("F2")));
-        SceneLoader.Load(d.scene);
+        Debug.Log("【進度存檔】繼續：" + scene + " " + (useDefaultStart ? "（關卡起點）" : pos.ToString("F2") + "（" + how + "）"));
+        SceneLoader.Load(scene);
         return true;
+    }
+
+    /// <summary>
+    /// 異常結束後挑哪個位置接著玩：記下這次出事的地點；同一帶（6 公尺內）出事第 2 次起不再用安全位置、改回存檔點（第 3 次起開安全模式）；
+    /// 否則挑「比最後一筆早至少 8 秒」的安全位置，沒有就用最早的一筆。回傳 null＝用存檔點。
+    /// </summary>
+    private static SafeRec PickSafeSample(Data d)
+    {
+        if (d.safe.Count == 0) return null;
+        SafeRec latest = d.safe[d.safe.Count - 1];
+        if (string.IsNullOrEmpty(latest.scene) || !Application.CanStreamedLevelBeLoaded(latest.scene) || !IsGameplayScene(latest.scene)) return null;
+
+        HangRec h = d.hangs.Find(c => c.scene == latest.scene && Vector2.Distance(new Vector2(c.cx, c.cy), new Vector2(latest.x, latest.y)) < 6f);
+        if (h == null) { h = new HangRec { scene = latest.scene, cx = Mathf.RoundToInt(latest.x), cy = Mathf.RoundToInt(latest.y) }; d.hangs.Add(h); }
+        h.count++;
+        while (d.hangs.Count > 20) d.hangs.RemoveAt(0);
+        _dirty = true; Flush(true);
+        if (h.count >= 3) GameRecoveryGuard.ActivateSafeMode("同一帶反覆異常結束");
+        if (h.count >= 2) { Debug.LogWarning("【進度存檔】這一帶已經異常結束 " + h.count + " 次，改回存檔點繼續"); return null; }
+
+        SafeRec best = null;
+        for (int i = d.safe.Count - 1; i >= 0; i--)
+        {
+            SafeRec s = d.safe[i];
+            if (s.scene != latest.scene) break;
+            best = s;
+            if (latest.t - s.t >= 8.0) break;
+        }
+        return best;
     }
 }
 
@@ -240,11 +325,14 @@ public class ProgressSaveRunner : MonoBehaviour
     }
 
     private void OnApplicationPause(bool paused) { if (paused) ProgressSave.Flush(); }
-    private void OnApplicationQuit() { ProgressSave.Flush(); }
+    private void OnApplicationQuit() { ProgressSave.MarkRunning(false); ProgressSave.Flush(true); }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (mode != LoadSceneMode.Single) return;
+        // ★1110 進入關卡＝遊戲進行中（被砍掉時這個旗標會留著＝異常結束）；回主選單＝正常離開
+        if (ProgressSave.IsGameplay(scene.name)) ProgressSave.MarkRunning(true);
+        else if (scene.name == GameFlow.MenuSceneName) ProgressSave.MarkRunning(false);
         ProgressSave.Flush();
         if (scene.name == GameFlow.MenuSceneName && ProgressSave.HasSave)
         {
