@@ -1158,7 +1158,10 @@ public class PlayerMovement : MonoBehaviour
             if (rb.linearVelocity.y <= 0.1f) isJumping = false;
 
             // ★★★ 關鍵修正：只要玩家落地踩到任何地面，自動解除掉落鎖定，恢復自由控制！
-            if (freezeHorizontal)
+            // ★1111 「繼續」把人直接放在廢墟存檔點時，瞬間移動偵測會先把 freezeHorizontal 清掉，但「等待廢墟落地」旗標還亮著，
+            //   原本只在 freezeHorizontal 時才解鎖，結果旗標永遠不熄：光球守護一直把光球補傳回 P12 → 光球飛行演出一直重播（無限迴圈）。
+            //   現在只要還在等落地、而且已經踩到廢墟地面，就算沒有 freezeHorizontal 也解鎖。
+            if (freezeHorizontal || _waitingForRuinsLanding)
             {
                 if (!_waitingForRuinsLanding || IsRuinsLandingGround(groundHit))
                 {

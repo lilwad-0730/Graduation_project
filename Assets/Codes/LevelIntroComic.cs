@@ -42,7 +42,7 @@ public class LevelIntroComic : MonoBehaviour
         string currentScene = SceneManager.GetActiveScene().name;
         string key = "IntroComicPlayed_" + currentScene;
 
-        if (playOnceOnly && PlayerPrefs.GetInt(key, 0) == 1)
+        if (playOnceOnly && ProgressSave.IntroSeen(key))
         {
             return;
         }
@@ -57,8 +57,7 @@ public class LevelIntroComic : MonoBehaviour
         // 若需要播放開場漫畫，立刻將本關卡作為返回目標，中繼至 Book.unity 播放
         if (playOnceOnly)
         {
-            PlayerPrefs.SetInt(key, 1);
-            PlayerPrefs.Save();
+            ProgressSave.MarkIntroSeen(key);   // ★1110 跟著存檔槽走（預設槽仍用 PlayerPrefs）
         }
 
         BookTransitionManager.hasJustFinishedIntro = true;

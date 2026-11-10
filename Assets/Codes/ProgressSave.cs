@@ -11,7 +11,7 @@ using UnityEngine.UI;
 ///  存什麼：目前在哪一關、最近的存檔點座標（保留最近 5 個）、發生過的崩潰紀錄（崩潰迴圈斷路器用）。
 ///  沒存什麼：場景裡的機關狀態與撿到的東西（日誌、光絮）——繼續時場景是新的一輪，只是人站在存檔點。
 ///  存法：先寫暫存檔，再換名並留一份 .bak；讀不到主檔就讀 .bak，兩個都壞就當沒有存檔，不會當機。
-///  位置：Application.persistentDataPath/progress.json
+///  位置：Application.persistentDataPath/progress.json（預設槽；其他槽見 SaveSlot）
 /// 主選單左下角（故事按鈕上方）有「繼續」按鈕，只有存在有效存檔時才會出現。
 /// 關掉：ProgressSave.Enabled = false。
 /// </summary>
@@ -19,7 +19,7 @@ public static class ProgressSave
 {
     public static bool Enabled = true;
 
-    [Serializable] private class CheckpointRec { public string scene; public float x, y, z; public string timeTaipei; }
+    [Serializable] private class CheckpointRec { public string scene; public float x, y, z; public string timeTaipei; public List<StateEntry> states = new List<StateEntry>(); }   // ★1111 states＝踩到這個存檔點當下的世界狀態快照
     [Serializable] private class CrashRec { public string sig, scene; public int cx, cy, count; }
     [Serializable] private class SafeRec { public string scene; public float x, y, z; public double t; }
     [Serializable] private class HangRec { public string scene; public int cx, cy, count; }
@@ -33,7 +33,9 @@ public static class ProgressSave
         public string savedAtTaipei = "";
         public string scene = "";
         public float x, y, z;
-        public int storyPage;
+        public int storyPage = -1;                             // 繪本解鎖到第幾頁；-1＝這個槽還沒存過（用預設）。非預設槽以這裡為準，預設槽仍以 PlayerPrefs 為準（這裡只是鏡像）
+        public List<string> introSeen = new List<string>();    // 看過開場漫畫的關卡（非預設槽用；預設槽用 PlayerPrefs）
+        public List<StateEntry> states = new List<StateEntry>();   // ★1111 最新存檔點的世界狀態快照（見 PersistentState）
         public List<CheckpointRec> history = new List<CheckpointRec>();
         public List<CrashRec> crashes = new List<CrashRec>();
     }
@@ -42,7 +44,7 @@ public static class ProgressSave
     private static bool _dirty;
     private static float _lastFlush;
 
-    private static string MainPath { get { return Path.Combine(Application.persistentDataPath, "progress.json"); } }
+    private static string MainPath { get { return Path.Combine(SaveSlot.Dir, "progress.json"); } }
     private static string TmpPath { get { return MainPath + ".tmp"; } }
     private static string BakPath { get { return MainPath + ".bak"; } }
 
@@ -56,6 +58,30 @@ public static class ProgressSave
         _d = TryRead(MainPath) ?? TryRead(BakPath) ?? new Data();
         _prevAbnormal = _d.running;     // 開機時 running 還是 true＝上次沒有正常離開
         return _d;
+    }
+
+    // ───────────── ★1110 存檔槽切換（SaveSlot 呼叫）─────────────
+    /// <summary>換槽之前：把目前槽還沒寫的進度寫掉，才不會寫到新槽去。</summary>
+    internal static void OnSlotChanging() { if (_d != null && Enabled) Flush(); }   // 沒有變動就不寫（預設槽的檔案原封不動）
+    /// <summary>換槽之後：丟掉記憶體裡舊槽的資料，下次用到時從新槽重新讀。</summary>
+    internal static void OnSlotChanged() { _d = null; _dirty = false; _prevAbnormal = false; }
+
+    /// <summary>這個槽記的繪本解鎖頁數；-1＝沒有紀錄。</summary>
+    internal static int StoredStoryPage() { return Enabled ? Load().storyPage : -1; }
+    /// <summary>繪本頁數有變，下次 Flush 寫進槽裡。</summary>
+    internal static void NoteStoryChanged() { if (!Enabled) return; Load(); _dirty = true; }
+
+    /// <summary>關卡開場漫畫看過沒：預設槽用 PlayerPrefs（跟以前一樣），其他槽記在槽裡。</summary>
+    public static bool IntroSeen(string key)
+    {
+        if (SaveSlot.UsesLegacyPrefs || !Enabled) return PlayerPrefs.GetInt(key, 0) == 1;
+        return Load().introSeen.Contains(key);
+    }
+    public static void MarkIntroSeen(string key)
+    {
+        if (SaveSlot.UsesLegacyPrefs || !Enabled) { PlayerPrefs.SetInt(key, 1); PlayerPrefs.Save(); return; }
+        Data d = Load();
+        if (!d.introSeen.Contains(key)) { d.introSeen.Add(key); _dirty = true; Flush(true); }
     }
 
     // ───────────── ★1110 異常結束與「最近安全位置」 ─────────────
@@ -111,7 +137,7 @@ public static class ProgressSave
         if (!Enabled || _d == null || (!_dirty && !force)) return;
         try
         {
-            Directory.CreateDirectory(Application.persistentDataPath);
+            Directory.CreateDirectory(SaveSlot.Dir);
             _d.savedAtTaipei = DateTime.UtcNow.AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
             _d.storyPage = StoryProgress.UnlockedThrough;
             File.WriteAllText(TmpPath, JsonUtility.ToJson(_d, true), new UTF8Encoding(false));
@@ -137,11 +163,14 @@ public static class ProgressSave
         if (TesterMode.StartScene != null) return;   // 測試檔指定跳關時不存，避免測試污染玩家存檔
         Data d = Load();
         d.scene = scene; d.x = pos.x; d.y = pos.y; d.z = pos.z;
+        List<StateEntry> snap = PersistentState.CaptureAll();   // ★1111 踩到存檔點當下，把有註冊的機關狀態拍成快照
+        d.states = snap;
         CheckpointRec last = d.history.Count > 0 ? d.history[d.history.Count - 1] : null;
+        if (last != null && last.scene == scene && Vector2.Distance(new Vector2(last.x, last.y), new Vector2(pos.x, pos.y)) <= 0.5f) last.states = snap;
         // 這是 2D 橫向遊戲：只看 XY 距離（Z 軸只是前後層次，同一點 Z 抖動不該算新的存檔點）
         if (last == null || last.scene != scene || Vector2.Distance(new Vector2(last.x, last.y), new Vector2(pos.x, pos.y)) > 0.5f)
         {
-            d.history.Add(new CheckpointRec { scene = scene, x = pos.x, y = pos.y, z = pos.z, timeTaipei = DateTime.UtcNow.AddHours(8).ToString("MM/dd HH:mm") });
+            d.history.Add(new CheckpointRec { scene = scene, x = pos.x, y = pos.y, z = pos.z, timeTaipei = DateTime.UtcNow.AddHours(8).ToString("MM/dd HH:mm"), states = snap });
             while (d.history.Count > 5) d.history.RemoveAt(0);
         }
         _dirty = true;
@@ -217,6 +246,7 @@ public static class ProgressSave
         Data d = Load();
         Vector3 pos = new Vector3(d.x, d.y, d.z);
         bool useDefaultStart = false;
+        List<StateEntry> restoreStates = d.states;   // ★1111 預設用最新存檔點的世界快照；退回更早存檔點時改用那個存檔點自己的快照
 
         CrashRec loop = d.crashes.Find(c => c.scene == d.scene && c.cx == Mathf.RoundToInt(d.x) && c.cy == Mathf.RoundToInt(d.y) && c.count >= 2);
         if (loop != null)
@@ -229,7 +259,7 @@ public static class ProgressSave
                 CheckpointRec h = d.history[i];
                 if (h.scene == d.scene && Vector2.Distance(new Vector2(h.x, h.y), new Vector2(pos.x, pos.y)) > 1f) { older = h; break; }
             }
-            if (older != null) pos = new Vector3(older.x, older.y, older.z); else useDefaultStart = true;
+            if (older != null) { pos = new Vector3(older.x, older.y, older.z); restoreStates = older.states; } else useDefaultStart = true;
             d.crashes.RemoveAll(c => c.scene == d.scene && c.cx == loop.cx && c.cy == loop.cy);   // 只避開這一次
             _dirty = true; Flush(true);
         }
@@ -248,6 +278,10 @@ public static class ProgressSave
         }
         _prevAbnormal = false;
 
+        // ★1111 世界快照只在「進的是存檔那一關」時還原；從關卡起點重來（useDefaultStart）就不還原
+        _pendingStates = (!useDefaultStart && scene == d.scene) ? restoreStates : null;
+        _pendingScene = scene;
+
         GameFlow.ContinueRun();                                   // 會清掉待處理的出生點，所以要先呼叫
         if (useDefaultStart) PlayerRespawnSystem.ClearPendingSceneSpawn();
         else PlayerRespawnSystem.QueueNextSceneSpawn(pos);
@@ -255,6 +289,15 @@ public static class ProgressSave
         SceneLoader.Load(scene);
         return true;
     }
+
+    // ───────────── ★1111 繼續後還原世界快照 ─────────────
+    private static List<StateEntry> _pendingStates;
+    private static string _pendingScene;
+
+    /// <summary>場景載入後由 Runner 呼叫：還有待還原的快照、而且場景對得上，就把它交出去（只交一次的話由呼叫端決定何時清掉）。</summary>
+    internal static bool HasPendingStatesFor(string scene) { return _pendingStates != null && _pendingStates.Count > 0 && _pendingScene == scene; }
+    internal static int ApplyPendingStates() { return PersistentState.RestoreAll(_pendingStates); }
+    internal static void ClearPendingStates() { _pendingStates = null; _pendingScene = null; }
 
     /// <summary>
     /// 異常結束後挑哪個位置接著玩：記下這次出事的地點；同一帶（6 公尺內）出事第 2 次起不再用安全位置、改回存檔點（第 3 次起開安全模式）；
@@ -327,6 +370,32 @@ public class ProgressSaveRunner : MonoBehaviour
     private void OnApplicationPause(bool paused) { if (paused) ProgressSave.Flush(); }
     private void OnApplicationQuit() { ProgressSave.MarkRunning(false); ProgressSave.Flush(true); }
 
+    /// <summary>
+    /// 場景載入後等一下才還原：玩家被放到存檔點、場景自己的進場演出（例如廢墟墜落把光球傳到 P12）都會先跑，
+    /// 太早還原會被它們蓋回去。分兩次（1.2 秒、3 秒）——還原本身只會「往前」，重複呼叫不會有副作用。
+    /// </summary>
+    private System.Collections.IEnumerator RestoreStatesRoutine(string sceneName)
+    {
+        float[] at = { 1.2f, 3f };
+        float t = 0f;
+        for (int i = 0; i < at.Length; i++)
+        {
+            while (t < at[i]) { t += Time.unscaledDeltaTime; yield return null; }
+            if (SceneManager.GetActiveScene().name != sceneName || !ProgressSave.HasPendingStatesFor(sceneName)) yield break;
+            int n = ProgressSave.ApplyPendingStates();
+            Debug.Log("【世界狀態】繼續後還原快照（第 " + (i + 1) + " 次）：" + n + " 個機關");
+        }
+        ProgressSave.ClearPendingStates();
+    }
+
+    private void Start()
+    {
+        // ★1111 冷啟動（剛開遊戲、第一個場景就是主選單）收不到 sceneLoaded，「繼續」按鈕就不會長出來（實測：有存檔、重開遊戲看不到繼續）。
+        //   所以啟動後第一幀自己補跑一次；OnSceneLoaded 內部是重複呼叫也安全的。
+        Scene s = SceneManager.GetActiveScene();
+        if (s.IsValid()) OnSceneLoaded(s, LoadSceneMode.Single);
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (mode != LoadSceneMode.Single) return;
@@ -334,7 +403,9 @@ public class ProgressSaveRunner : MonoBehaviour
         if (ProgressSave.IsGameplay(scene.name)) ProgressSave.MarkRunning(true);
         else if (scene.name == GameFlow.MenuSceneName) ProgressSave.MarkRunning(false);
         ProgressSave.Flush();
-        if (scene.name == GameFlow.MenuSceneName && ProgressSave.HasSave)
+        if (ProgressSave.HasPendingStatesFor(scene.name)) StartCoroutine(RestoreStatesRoutine(scene.name));
+        else if (scene.name == GameFlow.MenuSceneName) ProgressSave.ClearPendingStates();
+        if (scene.name == GameFlow.MenuSceneName && ProgressSave.HasSave && FindAnyObjectByType<ContinueMenuButton>() == null)
         {
             GameObject host = new GameObject("[ContinueMenuButton]");
             SceneManager.MoveGameObjectToScene(host, scene);

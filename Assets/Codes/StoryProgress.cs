@@ -39,10 +39,25 @@ public static class StoryProgress
         UnlockedThrough = Mathf.Clamp(PlayerPrefs.GetInt(PrefKey, FirstChapterEnd), 0, LastPage);
     }
 
+    /// <summary>★1110 依目前的存檔槽重新讀繪本進度：預設槽讀 PlayerPrefs（跟以前一樣），其他槽讀槽裡的存檔（沒有紀錄＝只開前面幾頁）。</summary>
+    public static void ReloadFromStore()
+    {
+        int v = SaveSlot.UsesLegacyPrefs ? PlayerPrefs.GetInt(PrefKey, FirstChapterEnd) : ProgressSave.StoredStoryPage();
+        if (v < 0) v = FirstChapterEnd;
+        UnlockedThrough = Mathf.Clamp(v, 0, LastPage);
+    }
+
+    private static void Persist()
+    {
+        if (SaveSlot.UsesLegacyPrefs) { PlayerPrefs.SetInt(PrefKey, UnlockedThrough); PlayerPrefs.Save(); }
+        else ProgressSave.NoteStoryChanged();
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
     {
         if (!_hooked) { _hooked = true; SceneManager.sceneLoaded += OnSceneLoaded; }
+        ReloadFromStore();   // ★1110 非預設槽（-slot）一開機就要讀自己槽裡的進度
         OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
     }
 
@@ -81,8 +96,7 @@ public static class StoryProgress
         index = Mathf.Clamp(index, 0, LastPage);
         if (index <= UnlockedThrough) return;
         UnlockedThrough = index;
-        PlayerPrefs.SetInt(PrefKey, UnlockedThrough);
-        PlayerPrefs.Save();
+        Persist();
         Debug.Log($"【故事進度】★1023 {why}：繪本開到第 {UnlockedThrough + 1} 頁");
     }
 
@@ -90,8 +104,7 @@ public static class StoryProgress
     public static void ResetForNewRun()
     {
         UnlockedThrough = FirstChapterEnd;
-        PlayerPrefs.SetInt(PrefKey, UnlockedThrough);
-        PlayerPrefs.Save();
+        Persist();
         Debug.Log("【故事進度】★1023 新的一輪：繪本回到只開第 1～" + (FirstChapterEnd + 1) + " 頁");
     }
 
