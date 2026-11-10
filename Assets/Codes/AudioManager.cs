@@ -183,6 +183,7 @@ public class AudioManager : MonoBehaviour
         _voiceSource.loop = false;
         _voiceSource.playOnAwake = false;
         _voiceSource.spatialBlend = 0f;
+        _voiceSource.bypassListenerEffects = true;   // ★1110 旁白不吃聽者上的濾波（水下越深越悶、重生悶音）：試玩回饋水下第二段以後聽不清；水聲、音樂照樣悶
     }
 
     private void OnEnable()
