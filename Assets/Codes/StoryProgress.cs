@@ -191,7 +191,8 @@ public class MenuCharacterStoryBook : MonoBehaviour
     // ★1111b 鏡頭回到主畫面後要先停穩這麼久，才接受點她。
     //   設定頁的「返回菜單」剛好在她的位置：按下去那一格鏡頭就跳回主畫面（CameraFocusOnClick 直接設位置），
     //   同一格的點擊會被當成點她、直接開繪本（11/11 實機錄影 1:16）。
-    private const float HomeSettleSeconds = 0.25f;
+    //   ★1111c 品管建議：0.25 → 0.4 秒（一般雙擊間隔 0.2～0.5 秒，連點兩下「返回菜單」的第二下不要變成點她），而且至少要連續 2 格。
+    private const float HomeSettleSeconds = 0.4f;
 
     private RawImage _video;
     private Camera _cam;
@@ -207,6 +208,7 @@ public class MenuCharacterStoryBook : MonoBehaviour
     private bool _ready;
     private bool _loggedHover;
     private float _homeFor;       // ★1111b 鏡頭連續停在主畫面多久了（LateUpdate 量，下一格才用）
+    private int _homeFrames;      // ★1111c 連續幾格（防單格卡頓一次就累滿）
     private readonly Vector3[] _corners = new Vector3[4];
 
     private IEnumerator Start()
@@ -352,13 +354,14 @@ public class MenuCharacterStoryBook : MonoBehaviour
 
 #if ENABLE_LEGACY_INPUT_MANAGER
         Vector3 mouse = Input.mousePosition;
-        bool pressed = Input.GetMouseButtonDown(0);
+        // ★1111c 同一格也按了 Enter／Space（主選單的鍵盤確認）就不算點她，免得跟「開始遊戲」同時載入兩個場景
+        bool pressed = Input.GetMouseButtonDown(0) && !Input.GetKeyDown(KeyCode.Return) && !Input.GetKeyDown(KeyCode.KeypadEnter) && !Input.GetKeyDown(KeyCode.Space);
 #else
         Vector3 mouse = new Vector3(-1f, -1f, 0f);   // 只開新輸入系統時這裡讀不到滑鼠（主選單其他地方也是用舊輸入）
         bool pressed = false;
 #endif
         bool hasRect = TryGetCharacterScreenRect(out Rect r);
-        bool usable = hasRect && !_opening && CameraAtHome() && !Transitioning() && _homeFor >= HomeSettleSeconds;
+        bool usable = hasRect && !_opening && CameraAtHome() && !Transitioning() && _homeFor >= HomeSettleSeconds && _homeFrames >= 2;
         bool hover = usable && r.Contains(mouse);
 
         if (hover && !_loggedHover) { _loggedHover = true; Debug.Log("【主選單】★1111 滑鼠移到她身上，顯示「翻開繪本」提示"); }
@@ -393,7 +396,8 @@ public class MenuCharacterStoryBook : MonoBehaviour
     {
         // ★1111b 等這一格所有 Update 跑完（包括主選單把鏡頭跳回來）才記；下一格的點擊才看得到
         if (!_ready) return;
-        _homeFor = (CameraAtHome() && !Transitioning()) ? _homeFor + Time.unscaledDeltaTime : 0f;
+        if (CameraAtHome() && !Transitioning()) { _homeFor += Time.unscaledDeltaTime; _homeFrames++; }
+        else { _homeFor = 0f; _homeFrames = 0; }
     }
 
     private void OnDestroy()
