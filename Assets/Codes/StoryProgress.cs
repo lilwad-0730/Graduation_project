@@ -186,7 +186,12 @@ public class MenuCharacterStoryBook : MonoBehaviour
     // 她在影片畫面裡的範圍（0～1，左下角為原點）
     private static readonly Rect CharacterUV = new Rect(0.57f, 0.08f, 0.23f, 0.67f);
     private const float FadeSeconds = 0.25f;
-    private const float GlowMaxAlpha = 0.22f;
+    // ★1111b 專案是線性色彩空間，UI 的半透明在線性空間混色：0.22 在暗背景上會變成一團霧、蓋掉她（11/11 實機錄影），改成 0.08 才是「淡淡的暖光」
+    private const float GlowMaxAlpha = 0.08f;
+    // ★1111b 鏡頭回到主畫面後要先停穩這麼久，才接受點她。
+    //   設定頁的「返回菜單」剛好在她的位置：按下去那一格鏡頭就跳回主畫面（CameraFocusOnClick 直接設位置），
+    //   同一格的點擊會被當成點她、直接開繪本（11/11 實機錄影 1:16）。
+    private const float HomeSettleSeconds = 0.25f;
 
     private RawImage _video;
     private Camera _cam;
@@ -201,6 +206,7 @@ public class MenuCharacterStoryBook : MonoBehaviour
     private bool _opening;
     private bool _ready;
     private bool _loggedHover;
+    private float _homeFor;       // ★1111b 鏡頭連續停在主畫面多久了（LateUpdate 量，下一格才用）
     private readonly Vector3[] _corners = new Vector3[4];
 
     private IEnumerator Start()
@@ -280,10 +286,10 @@ public class MenuCharacterStoryBook : MonoBehaviour
         _label.verticalOverflow = VerticalWrapMode.Overflow;
         _label.raycastTarget = false;
         _label.text = "翻開繪本　故事到目前為止（已開到第 " + (StoryProgress.UnlockedThrough + 1) + " 頁）";
-        Shadow sh = labelGo.AddComponent<Shadow>();
-        sh.effectColor = new Color(0f, 0f, 0f, 0.6f);
-        sh.effectDistance = new Vector2(1.5f, -1.5f);
-        _label.color = new Color(0.91f, 0.88f, 0.82f, 0f);
+        Outline ol = labelGo.AddComponent<Outline>();   // ★1111b 細字在暗背景上加一圈黑邊比較好讀
+        ol.effectColor = new Color(0f, 0f, 0f, 0.65f);
+        ol.effectDistance = new Vector2(1.2f, -1.2f);
+        _label.color = new Color(0.96f, 0.93f, 0.87f, 0f);
     }
 
     /// <summary>暖光：中間亮、往外柔柔淡掉的圓（程式畫的，不用新素材）。</summary>
@@ -352,7 +358,7 @@ public class MenuCharacterStoryBook : MonoBehaviour
         bool pressed = false;
 #endif
         bool hasRect = TryGetCharacterScreenRect(out Rect r);
-        bool usable = hasRect && !_opening && CameraAtHome() && !Transitioning();
+        bool usable = hasRect && !_opening && CameraAtHome() && !Transitioning() && _homeFor >= HomeSettleSeconds;
         bool hover = usable && r.Contains(mouse);
 
         if (hover && !_loggedHover) { _loggedHover = true; Debug.Log("【主選單】★1111 滑鼠移到她身上，顯示「翻開繪本」提示"); }
@@ -376,10 +382,18 @@ public class MenuCharacterStoryBook : MonoBehaviour
         _glowRt.sizeDelta = new Vector2(r.width * 1.5f, r.height * 1.15f);
         Color g = _glow.color; g.a = GlowMaxAlpha * _hint; _glow.color = g;
 
-        _label.fontSize = Mathf.Max(14, Mathf.RoundToInt(Screen.height * 0.028f));
-        _labelRt.anchoredPosition = new Vector2(r.center.x, r.yMax + Screen.height * 0.012f);
+        _label.fontSize = Mathf.Max(14, Mathf.RoundToInt(Screen.height * 0.033f));   // ★1111b 0.028 太小、太細
+        // ★1111b 往右挪一點、貼近她的頭：不要跟影片裡的副標「一直都在」擠在一起
+        _labelRt.anchoredPosition = new Vector2(r.center.x + r.width * 0.08f, r.yMax + Screen.height * 0.004f);
         _labelRt.sizeDelta = new Vector2(r.width * 3f, _label.fontSize * 1.6f);
-        Color lc = _label.color; lc.a = 0.95f * _hint; _label.color = lc;
+        Color lc = _label.color; lc.a = _hint; _label.color = lc;
+    }
+
+    private void LateUpdate()
+    {
+        // ★1111b 等這一格所有 Update 跑完（包括主選單把鏡頭跳回來）才記；下一格的點擊才看得到
+        if (!_ready) return;
+        _homeFor = (CameraAtHome() && !Transitioning()) ? _homeFor + Time.unscaledDeltaTime : 0f;
     }
 
     private void OnDestroy()
