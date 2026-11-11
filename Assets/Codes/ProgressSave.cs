@@ -360,8 +360,21 @@ public class ProgressSaveRunner : MonoBehaviour
     }
 
     private float _next;
+    private float _nextMenuCheck;
     private void Update()
     {
+        // ★1111 在主選單換到「有存檔」的槽時，按鈕本來不存在，要補長出來（已存在的按鈕自己會跟著槽更新／隱藏）
+        if (Time.unscaledTime >= _nextMenuCheck)
+        {
+            _nextMenuCheck = Time.unscaledTime + 0.5f;
+            Scene s = SceneManager.GetActiveScene();
+            if (s.IsValid() && s.name == GameFlow.MenuSceneName && ProgressSave.HasSave && FindAnyObjectByType<ContinueMenuButton>() == null)
+            {
+                GameObject host = new GameObject("[ContinueMenuButton]");
+                SceneManager.MoveGameObjectToScene(host, s);
+                host.AddComponent<ContinueMenuButton>();
+            }
+        }
         if (Time.unscaledTime < _next) return;
         _next = Time.unscaledTime + 1.5f;
         ProgressSave.Flush();
@@ -471,5 +484,25 @@ public class ContinueMenuButton : MonoBehaviour
         label.color = new Color(0.91f, 0.88f, 0.82f, 0.95f);
         label.raycastTarget = false;
         label.text = "繼續　" + ProgressSave.Describe();
+        _btnGo = btnGo; _label = label;
+    }
+
+    // ★1111 換存檔槽之後按鈕要跟著更新：這個槽沒有存檔就藏起來、有就顯示並更新文字（實測：換到空槽按鈕還在，按下去什麼都不會發生）
+    private GameObject _btnGo;
+    private Text _label;
+    private float _nextCheck;
+    private string _lastShown;
+
+    private void Update()
+    {
+        if (_btnGo == null || Time.unscaledTime < _nextCheck) return;
+        _nextCheck = Time.unscaledTime + 0.25f;
+        bool has = ProgressSave.HasSave;
+        if (_btnGo.activeSelf != has) _btnGo.SetActive(has);
+        if (has)
+        {
+            string t = "繼續　" + ProgressSave.Describe();
+            if (t != _lastShown) { _lastShown = t; if (_label != null) _label.text = t; }
+        }
     }
 }

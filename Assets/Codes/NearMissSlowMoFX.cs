@@ -80,6 +80,7 @@ public class NearMissSlowMoFX : MonoBehaviour
     private float _t;
     private float _lastSet = -1f;       // 我最後一次設的 timeScale；-1＝我沒在動它
     private float _stuckFor;
+    private float _lastEver = -1f;      // ★1111 我設過的最後一個 timeScale（Abandon／ForceRestore 後還留著，看門狗用）
     private HeartbeatVignette _hv;
 
     private void Awake()
@@ -268,6 +269,7 @@ public class NearMissSlowMoFX : MonoBehaviour
     {
         Time.timeScale = v;
         _lastSet = v;
+        _lastEver = v;
     }
 
     private void Abandon()
@@ -279,7 +281,7 @@ public class NearMissSlowMoFX : MonoBehaviour
     /// <summary>強制結束：只有 timeScale 還是我設的值才還原成 1；別人改過就不碰。</summary>
     private void ForceRestore()
     {
-        if (_lastSet >= 0f && Mathf.Approximately(Time.timeScale, _lastSet)) Time.timeScale = 1f;
+        if (_lastSet >= 0f && Mathf.Approximately(Time.timeScale, _lastSet)) { Time.timeScale = 1f; _lastEver = -1f; }
         _active = false;
         _lastSet = -1f;
         if (_hv != null) _hv.Intensity = 0f;
@@ -288,10 +290,13 @@ public class NearMissSlowMoFX : MonoBehaviour
     /// <summary>我不在演、timeScale 卻停在我的慢動作值：被別人「記下 → 還原」記走了，拉回 1。</summary>
     private void Watchdog(float dt)
     {
-        if (Mathf.Abs(Time.timeScale - SlowScale) < 0.005f)
+        // ★1111 只比 0.3 會漏掉「加速恢復途中被別人記走」的中間值（實測卡在 0.475）。
+        //   改成：不管是慢動作值還是恢復途中的任何值，只要 timeScale 停在「我最後設過的那個值」（而且不是 1、不是暫停的 0）超過半秒，就是被記走還原錯了。
+        bool atMyLastValue = _lastEver >= 0f && Time.timeScale > 0.01f && Time.timeScale < 0.995f && Mathf.Abs(Time.timeScale - _lastEver) < 0.005f;
+        if (atMyLastValue)
         {
             _stuckFor += dt;
-            if (_stuckFor > 0.5f && PlayCount > 0) { Time.timeScale = 1f; _stuckFor = 0f; }
+            if (_stuckFor > 0.5f && PlayCount > 0) { Time.timeScale = 1f; _stuckFor = 0f; _lastEver = -1f; }
         }
         else _stuckFor = 0f;
     }
