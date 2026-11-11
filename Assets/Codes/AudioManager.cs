@@ -183,6 +183,8 @@ public class AudioManager : MonoBehaviour
         _voiceSource.loop = false;
         _voiceSource.playOnAwake = false;
         _voiceSource.spatialBlend = 0f;
+        // 水下關的悶音濾波掛在攝影機（AudioListener）上、會隨玩家高度變悶；語音要保持清楚，不吃那層濾波
+        _voiceSource.bypassListenerEffects = true;
     }
 
     private void OnEnable()
