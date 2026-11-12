@@ -310,7 +310,7 @@ public class MenuCharacterStoryBook : MonoBehaviour
         }
         GrabCamera();
         _haloOk = HaloFitsVideo(_player);
-        if (!_haloOk) Debug.LogWarning("【主選單】★1112 背景影片不是量剪影的那支（UI video source，1920×1080、24 秒），不畫冷藍光暈，只留提示字");
+        if (!_haloOk) Debug.LogWarning("【主選單】★1112 背景影片跟量剪影的那支（UI video source，1920×1080、24 秒）對不上，不畫冷藍光暈，只留提示字；現在的影片：" + DescribeClip(_player));
         BuildHint();
         _ready = true;
         Debug.Log("【主選單】★1111 繪本入口改成點她（背景影片「" + _video.name + "」上 x " + CharacterUV.xMin.ToString("F2") + "–" + CharacterUV.xMax.ToString("F2")
@@ -389,12 +389,21 @@ public class MenuCharacterStoryBook : MonoBehaviour
     }
 
     /// <summary>★1112 剪影與晃動資料是照 UI video source.mp4（1920×1080、24 秒）量的；換了影片就不畫光暈（只留字），免得光暈錯位。
-    /// 之後換主選單影片的話，要重新量 SilhouetteRef 與 Motion（做法見 claude/育言_主選單點她開繪本_1111.md）。</summary>
+    /// 之後換主選單影片的話，要重新量 SilhouetteRef 與 Motion（做法見專案文件《育言_主選單點她開繪本_1111》）。</summary>
     private static bool HaloFitsVideo(VideoPlayer vp)
     {
         if (vp == null || vp.clip == null) return false;
         VideoClip c = vp.clip;
         return c.name == "UI video source" && c.width == 1920 && c.height == 1080 && System.Math.Abs(c.length - VideoLoopSeconds) < 0.5;
+    }
+
+    /// <summary>★1112 對不上時印出現在的影片，方便排錯（來源設成網址時沒有 VideoClip）。</summary>
+    private static string DescribeClip(VideoPlayer vp)
+    {
+        if (vp == null) return "找不到 VideoPlayer";
+        if (vp.clip == null) return "沒有 VideoClip（來源 " + vp.source + "，網址「" + vp.url + "」）";
+        VideoClip c = vp.clip;
+        return "「" + c.name + "」" + c.width + "×" + c.height + "、" + c.length.ToString("F1") + " 秒";
     }
 
     /// <summary>★1112 冷藍光暈貼圖：她的剪影往外柔柔散開，剪影本身挖空（看起來是她背後的光）；腳邊淡出。程式畫的，不用新素材。</summary>
@@ -633,8 +642,9 @@ public class MenuCharacterStoryBook : MonoBehaviour
 
         float target = hover ? 1f : 0f;
         _hint = Mathf.MoveTowards(_hint, target, Time.unscaledDeltaTime / FadeSeconds);
-        if (!hasRect || _label == null) return;
-        if (_hint <= 0f && !hover)
+        if (_label == null) return;
+        if (!hasRect) _hint = 0f;   // ★1112 品管：找不到她的位置時，字和光暈立刻收掉，不停在半透明
+        if (!hasRect || (_hint <= 0f && !hover))
         {
             if (_label.color.a > 0f)
             {
