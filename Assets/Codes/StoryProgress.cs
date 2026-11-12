@@ -285,6 +285,7 @@ public class MenuCharacterStoryBook : MonoBehaviour
     private RectTransform _haloRt;
     private RawImage _halo;
     private Texture2D _haloTex;
+    private bool _haloOk;          // ★1112 背景影片是量剪影的那支，才畫光暈
     private RectTransform _labelRt;
     private Text _label;
     private float _hint;          // 0～1，提示現在的顯示程度
@@ -308,6 +309,8 @@ public class MenuCharacterStoryBook : MonoBehaviour
             yield break;
         }
         GrabCamera();
+        _haloOk = HaloFitsVideo(_player);
+        if (!_haloOk) Debug.LogWarning("【主選單】★1112 背景影片不是量剪影的那支（UI video source，1920×1080、24 秒），不畫冷藍光暈，只留提示字");
         BuildHint();
         _ready = true;
         Debug.Log("【主選單】★1111 繪本入口改成點她（背景影片「" + _video.name + "」上 x " + CharacterUV.xMin.ToString("F2") + "–" + CharacterUV.xMax.ToString("F2")
@@ -352,15 +355,18 @@ public class MenuCharacterStoryBook : MonoBehaviour
         canvas.sortingOrder = 120;                           // 畫在影片與選單上面；全部不接點擊（raycastTarget 關掉、也沒有 GraphicRaycaster）
 
         // ★1112 冷藍光暈：畫在她的剪影外面（剪影挖空），看起來是她背後透出來的光，不蓋在她身上
-        GameObject haloGo = new GameObject("Halo");
-        haloGo.transform.SetParent(canvasGo.transform, false);
-        _haloRt = haloGo.AddComponent<RectTransform>();
-        _haloRt.anchorMin = _haloRt.anchorMax = Vector2.zero;
-        _halo = haloGo.AddComponent<RawImage>();
-        _haloTex = BuildHaloTexture();
-        _halo.texture = _haloTex;
-        _halo.raycastTarget = false;
-        _halo.color = new Color(HaloColor.r, HaloColor.g, HaloColor.b, 0f);
+        if (_haloOk)
+        {
+            GameObject haloGo = new GameObject("Halo");
+            haloGo.transform.SetParent(canvasGo.transform, false);
+            _haloRt = haloGo.AddComponent<RectTransform>();
+            _haloRt.anchorMin = _haloRt.anchorMax = Vector2.zero;
+            _halo = haloGo.AddComponent<RawImage>();
+            _haloTex = BuildHaloTexture();
+            _halo.texture = _haloTex;
+            _halo.raycastTarget = false;
+            _halo.color = new Color(HaloColor.r, HaloColor.g, HaloColor.b, 0f);
+        }
 
         GameObject labelGo = new GameObject("Label");
         labelGo.transform.SetParent(canvasGo.transform, false);
@@ -380,6 +386,15 @@ public class MenuCharacterStoryBook : MonoBehaviour
         ol.effectColor = new Color(0f, 0f, 0f, 0.65f);
         ol.effectDistance = new Vector2(1.2f, -1.2f);
         _label.color = new Color(0.96f, 0.93f, 0.87f, 0f);
+    }
+
+    /// <summary>★1112 剪影與晃動資料是照 UI video source.mp4（1920×1080、24 秒）量的；換了影片就不畫光暈（只留字），免得光暈錯位。
+    /// 之後換主選單影片的話，要重新量 SilhouetteRef 與 Motion（做法見 claude/育言_主選單點她開繪本_1111.md）。</summary>
+    private static bool HaloFitsVideo(VideoPlayer vp)
+    {
+        if (vp == null || vp.clip == null) return false;
+        VideoClip c = vp.clip;
+        return c.name == "UI video source" && c.width == 1920 && c.height == 1080 && System.Math.Abs(c.length - VideoLoopSeconds) < 0.5;
     }
 
     /// <summary>★1112 冷藍光暈貼圖：她的剪影往外柔柔散開，剪影本身挖空（看起來是她背後的光）；腳邊淡出。程式畫的，不用新素材。</summary>
@@ -618,15 +633,22 @@ public class MenuCharacterStoryBook : MonoBehaviour
 
         float target = hover ? 1f : 0f;
         _hint = Mathf.MoveTowards(_hint, target, Time.unscaledDeltaTime / FadeSeconds);
-        if (!hasRect || _halo == null) return;
+        if (!hasRect || _label == null) return;
         if (_hint <= 0f && !hover)
         {
-            if (_halo.color.a > 0f) { Color g0 = _halo.color; g0.a = 0f; _halo.color = g0; Color l0 = _label.color; l0.a = 0f; _label.color = l0; }
+            if (_label.color.a > 0f)
+            {
+                Color l0 = _label.color; l0.a = 0f; _label.color = l0;
+                if (_halo != null) { Color g0 = _halo.color; g0.a = 0f; _halo.color = g0; }
+            }
             return;   // 沒顯示時不用每幀搬位置
         }
 
-        PlaceHalo();
-        Color g = HaloColor; g.a = HaloMaxAlpha * _hint; _halo.color = g;
+        if (_halo != null)
+        {
+            PlaceHalo();
+            Color g = HaloColor; g.a = HaloMaxAlpha * _hint; _halo.color = g;
+        }
 
         _label.fontSize = Mathf.Max(14, Mathf.RoundToInt(Screen.height * 0.033f));   // ★1111b 0.028 太小、太細
         // ★1111b 往右挪一點、貼近她的頭：不要跟影片裡的副標「一直都在」擠在一起
@@ -645,7 +667,8 @@ public class MenuCharacterStoryBook : MonoBehaviour
 
     private void OnDestroy()
     {
-        // ★1112 光暈是程式畫的貼圖：離開主選單時一起清掉
+        // ★1112 光暈是程式畫的貼圖：離開主選單時一起清掉（先從 RawImage 拿掉再刪）
+        if (_halo != null) _halo.texture = null;
         if (_haloTex != null) Destroy(_haloTex);
     }
 }
