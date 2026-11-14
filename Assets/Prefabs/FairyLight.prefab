@@ -127,6 +127,7 @@ GameObject:
   - component: {fileID: 9068890968819486599}
   - component: {fileID: 1859790089625821299}
   - component: {fileID: 319097241586043325}
+  - component: {fileID: 586148751613001411}
   m_Layer: 0
   m_Name: FairyLight
   m_TagString: Untagged
@@ -4982,7 +4983,10 @@ MonoBehaviour:
   ruinsBelowY: -60
   timedFlightWaypointName: P14
   timedFlightSeconds: 3
+  maxFlightSeconds: 5
+  maxFlightOnlyInDesert: 1
   cameraHandBackSeconds: 1
+  cameraEnterSeconds: 0.6
   waypointThreshold: 5
   waypointSnapEpsilon: 0.05
   touchTriggerDistance: 1.5
@@ -5030,6 +5034,11 @@ MonoBehaviour:
     glowColor: {r: 0.9, g: 0.906, b: 0.92, a: 0.85}
     glowWidth: 0.25
     glowSoftness: 0.2
+    shadowOn: 1
+    shadowColor: {r: 0.08, g: 0.06, b: 0.1, a: 0.8}
+    shadowOffset: {x: 1, y: -1}
+    shadowSoftness: 0.4
+    shadowDilate: 0.45
     bottom: 0.08
     top: 0.2
     sideMargin: 0.15
@@ -5040,6 +5049,13 @@ MonoBehaviour:
     panelPadding: {x: 90, y: 42}
     panelEdgeFade: 48
     panelPuffiness: 0.6
+    fadeWhenPlayerOverlaps: 1
+    overlapAlpha: 0.3
+    overlapFadeTime: 0.25
+    overlapPadding: 0
+    playerBodyMargin: 0.15
+    playerBodyMarginX: 0.55
+    showOverlapDebug: 0
   orbRelievesBreath: 1
   orbBreathAmount: 0.15
 --- !u!114 &319097241586043325
@@ -5063,8 +5079,32 @@ MonoBehaviour:
   pulseScaleAmount: 0.08
   pulseOpacityAmount: 0.08
   referenceSprite: {fileID: 102863548950428349}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 2
   zOffset: 0.05
+  material: {fileID: 0}
+--- !u!114 &586148751613001411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3422756399871418078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae6fe9e45a634094b8bdf2e54e481aa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuidanceLightBackdrop
+  color: {r: 1, g: 0.6, b: 0.15, a: 1}
+  opacity: 0.9
+  sizeMultiplier: 1.05
+  softness: 0.6
+  pulse: 1
+  pulsePeriod: 2.4
+  pulseScaleAmount: 0.05
+  pulseOpacityAmount: 0.1
+  referenceSprite: {fileID: 102863548950428349}
+  sortingOrderOffset: 1
+  zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &5102084297206935024
 GameObject:

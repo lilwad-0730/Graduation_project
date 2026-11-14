@@ -2899,7 +2899,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 14.144542
+  orthographic size: 14.138686
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -5212,6 +5212,8 @@ MonoBehaviour:
   crossFadeDuration: 0.02
   logStateChanges: 0
   reverseFacingDirection: 0
+  silhouetteTint: 1
+  silhouetteColor: {r: 0.165, g: 0.176, b: 0.212, a: 1}
 --- !u!114 &931082211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11190,7 +11192,7 @@ MonoBehaviour:
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 34
-    OrthographicSize: 14.144542
+    OrthographicSize: 14.138686
     NearClipPlane: 0.1
     FarClipPlane: 1000
     Dutch: 0
@@ -11346,6 +11348,7 @@ GameObject:
   - component: {fileID: 2049566476}
   - component: {fileID: 2049566479}
   - component: {fileID: 2049566480}
+  - component: {fileID: 2049566481}
   m_Layer: 0
   m_Name: FairyLight
   m_TagString: Untagged
@@ -16204,6 +16207,8 @@ MonoBehaviour:
   ruinsBelowY: -60
   timedFlightWaypointName: P14
   timedFlightSeconds: 3
+  maxFlightSeconds: 5
+  maxFlightOnlyInDesert: 1
   cameraHandBackSeconds: 1
   cameraEnterSeconds: 0.6
   waypointThreshold: 5
@@ -16268,6 +16273,13 @@ MonoBehaviour:
     panelPadding: {x: 90, y: 42}
     panelEdgeFade: 48
     panelPuffiness: 0.6
+    fadeWhenPlayerOverlaps: 1
+    overlapAlpha: 0.3
+    overlapFadeTime: 0.25
+    overlapPadding: 0
+    playerBodyMargin: 0.15
+    playerBodyMarginX: 0.55
+    showOverlapDebug: 0
   orbRelievesBreath: 1
   orbBreathAmount: 0.15
 --- !u!114 &2049566480
@@ -16291,8 +16303,32 @@ MonoBehaviour:
   pulseScaleAmount: 0.08
   pulseOpacityAmount: 0.08
   referenceSprite: {fileID: 979191918}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 2
   zOffset: 0.05
+  material: {fileID: 0}
+--- !u!114 &2049566481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049566475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae6fe9e45a634094b8bdf2e54e481aa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuidanceLightBackdrop
+  color: {r: 0.6588235, g: 0.6784314, b: 1, a: 1}
+  opacity: 0.4
+  sizeMultiplier: 0.95
+  softness: 1
+  pulse: 1
+  pulsePeriod: 2.4
+  pulseScaleAmount: 0.05
+  pulseOpacityAmount: 0.1
+  referenceSprite: {fileID: 979191918}
+  sortingOrderOffset: 1
+  zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &2051952756
 GameObject:
@@ -17117,7 +17153,7 @@ Transform:
   m_GameObject: {fileID: 2147001101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.30587, y: -28.10904, z: 0}
+  m_LocalPosition: {x: -24.30587, y: -28.103184, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -18704,6 +18704,7 @@ GameObject:
   - component: {fileID: 1200656986}
   - component: {fileID: 1200656985}
   - component: {fileID: 1200656984}
+  - component: {fileID: 1200656988}
   m_Layer: 0
   m_Name: FairyLight
   m_TagString: Untagged
@@ -23641,6 +23642,30 @@ Transform:
   - {fileID: 1299074127}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!114 &1200656988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200656983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae6fe9e45a634094b8bdf2e54e481aa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuidanceLightBackdrop
+  color: {r: 0.4, g: 0.9215686, b: 1, a: 1}
+  opacity: 0.4
+  sizeMultiplier: 0.95
+  softness: 1
+  pulse: 1
+  pulsePeriod: 2.4
+  pulseScaleAmount: 0.05
+  pulseOpacityAmount: 0.1
+  referenceSprite: {fileID: 1299074129}
+  sortingOrderOffset: 1
+  zOffset: 0.04
+  material: {fileID: 0}
 --- !u!1 &1204498362
 GameObject:
   m_ObjectHideFlags: 0
