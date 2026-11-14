@@ -22,7 +22,8 @@ public class FallWindStreaksFX : MonoBehaviour
     [Range(0f, 3f)] public float intensity = 1f;
     [Header("外觀")]
     [Range(0f, 1f)] public float maxAlpha = 0.09f;   // 很淡：只是讓人隱約感覺在掉，不能搶畫面
-    public float baseSpeed = 26f;          // 往上飛的速度（相對鏡頭，單位：公尺／秒，鏡頭視野 20～36 公尺高）
+    public Color streakColor = new Color(0.36f, 0.46f, 0.72f, 1f);   // 比深藍雲亮一點點的藍，不用白色
+    public float baseSpeed = 26f;         // 往上飛的速度（相對鏡頭，單位：公尺／秒，鏡頭視野 20～36 公尺高）
     public float lengthScale = 3f;         // 拉長倍率
     public float widthMeters = 0.09f;      // 線寬
     public float ratePerSecond = 9f;       // 每秒生幾條線
@@ -86,7 +87,7 @@ public class FallWindStreaksFX : MonoBehaviour
         _main.startSpeed = 0f;   // 速度由 velocityOverLifetime 給（往鏡頭「上」方向）
         _main.startSize = widthMeters;
         _main.maxParticles = 200;
-        _main.startColor = new Color(1f, 1f, 1f, maxAlpha);
+        _main.startColor = new Color(streakColor.r, streakColor.g, streakColor.b, maxAlpha);
 
         _em = _ps.emission;
         _em.enabled = true;
@@ -167,7 +168,7 @@ public class FallWindStreaksFX : MonoBehaviour
         float spd = baseSpeed * (0.35f + 0.65f * settle) * (halfH / 15f);   // 視野越大飛越快，畫面上看起來速度才一致
         vel.y = new ParticleSystem.MinMaxCurve(spd * 0.8f, spd * 1.2f);
 
-        _main.startColor = new Color(1f, 1f, 1f, maxAlpha * Mathf.Clamp01(amp));
+        _main.startColor = new Color(streakColor.r, streakColor.g, streakColor.b, maxAlpha * Mathf.Clamp01(amp));
         _main.startSize = widthMeters * (halfH / 15f);
 
         _em = _ps.emission;

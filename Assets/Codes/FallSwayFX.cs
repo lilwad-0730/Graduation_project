@@ -60,6 +60,9 @@ public class FallSwayFX : MonoBehaviour
     public float headClearance = 0.12f;
     [Tooltip("手臂、腿的骨骼離地面的最小距離（角色縮放倍數）")]
     public float limbClearance = 0.05f;
+    [Tooltip("起身全程把身體壓在側面（脊椎與面向不朝鏡頭歪）。關掉＝回到動畫原本的扭轉")]
+    public bool enableGetUpProfile = true;
+    [Range(0f, 1f)] public float getUpProfileStrength = 1f;
     [Tooltip("抬起來的平滑速度（越大跟得越緊）")]
     public float liftFollowSpeed = 14f;
 
@@ -160,6 +163,40 @@ public class FallSwayFX : MonoBehaviour
         Quaternion addRot = Quaternion.identity;
         Vector3 addPos = Vector3.zero;
         bool any = false;
+        Quaternion preRot = Quaternion.identity;
+        Vector3 prePos = Vector3.zero;
+
+        // ── 起身全程保持側面 ──
+        // Mixamo 的起身動畫會一邊撐起來一邊把身體轉向鏡頭（量過：爬起階段脊椎在鏡頭軸上偏約 35 度、肚子朝鏡頭約 25 度），
+        // 橫向捲軸只看側面，這樣看起來就是「角度怪」。這裡以髖部為軸，把脊椎方向與面向壓回畫面平面（X-Y）。
+        // 起身頭尾兩端本來就在平面內，所以進出沒有跳動；只動外觀，不碰剛體。
+        if (enableGetUpProfile && _pm.IsGettingUp && _pm.animator != null)
+        {
+            Transform hips = _pm.animator.GetBoneTransform(HumanBodyBones.Hips);
+            if (hips != null)
+            {
+                Vector3 up = hips.up, fwd = hips.forward;
+                Vector3 upFlat = new Vector3(up.x, up.y, 0f);
+                Quaternion r1 = Quaternion.identity;
+                if (upFlat.sqrMagnitude > 0.04f) r1 = Quaternion.FromToRotation(up, upFlat.normalized);
+                Vector3 up2 = r1 * up, fwd2 = r1 * fwd;
+                Vector3 tgt = Vector3.Cross(up2, Vector3.forward);
+                Quaternion r2 = Quaternion.identity;
+                if (tgt.sqrMagnitude > 0.01f)
+                {
+                    tgt.Normalize();
+                    if (Vector3.Dot(tgt, fwd2) < 0f) tgt = -tgt;
+                    r2 = Quaternion.FromToRotation(fwd2, tgt);
+                }
+                Quaternion R = Quaternion.Slerp(Quaternion.identity, r2 * r1, Mathf.Clamp01(getUpProfileStrength));
+                Vector3 pivotOffset = hips.position - v.position;
+                preRot = R;
+                prePos = pivotOffset - R * pivotOffset;   // 以髖部為軸轉，髖部位置不動
+                v.rotation = preRot * v.rotation;
+                v.position += prePos;
+                any = true;
+            }
+        }
 
         // ── 起身防陷地 ──
         float liftTarget = 0f;
@@ -209,10 +246,10 @@ public class FallSwayFX : MonoBehaviour
         }
 
         if (!any) return;
-        _appliedRot = addRot;
-        _appliedPos = addPos;
-        v.rotation = _appliedRot * v.rotation;
-        v.position += _appliedPos;
+        _appliedRot = addRot * preRot;   // 先轉（preRot）已經套在 v 上，這裡只補 addRot；撤銷時一起還原
+        _appliedPos = addPos + prePos;
+        v.rotation = addRot * v.rotation;
+        v.position += addPos;
         _applied = true;
     }
 
