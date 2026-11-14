@@ -24,17 +24,32 @@ public sealed class VolumeSliderHandle : MonoBehaviour, IPointerDownHandler, IDr
     [Tooltip("這個控點所屬的滑桿（volumestick 上的 WorldSpaceMaster/Bgm/SfxVolumeSlider）。")]
     [SerializeField] private MonoBehaviour slider;
     [SerializeField] private Camera inputCamera;
+    [Tooltip("按下控點時播的音效（跟設定畫面其他按鈕同一個）。留空就不播。")]
+    [SerializeField] private AudioClip pressSound;
+    [SerializeField, Range(0f, 1f)] private float pressVolume = 0.5f;
 
     private IWorldVolumeSlider Target => slider as IWorldVolumeSlider;
+    private AudioSource audioSource;
 
     private void Awake()
     {
         if (inputCamera == null) inputCamera = Camera.main;
         if (Target == null) Debug.LogWarning("[VolumeSliderHandle] 沒有指定滑桿，或指定的元件不是音量滑桿。", this);
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.ignoreListenerPause = true;   // 設定畫面開著時遊戲暫停，音效照樣要出聲
+    }
+
+    private void PlayPressSound()
+    {
+        if (pressSound != null && audioSource != null)
+            audioSource.PlayOneShot(pressSound, AudioManager.ScaleSfx(pressVolume));
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        PlayPressSound();
         Target?.BeginHandleDrag(eventData.position, eventData.pressEventCamera);
     }
 
@@ -50,7 +65,9 @@ public sealed class VolumeSliderHandle : MonoBehaviour, IPointerDownHandler, IDr
 
     private void OnMouseDown()
     {
-        if (NeedsMouseFallback()) Target?.BeginHandleDrag(Input.mousePosition, inputCamera);
+        if (!NeedsMouseFallback()) return;
+        PlayPressSound();
+        Target?.BeginHandleDrag(Input.mousePosition, inputCamera);
     }
 
     private void OnMouseDrag()
