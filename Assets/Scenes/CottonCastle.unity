@@ -24951,16 +24951,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae6fe9e45a634094b8bdf2e54e481aa2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuidanceLightBackdrop
-  color: {r: 1, g: 0.6980392, b: 0.8196079, a: 1}
-  opacity: 0.4
-  sizeMultiplier: 0.95
-  softness: 1
+  color: {r: 1, g: 0.56, b: 0.76, a: 1}
+  opacity: 0.9
+  sizeMultiplier: 1.05
+  softness: 0.8
   pulse: 1
   pulsePeriod: 2.4
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 979191918}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &2080063612

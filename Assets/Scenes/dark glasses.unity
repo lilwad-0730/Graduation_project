@@ -8888,7 +8888,7 @@ MonoBehaviour:
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 1816543444}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &605686577
@@ -14715,7 +14715,7 @@ MonoBehaviour:
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 153308336}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &722750631
@@ -22927,7 +22927,7 @@ MonoBehaviour:
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 77719300}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &1177900117
@@ -30129,7 +30129,7 @@ MonoBehaviour:
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 2108295131}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &1490290488

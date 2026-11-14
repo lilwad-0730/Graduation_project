@@ -16327,7 +16327,7 @@ MonoBehaviour:
   pulseScaleAmount: 0.05
   pulseOpacityAmount: 0.1
   referenceSprite: {fileID: 979191918}
-  sortingOrderOffset: 1
+  sortingOrderOffset: 0
   zOffset: 0.04
   material: {fileID: 0}
 --- !u!1 &2051952756
