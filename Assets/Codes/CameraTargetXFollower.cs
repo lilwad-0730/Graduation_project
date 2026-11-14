@@ -152,6 +152,8 @@ public class CameraTargetXFollower : MonoBehaviour
     /// 過場（CinematicOverride）、墜落等模式完全不受影響。
     /// </summary>
     public static Vector2 AmbientLookOffset;
+    /// <summary>★1115 落地衝擊的鏡頭晃動量（RuinsHeavyLandingFX 寫、這裡疊在最後；平常 0）。</summary>
+    public static Vector2 ImpactShakeOffset;
 
     // ★1027 廢墟背景板是階梯狀的（山坡左邊的背景比較矮）：這一幀鏡頭中心最高能到哪，畫面上緣才不會超出背景圖。
     //   float.MaxValue＝不限制。只限制上方，下方照舊（推巨石的鏡頭下沉不受影響）。
@@ -770,6 +772,8 @@ public class CameraTargetXFollower : MonoBehaviour
     {
         UpdatePositionCore();
         StepBlend();   // ★1011 有鏡頭過渡時，把算好的位置與大小從舊的慢慢混過去
+        // ★1115 落地衝擊的鏡頭晃動：疊在最後（過渡之後），每次都是從頭重算位置所以不會累加；平常是 0，沒有任何影響
+        if (ImpactShakeOffset.sqrMagnitude > 0.000001f) transform.position += new Vector3(ImpactShakeOffset.x, ImpactShakeOffset.y, 0f);
         // ★1028 特寫結束、還原的過渡也走完了，才把鏡頭阻尼還回去（還原途中維持 0，鏡頭不會拖在後面）
         if (_overrideFollowTuned && !isOverridden && !_blendActive) EndOverrideFollowTuning();
     }

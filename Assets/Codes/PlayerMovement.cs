@@ -530,6 +530,30 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("★1024 固定速度墜落開始後幾秒播落下動畫（每次都一樣，不看滯空計時）")]
     public float controlledFallAnimDelay = 0.3f;
 
+    [Header("★1115 墜落速度節奏與重落地")]
+    [Tooltip("天空那段越掉越快（不是固定速度）。總秒數會跟原本差不多：前面比較慢、後面比較快，兩邊平均剛好一樣。關掉＝回到固定速度")]
+    public bool ruinsFallAccelerating = true;
+    [Tooltip("剛開始的速度＝終端速度×這個倍數")]
+    public float ruinsFallRampStartMult = 0.53f;
+    [Tooltip("天空段結束時的速度＝終端速度×這個倍數")]
+    public float ruinsFallRampEndMult = 1.25f;
+    [Tooltip("從慢到快的時間（秒）＝這個數字×墜落時間倍率。倍率 3 時約 28.8 秒")]
+    public float ruinsFallRampSecondsPerScale = 9.6f;
+    [Tooltip("白霧傳送進廢墟後，改用快速墜落直接砸到地面（不再放慢）。關掉＝照原本放慢落地")]
+    public bool ruinsDropFastAfterRelay = true;
+    [Tooltip("傳送進廢墟後的墜落速度（米／秒，不受時間倍率影響）")]
+    public float ruinsDropSpeed = 14f;
+    [Tooltip("傳送進廢墟後加到這個速度的加速度（米／秒²）")]
+    public float ruinsDropAcceleration = 45f;
+    private bool _ruinsDropPhase;
+    private float _lastFallEndSpeed;
+    /// <summary>★1115 是否在「傳送進廢墟之後」的快速墜落段（給落地特效、風線用，純讀取）。</summary>
+    public bool IsRuinsDropPhase => _ruinsDropPhase;
+    /// <summary>★1115 目前墜落速度（米／秒，沒在墜落＝0）。</summary>
+    public float CurrentFallSpeed => _controlledFall ? Mathf.Abs(_controlledFallVy) : 0f;
+    /// <summary>★1115 快速墜落後重重落地的那一刻（參數＝落地速度）。給落地特效用。</summary>
+    public event System.Action<float> OnHeavyRuinsLanding;
+
     private bool _controlledFall;
     private float _controlledFallVy;
     private float _fallLandingK = 1f;
@@ -559,6 +583,7 @@ public class PlayerMovement : MonoBehaviour
         //   玩家看起來「傳送失敗、一直往下掉」（log：傳到 (50.3,-108.3)，之後玩家一直在 (-25.1, …)）。
         //   傳送時把鎖定的 X 一起換成新位置，Z 用玩家原本的 Z。
         position.z = initialZ;
+        if (_controlledFall && ruinsDropFastAfterRelay) _ruinsDropPhase = true;   // ★1115 傳送進廢墟：之後改成快速墜落、重重落地
         if (isStrictLockingX) lockedXValue = position.x;
         transform.position = position;
         if (rb != null)
@@ -576,6 +601,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!controlledRuinsFall || rb == null || rb.isKinematic || _controlledFall) return;
         _controlledFall = true;
+        _ruinsDropPhase = false;
         _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed) / Mathf.Max(0.25f, ruinsFallDurationScale);
         _controlledFallStartTime = Time.time;
         _fallLandingK = 1f;
@@ -593,6 +619,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_controlledFall) return;
         Debug.Log($"【墜落】耗時 {ControlledFallSeconds:F2} 秒、結束時速度 {_controlledFallVy:F1} 米／秒（{why}）");   // ★1024 方便比對每次墜落是否一致
+        _lastFallEndSpeed = Mathf.Abs(_controlledFallVy);
         _controlledFall = false;
         if (rb != null)
         {
@@ -614,8 +641,20 @@ public class PlayerMovement : MonoBehaviour
         float terminalSpd = Mathf.Abs(ruinsFallTerminalSpeed) / durScale;
         float landingSpd = Mathf.Abs(ruinsFallLandingSpeed) / durScale;
         float target = -terminalSpd;
+        bool drop = _ruinsDropPhase;
+        if (drop)
+        {
+            target = -Mathf.Abs(ruinsDropSpeed);   // ★1115 傳送進廢墟後：快速墜落
+        }
+        else if (ruinsFallAccelerating)
+        {
+            // ★1115 越掉越快：前面慢、後面快。前後平均剛好等於原本的固定速度，總秒數不變
+            float rampSec = Mathf.Max(1f, ruinsFallRampSecondsPerScale * durScale);
+            float tau = Mathf.Clamp01(ControlledFallSeconds / rampSec);
+            target = -terminalSpd * Mathf.Lerp(ruinsFallRampStartMult, ruinsFallRampEndMult, tau);
+        }
 
-        // 離地面近就固定放慢到落地速度
+        // 離地面近就固定放慢到落地速度（快速墜落段不放慢：要重重砸到地上）
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
         if (col != null && ControlledFallSeconds >= ruinsFallBrakeGraceSeconds)
         {
@@ -634,14 +673,14 @@ public class PlayerMovement : MonoBehaviour
             {
                 float dist = Mathf.Max(0f, hit.distance - b.extents.y);
                 float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
-                target = -Mathf.Lerp(landingSpd, terminalSpd, k);
+                if (!drop) target = -Mathf.Lerp(landingSpd, terminalSpd, k);
                 _fallLandingK = k;
                 _fallGroundSeen = hit.collider.name;
             }
             else { _fallGroundSeen = "無"; _fallLandingK = 1f; }
         }
 
-        float accel = ruinsFallAcceleration / (durScale * durScale);
+        float accel = drop ? Mathf.Max(1f, ruinsDropAcceleration) : ruinsFallAcceleration / (durScale * durScale);
         float rate = target < _controlledFallVy ? accel : accel * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
@@ -2507,6 +2546,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UnlockFallingControl(string reason)
     {
+        bool wasDropPhase = _ruinsDropPhase;   // ★1115 EndControlledFall 會歸零，先記下來
         EndControlledFall("玩家已著地");   // ★1012
         bool wasRuinsLanding = _waitingForRuinsLanding;   // ★1011 先記下來，下面會清掉
         freezeHorizontal = false;
@@ -2537,6 +2577,7 @@ public class PlayerMovement : MonoBehaviour
 
         SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
         if (wasRuinsLanding) BeginRuinsStandUp();   // ★1114 落地起身，播完才恢復操作
+        if (wasRuinsLanding && wasDropPhase) OnHeavyRuinsLanding?.Invoke(_lastFallEndSpeed);   // ★1115 重重落地：落地特效（震動、塵土）
         Debug.Log($"【掉落解鎖】{reason}，玩家已落到廢墟地面，鏡頭還給玩家並恢復操作。");
         StartCoroutine(EnableRespawnWithDelay());
     }

@@ -165,13 +165,15 @@ public class FallWindStreaksFX : MonoBehaviour
         _shape.scale = new Vector3(halfW * 2f, 0.1f, 0.1f);
 
         var vel = _ps.velocityOverLifetime;
-        float spd = baseSpeed * (0.35f + 0.65f * settle) * (halfH / 15f);   // 視野越大飛越快，畫面上看起來速度才一致
+        // ★1115 墜落越掉越快、傳送進廢墟後更快：風線的速度與數量跟著實際墜落速度走（以平均速度約 5.7 公尺／秒為 1 倍）
+        float speedK = Mathf.Clamp(_pm.CurrentFallSpeed / 5.7f, 0.5f, 2.5f);
+        float spd = baseSpeed * (0.35f + 0.65f * settle) * (halfH / 15f) * speedK;   // 視野越大飛越快，畫面上看起來速度才一致
         vel.y = new ParticleSystem.MinMaxCurve(spd * 0.8f, spd * 1.2f);
 
         _main.startColor = new Color(streakColor.r, streakColor.g, streakColor.b, maxAlpha * Mathf.Clamp01(amp));
         _main.startSize = widthMeters * (halfH / 15f);
 
         _em = _ps.emission;
-        _em.rateOverTime = ratePerSecond * amp;
+        _em.rateOverTime = ratePerSecond * amp * speedK;
     }
 }
