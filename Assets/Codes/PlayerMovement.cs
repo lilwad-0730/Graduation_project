@@ -546,12 +546,17 @@ public class PlayerMovement : MonoBehaviour
     public float getUpClipStandSeconds = 8.6f;
     [Tooltip("墜落至少要掉這麼多秒才算（避免續玩放到存檔點被誤判成剛摔下來）")]
     public float getUpMinFallSeconds = 2f;
-    [Tooltip("從動畫第幾秒開始播。原動畫 0～3 秒躺著不動、4.5～7 秒是頭縮下去的爬行（圓身體角色看起來像一顆球），\n直接從 7.2 秒（剛要撐起來）開始，約 1.1 秒站好。想看完整趴到站就改 2.6；0＝從頭播")]
-    public float getUpStartSeconds = 7.2f;
+    [Tooltip("從動畫第幾秒開始播。墜落的 Falling 動畫是橫躺趴著、頭朝右，Standing Up 的 0～4.5 秒也是同樣的橫躺趴姿，所以落地接這段才是連續的；\n2.6＝跳過最前面躺著不動的空白。注意：改欄位名稱是因為編輯器場景會記住舊值，之後要改請也換新名字或直接在 Inspector 改")]
+    public float getUpStartClipSeconds = 2.6f;
+    [Tooltip("爬行段（動畫約 4.2～7.0 秒，頭縮下去、身體彎著）用幾倍速快速帶過，不讓它停留在畫面上。1＝不加速")]
+    public float getUpCrawlFromSeconds = 4.2f;
+    public float getUpCrawlToSeconds = 7.0f;
+    [Range(1f, 6f)] public float getUpCrawlSpeedMultiplier = 3f;
 
     private bool _getUpActive;
     private bool _getUpHeld;
-    private float _getUpEndTime;
+    private float _getUpClipT;        // 目前播到原動畫第幾秒（自己累加，才能在爬行段加速）
+    private float _getUpAppliedSpeed;
     private bool _getUpPlayed;   // ★1114 一個玩家物件一輩子只播一次（新一輪＝新玩家物件才會再播），不管誰又呼叫
     /// <summary>★1114 正在播起身（給 FallSwayFX 把陷進地面的身體抬起來用，純讀取）。</summary>
     public bool IsGettingUp => _getUpActive;
@@ -566,14 +571,15 @@ public class PlayerMovement : MonoBehaviour
         }
         _getUpActive = true;
         _getUpPlayed = true;
-        float offset = Mathf.Clamp(getUpStartSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
-        _getUpEndTime = Time.time + (getUpClipStandSeconds - offset) / Mathf.Max(0.1f, getUpPlaySpeed);
+        float offset = Mathf.Clamp(getUpStartClipSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
+        _getUpClipT = offset;
         PlayerCutsceneHold.Acquire(this, false);
         _getUpHeld = true;
-        animator.speed = getUpPlaySpeed;
+        _getUpAppliedSpeed = getUpPlaySpeed;
+        animator.speed = _getUpAppliedSpeed;
         animator.CrossFadeInFixedTime(getUpStateName, 0.15f, 0, offset);   // 淡入短一點、跳過躺著不動的前幾秒
         currentAnimState = getUpStateName;
-        Debug.Log("【起身】落地後播 " + getUpStateName + "（從第 " + offset.ToString("F1") + " 秒起），約 " + (_getUpEndTime - Time.time).ToString("F1") + " 秒後可以動，frame=" + Time.frameCount);
+        Debug.Log("【起身】落地後播 " + getUpStateName + "（從第 " + offset.ToString("F1") + " 秒起，爬行段 " + getUpCrawlSpeedMultiplier.ToString("F1") + " 倍速），frame=" + Time.frameCount);
     }
 
     /// <summary>結束起身（播完、重生、傳送、換場景都走這裡）。可重複呼叫。</summary>
@@ -581,7 +587,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_getUpActive) return;
         _getUpActive = false;
-        if (animator != null && Mathf.Abs(animator.speed - getUpPlaySpeed) < 0.001f) animator.speed = 1f;   // 只還原自己設的值，別人設了別的就不動
+        if (animator != null && Mathf.Abs(animator.speed - _getUpAppliedSpeed) < 0.001f) animator.speed = 1f;   // 只還原自己設的值，別人設了別的就不動
         if (_getUpHeld) { _getUpHeld = false; PlayerCutsceneHold.Release(); }
         Debug.Log("【起身】結束（" + why + "）");
     }
@@ -1515,8 +1521,16 @@ public class PlayerMovement : MonoBehaviour
             // ★1114 落地起身：播完（或被重生打斷）才還給一般動畫；演出期間一律播 Standing Up
             if (_getUpActive)
             {
-                if (Time.time >= _getUpEndTime) EndGetUp("站起來了");
-                else targetAnim = getUpStateName;
+                // 自己累加「原動畫播到第幾秒」，爬行段加速帶過、其餘照 getUpPlaySpeed
+                _getUpClipT += Time.deltaTime * _getUpAppliedSpeed;
+                if (_getUpClipT >= getUpClipStandSeconds) EndGetUp("站起來了");
+                else
+                {
+                    targetAnim = getUpStateName;
+                    bool inCrawl = _getUpClipT >= getUpCrawlFromSeconds && _getUpClipT < getUpCrawlToSeconds;
+                    _getUpAppliedSpeed = getUpPlaySpeed * (inCrawl ? Mathf.Max(1f, getUpCrawlSpeedMultiplier) : 1f);
+                    animator.speed = _getUpAppliedSpeed;
+                }
             }
 
             // 【強制接管播放】使用 Play 直接切換指定 State (加入安全保護)
