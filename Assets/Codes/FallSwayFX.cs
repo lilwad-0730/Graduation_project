@@ -31,11 +31,11 @@ public class FallSwayFX : MonoBehaviour
 
     [Header("左右搖晃（主角）")]
     [Tooltip("繞畫面深度軸左右傾斜（度）")]
-    [Range(0f, 45f)] public float rollDegrees = 30f;
+    [Range(0f, 45f)] public float rollDegrees = 17f;
     [Tooltip("繞垂直軸左右轉身（度）：身體一下朝向鏡頭、一下背向鏡頭")]
-    [Range(0f, 60f)] public float yawDegrees = 28f;
+    [Range(0f, 60f)] public float yawDegrees = 11f;
     [Tooltip("上下起伏（公尺）：像在氣流裡浮沉")]
-    [Range(0f, 2f)] public float bobMeters = 0.45f;
+    [Range(0f, 2f)] public float bobMeters = 0.2f;
     [Header("前後（刻意很小）")]
     [Tooltip("畫面橫向飄移（公尺）")]
     [Range(0f, 2f)] public float driftMeters = 0.25f;
@@ -52,8 +52,14 @@ public class FallSwayFX : MonoBehaviour
 
     [Header("起身防陷地")]
     public bool enableGetUpGroundFix = true;
-    [Tooltip("全身最低骨骼離地面的最小距離，單位＝角色縮放倍數（量過站立時約 0.04）。越大＝越往上抬")]
-    public float boneClearance = 0.04f;
+    [Tooltip("手腳骨骼離地面的最小距離，單位＝角色縮放倍數。0.065＝跟站立（Idle）時腳踝的高度一致，站起來接回 Idle 不會跳")]
+    public float boneClearance = 0.065f;
+    [Tooltip("軀幹（髖、脊椎、胸）骨骼離地面的最小距離（角色縮放倍數）。身體有厚度，骨骼在中心")]
+    public float torsoClearance = 0.07f;
+    [Tooltip("頭、頸骨骼離地面的最小距離（角色縮放倍數）。這個角色頭很大，趴下時頭會陷最深")]
+    public float headClearance = 0.12f;
+    [Tooltip("手臂、腿的骨骼離地面的最小距離（角色縮放倍數）")]
+    public float limbClearance = 0.05f;
     [Tooltip("抬起來的平滑速度（越大跟得越緊）")]
     public float liftFollowSpeed = 14f;
 
@@ -61,6 +67,7 @@ public class FallSwayFX : MonoBehaviour
     private Transform _visual;
     private Collider _col;
     private Transform[] _bones;
+    private float[] _boneKind;   // 每根骨骼用哪一種離地距離：0 手腳、1 軀幹、2 頭頸、3 手臂腿
     private bool _applied;
     private Quaternion _appliedRot = Quaternion.identity;
     private Vector3 _appliedPos;
@@ -104,14 +111,31 @@ public class FallSwayFX : MonoBehaviour
     {
         if (_bones != null) return;
         Animator a = _pm != null ? _pm.animator : null;
-        if (a == null || a.avatar == null || !a.avatar.isHuman) { _bones = new Transform[0]; return; }
+        if (a == null || a.avatar == null || !a.avatar.isHuman) { _bones = new Transform[0]; _boneKind = new float[0]; return; }
         var list = new System.Collections.Generic.List<Transform>(55);
+        var kinds = new System.Collections.Generic.List<float>(55);
         for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
         {
             Transform b = a.GetBoneTransform((HumanBodyBones)i);
-            if (b != null) list.Add(b);
+            if (b == null) continue;
+            string n = ((HumanBodyBones)i).ToString();
+            float kind = 3f;                                                             // 手臂、腿
+            if (n == "Hips" || n == "Spine" || n == "Chest" || n == "UpperChest") kind = 1f;   // 軀幹
+            else if (n == "Neck" || n == "Head" || n == "Jaw" || n == "LeftEye" || n == "RightEye") kind = 2f;   // 頭頸
+            else if (n.Contains("Foot") || n.Contains("Toes") || n.Contains("Hand") || n.Contains("Thumb") || n.Contains("Index")
+                  || n.Contains("Middle") || n.Contains("Ring") || n.Contains("Little")) kind = 0f;   // 手腳
+            list.Add(b); kinds.Add(kind);
         }
         _bones = list.ToArray();
+        _boneKind = kinds.ToArray();
+    }
+
+    private float ClearanceOf(float kind)
+    {
+        if (kind < 0.5f) return boneClearance;
+        if (kind < 1.5f) return torsoClearance;
+        if (kind < 2.5f) return headClearance;
+        return limbClearance;
     }
 
     /// <summary>撤掉上一幀疊上去的偏移（排在 PlayerMovement 之前）。</summary>
@@ -142,17 +166,15 @@ public class FallSwayFX : MonoBehaviour
         if (enableGetUpGroundFix && _pm.IsGettingUp && _col != null)
         {
             CacheBones();
-            float low = float.MaxValue;
+            // 每根骨骼各自有「離地最小距離」（頭比手腳大），算出每一根需要抬多少，取最大的
+            float scale = Mathf.Max(0.01f, v.lossyScale.y);
+            float groundY = _col.bounds.min.y;
             for (int i = 0; i < _bones.Length; i++)
             {
                 Transform b = _bones[i];
-                if (b != null && b.position.y < low) low = b.position.y;
-            }
-            if (low < float.MaxValue)
-            {
-                float scale = Mathf.Max(0.01f, v.lossyScale.y);
-                float minAllowed = _col.bounds.min.y + boneClearance * scale;
-                liftTarget = Mathf.Max(0f, minAllowed - low);
+                if (b == null) continue;
+                float need = groundY + ClearanceOf(_boneKind[i]) * scale - b.position.y;
+                if (need > liftTarget) liftTarget = need;
             }
         }
         // 往上抬要跟得快（不然會先陷進去一下）；放下來慢一點，站起來時不抖

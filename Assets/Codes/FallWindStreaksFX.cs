@@ -21,11 +21,11 @@ public class FallWindStreaksFX : MonoBehaviour
     public bool enableStreaks = true;
     [Range(0f, 3f)] public float intensity = 1f;
     [Header("外觀")]
-    [Range(0f, 1f)] public float maxAlpha = 0.45f;
+    [Range(0f, 1f)] public float maxAlpha = 0.09f;   // 很淡：只是讓人隱約感覺在掉，不能搶畫面
     public float baseSpeed = 26f;          // 往上飛的速度（相對鏡頭，單位：公尺／秒，鏡頭視野 20～36 公尺高）
-    public float lengthScale = 4.5f;       // 拉長倍率
-    public float widthMeters = 0.22f;      // 線寬
-    public float ratePerSecond = 30f;      // 每秒生幾條線
+    public float lengthScale = 3f;         // 拉長倍率
+    public float widthMeters = 0.09f;      // 線寬
+    public float ratePerSecond = 9f;       // 每秒生幾條線
     public float fadeInSeconds = 1.2f;
 
     private PlayerMovement _pm;
