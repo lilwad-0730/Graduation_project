@@ -522,6 +522,8 @@ public class PlayerMovement : MonoBehaviour
     public float ruinsFallBrakeDistance = 9f;
     [Tooltip("落地前的速度（米／秒）")]
     public float ruinsFallLandingSpeed = 6f;
+    [Tooltip("★1114 墜落時間拉長倍率：1＝原本（約 7 秒）、1.5＝約 10.5 秒、2＝約 14 秒。速度與加速度一起照比例縮放，掉的距離不變，所以只是變慢、不會掉到別的地方。要再調長短只改這個數字")]
+    [Min(0.25f)] public float ruinsFallDurationScale = 1.5f;
     [Tooltip("★1024 墜落開始後這幾秒內不做「接近地面放慢」。從平台邊進墜落區時腳下就有地面，會被誤判成快落地而一開始就慢下來")]
     public float ruinsFallBrakeGraceSeconds = 0.6f;
     [Tooltip("★1024 固定速度墜落開始後幾秒播落下動畫（每次都一樣，不看滯空計時）")]
@@ -570,7 +572,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!controlledRuinsFall || rb == null || rb.isKinematic || _controlledFall) return;
         _controlledFall = true;
-        _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed);
+        _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed) / Mathf.Max(0.25f, ruinsFallDurationScale);
         _controlledFallStartTime = Time.time;
         _savedDamping = rb.linearDamping;
         _savedInterpolation = rb.interpolation;
@@ -603,7 +605,10 @@ public class PlayerMovement : MonoBehaviour
         if (!_waitingForRuinsLanding) { EndControlledFall("墜落旗標已解除"); return; }
 
         float dt = Time.fixedDeltaTime;
-        float target = -Mathf.Abs(ruinsFallTerminalSpeed);
+        float durScale = Mathf.Max(0.25f, ruinsFallDurationScale);   // ★1114 速度除以倍率、加速度除以倍率平方 → 時間剛好乘倍率、距離不變
+        float terminalSpd = Mathf.Abs(ruinsFallTerminalSpeed) / durScale;
+        float landingSpd = Mathf.Abs(ruinsFallLandingSpeed) / durScale;
+        float target = -terminalSpd;
 
         // 離地面近就固定放慢到落地速度
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
@@ -624,13 +629,14 @@ public class PlayerMovement : MonoBehaviour
             {
                 float dist = Mathf.Max(0f, hit.distance - b.extents.y);
                 float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
-                target = -Mathf.Lerp(Mathf.Abs(ruinsFallLandingSpeed), Mathf.Abs(ruinsFallTerminalSpeed), k);
+                target = -Mathf.Lerp(landingSpd, terminalSpd, k);
                 _fallGroundSeen = hit.collider.name;
             }
             else _fallGroundSeen = "無";
         }
 
-        float rate = target < _controlledFallVy ? ruinsFallAcceleration : ruinsFallAcceleration * 2.5f;   // 加速慢慢來、減速稍快
+        float accel = ruinsFallAcceleration / (durScale * durScale);
+        float rate = target < _controlledFallVy ? accel : accel * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
         rb.linearVelocity = new Vector3(0f, _controlledFallVy, 0f);
