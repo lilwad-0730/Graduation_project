@@ -25,9 +25,9 @@ public class FallSwayFX : MonoBehaviour
     [Range(0f, 3f)] public float intensity = 1f;
 
     [Header("傾斜（度，繞畫面 Z 軸）")]
-    [Range(0f, 25f)] public float rollDegrees = 14f;   // 墜落鏡頭拉很遠、主角在畫面上很小，太小看不出來
+    [Range(0f, 45f)] public float rollDegrees = 26f;   // 墜落鏡頭拉很遠、主角在畫面上很小，太小看不出來
     [Header("橫向飄移（公尺，只是外觀，不是物理位置）")]
-    [Range(0f, 1.5f)] public float driftMeters = 0.6f;
+    [Range(0f, 4f)] public float driftMeters = 1.6f;
 
     [Header("節奏")]
     [Tooltip("淡入秒數：墜落開始後幾秒內晃動從 0 慢慢長到全開")]
@@ -103,12 +103,12 @@ public class FallSwayFX : MonoBehaviour
         if (amp <= 0.001f) return;
 
         float s = _seed;
-        // 頻率互不成倍數（0.31 / 0.77 / 1.63 Hz）→ 不會變成規律的鐘擺
-        float roll = (Mathf.Sin((t + s) * 6.2832f * 0.31f) * 0.6f
-                    + Mathf.Sin((t + s * 1.7f) * 6.2832f * 0.77f) * 0.3f
-                    + Mathf.Sin((t + s * 2.3f) * 6.2832f * 1.63f) * 0.1f) * rollDegrees * amp;
-        float drift = (Mathf.Sin((t + s * 0.6f) * 6.2832f * 0.23f) * 0.7f
-                     + Mathf.Sin((t + s * 1.1f) * 6.2832f * 0.59f) * 0.3f) * driftMeters * amp;
+        // 頻率互不成倍數（0.43 / 1.07 / 2.3 Hz）→ 不會變成規律的鐘擺；比第一版快，才有「慌亂」的感覺
+        float roll = (Mathf.Sin((t + s) * 6.2832f * 0.43f) * 0.6f
+                    + Mathf.Sin((t + s * 1.7f) * 6.2832f * 1.07f) * 0.3f
+                    + Mathf.Sin((t + s * 2.3f) * 6.2832f * 2.3f) * 0.1f) * rollDegrees * amp;
+        float drift = (Mathf.Sin((t + s * 0.6f) * 6.2832f * 0.31f) * 0.7f
+                     + Mathf.Sin((t + s * 1.1f) * 6.2832f * 0.83f) * 0.3f) * driftMeters * amp;
 
         _appliedRot = Quaternion.Euler(0f, 0f, roll);   // 世界 Z 軸疊加，跟斜坡傾斜同一套做法，左右朝向都對
         _appliedPos = new Vector3(drift, 0f, 0f);

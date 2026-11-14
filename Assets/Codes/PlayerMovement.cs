@@ -529,6 +529,56 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("★1024 固定速度墜落開始後幾秒播落下動畫（每次都一樣，不看滯空計時）")]
     public float controlledFallAnimDelay = 0.3f;
 
+    // ════════════════════════════════════════════════════════
+    // ★1114 墜落落地起身（Standing Up (3)）：只在「真的從天空固定速度墜落、落到廢墟地面」那一次播，
+    // 其他落地（走下平台、跳躍、重生、續玩放到存檔點）一律不播。
+    // 播的時候用 PlayerCutsceneHold 抓住玩家（不能動，跟其他演出共用計數鎖，不會互相蓋掉），播完自動放手、淡回 Idle。
+    // 找不到動畫狀態（控制器沒加）就整段略過，不會卡住。
+    // ════════════════════════════════════════════════════════
+    [Header("★1114 墜落落地起身")]
+    [Tooltip("墜落落到廢墟地面後，播 Standing Up 起身動作並鎖住操作到站起來。關掉＝落地直接可以動（原本行為）")]
+    public bool playGetUpAfterRuinsFall = true;
+    [Tooltip("PlayerAnimator 裡的狀態名稱")]
+    public string getUpStateName = "Standing Up";
+    [Tooltip("動畫播放速度。原動畫 11.4 秒、約 8.5 秒時站直；1.25＝約 6.9 秒起身。調大＝起身更快、鎖操作更短")]
+    [Range(0.5f, 3f)] public float getUpPlaySpeed = 1.25f;
+    [Tooltip("原動畫（速度 1）站直的秒數，之後是站著發呆的部分，不需要鎖操作")]
+    public float getUpClipStandSeconds = 8.6f;
+    [Tooltip("墜落至少要掉這麼多秒才算（避免續玩放到存檔點被誤判成剛摔下來）")]
+    public float getUpMinFallSeconds = 2f;
+
+    private bool _getUpActive;
+    private bool _getUpHeld;
+    private float _getUpEndTime;
+
+    private void BeginGetUp()
+    {
+        if (!playGetUpAfterRuinsFall || _getUpActive || animator == null || isUnderwater) return;
+        if (!animator.HasState(0, Animator.StringToHash(getUpStateName)))
+        {
+            Debug.LogWarning("【起身】PlayerAnimator 找不到「" + getUpStateName + "」狀態，略過起身動作。");
+            return;
+        }
+        _getUpActive = true;
+        _getUpEndTime = Time.time + getUpClipStandSeconds / Mathf.Max(0.1f, getUpPlaySpeed);
+        PlayerCutsceneHold.Acquire(this, false);
+        _getUpHeld = true;
+        animator.speed = getUpPlaySpeed;
+        animator.CrossFadeInFixedTime(getUpStateName, 0.25f, 0);
+        currentAnimState = getUpStateName;
+        Debug.Log("【起身】落地後播 " + getUpStateName + "，約 " + (_getUpEndTime - Time.time).ToString("F1") + " 秒後可以動");
+    }
+
+    /// <summary>結束起身（播完、重生、傳送、換場景都走這裡）。可重複呼叫。</summary>
+    private void EndGetUp(string why)
+    {
+        if (!_getUpActive) return;
+        _getUpActive = false;
+        if (animator != null && Mathf.Abs(animator.speed - getUpPlaySpeed) < 0.001f) animator.speed = 1f;   // 只還原自己設的值，別人設了別的就不動
+        if (_getUpHeld) { _getUpHeld = false; PlayerCutsceneHold.Release(); }
+        Debug.Log("【起身】結束（" + why + "）");
+    }
+
     private bool _controlledFall;
     private float _controlledFallVy;
     private float _fallLandingK = 1f;
@@ -1455,6 +1505,13 @@ public class PlayerMovement : MonoBehaviour
                 isStrictLockingX = false;
             }
 
+            // ★1114 落地起身：播完（或被重生打斷）才還給一般動畫；演出期間一律播 Standing Up
+            if (_getUpActive)
+            {
+                if (Time.time >= _getUpEndTime) EndGetUp("站起來了");
+                else targetAnim = getUpStateName;
+            }
+
             // 【強制接管播放】使用 Play 直接切換指定 State (加入安全保護)
             if (currentAnimState != targetAnim)
             {
@@ -1469,6 +1526,7 @@ public class PlayerMovement : MonoBehaviour
                     // 奔跑 ↔ 站立 也用淡入淡出，停下來時不會像換圖片一樣瞬間跳成站姿
                     else if (currentAnimState == "Run" && targetAnim == "Idle") blend = runToIdleBlendSeconds;
                     else if (currentAnimState == "Idle" && targetAnim == "Run") blend = idleToRunBlendSeconds;
+                    else if (currentAnimState == getUpStateName) blend = 0.35f;   // ★1114 站起來 → 站立/跑：淡出，不跳姿勢
 
                     if (blend > 0.001f)
                     {
@@ -2261,6 +2319,7 @@ public class PlayerMovement : MonoBehaviour
     public void WarpTo(Vector3 position)
     {
         EndControlledFall("被傳送");   // ★1012 重生／傳送一律把物理還給剛體
+        EndGetUp("被傳送");            // ★1114 起身演出中被傳送／重生：立刻結束，不殘留鎖定
         transform.position = position;
         if (rb != null)
         {
@@ -2389,6 +2448,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UnlockFallingControl(string reason)
     {
+        float fellSeconds = ControlledFallSeconds;   // ★1114 先記下來（EndControlledFall 之後歸零）；沒在墜落＝0
         EndControlledFall("玩家已著地");   // ★1012
         bool wasRuinsLanding = _waitingForRuinsLanding;   // ★1011 先記下來，下面會清掉
         freezeHorizontal = false;
@@ -2419,6 +2479,7 @@ public class PlayerMovement : MonoBehaviour
 
         SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
         Debug.Log($"【掉落解鎖】{reason}，玩家已落到廢墟地面，鏡頭還給玩家並恢復操作。");
+        if (wasRuinsLanding && fellSeconds >= getUpMinFallSeconds) BeginGetUp();   // ★1114 真的從天上摔下來才播起身
         StartCoroutine(EnableRespawnWithDelay());
     }
 
