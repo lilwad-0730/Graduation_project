@@ -14,7 +14,8 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class WolfAmbushPreludeFX : MonoBehaviour
 {
-    public static bool Enabled = true;
+    // ★1115 關閉：背景後面掠過的狼黑影不要了（改回 true 即可恢復）
+    public static bool Enabled = false;
 
     // 企劃可調
     public static float TriggerMax = 18f;        // 她離出生點多遠（公尺，出生點在她前方）時影子開始掠過

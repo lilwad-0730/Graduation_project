@@ -2406,7 +2406,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 399396139}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 855273112}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -5142,6 +5142,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &855273112
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &857486092
 GameObject:
   m_ObjectHideFlags: 0
@@ -5592,6 +5605,7 @@ GameObject:
   - component: {fileID: 931082211}
   - component: {fileID: 931082210}
   - component: {fileID: 931082215}
+  - component: {fileID: 931082216}
   m_Layer: 6
   m_Name: WOLF
   m_TagString: Untagged
@@ -5619,8 +5633,25 @@ MonoBehaviour:
   backwardStateName: backward
   crossFadeDuration: 0.02
   logStateChanges: 0
+  syncAnimToSpeed: 1
+  walkNaturalSpeed: 1.1
+  runNaturalSpeed: 1.65
+  backwardNaturalSpeed: 1.4
+  footSyncStrength: 0.85
+  minAnimSpeed: 0.6
+  maxAnimSpeed: 6
+  animSpeedVariation: 0.06
+  idleUsesStandingPose: 1
+  idlePoseState: walking
+  idlePoseNormalizedTime: 0.16
+  stateSwitchDelay: 0.12
+  idleDelay: 0.25
+  crossDissolveSeconds: 0.15
+  walkSheetBrightness: 0.915
+  walkSheetScale: 0.97
+  walkSheetYOffset: 0.029
   reverseFacingDirection: 0
-  silhouetteTint: 1
+  silhouetteTint: 0
   silhouetteColor: {r: 0.165, g: 0.176, b: 0.212, a: 1}
 --- !u!114 &931082211
 MonoBehaviour:
@@ -5772,6 +5803,46 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.1885338, y: 1.6623306, z: 1}
   m_Center: {x: 0.28796577, y: 0.014392853, z: 0}
+--- !u!114 &931082216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 931082209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90ff0429ed4433c418ab75890e95475d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WolfMotionFX
+  runBob: 0.14
+  runRock: 3.5
+  walkBob: 0.05
+  leanPerAccel: 0.35
+  maxLean: 8
+  speedStretch: 0.06
+  stretchFullSpeed: 12
+  breathScale: 0.015
+  breathPeriod: 2.6
+  idleSway: 0.8
+  crouchExtraDistance: 1.5
+  crouchDepth: 0.12
+  pounceDuration: 0.32
+  pounceHeight: 0.55
+  tugAngle: 5
+  tugFrequency: 6
+  yankInterval: 0.7
+  stunRecoilAngle: 20
+  stunRecoilSeconds: 0.5
+  stunHop: 0.35
+  releaseHop: 0.25
+  sizeVariation: 0.08
+  shadeVariation: 0.07
+  dust: 1
+  dustPerMeter: 1.6
+  dustMinSpeed: 4.5
+  dustColor: {r: 0.78, g: 0.75, b: 0.7, a: 0.35}
+  pounceDustBurst: 12
 --- !u!1 &940929165
 GameObject:
   m_ObjectHideFlags: 0
@@ -6714,7 +6785,7 @@ Transform:
   m_GameObject: {fileID: 1066805922}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -28.100002, y: 1.4699936, z: -3}
+  m_LocalPosition: {x: -28.100002, y: 4.7, z: -3}
   m_LocalScale: {x: 2.31, y: 2.194434, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8054,7 +8125,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1286745629}
-  m_Material: {fileID: 2097947024}
+  m_Material: {fileID: 1954512594}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -12205,12 +12276,25 @@ Transform:
   m_GameObject: {fileID: 1929559072}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.9, z: 0}
   m_LocalScale: {x: 1.81666, y: 1.453328, z: 1.81666}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 573838437}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &1954512594
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance)'
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &2000445849
 GameObject:
   m_ObjectHideFlags: 0
@@ -18067,19 +18151,6 @@ MonoBehaviour:
   triggerOnPlayer: 1
   triggerDistance: 6
   tornadoColor: {r: 0.82, g: 0.85, b: 0.88, a: 0.65}
---- !u!134 &2097947024
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1 &2102602371
 GameObject:
   m_ObjectHideFlags: 0
