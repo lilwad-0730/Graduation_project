@@ -531,6 +531,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool _controlledFall;
     private float _controlledFallVy;
+    private float _fallLandingK = 1f;
+    /// <summary>★1114 墜落中離地面多近：1＝還很高、0＝貼地（給墜落晃動 FallSwayFX 落地前收掉用，純讀取）。</summary>
+    public float FallLandingK => _fallLandingK;
     private float _nextFallTelemetry;
     private string _fallGroundSeen = "無";
     private float _savedDamping;
@@ -574,6 +577,7 @@ public class PlayerMovement : MonoBehaviour
         _controlledFall = true;
         _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed) / Mathf.Max(0.25f, ruinsFallDurationScale);
         _controlledFallStartTime = Time.time;
+        _fallLandingK = 1f;
         _savedDamping = rb.linearDamping;
         _savedInterpolation = rb.interpolation;
         _savedUseGravity = rb.useGravity;
@@ -630,9 +634,10 @@ public class PlayerMovement : MonoBehaviour
                 float dist = Mathf.Max(0f, hit.distance - b.extents.y);
                 float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
                 target = -Mathf.Lerp(landingSpd, terminalSpd, k);
+                _fallLandingK = k;
                 _fallGroundSeen = hit.collider.name;
             }
-            else _fallGroundSeen = "無";
+            else { _fallGroundSeen = "無"; _fallLandingK = 1f; }
         }
 
         float accel = ruinsFallAcceleration / (durScale * durScale);
