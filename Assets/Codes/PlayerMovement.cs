@@ -547,7 +547,7 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("墜落至少要掉這麼多秒才算（避免續玩放到存檔點被誤判成剛摔下來）")]
     public float getUpMinFallSeconds = 2f;
     [Tooltip("從動畫第幾秒開始播。原動畫 0～3 秒躺著不動、4.5～7 秒是頭縮下去的爬行（圓身體角色看起來像一顆球），\n直接從 7.2 秒（剛要撐起來）開始，約 1.1 秒站好。想看完整趴到站就改 2.6；0＝從頭播")]
-    public float getUpStartOffsetSeconds = 7.2f;
+    public float getUpStartSeconds = 7.2f;
 
     private bool _getUpActive;
     private bool _getUpHeld;
@@ -566,7 +566,7 @@ public class PlayerMovement : MonoBehaviour
         }
         _getUpActive = true;
         _getUpPlayed = true;
-        float offset = Mathf.Clamp(getUpStartOffsetSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
+        float offset = Mathf.Clamp(getUpStartSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
         _getUpEndTime = Time.time + (getUpClipStandSeconds - offset) / Mathf.Max(0.1f, getUpPlaySpeed);
         PlayerCutsceneHold.Acquire(this, false);
         _getUpHeld = true;
