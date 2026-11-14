@@ -5015,15 +5015,15 @@ MonoBehaviour:
   - waypointName: P12
     clip: {fileID: 8300000, guid: 9fa532992e214e3cac7b3f106d1f8c39, type: 3}
     volume: 1
-    subtitle: "\u9935\u5976\u3001\u6D17\u5976\u74F6\u3001\u54C4\u7761\uFF0C\u6211\u4E00\u523B\u4E5F\u6C92\u505C\uFF0C\n\u537B\u9023\u5750\u4E0B\u5598\u53E3\u6C23\u90FD\u50CF\u505A\u932F\u4E86\u3002"
+    subtitle: "\u5B69\u5B50\u7D42\u65BC\u7761\u4E86\uFF0C\u6211\u537B\u600E\u9EBC\u4E5F\u7761\u4E0D\u8457\u3002"
   - waypointName: P13
     clip: {fileID: 8300000, guid: 29b7aa2a0eac44759f57727befafd238, type: 3}
     volume: 1
-    subtitle: "\u6211\u89BA\u5F97\u81EA\u5DF1\u597D\u7D2F\uFF0C\u537B\u53C8\u89BA\u5F97\u6211\u4E0D\u5920\u52AA\u529B\uFF0C\n\u8B93\u6211\u9023\u6C42\u52A9\u90FD\u4E0D\u6562\u4E86\u3002"
+    subtitle: "\u770B\u8457\u5225\u7684\u5ABD\u5ABD\u6E38\u5203\u6709\u9918\uFF0C\u89BA\u5F97\u81EA\u5DF1\u4E0D\u662F\u500B\u597D\u5ABD\u5ABD\u3002"
   - waypointName: P14
     clip: {fileID: 8300000, guid: 97a100802bff4dbdb64a963b1b1b144a, type: 3}
     volume: 1
-    subtitle: "\u5176\u4ED6\u7684\u5ABD\u5ABD\u770B\u8D77\u4F86\u90FD\u6E38\u5203\u6709\u9918\u7684\u6A23\u5B50\uFF0C\u6211\u9700\u8981\u518D\u52AA\u529B\u4E00\u9EDE\u3002\n\u53EF\u662F\uFF0C\u5230\u5E95\u4F55\u6642\u624D\u80FD\u4F11\u606F\uFF1F"
+    subtitle: "\u90A3\u5929\u591C\u88E1\uFF0C\u6211\u7D42\u65BC\u7761\u4E86\u4E00\u6703\u5152\u3002"
   subtitleStyle:
     font: {fileID: 11400000, guid: 762e567ebcaba0145afecc68607d176c, type: 2}
     fontSize: 44

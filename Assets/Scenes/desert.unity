@@ -14202,15 +14202,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1859790089625821299, guid: 0ab7ceb788d594d49bb8d7dfaf645fef, type: 3}
       propertyPath: waypointVoices.Array.data[0].subtitle
-      value: "\u5225\u4EBA\u7684\u4E00\u500B\u773C\u795E\u3001\u4E00\u53E5\u8A62\u554F\uFF0C\u90FD\u8B93\u6211\u7E43\u7DCA\uFF0C\n\u5BB3\u6015\u4E0B\u4E00\u523B\u53C8\u88AB\u8CAC\u602A\u3002"
+      value: "\u5225\u4EBA\u7684\u773C\u795E\u548C\u8A62\u554F\u8B93\u6211\u7E43\u7DCA\uFF0C\u662F\u4F60\u66FF\u6211\u64CB\u4E86\u4E0B\u4F86\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 1859790089625821299, guid: 0ab7ceb788d594d49bb8d7dfaf645fef, type: 3}
       propertyPath: waypointVoices.Array.data[1].subtitle
-      value: "\u6211\u7528\u5F88\u91CD\u7684\u8A71\u628A\u4F60\u63A8\u958B\uFF0C\u770B\u898B\u4F60\u53D7\u50B7\uFF0C\n\u6211\u4E5F\u75DB\uFF0C\u537B\u4E0D\u77E5\u9053\u600E\u9EBC\u505C\u4E0B\u3002"
+      value: "\u6211\u4E5F\u75DB\uFF0C\u537B\u4E0D\u77E5\u9053\u600E\u9EBC\u505C\u4E0B\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 1859790089625821299, guid: 0ab7ceb788d594d49bb8d7dfaf645fef, type: 3}
       propertyPath: waypointVoices.Array.data[2].subtitle
-      value: "\u6211\u60F3\u627E\u500B\u5730\u65B9\u8EB2\u4E00\u8EB2\uFF0C\u537B\u59CB\u7D42\u653E\u4E0D\u4E0B\u6212\u5099\uFF0C\n\u4E0D\u77E5\u9053\u9084\u80FD\u4F9D\u9760\u8AB0\u3002"
+      value: "\u611F\u8B1D\u4F60\uFF0C\u9858\u610F\u7B49\u6211\u56DE\u982D\u3002"
       objectReference: {fileID: 0}
     - target: {fileID: 1859790089625821299, guid: 0ab7ceb788d594d49bb8d7dfaf645fef, type: 3}
       propertyPath: waypointVoices.Array.data[0].waypointName
