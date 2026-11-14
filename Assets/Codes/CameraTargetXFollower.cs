@@ -111,6 +111,10 @@ public class CameraTargetXFollower : MonoBehaviour
     [Tooltip("Falling Mode 下 Y 軸垂直追隨基礎速度 (高速墜落時會自動加速跟隨)")]
     public float fallingFollowSpeed = 18f;
 
+    [Tooltip("★1114 Falling Mode 鏡頭大小倍率（1＝剛好塞滿通道寬度）。只能 ≤1（拉近），拉遠會露出通道兩側。\n" +
+             "廢墟雲層墜落由 RuinsFallCinematics 在墜落中改這個值做鏡頭節奏，平常保持 1")]
+    [Range(0.4f, 1f)] public float fallingOrthoScale = 1f;
+
     [Tooltip("★1006 從 Mario 模式切進 Falling 模式時，主角要比墜落通道頂端低多少（米）才算真的掉進去。"
            + "棉花堡第二個金色台階下方的地面和往廢墟的墜落通道（FALLING/connect_0 (1)）頂端重疊，"
            + "原本走在那段地上鏡頭就被切成墜落畫面。已經在墜落中則照原本的範圍（頂端上方 1 米）判定。")]
@@ -966,7 +970,7 @@ public class CameraTargetXFollower : MonoBehaviour
 
         float aspect = (_mainCam != null && _mainCam.aspect > 0.1f) ? _mainCam.aspect : (16f / 9f);
         float shaftHalfWidth = fb.extents.x;
-        float desiredOrtho = Mathf.Clamp(shaftHalfWidth / aspect, 10f, 18f);
+        float desiredOrtho = Mathf.Clamp(shaftHalfWidth / aspect, 10f, 18f) * Mathf.Clamp(fallingOrthoScale, 0.4f, 1f);
 
         bool firstCallThisFrame = _fallCamFrame != Time.frameCount;   // UpdatePosition 一幀會跑兩次（Update＋LateUpdate），平滑只推進一次
         if (instant || !Application.isPlaying)

@@ -14,6 +14,9 @@ public class VoiceSubtitle : MonoBehaviour
     [System.Serializable]
     public class Style
     {
+        /// <summary>複製一份（字型等資源引用共用）。給要沿用別人樣式、只改幾個值的地方用，不會動到原本的。</summary>
+        public Style Clone() => (Style)MemberwiseClone();
+
         [Header("字型")]
         [Tooltip("字幕字型（TMP Font Asset）。預設霞鶩文楷 TC Medium")]
         public TMP_FontAsset font;
