@@ -742,6 +742,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    [Header("★1115 廢墟墜落鏡頭")]
+    [Tooltip("墜落到廢墟途中，鏡頭是否切去特寫光球。預設關＝鏡頭全程跟著主角（原本會切去光球再切回來）。要回到原本演出就勾起來")]
+    public bool ruinsIntroLightCloseup = false;
+
     [Header("★1011 廢墟墜落特寫還給玩家")]
     [Tooltip("落地後，鏡頭從光球特寫慢慢移回玩家身上要幾秒（0＝瞬間切回）")]
     public float ruinsIntroHandBackSeconds = 1.0f;
@@ -2512,8 +2516,8 @@ public class PlayerMovement : MonoBehaviour
             StopCoroutine(_ruinsIntroLightGuardCoroutine);
             _ruinsIntroLightGuardCoroutine = null;
         }
-        // ★1011 光球特寫還給玩家：慢慢過去，不是瞬間切
-        CameraTargetXFollower.ClearCameraOverrideSmooth(ruinsIntroHandBackSeconds);
+        // ★1011 光球特寫還給玩家：慢慢過去，不是瞬間切（沒做特寫就不用還）
+        if (ruinsIntroLightCloseup) CameraTargetXFollower.ClearCameraOverrideSmooth(ruinsIntroHandBackSeconds);
 
         PlayerRespawnSystem respawnSystem = GetComponent<PlayerRespawnSystem>();
         if (respawnSystem != null && wasRuinsLanding)
@@ -2554,6 +2558,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartRuinsIntroLightCloseup()
     {
+        if (!ruinsIntroLightCloseup) return;   // ★1115 墜落全程鏡頭跟著主角，不切去光球特寫
         if (_ruinsIntroCameraCoroutine != null) return;
         _ruinsIntroCameraCoroutine = StartCoroutine(RuinsIntroLightCloseupRoutine());
     }

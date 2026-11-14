@@ -960,6 +960,35 @@ public class CameraTargetXFollower : MonoBehaviour
         }
     }
 
+    [Header("★1115 墜落鏡頭")]
+    [Tooltip("上下相連的墜落背景圖合併成一個範圍給鏡頭用，鏡頭才能連續跟著主角、不會換張時整頁跳。取消勾選＝回到原本只看單張")]
+    public bool mergeStackedFallingBackgrounds = true;
+
+    /// <summary>把跟 fb 左右對得上、上下相接或重疊的墜落背景一路併起來（只用來算鏡頭 Y 的上下界）。</summary>
+    private Bounds MergeStackedFallingBounds(Bounds fb)
+    {
+        Bounds merged = fb;
+        bool changed = true;
+        int guard = 0;
+        while (changed && guard++ < 16)
+        {
+            changed = false;
+            for (int i = 0; i < _fallingBoundsList.Count; i++)
+            {
+                Bounds b = _fallingBoundsList[i];
+                bool sameColumn = Mathf.Abs(b.center.x - merged.center.x) < Mathf.Max(2f, merged.extents.x * 0.25f);
+                bool touches = b.min.y <= merged.max.y + 0.6f && b.max.y >= merged.min.y - 0.6f;
+                bool already = b.min.y >= merged.min.y - 0.01f && b.max.y <= merged.max.y + 0.01f;
+                if (sameColumn && touches && !already)
+                {
+                    merged.Encapsulate(b);
+                    changed = true;
+                }
+            }
+        }
+        return merged;
+    }
+
     private void ApplyFallingModePosition(Bounds fb, Vector3 playerPos, bool instant)
     {
         float camX = fb.center.x;
@@ -981,8 +1010,12 @@ public class CameraTargetXFollower : MonoBehaviour
 
         float targetY = playerPos.y + fallingCameraYOffset;
         float halfHeight = currentOrthoSize;
-        float minY = fb.min.y + halfHeight;
-        float maxY = fb.max.y - halfHeight;
+        // ★1115 墜落背景是好幾張圖上下疊起來，原本鏡頭只被關在「主角目前那一張」裡；每一張剛好等於一個畫面高，
+        //   結果鏡頭在每張裡完全不動、主角從畫面頂掉到底，換張時鏡頭整頁瞬間跳（實測一次跳 12 公尺、一次 20 公尺）。
+        //   改成把上下相連的幾張合併起來算範圍，鏡頭就能連續跟著主角。
+        Bounds yb = mergeStackedFallingBackgrounds ? MergeStackedFallingBounds(fb) : fb;
+        float minY = yb.min.y + halfHeight;
+        float maxY = yb.max.y - halfHeight;
 
         if (minY <= maxY)
         {
@@ -990,7 +1023,7 @@ public class CameraTargetXFollower : MonoBehaviour
         }
         else
         {
-            targetY = fb.center.y;
+            targetY = yb.center.y;
         }
 
         if (instant || !Application.isPlaying)
