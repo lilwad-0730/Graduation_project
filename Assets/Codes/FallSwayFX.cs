@@ -64,7 +64,9 @@ public class FallSwayFX : MonoBehaviour
     public bool enableGetUpProfile = true;
     [Range(0f, 1f)] public float getUpProfileStrength = 1f;
     [Tooltip("抬起來的平滑速度（越大跟得越緊）")]
-    public float liftFollowSpeed = 14f;
+    public float liftFollowSpeed = 45f;
+    [Tooltip("起身期間外觀抬升『往下放』的最快速度（公尺／秒），避免跟著動畫骨骼的小抖動上下跳")]
+    public float liftFallMetersPerSecond = 1.2f;
 
     private PlayerMovement _pm;
     private Transform _visual;
@@ -200,7 +202,8 @@ public class FallSwayFX : MonoBehaviour
 
         // ── 起身防陷地 ──
         float liftTarget = 0f;
-        if (enableGetUpGroundFix && _pm.IsGettingUp && _col != null)
+        // 起身結束後動畫還在淡入 Idle（約 0.35 秒），要繼續跟著對齊到抬升歸零，不然外觀會突然掉下去
+        if (enableGetUpGroundFix && _col != null && (_pm.IsGettingUp || _lift > 0.001f))
         {
             CacheBones();
             // 每根骨骼各自有「離地最小距離」（頭比手腳大），算出每一根需要抬多少，取最大的
@@ -214,10 +217,18 @@ public class FallSwayFX : MonoBehaviour
                 if (need > liftTarget) liftTarget = need;
             }
         }
-        // 往上抬要跟得快（不然會先陷進去一下）；放下來慢一點，站起來時不抖
-        float follow = liftTarget > _lift ? liftFollowSpeed * 2f : liftFollowSpeed;
-        _lift = Mathf.Lerp(_lift, liftTarget, 1f - Mathf.Exp(-follow * Time.deltaTime));
-        if (!_pm.IsGettingUp && _lift < 0.001f) _lift = 0f;
+        // 起身期間：往上抬要快（不然會先陷進去），往下放限制速度——動畫骨骼高度在「跪→站」那一瞬間會快速抖動（±0.5 公尺），
+        //   貼著它走外觀就會跟著上下跳；只升快、降慢，高度就是平滑的單向變化
+        if (_pm.IsGettingUp)
+        {
+            if (liftTarget > _lift) _lift = Mathf.Lerp(_lift, liftTarget, 1f - Mathf.Exp(-liftFollowSpeed * 2f * Time.deltaTime));
+            else _lift = Mathf.Max(liftTarget, _lift - liftFallMetersPerSecond * Time.deltaTime);
+        }
+        else
+        {
+            _lift = Mathf.Lerp(_lift, liftTarget, 1f - Mathf.Exp(-liftFollowSpeed * Time.deltaTime));
+            if (_lift < 0.001f) _lift = 0f;
+        }
         if (_lift > 0.0005f) { addPos.y += _lift; any = true; }
 
         // ── 墜落晃動 ──

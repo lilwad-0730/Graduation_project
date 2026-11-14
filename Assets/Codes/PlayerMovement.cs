@@ -571,15 +571,40 @@ public class PlayerMovement : MonoBehaviour
         }
         _getUpActive = true;
         _getUpPlayed = true;
+        SnapToGroundForGetUp();   // 實測落地偵測是提前判定的，碰撞框離地面還有約 0.26 公尺；起身期間重力關著會一直懸空、放手才掉下去（上下晃）
         float offset = Mathf.Clamp(getUpStartClipSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
         _getUpClipT = offset;
         PlayerCutsceneHold.Acquire(this, false);
         _getUpHeld = true;
         _getUpAppliedSpeed = getUpPlaySpeed;
         animator.speed = _getUpAppliedSpeed;
-        animator.CrossFadeInFixedTime(getUpStateName, 0.15f, 0, offset);   // 淡入短一點、跳過躺著不動的前幾秒
+        animator.CrossFadeInFixedTime(getUpStateName, 0.25f, 0, offset);   // 淡入短一點、跳過躺著不動的前幾秒
         currentAnimState = getUpStateName;
         Debug.Log("【起身】落地後播 " + getUpStateName + "（從第 " + offset.ToString("F1") + " 秒起，爬行段 " + getUpCrawlSpeedMultiplier.ToString("F1") + " 倍速），frame=" + Time.frameCount);
+    }
+
+    /// <summary>起身開始前，把碰撞框底部貼到腳下地面（只往下、最多 1.5 公尺；找不到地面就不動）。</summary>
+    private void SnapToGroundForGetUp()
+    {
+        Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
+        if (col == null || rb == null) return;
+        Bounds b = col.bounds;
+        float reach = b.extents.y + 1.5f;
+        RaycastHit hit;
+        bool ok = Physics.Raycast(b.center, Vector3.down, out hit, reach, ~0, QueryTriggerInteraction.Ignore)
+            && hit.collider != col && !hit.collider.transform.IsChildOf(transform);
+        if (!ok)
+            ok = Physics.BoxCast(b.center, new Vector3(b.extents.x * 0.5f, 0.05f, 15f), Vector3.down, out hit, Quaternion.identity, reach, ~0, QueryTriggerInteraction.Ignore)
+                && hit.collider != col && !hit.collider.transform.IsChildOf(transform) && hit.normal.y > 0.5f;
+        if (!ok) return;
+        float gap = hit.distance - b.extents.y;
+        if (gap <= 0.01f || gap > 1.5f) return;
+        Vector3 p = rb.position;
+        p.y -= gap;
+        rb.position = p;
+        transform.position = p;
+        Physics.SyncTransforms();
+        Debug.Log("【起身】碰撞框離地 " + gap.ToString("F2") + " 公尺，先貼到地面再起身");
     }
 
     /// <summary>結束起身（播完、重生、傳送、換場景都走這裡）。可重複呼叫。</summary>
