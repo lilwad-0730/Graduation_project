@@ -33,22 +33,33 @@ public class AutoHorizontalDrift : MonoBehaviour
     public EndMode endMode = EndMode.Loop;
     [Tooltip("移動距離 (從起點算起，Endless 模式下無作用)")]
     public float travelDistance = 30f;
+    [Tooltip("循環模式：走到終點前這段距離內慢慢淡出、回到起點後同樣距離內淡入，看不到瞬間跳回起點。0＝不淡（會瞬移）。\n" +
+             "只會改 SpriteRenderer 顏色的透明度，原本設定的顏色會保留。開場第一圈不淡入")]
+    [Min(0f)] public float loopFadeDistance = 4f;
 
     [Header("其他 (Other)")]
     [Tooltip("勾選後使用不受 Time.timeScale 影響的時間 (遊戲暫停時仍會移動)")]
     public bool useUnscaledTime = false;
+
+    /// <summary>★1114 額外的垂直偏移（例如廢墟墜落的雲層視差由 RuinsFallCinematics 每幀設定）。疊在漂移位置上，不影響漂移本身。</summary>
+    [System.NonSerialized] public float extraOffsetY;
 
     private Vector3 _startLocalPos;
     private float _currentSpeed;
     private float _offset;      // 目前相對起點的位移量 (沿移動方向，恆為正)
     private int _pingPongSign = 1;
     private float _delayTimer;
+    private SpriteRenderer _sprite;
+    private Color _baseColor;
+    private bool _looped;       // 已經從終點回到起點過一次（第一圈開場不淡入）
 
     private void Start()
     {
         _startLocalPos = transform.localPosition;
         _currentSpeed = speed * (1f + Random.Range(-speedRandomness, speedRandomness));
         _delayTimer = startDelay;
+        _sprite = GetComponent<SpriteRenderer>();
+        if (_sprite != null) _baseColor = _sprite.color;
     }
 
     private void Update()
@@ -72,7 +83,8 @@ public class AutoHorizontalDrift : MonoBehaviour
 
             case EndMode.Loop:
                 _offset += step;
-                if (travelDistance > 0f && _offset >= travelDistance) _offset -= travelDistance;
+                if (travelDistance > 0f && _offset >= travelDistance) { _offset -= travelDistance; _looped = true; }
+                ApplyLoopFade();
                 break;
 
             case EndMode.PingPong:
@@ -83,7 +95,19 @@ public class AutoHorizontalDrift : MonoBehaviour
         }
 
         float dirSign = direction == Direction.Left ? -1f : 1f;
-        transform.localPosition = _startLocalPos + new Vector3(dirSign * _offset, 0f, 0f);
+        transform.localPosition = _startLocalPos + new Vector3(dirSign * _offset, extraOffsetY, 0f);
+    }
+
+    /// <summary>循環模式：終點前淡出、回起點後淡入，所以瞬間回到起點時是完全透明的。</summary>
+    private void ApplyLoopFade()
+    {
+        if (_sprite == null || loopFadeDistance <= 0f || travelDistance <= 0f) return;
+        float fd = Mathf.Min(loopFadeDistance, travelDistance * 0.5f);
+        float fadeOut = Mathf.Clamp01((travelDistance - _offset) / fd);
+        float fadeIn = _looped ? Mathf.Clamp01(_offset / fd) : 1f;
+        Color c = _baseColor;
+        c.a *= Mathf.Min(fadeIn, fadeOut);
+        _sprite.color = c;
     }
 
     /// <summary>讓物件回到起點並重新開始移動。</summary>
@@ -91,7 +115,9 @@ public class AutoHorizontalDrift : MonoBehaviour
     {
         _offset = 0f;
         _pingPongSign = 1;
+        _looped = false;
         _delayTimer = startDelay;
         transform.localPosition = _startLocalPos;
+        if (_sprite != null) _sprite.color = _baseColor;
     }
 }
