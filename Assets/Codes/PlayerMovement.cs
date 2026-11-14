@@ -546,27 +546,34 @@ public class PlayerMovement : MonoBehaviour
     public float getUpClipStandSeconds = 8.6f;
     [Tooltip("墜落至少要掉這麼多秒才算（避免續玩放到存檔點被誤判成剛摔下來）")]
     public float getUpMinFallSeconds = 2f;
+    [Tooltip("從動畫第幾秒開始播。原動畫前 3 秒幾乎是躺著不動，直接跳過才不會落地後空白很久。0＝從頭播")]
+    public float getUpStartOffsetSeconds = 2.6f;
 
     private bool _getUpActive;
     private bool _getUpHeld;
     private float _getUpEndTime;
+    private bool _getUpPlayed;   // ★1114 一個玩家物件一輩子只播一次（新一輪＝新玩家物件才會再播），不管誰又呼叫
+    /// <summary>★1114 正在播起身（給 FallSwayFX 把陷進地面的身體抬起來用，純讀取）。</summary>
+    public bool IsGettingUp => _getUpActive;
 
     private void BeginGetUp()
     {
-        if (!playGetUpAfterRuinsFall || _getUpActive || animator == null || isUnderwater) return;
+        if (!playGetUpAfterRuinsFall || _getUpPlayed || _getUpActive || animator == null || isUnderwater) return;
         if (!animator.HasState(0, Animator.StringToHash(getUpStateName)))
         {
             Debug.LogWarning("【起身】PlayerAnimator 找不到「" + getUpStateName + "」狀態，略過起身動作。");
             return;
         }
         _getUpActive = true;
-        _getUpEndTime = Time.time + getUpClipStandSeconds / Mathf.Max(0.1f, getUpPlaySpeed);
+        _getUpPlayed = true;
+        float offset = Mathf.Clamp(getUpStartOffsetSeconds, 0f, Mathf.Max(0f, getUpClipStandSeconds - 1f));
+        _getUpEndTime = Time.time + (getUpClipStandSeconds - offset) / Mathf.Max(0.1f, getUpPlaySpeed);
         PlayerCutsceneHold.Acquire(this, false);
         _getUpHeld = true;
         animator.speed = getUpPlaySpeed;
-        animator.CrossFadeInFixedTime(getUpStateName, 0.25f, 0);
+        animator.CrossFadeInFixedTime(getUpStateName, 0.15f, 0, offset);   // 淡入短一點、跳過躺著不動的前幾秒
         currentAnimState = getUpStateName;
-        Debug.Log("【起身】落地後播 " + getUpStateName + "，約 " + (_getUpEndTime - Time.time).ToString("F1") + " 秒後可以動");
+        Debug.Log("【起身】落地後播 " + getUpStateName + "（從第 " + offset.ToString("F1") + " 秒起），約 " + (_getUpEndTime - Time.time).ToString("F1") + " 秒後可以動，frame=" + Time.frameCount);
     }
 
     /// <summary>結束起身（播完、重生、傳送、換場景都走這裡）。可重複呼叫。</summary>

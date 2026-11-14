@@ -2,32 +2,45 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// ★1114 墜落時主角輕微晃動（純視覺）：失控、不安、不確定的感覺。
+/// ★1114 墜落時主角輕微晃動＋起身時身體不陷進地面（兩個都是純視覺，只動外觀子物件）。
+///
+///  ◆ 墜落晃動：失控、不安、不確定的感覺
+///   ・以「左右搖晃」為主：繞畫面深度軸（Z）左右傾、繞垂直軸（Y）左右轉身，加上上下起伏（Y）；
+///     前後（畫面橫向 X）的飄移與前後仰（繞 X 軸）刻意壓得很小。
+///   ・幾個頻率互不成倍數的正弦疊起來，不是規律鐘擺；前 1.5 秒淡入，接近地面依 FallLandingK 收掉。
+///  ◆ 起身防陷地：Standing Up 動畫的趴／跪階段，身體骨骼會低於地面（量過：最深約 0.5 公尺）。
+///   每幀量「全身最低的骨骼」離碰撞盒底部多遠，不夠就把外觀整個往上抬一點，剛好不陷進去；站直後自然是 0。
 ///
 ///  為什麼不會跟別的機制打架：
-///   ・只動「外觀子物件」（animator 那個 Transform）的旋轉與位置，剛體、碰撞盒、鎖定的 X、墜落速度曲線一個都不碰，
-///     所以落點、傳送接力、落地判定、墜落秒數都跟沒加之前完全一樣。
-///   ・PlayerMovement 每幀會用 Slerp 從「目前的旋轉」往目標轉，若把晃動留在旋轉上它會被一點一點吃掉或累積。
-///     所以做成「疊加→下一幀開始前先撤掉→重新疊加」：本腳本的 Update 排在最前面撤掉上一幀的偏移，
-///     LateUpdate 排在最後面再疊上這一幀的偏移。PlayerMovement 看到的永遠是乾淨的值。
-///   ・只在 PlayerMovement.IsInControlledFall 時有效；沒在墜落＝一律撤掉、什麼都不做（每幀只有一個布林判斷）。
-///   ・落地前依 FallLandingK 收掉，落地時站得正；也不會在重生、傳送後殘留。
+///   ・只動外觀子物件（animator 那個 Transform），剛體、碰撞盒、鎖定的 X、墜落速度曲線一個都不碰，
+///     落點、傳送接力、落地判定、墜落秒數都不變。
+///   ・PlayerMovement 每幀用 Slerp 從「目前的旋轉」往目標轉、斜坡補償也會改 localPosition.y。
+///     所以做成「疊加→下一幀開始前先撤掉→重新疊加」：Update 排最前面撤掉上一幀偏移，LateUpdate 排最後面再疊。
+///     量骨骼高度發生在撤掉之後、疊加之前，量到的是乾淨的值，不會自己回授。
+///   ・沒在墜落也沒在起身＝一律撤掉、什麼都不做。重生、傳送後不殘留。
 ///   ・不改鏡頭：鏡頭位置由 CameraTargetXFollower 每幀完整接管，疊東西會互相覆蓋。
-///  晃動由幾個頻率互不成倍數的正弦疊起來，不是規律鐘擺；振幅前 1.5 秒淡入、越掉越不安一點點。
-///  所有數字都在 Inspector 可調；enable 打勾關掉就完全恢復原樣。
+///  所有數字都在 Inspector 可調；enableSway／enableGetUpGroundFix 取消勾選＝完全恢復原樣。
 /// </summary>
 [DefaultExecutionOrder(100)]
 public class FallSwayFX : MonoBehaviour
 {
-    [Header("開關與強度")]
+    [Header("墜落晃動：開關與強度")]
     public bool enableSway = true;
     [Tooltip("整體強度倍率：1＝預設、0＝關掉、1.5＝更大")]
     [Range(0f, 3f)] public float intensity = 1f;
 
-    [Header("傾斜（度，繞畫面 Z 軸）")]
-    [Range(0f, 45f)] public float rollDegrees = 26f;   // 墜落鏡頭拉很遠、主角在畫面上很小，太小看不出來
-    [Header("橫向飄移（公尺，只是外觀，不是物理位置）")]
-    [Range(0f, 4f)] public float driftMeters = 1.6f;
+    [Header("左右搖晃（主角）")]
+    [Tooltip("繞畫面深度軸左右傾斜（度）")]
+    [Range(0f, 45f)] public float rollDegrees = 30f;
+    [Tooltip("繞垂直軸左右轉身（度）：身體一下朝向鏡頭、一下背向鏡頭")]
+    [Range(0f, 60f)] public float yawDegrees = 28f;
+    [Tooltip("上下起伏（公尺）：像在氣流裡浮沉")]
+    [Range(0f, 2f)] public float bobMeters = 0.45f;
+    [Header("前後（刻意很小）")]
+    [Tooltip("畫面橫向飄移（公尺）")]
+    [Range(0f, 2f)] public float driftMeters = 0.25f;
+    [Tooltip("前後仰（度，繞 X 軸）")]
+    [Range(0f, 20f)] public float pitchDegrees = 4f;
 
     [Header("節奏")]
     [Tooltip("淡入秒數：墜落開始後幾秒內晃動從 0 慢慢長到全開")]
@@ -37,12 +50,22 @@ public class FallSwayFX : MonoBehaviour
     [Tooltip("離地面多近開始收掉（0~1，對應 PlayerMovement 的放慢距離比例）。0.6＝剩 60% 距離就開始收")]
     [Range(0.1f, 1f)] public float settleStartK = 0.6f;
 
+    [Header("起身防陷地")]
+    public bool enableGetUpGroundFix = true;
+    [Tooltip("全身最低骨骼離地面的最小距離，單位＝角色縮放倍數（量過站立時約 0.04）。越大＝越往上抬")]
+    public float boneClearance = 0.04f;
+    [Tooltip("抬起來的平滑速度（越大跟得越緊）")]
+    public float liftFollowSpeed = 14f;
+
     private PlayerMovement _pm;
     private Transform _visual;
+    private Collider _col;
+    private Transform[] _bones;
     private bool _applied;
     private Quaternion _appliedRot = Quaternion.identity;
     private Vector3 _appliedPos;
     private float _seed;
+    private float _lift;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
@@ -63,6 +86,7 @@ public class FallSwayFX : MonoBehaviour
     private void Awake()
     {
         _pm = GetComponent<PlayerMovement>();
+        _col = GetComponent<Collider>();
         _seed = Random.value * 100f;   // 每次墜落相位不同，但同一次內平滑連續
     }
 
@@ -74,6 +98,20 @@ public class FallSwayFX : MonoBehaviour
         if (t == transform) return null;   // 外觀就是根物件時不碰（會帶著剛體轉）
         _visual = t;
         return _visual;
+    }
+
+    private void CacheBones()
+    {
+        if (_bones != null) return;
+        Animator a = _pm != null ? _pm.animator : null;
+        if (a == null || a.avatar == null || !a.avatar.isHuman) { _bones = new Transform[0]; return; }
+        var list = new System.Collections.Generic.List<Transform>(55);
+        for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
+        {
+            Transform b = a.GetBoneTransform((HumanBodyBones)i);
+            if (b != null) list.Add(b);
+        }
+        _bones = list.ToArray();
     }
 
     /// <summary>撤掉上一幀疊上去的偏移（排在 PlayerMovement 之前）。</summary>
@@ -91,30 +129,76 @@ public class FallSwayFX : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (!enableSway || intensity <= 0f || _pm == null || !_pm.IsInControlledFall) return;
+        if (_pm == null) return;
         Transform v = FindVisual();
         if (v == null) return;
 
-        float t = _pm.ControlledFallSeconds;
-        float fade = fadeInSeconds <= 0.01f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / fadeInSeconds));
-        float build = 0.7f + 0.3f * Mathf.Clamp01(t / Mathf.Max(0.1f, buildUpSeconds));
-        float settle = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_pm.FallLandingK / Mathf.Max(0.1f, settleStartK)));   // 接近地面→0
-        float amp = intensity * fade * build * settle;
-        if (amp <= 0.001f) return;
+        Quaternion addRot = Quaternion.identity;
+        Vector3 addPos = Vector3.zero;
+        bool any = false;
 
-        float s = _seed;
-        // 頻率互不成倍數（0.43 / 1.07 / 2.3 Hz）→ 不會變成規律的鐘擺；比第一版快，才有「慌亂」的感覺
-        float roll = (Mathf.Sin((t + s) * 6.2832f * 0.43f) * 0.6f
-                    + Mathf.Sin((t + s * 1.7f) * 6.2832f * 1.07f) * 0.3f
-                    + Mathf.Sin((t + s * 2.3f) * 6.2832f * 2.3f) * 0.1f) * rollDegrees * amp;
-        float drift = (Mathf.Sin((t + s * 0.6f) * 6.2832f * 0.31f) * 0.7f
-                     + Mathf.Sin((t + s * 1.1f) * 6.2832f * 0.83f) * 0.3f) * driftMeters * amp;
+        // ── 起身防陷地 ──
+        float liftTarget = 0f;
+        if (enableGetUpGroundFix && _pm.IsGettingUp && _col != null)
+        {
+            CacheBones();
+            float low = float.MaxValue;
+            for (int i = 0; i < _bones.Length; i++)
+            {
+                Transform b = _bones[i];
+                if (b != null && b.position.y < low) low = b.position.y;
+            }
+            if (low < float.MaxValue)
+            {
+                float scale = Mathf.Max(0.01f, v.lossyScale.y);
+                float minAllowed = _col.bounds.min.y + boneClearance * scale;
+                liftTarget = Mathf.Max(0f, minAllowed - low);
+            }
+        }
+        // 往上抬要跟得快（不然會先陷進去一下）；放下來慢一點，站起來時不抖
+        float follow = liftTarget > _lift ? liftFollowSpeed * 2f : liftFollowSpeed;
+        _lift = Mathf.Lerp(_lift, liftTarget, 1f - Mathf.Exp(-follow * Time.deltaTime));
+        if (!_pm.IsGettingUp && _lift < 0.001f) _lift = 0f;
+        if (_lift > 0.0005f) { addPos.y += _lift; any = true; }
 
-        _appliedRot = Quaternion.Euler(0f, 0f, roll);   // 世界 Z 軸疊加，跟斜坡傾斜同一套做法，左右朝向都對
-        _appliedPos = new Vector3(drift, 0f, 0f);
+        // ── 墜落晃動 ──
+        if (enableSway && intensity > 0f && _pm.IsInControlledFall)
+        {
+            float t = _pm.ControlledFallSeconds;
+            float fade = fadeInSeconds <= 0.01f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / fadeInSeconds));
+            float build = 0.7f + 0.3f * Mathf.Clamp01(t / Mathf.Max(0.1f, buildUpSeconds));
+            float settle = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_pm.FallLandingK / Mathf.Max(0.1f, settleStartK)));   // 接近地面→0
+            float amp = intensity * fade * build * settle;
+            if (amp > 0.001f)
+            {
+                float s = _seed;
+                // 頻率互不成倍數 → 不會變成規律的鐘擺；比第一版快，才有「慌亂」的感覺
+                float roll = Wave(t, s, 0.43f, 1.07f, 2.3f) * rollDegrees * amp;                  // 左右傾
+                float yaw = Wave(t, s * 1.3f + 7f, 0.37f, 0.91f, 1.9f) * yawDegrees * amp;        // 左右轉身
+                float bob = Wave(t, s * 0.8f + 3f, 0.29f, 0.71f, 1.6f) * bobMeters * amp;          // 上下浮沉
+                float pitch = Wave(t, s * 1.9f + 5f, 0.33f, 0.83f, 1.7f) * pitchDegrees * amp;     // 前後仰（很小）
+                float drift = Wave(t, s * 0.6f + 11f, 0.31f, 0.83f, 1.5f) * driftMeters * amp;    // 橫向飄（很小）
+
+                // 世界軸左乘疊加（跟斜坡傾斜同一套做法，左右朝向翻面時方向仍然正確）
+                addRot = Quaternion.Euler(pitch, yaw, roll) * addRot;
+                addPos += new Vector3(drift, bob, 0f);
+                any = true;
+            }
+        }
+
+        if (!any) return;
+        _appliedRot = addRot;
+        _appliedPos = addPos;
         v.rotation = _appliedRot * v.rotation;
         v.position += _appliedPos;
         _applied = true;
+    }
+
+    private static float Wave(float t, float seed, float f1, float f2, float f3)
+    {
+        return Mathf.Sin((t + seed) * 6.2832f * f1) * 0.6f
+             + Mathf.Sin((t + seed * 1.7f) * 6.2832f * f2) * 0.3f
+             + Mathf.Sin((t + seed * 2.3f) * 6.2832f * f3) * 0.1f;
     }
 
     /// <summary>排在最前面的小幫手：每幀 Update 之前先撤掉上一幀的偏移，PlayerMovement 才看到乾淨的值。</summary>
