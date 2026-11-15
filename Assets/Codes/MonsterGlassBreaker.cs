@@ -43,6 +43,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         public Quaternion initialRotation;
         public bool broken;
         public bool protectedFromBreak;
+        public bool initiallyActive = true;
 
         // 內建消失表現用的原始狀態
         public SpriteRenderer[] renderers;
@@ -127,6 +128,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             tr = tr,
             initialPosition = tr.position,
             initialRotation = tr.rotation,
+            initiallyActive = tr.gameObject.activeSelf,
             broken = false,
             renderers = tr.GetComponentsInChildren<SpriteRenderer>(true),
             colliders = tr.GetComponentsInChildren<Collider>(true)
@@ -298,7 +300,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
             if (destructible != null) destructible.ResetToInitialState();
             t.tr.position = t.initialPosition;
             t.tr.rotation = t.initialRotation;
-            t.tr.gameObject.SetActive(true);
+            t.tr.gameObject.SetActive(t.initiallyActive);   // ★1116 場景裡本來就關掉的（例如拿掉的平台）重生後不要被打開
 
             if (t.renderers != null)
             {

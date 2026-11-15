@@ -1673,6 +1673,7 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
+        UpdateCrateGrab();   // ★1116 玻璃館鏡箱：按住 Shift 貼著就抓住（推、拉），放開 Shift 就放手
 
         // 防呆校正：沒被狼咬的時候，速度一律回到 baseSpeed
         // ★0910：原本的條件是「attachedWolvesCount == 0 || currentSpeed <= 0f」。
@@ -1950,6 +1951,7 @@ public class PlayerMovement : MonoBehaviour
         if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked)
         {
             // 陸地標準跳躍
+            if (IsHoldingCrate) ReleaseObject();   // ★1116 抓著鏡箱起跳＝放手（不然箱子會跟著她飛起來）
             isJumping = true;
             rb.useGravity = true; // 跳躍時立即還原重力
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
@@ -2242,7 +2244,50 @@ public class PlayerMovement : MonoBehaviour
     // ==========================================
     // 抓取物件邏輯 (Pull Range 可在 Inspector 自訂調整)
     // ==========================================
-    void TryGrabObject()
+    // ───────── ★1116 玻璃館鏡箱：照巨石的規則（按住 Shift 才動，沒按只會被擋住），再加上拉 ─────────
+    //   按住 Shift、面向箱子、貼著它（crateGrabDistance 以內）＝抓住：往箱子走是推、往後退是拉（面向鎖住，原本抓取物件的做法）。
+    //   放開 Shift、起跳、被鎖住操作＝放手。沒按 Shift 走過去只會被箱子擋住（IsPushableObject 對它回 false）。
+    [Header("★1116 鏡箱（玻璃館）")]
+    [Tooltip("離鏡箱多近（公尺）按住 Shift 才抓得住。太遠抓住的話，箱子會隔空跟著她走")]
+    public float crateGrabDistance = 0.6f;
+    private float _nextCrateGrabTry;
+    private float _crateAirTime;
+
+    private static bool IsShiftCrate(GameObject go, Collider col)
+    {
+        if (col != null && col.GetComponentInParent<MirrorCrate>() != null) return true;
+        return go != null && go.GetComponentInParent<MirrorCrate>() != null;
+    }
+
+    private bool IsHoldingCrate => pulledObject != null && pulledObject.GetComponent<MirrorCrate>() != null;
+
+    private void UpdateCrateGrab()
+    {
+        if (IsHoldingCrate)
+        {
+            // ★1116 腳離地超過 0.1 秒（走出邊緣掉下去、被彈起來）就放手：懸空推不動箱子。0.1 秒是避開地面判定單幀閃一下
+            _crateAirTime = isGrounded && !isJumping ? 0f : _crateAirTime + Time.deltaTime;
+            if (!BoulderPushKeyHeld || IsControlLocked || isUnderwater || _crateAirTime > 0.1f) ReleaseObject();
+            return;
+        }
+        _crateAirTime = 0f;
+        if (pulledObject != null || !requireShiftToPushBoulder || !BoulderPushKeyHeld) return;
+        if (!isGrounded || isJumping || IsControlLocked || Time.time < _nextCrateGrabTry) return;
+        _nextCrateGrabTry = Time.time + 0.1f;
+        TryGrabObject(true);   // 按住 Shift 走過去貼到箱子也抓得住（不用剛好在箱子旁邊才按下 Shift）
+    }
+
+    /// <summary>抓著鏡箱、往 directionX 走的話，箱子前面有沒有東西擋住（箱子被抓住時是跟著她走的 kinematic，自己不會被牆擋）。</summary>
+    private bool IsHeldCrateBlocked(float directionX)
+    {
+        if (!IsHoldingCrate || Mathf.Abs(directionX) < 0.01f) return false;
+        MirrorCrate crate = pulledObject.GetComponent<MirrorCrate>();
+        return crate != null && crate.IsBlockedToward(directionX, transform);
+    }
+
+    void TryGrabObject() { TryGrabObject(false); }
+
+    void TryGrabObject(bool cratesOnly)
     {
         Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
         Vector3 extents = (playerCollider != null) ? playerCollider.bounds.extents : new Vector3(0.6f, 1.0f, 0.6f);
@@ -2260,6 +2305,10 @@ public class PlayerMovement : MonoBehaviour
             if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
             // ★1115 巨石的 Shift 是「推」，不是抓起來拉（抓住會把巨石變成 kinematic、掛到她身上，巨石挑戰會當成被收回重置）
             if (IsBoulderCollider(hit.collider)) continue;
+            // ★1116 鏡箱：要貼著（不能隔空抓）、在她正前方（不是站在箱子上面）
+            bool crate = IsShiftCrate(hit.collider.gameObject, hit.collider);
+            if (cratesOnly && !crate) continue;
+            if (crate && (hit.distance > crateGrabDistance || !isGrounded || isJumping || !IsPushableInFront(hit.collider, center, extents))) continue;   // 懸空抓不住
             if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
                 // 優先抓取帶有 Rigidbody 的根物件
@@ -2270,13 +2319,22 @@ public class PlayerMovement : MonoBehaviour
                 }
 
                 pulledObject = targetObj;
-                pulledObject.transform.SetParent(this.transform);
+                // ★1116 鏡箱不掛到她身上：她是用剛體速度移動的，掛在底下的剛體不會跟著走（驗收時她走了 5.9 公尺、箱子只動 0.3）。
+                //   改由 MirrorCrate 每個物理步自己跟著她（保持抓住時的距離）。
+                if (crate) pulledObject.GetComponent<MirrorCrate>().BeginHold(this);
+                else pulledObject.transform.SetParent(this.transform);
                 Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
                 if (objRb != null)
                 {
                     objRb.isKinematic = true;
                 }
-                return; 
+                // ★1116 鏡箱：抓住時跟她的碰撞體互相忽略。
+                //   Root Cause（M 11/16：「不管怎麼按都無法推動」）：箱子抓住後變成掛在她身上的 kinematic，卻還跟她的碰撞框相撞——
+                //   她往前被箱子擋住不動，箱子是跟著她動的，所以兩個都不動。貼著抓的箱子一定會碰到她，必須忽略。
+                if (crate) SetCrateIgnorePlayer(pulledObject, true);
+                if (crate && (Application.isEditor || TesterMode.Enabled))
+                    Debug.Log($"【鏡箱】抓住 {pulledObject.name}（距離 {hit.distance:F2} 公尺）：按住 Shift 往箱子走＝推、往後退＝拉");
+                return;
             }
         }
     }
@@ -2285,13 +2343,33 @@ public class PlayerMovement : MonoBehaviour
     {
         if (pulledObject != null)
         {
+            bool crate = pulledObject.GetComponent<MirrorCrate>() != null;
             pulledObject.transform.SetParent(null);
             Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
             if (objRb != null)
             {
                 objRb.isKinematic = false;
             }
+            if (crate)
+            {
+                pulledObject.GetComponent<MirrorCrate>().EndHold();
+                SetCrateIgnorePlayer(pulledObject, false);   // ★1116 放手：恢復碰撞（可以站上去、沒按 Shift 會被擋住）
+                if (Application.isEditor || TesterMode.Enabled) Debug.Log($"【鏡箱】放手 {pulledObject.name}（x={pulledObject.transform.position.x:F1}）");
+            }
             pulledObject = null;
+        }
+    }
+
+    /// <summary>★1116 鏡箱的碰撞體跟她身上所有碰撞體互相忽略／恢復。</summary>
+    private void SetCrateIgnorePlayer(GameObject crateObj, bool ignore)
+    {
+        if (crateObj == null) return;
+        Collider[] mine = GetComponents<Collider>();
+        foreach (Collider cc in crateObj.GetComponentsInChildren<Collider>(true))
+        {
+            if (cc == null) continue;
+            foreach (Collider pc in mine)
+                if (pc != null && pc != cc) Physics.IgnoreCollision(cc, pc, ignore);
         }
     }
 
@@ -2319,6 +2397,7 @@ public class PlayerMovement : MonoBehaviour
     private bool IsBlockedByObstacle(float directionX)
     {
         if (Mathf.Abs(directionX) < 0.01f) return false;
+        if (IsHeldCrateBlocked(directionX)) return true;   // ★1116 抓著鏡箱：箱子撞到牆就停
         if (playerCollider == null) playerCollider = GetComponent<Collider>();
         if (playerCollider == null) return false;
 
@@ -2341,6 +2420,8 @@ public class PlayerMovement : MonoBehaviour
             Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
             if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
             if (hit.collider == null || hit.collider.isTrigger) continue;
+            if (hit.collider.transform.IsChildOf(transform)) continue;
+            if (pulledObject != null && hit.collider.transform.IsChildOf(pulledObject.transform)) continue;   // ★1116 抓在手上的鏡箱不能當成擋住她的牆
             if (IsBoulderCollider(hit.collider)) continue;   // ★1115 巨石擋不擋由 RollingRockVisual.IsBlockingPlayer 用實際碰撞形狀判斷（這裡的射線會提早 0.4 米停住）
             if (IsPushableObject(hit.collider.gameObject, hit.collider)) continue;
             if (hit.normal.x * normalSignNeeded > 0.15f) return true;
@@ -3000,6 +3081,8 @@ public class PlayerMovement : MonoBehaviour
 
         // ★1115 沒按 Shift：巨石不算可推物件（不播推的動畫，靠近只會被擋住）
         if (!BoulderPushKeyHeld && (IsBoulderCollider(col) || (go != null && go.GetComponentInParent<RollingRockVisual>() != null))) return false;
+        // ★1116 鏡箱同一套規則：沒按 Shift 不算可推物件（被它擋住）；★懸空（跳起來、掉下去）也不算，撞上去只會被擋住
+        if (IsShiftCrate(go, col) && ((requireShiftToPushBoulder && !BoulderPushKeyHeld) || !isGrounded || isJumping)) return false;
 
         // 1. 直接 Tag 檢測
         if (go != null && go.CompareTag("Pushable")) return true;

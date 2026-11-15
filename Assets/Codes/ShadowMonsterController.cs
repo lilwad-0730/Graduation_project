@@ -375,6 +375,123 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float DebugSpeed { get; private set; }
     public string DebugPace { get; private set; } = "-";
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★1116 追逐節奏導演（M 11/16：拿掉耐心機制／hoverLag，改成有起伏的節奏）
+    //   Root Cause：耐心機制（她一直往前就只跟在 16 公尺外）＋智慧調速＋預先拉開＋點燭安全網＋難度九折疊在一起，
+    //   只要她一直往前走，程式上就保證抓不到——真正會死只有掉下去、站著超過 9 秒、漏點燭火，怪物只是跟著。
+    // 做法：一條「該離她多遠」的曲線取代上面那幾層（只管追逐／登場，懲罰照舊）：
+    //   ・距離隨關卡進度從 directorLagStart 收緊到 directorLagEnd（後半段明顯更緊）
+    //   ・她停下、等平台、往回走：過了 stallGraceSeconds 秒，距離每秒縮短 stallCloseRate 公尺，縮到揮爪距離就被抓（沒有 9 秒耐心）
+    //   ・她一直往前時距離最近只到「揮爪距離 + directorMinMovingLag」：跑著不會被抓，但很近
+    //   ・點燭火時她被鎖住：照 lightingPressureSpeed 逼近，離她 揮爪距離+3 公尺附近才放慢（不會停）
+    //   ・險些被抓：走到 nearMissBeatsX 時怪物猛撲到她身後、揮爪落空（不會抓人），再退回去
+    //   ・燭火反擊：吃到燭火被光震退、追逐音樂與畫面壓迫放鬆幾秒
+    //   ・漏點燭火：當下吼一聲、長大一點、逼近幾秒
+    // 關掉 usePacingDirector＝回到原本那幾層。
+    [Header("★1116 追逐節奏導演（取代耐心機制／hoverLag／預先拉開）")]
+    [Tooltip("打勾＝用下面的節奏曲線控制怪物距離（拿掉耐心機制、hoverLag、預先拉開、點燭安全網）。取消＝原本的做法")]
+    public bool usePacingDirector = true;
+    [Tooltip("關卡開頭（第一根燭火）怪物離她多遠（公尺）")]
+    public float directorLagStart = 20f;
+    [Tooltip("關卡結尾（最後一根燭火）怪物離她多遠（公尺）。要大於揮爪距離（場景裡是 10）")]
+    public float directorLagEnd = 13.5f;
+    [Tooltip("她一直往前走時，怪物最近能到「揮爪距離 + 這個值」（公尺）。跑著不會被抓，但很近")]
+    public float directorMinMovingLag = 1.5f;
+    [Tooltip("她停下來多久之後開始逼近（秒）")]
+    public float stallGraceSeconds = 1f;
+    [Tooltip("她停著的時候，怪物每秒多逼近幾公尺。1.6：開頭停約 7 秒、結尾停約 3 秒會被抓")]
+    public float stallCloseRate = 1.6f;
+    [Tooltip("距離差 1 公尺，速度差多少（公尺/秒）。越大越緊跟曲線")]
+    public float directorGain = 0.9f;
+    [Tooltip("怪物最低速度（公尺/秒）：永遠不站著不動")]
+    public float directorMinSpeed = 1f;
+    [Tooltip("怪物最高速度（公尺/秒）")]
+    public float directorMaxSpeed = 8f;
+    [Tooltip("怪物加速／減速（公尺/秒²）")]
+    public float directorAccel = 4f;
+
+    [Header("★1116 險些被抓（固定橋段，不會抓人）")]
+    [Tooltip("打勾＝她走到下面這些 X 時，怪物猛撲到她身後揮爪落空")]
+    public bool useNearMissBeats = true;
+    [Tooltip("險些被抓的位置（世界 X）。預設在每兩根燭火的中間")]
+    public float[] nearMissBeatsX = new float[] { 20f, 101f, 181.5f, 263f };
+    [Tooltip("撲到她身後「揮爪距離 + 這個值」公尺（爪子剛好落在她身後）")]
+    public float nearMissLungeLag = 1.8f;
+    [Tooltip("撲過來的速度（公尺/秒）")]
+    public float nearMissLungeSpeed = 16f;
+    [Tooltip("揮空之後退開的距離（公尺，幾秒內慢慢退）")]
+    public float nearMissRecoverLag = 6f;
+
+    [Header("★1116 燭火反擊（吃到燭火的回饋）")]
+    [Tooltip("吃到燭火時被光震退幾公尺")]
+    public float candleKnockback = 9f;
+    [Tooltip("震退花幾秒")]
+    public float candleKnockbackSeconds = 0.7f;
+    [Tooltip("震退之後幾秒內多離她幾公尺（喘息）")]
+    public float candleReliefLag = 8f;
+    [Tooltip("喘息持續幾秒（慢慢回到原本的距離）")]
+    public float candleReliefSeconds = 5f;
+    [Tooltip("喘息時追逐音樂最多降多少（0.5＝降一半）")]
+    [Range(0f, 1f)] public float candleReliefBgmDuck = 0.5f;
+    [Tooltip("燭火爆出的光有多亮")]
+    public float candleBurstIntensity = 40f;
+    [Tooltip("燭火爆光的範圍（公尺）")]
+    public float candleBurstRange = 30f;
+
+    [Header("★1116 漏點燭火的當下反應")]
+    [Tooltip("漏點時怪物逼近幾公尺（幾秒內慢慢恢復）")]
+    public float missedSurgeLag = 6f;
+    [Tooltip("逼近持續幾秒")]
+    public float missedSurgeSeconds = 5f;
+    [Tooltip("漏點一根，怪物長大多少（跟吃到燭火縮小同一個單位）")]
+    public float missedRegrow = 0.15f;
+
+    // 導演的內部狀態
+    private float _dirSpeed = -1f;
+    private float _playerFwdSmooth;
+    private float _firstCandleX = float.NaN;
+    private float _reliefStart = -999f, _reliefAmount;
+    private float _surgeStart = -999f;
+    private float _knockStart = -999f, _knockDir;
+    private float _knockDone, _knockDist;
+    private float _stunUntil = -999f;   // ★1116 被鏡光打中：定住到這個時間
+
+    /// <summary>★1116 被鏡子反射的燭光打中、定住中（不移動、不出爪）。</summary>
+    public bool IsStunned => Time.time < _stunUntil;
+    private bool[] _beatDone;
+    private int _beatPhase;            // 0＝沒有、1＝撲過來、2＝揮爪
+    private float _beatPhaseStart;
+    private bool _nearMissActive;      // 險些被抓的撲＋揮期間：不抓人
+    private static AudioClip _roarClip, _lungeClip;
+
+    /// <summary>★1116 給鏡頭用：追逐框景現在要不要作用（1＝作用、0＝回到原本、-1＝別碰，例如登場運鏡或懲罰鎖鏡頭中）。</summary>
+    public int ChaseFramingMode
+    {
+        get
+        {
+            if (_revealActive || _revealCamTaken || IsRevealRunning || _camLocked) return -1;
+            if (player == null) return 0;
+            return (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing || currentState == MonsterState.Punishing) ? 1 : 0;
+        }
+    }
+    /// <summary>★1116 她離怪物多遠（公尺，水平）。</summary>
+    public float ChaseDistance => player != null ? Mathf.Abs(player.position.x - transform.position.x) : 999f;
+    /// <summary>★1116 怪物在她哪一邊（−1＝左、+1＝右）。</summary>
+    public float MonsterSide => player != null && transform.position.x < player.position.x ? -1f : 1f;
+    /// <summary>★1116 吃到燭火後的喘息（0～1）。</summary>
+    public float Relief01 => Decay01(_reliefStart, candleReliefSeconds) * Mathf.Clamp01(_reliefAmount);
+    /// <summary>★1116 漏點後的逼近（0～1）。</summary>
+    public float Surge01 => Decay01(_surgeStart, missedSurgeSeconds);
+    /// <summary>★1116 給 ShadowMonsterDread：畫面壓迫的倍率（喘息時放鬆、漏點時加重）。</summary>
+    public float DreadScale => Mathf.Clamp(1f - 0.6f * Relief01 + 0.35f * Surge01, 0.3f, 1.35f);
+
+    private static float Decay01(float start, float seconds)
+    {
+        float t = (Time.time - start) / Mathf.Max(0.1f, seconds);
+        if (t < 0f || t >= 1f) return 0f;
+        return 1f - t * t * (3f - 2f * t);   // 先撐住、再慢慢退
+    }
+
     [Header("★1016 追逐中途存檔點")]
     [Tooltip("打開＝她站上下面這些位置之後，死掉就從那裡重生（不用從玻璃館起點重追 340 公尺），\n" +
              "怪物等她動了再從她身後出現；已經在怪物身後、牠吃不到的燭火算牠吃過。\n" +
@@ -626,6 +743,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         SetupChaseAudioSource();
         ApplyCurrentScale();
         EnsureCameraSafeDepth();
+
+        // ★1116 追逐鏡頭：怪物在中距離時鏡頭偏向牠、越近越往外拉（只在追逐中作用）
+        ShadowChaseCamera chaseCam = GetComponent<ShadowChaseCamera>();
+        if (chaseCam == null) chaseCam = gameObject.AddComponent<ShadowChaseCamera>();
+        chaseCam.ctrl = this;
     }
 
     /// <summary>
@@ -877,6 +999,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (_revealActive) return;   // ★登場運鏡期間主角是凍住的，不能被吃
         if (_finaleDash) return;     // ★最後衝刺只嚇人，不攻擊
+        if (_nearMissActive) return; // ★1116 險些被抓的橋段：只嚇人，不攻擊
+        if (IsStunned) return;       // ★1116 被鏡光定住：不出爪
         if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
         if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
         {
@@ -948,6 +1072,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   只改 X，Y／Z 保持美術擺好的樣子（牠是半身埋在玻璃地板下的巨影）。
         EnsurePlayerReference();
         _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;   // 每次重新開追都從當下的目標速度起步
+        _dirSpeed = -1f; _playerPrevX = float.NaN; _playerFwdSmooth = 0f;   // ★1116
         if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
         {
             Vector3 sp = transform.position;
@@ -1065,6 +1190,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             TriggerPunishment();
             EnterDoom();
         }
+        else ReactToMissedCandle(candle);   // ★1116 不是最後一根：當下就有反應
     }
 
     /// <summary>★1021 這一輪注定通不了關：開始 doomedRespawnSeconds 倒數，時間到就直接抓人重生。</summary>
@@ -1125,11 +1251,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             Debug.LogWarning($"【影子怪物】★1102 燭火計數校正：累加是 {before + 1}，實際數到 {_candlesCollected}（{candle.gameObject.name}）");
         Debug.Log($"【影子怪物】燭火收集 {_candlesCollected}/{_totalCandles}（{candle.gameObject.name}）");
 
-        float targetScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+        float targetScaleMultiplier = TargetScaleMult();
 
         // 觸發 gethit3 受擊動畫與漸漸變小 (Smooth Shrink)
         if (_hitShrinkCoroutine != null) StopCoroutine(_hitShrinkCoroutine);
         _hitShrinkCoroutine = StartCoroutine(HitAndSmoothShrinkRoutine(targetScaleMultiplier));
+
+        // ★1116 燭火反擊：爆光＋畫面震一下（每一根都有，含最後一根）
+        if (usePacingDirector)
+        {
+            SpawnLightBurst(candle.transform.position);
+            Shake(0.3f, 0.25f);
+        }
 
         if (candle == _lastCandleByX && _candlesCollected < _totalCandles)
         {
@@ -1149,7 +1282,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
             // ★最後一根燭火＝結局。不等消散動畫演完，立刻接。
             if (playEndingAfterAllCandles) StartCoroutine(PlayEndingRoutine());
+            return;
         }
+
+        // ★1116 還沒收完：被光震退、喘息幾秒（追逐音樂、畫面壓迫一起放鬆）
+        if (usePacingDirector && !_finaleDash) StartCandleRecoil();
     }
 
     private static bool _endingFired;   // ★防重入：整場遊戲只進一次結局
@@ -2113,10 +2250,316 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         return _paceCap;
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★1116 追逐節奏導演
+    // ══════════════════════════════════════════════════════════════════════════
+    private float _nextDirectorLog;
+
+    /// <summary>★1116 重生／重置：節奏導演的狀態全部歸零（險些被抓的橋段重新可以觸發）。</summary>
+    private void ResetDirectorState()
+    {
+        _dirSpeed = -1f;
+        _playerPrevX = float.NaN;
+        _playerFwdSmooth = 0f;
+        _reliefStart = _surgeStart = _knockStart = _stunUntil = -999f;
+        _reliefAmount = 0f;
+        _beatPhase = 0;
+        _nearMissActive = false;
+        _beatDone = null;
+    }
+
+    private void SetMonsterX(float x)
+    {
+        transform.position = new Vector3(x, transform.position.y, transform.position.z);
+    }
+
+    private void FaceTowardPlayer()
+    {
+        if (player.position.x < transform.position.x - 0.2f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+        else if (player.position.x > transform.position.x + 0.2f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+    }
+
+    /// <summary>原本的「怪物貼很近時她變慢」（照舊）。</summary>
+    private void ApplyPlayerSlowdown(float dist)
+    {
+        if (_pm == null) return;
+        if (dist < slowdownDistance) _pm.currentSpeed = _pm.baseSpeed * slowdownFactor;
+        else if (_pm.currentSpeed < _pm.baseSpeed) _pm.currentSpeed = _pm.baseSpeed;
+    }
+
+    /// <summary>★1116 吃到燭火：被光震退＋喘息。</summary>
+    private void StartCandleRecoil()
+    {
+        StartKnockback(candleKnockback);
+        StartRelief(1f);
+    }
+
+    private void StartKnockback(float distance)
+    {
+        _knockStart = Time.time;
+        _knockDone = 0f;
+        _knockDist = Mathf.Max(0f, distance);
+        _knockDir = player != null && player.position.x >= transform.position.x ? -1f : 1f;   // 往遠離她的方向退
+    }
+
+    /// <summary>
+    /// ★1116 鏡光反擊：被玻璃牆反射的燭光打中。往後震退 knockback 公尺、定住 seconds 秒（不移動、不出爪），之後喘息幾秒。
+    /// 只在追逐中有效（懲罰、最後衝刺、消失中都不理）。回傳 true＝有打中。
+    /// </summary>
+    public bool StunByMirrorLight(float seconds, float knockback)
+    {
+        if (currentState != MonsterState.Chasing && currentState != MonsterState.Appearing) return false;
+        if (_finaleDash || _revealActive) return false;
+        _stunUntil = Time.time + Mathf.Max(0f, seconds);
+        StartKnockback(knockback);
+        StartRelief(1f);
+        _beatPhase = 0;
+        _nearMissActive = false;
+        PlayAnimationByName(hitAnimationName, true);
+        _hitAnimLockUntil = Time.time + Mathf.Max(0.3f, smoothShrinkDuration);
+        StartCoroutine(LockUntilHitAnimEnds());
+        PlayMonsterRoar(0.8f);
+        Shake(0.5f, 0.4f);
+        Debug.Log($"【追逐節奏】★1116 鏡光反擊：怪物被打中，震退 {knockback:F0} 公尺、定住 {seconds:F1} 秒");
+        return true;
+    }
+
+    private void StartRelief(float amount)
+    {
+        // 正在喘息又來一次：取比較大的那個，不會把剛開始的喘息縮短
+        if (Relief01 > amount) return;
+        _reliefStart = Time.time;
+        _reliefAmount = amount;
+    }
+
+    private void PlayMonsterRoar(float volume)
+    {
+        AudioClip clip = roarSFX;
+        if (clip == null)
+        {
+            if (_roarClip == null) _roarClip = Resources.Load<AudioClip>("Sfx/Glass_MonsterRoar");
+            clip = _roarClip;
+        }
+        if (clip == null) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip, volume);
+        else AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(volume));
+    }
+
+    private void PlayLungeSting()
+    {
+        if (_lungeClip == null) _lungeClip = Resources.Load<AudioClip>("Sfx/Glass_ChaseLunge");
+        if (_lungeClip == null) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(_lungeClip, 0.8f);
+        else AudioSource.PlayClipAtPoint(_lungeClip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(0.8f));
+    }
+
+    private static void Shake(float seconds, float power)
+    {
+        if (ScreenFeedbackManager.Instance != null) ScreenFeedbackManager.Instance.TriggerShake(seconds, power);
+    }
+
+    /// <summary>★1116 燭火被吃的那一刻爆一下光（暖色點光源，1 秒內退掉，自己銷毀）。</summary>
+    private void SpawnLightBurst(Vector3 pos)
+    {
+        if (candleBurstIntensity <= 0f) return;
+        GameObject go = new GameObject("CandleBurstLight");
+        go.transform.position = pos + new Vector3(0f, 1.5f, -3f);
+        Light l = go.AddComponent<Light>();
+        l.type = LightType.Point;
+        l.color = new Color(1f, 0.82f, 0.5f);
+        l.range = Mathf.Max(1f, candleBurstRange);
+        l.intensity = candleBurstIntensity;
+        go.AddComponent<FadeAndDestroyLight>().duration = 1f;
+    }
+
+    /// <summary>★1116 縮放倍率：吃一根縮一格，漏一根長回 missedRegrow。</summary>
+    private float TargetScaleMult()
+    {
+        float m = 1f - shrinkPerCandle * _candlesCollected;
+        if (usePacingDirector) m += Mathf.Max(0f, missedRegrow) * MissedCount();
+        return Mathf.Clamp(m, minScaleMultiplier, 1f);
+    }
+
+    private IEnumerator GrowToRoutine(float targetMult, float seconds)
+    {
+        float start = _currentScaleMultiplier, t = 0f;
+        while (t < seconds)
+        {
+            t += Time.deltaTime;
+            _currentScaleMultiplier = Mathf.Lerp(start, targetMult, Mathf.SmoothStep(0f, 1f, t / seconds));
+            ApplyCurrentScale();
+            yield return null;
+        }
+        _currentScaleMultiplier = targetMult;
+        ApplyCurrentScale();
+        _hitShrinkCoroutine = null;
+    }
+
+    /// <summary>★1116 漏點燭火的當下：吼、長大、逼近幾秒、畫面震一下。</summary>
+    private void ReactToMissedCandle(CandleCollectible candle)
+    {
+        if (!usePacingDirector) return;
+        PlayMonsterRoar(1f);
+        Shake(0.5f, 0.35f);
+        _surgeStart = Time.time;
+        if (_hitShrinkCoroutine != null) StopCoroutine(_hitShrinkCoroutine);
+        _isHitShrinking = false;
+        _hitShrinkCoroutine = StartCoroutine(GrowToRoutine(TargetScaleMult(), 0.8f));
+        Debug.Log($"【追逐節奏】★1116 漏點 {candle.gameObject.name}：怪物吼、長大到 ×{TargetScaleMult():F2}、{missedSurgeSeconds:F0} 秒內逼近 {missedSurgeLag:F0} 公尺");
+    }
+
+    /// <summary>★1116 險些被抓：撲到她身後、揮爪落空、再退開。回傳 true＝這一幀由橋段接管。</summary>
+    private bool RunNearMissBeat(float px, float lag, float side, bool busy, float dt)
+    {
+        if (!useNearMissBeats || nearMissBeatsX == null || nearMissBeatsX.Length == 0) { _beatPhase = 0; _nearMissActive = false; return false; }
+        if (_beatDone == null || _beatDone.Length != nearMissBeatsX.Length) _beatDone = new bool[nearMissBeatsX.Length];
+        float stopLag = attackTriggerDistance + Mathf.Max(0.5f, nearMissLungeLag);
+
+        if (_beatPhase == 0)
+        {
+            if (busy || _revealActive || currentState != MonsterState.Chasing || side < 0f) return false;
+            for (int i = 0; i < nearMissBeatsX.Length; i++)
+            {
+                if (_beatDone[i] || px < nearMissBeatsX[i]) continue;
+                _beatDone[i] = true;
+                if (px - nearMissBeatsX[i] > 25f) continue;          // 早就走過了（從後面的存檔點重生）
+                if (lag < stopLag + 3f || lag > 45f) continue;       // 已經很近（本來就夠緊張）或太遠：不撲
+                _beatPhase = 1;
+                _beatPhaseStart = Time.time;
+                _nearMissActive = true;
+                PlayMonsterRoar(0.9f);
+                PlayLungeSting();
+                Debug.Log($"【追逐節奏】★1116 險些被抓 #{i + 1}（X={nearMissBeatsX[i]:F0}）：怪物從 {lag:F1} 公尺撲到她身後 {stopLag:F1} 公尺");
+                break;
+            }
+            if (_beatPhase == 0) return false;
+        }
+
+        float targetX = px - side * stopLag;
+        if (_beatPhase == 1)
+        {
+            PlayAnimationByName(runAnimationName);
+            float nx = Mathf.MoveTowards(transform.position.x, targetX, Mathf.Max(1f, nearMissLungeSpeed) * dt);
+            SetMonsterX(nx);
+            _dirSpeed = _playerFwdSmooth;
+            if (Mathf.Abs(nx - targetX) < 0.3f || Time.time - _beatPhaseStart > 2f)
+            {
+                _beatPhase = 2;
+                _beatPhaseStart = Time.time;
+                PlayAnimationByName(attackAnimationName, true);
+                if (attackSFX != null)
+                {
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(attackSFX, transform.position, sfxVolume);
+                    else AudioSource.PlayClipAtPoint(attackSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
+                }
+                Shake(0.45f, 0.4f);
+            }
+            return true;
+        }
+
+        // 揮爪：跟在她身後同一個距離，爪子落在她剛離開的地方
+        SetMonsterX(Mathf.MoveTowards(transform.position.x, targetX, (_playerFwdSmooth + 2f) * dt));
+        if (Time.time - _beatPhaseStart > 1.1f)
+        {
+            _beatPhase = 0;
+            _nearMissActive = false;
+            StartRelief(Mathf.Clamp01(nearMissRecoverLag / Mathf.Max(0.1f, candleReliefLag)));
+            _dirSpeed = _playerFwdSmooth * 0.5f;
+        }
+        return true;
+    }
+
+    /// <summary>★1116 照節奏曲線追：她跑就跟在曲線的距離，停下就逼近；吃燭火震退、漏點逼近、固定橋段險些被抓。</summary>
+    private void DirectorMove()
+    {
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+        if (_animator != null && _animator.cullingMode != AnimatorCullingMode.AlwaysAnimate)
+            _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+        float px = player.position.x;
+        float mx = transform.position.x;
+        float side = px >= mx ? 1f : -1f;
+        float lag = Mathf.Abs(px - mx);
+
+        // 她往前（遠離怪物）走多快，平滑過（重生瞬移那一幀不算）
+        float vx = float.IsNaN(_playerPrevX) ? 0f : (px - _playerPrevX) / dt * side;
+        _playerPrevX = px;
+        _playerForwardSpeed = Mathf.Clamp(vx, 0f, 15f);
+        _playerFwdSmooth = Mathf.Lerp(_playerFwdSmooth, _playerForwardSpeed, 1f - Mathf.Exp(-6f * dt));
+
+        FaceTowardPlayer();
+        ApplyPlayerSlowdown(lag);
+
+        // 停著多久：點燭火（被鎖住）、橋段、重生、登場運鏡都不算她停著
+        bool busy = IsPlayerLightingCandle() || CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time;
+        UpdatePlayerProgress();
+        if (busy || _beatPhase != 0 || IsStunned || PlayerRespawnSystem.IsAnyRespawning || _revealActive) _lastProgressTime = Time.time;
+
+        // 1. 被燭火的光震退
+        float kt = (Time.time - _knockStart) / Mathf.Max(0.05f, candleKnockbackSeconds);
+        if (kt >= 0f && kt < 1f)
+        {
+            float want = _knockDist * (1f - (1f - kt) * (1f - kt));
+            SetMonsterX(mx + _knockDir * (want - _knockDone));
+            _knockDone = want;
+            _dirSpeed = 0f;
+            return;
+        }
+
+        // 1b. ★1116 被鏡光定住：站著不動（受擊動作播完就停在待機）
+        if (IsStunned)
+        {
+            _dirSpeed = 0f;
+            PlayAnimationByName(idleAnimationName);
+            DebugLag = lag; DebugSpeed = 0f; DebugPace = "鏡光定住";
+            return;
+        }
+
+        // 2. 險些被抓的橋段
+        if (RunNearMissBeat(px, lag, side, busy, dt)) return;
+
+        // 3. 節奏曲線：該離她多遠
+        float p = (float.IsNaN(_firstCandleX) || _lastCandleByX == null) ? 0f
+                : Mathf.InverseLerp(_firstCandleX, _lastCandleByX.transform.position.x, px);
+        float movingFloor = attackTriggerDistance + Mathf.Max(0.5f, directorMinMovingLag);
+        float target = Mathf.Max(Mathf.Lerp(directorLagStart, directorLagEnd, p), movingFloor);
+        target += candleReliefLag * Relief01;
+        target = Mathf.Max(target - missedSurgeLag * Surge01, movingFloor);
+        float stall = Time.time - _lastProgressTime - Mathf.Max(0f, stallGraceSeconds);
+        if (stall > 0f) target -= stall * Mathf.Max(0f, stallCloseRate);   // 她停著：一路縮到揮爪距離以內
+
+        float desired;
+        if (busy)
+        {
+            // 點燭火時她動不了：照 lightingPressureSpeed 逼近，到「揮爪距離 + 3」附近才放慢（不停）
+            float minL = attackTriggerDistance + 3f;
+            desired = Mathf.Lerp(Mathf.Min(0.6f, directorMinSpeed), lightingPressureSpeed, Mathf.InverseLerp(minL, minL + 6f, lag));
+        }
+        else desired = Mathf.Clamp(_playerFwdSmooth + directorGain * (lag - target), directorMinSpeed, directorMaxSpeed);
+        if (_dirSpeed < 0f) _dirSpeed = desired;
+        _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, Mathf.Max(0.1f, directorAccel) * dt);
+
+        if (!_isHitShrinking)
+            PlayAnimationByName(_dirSpeed > Mathf.Max(0.01f, chaseSpeed) * 1.05f ? runAnimationName : walkAnimationName);
+
+        DebugLag = lag; DebugSpeed = _dirSpeed; DebugPace = busy ? "點燭" : (stall > 0f ? "她停著" : (Relief01 > 0f ? "喘息" : (Surge01 > 0f ? "漏點逼近" : "導演")));
+        if ((Application.isEditor || TesterMode.Enabled) && Time.time >= _nextDirectorLog)
+        {
+            _nextDirectorLog = Time.time + 2f;
+            Debug.Log($"【追逐節奏】進度 {p * 100f:F0}% | 離她 {lag:F1}m 目標 {target:F1}m | 怪物 {_dirSpeed:F1} m/s 她 {_playerFwdSmooth:F1} m/s | {DebugPace}" +
+                      (stall > 0f ? $"（停了 {stall + stallGraceSeconds:F1}s）" : ""));
+        }
+
+        if (lag <= attackTriggerDistance) return;   // 進到揮爪距離：Update 的 CheckCatch 出爪
+        SetMonsterX(Mathf.MoveTowards(mx, px, _dirSpeed * dt));
+    }
+
     private void MoveTowardPlayer(float speed)
     {
         if (player == null) return;
         if (_finaleDash) { FinaleDashMove(); return; }
+        if (usePacingDirector && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing)) { DirectorMove(); return; }   // ★1116
 
         if (_animator != null && _animator.cullingMode != AnimatorCullingMode.AlwaysAnimate)
             _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -2310,6 +2753,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     {
         if (player == null || currentState == MonsterState.Devouring) return;
         if (_finaleDash) return;   // ★最後衝刺只嚇人，不攻擊
+        if (_nearMissActive) return;   // ★1116 險些被抓的橋段：只嚇人，不攻擊
+        if (IsStunned) return;         // ★1116 被鏡光定住：不出爪
 
         float xDist = Mathf.Abs(transform.position.x - player.position.x);
 
@@ -2438,6 +2883,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             if (c == null) { nullSlots++; continue; }
             _totalCandles++;
+            if (float.IsNaN(_firstCandleX) || c.transform.position.x < _firstCandleX) _firstCandleX = c.transform.position.x;   // ★1116 節奏曲線的起點
             if (_lastCandleByX == null || c.transform.position.x > _lastCandleByX.transform.position.x)
                 _lastCandleByX = c;
         }
@@ -2692,6 +3138,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _doomRoutine = null;
         _currentScaleMultiplier = 1f;
         _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;
+        ResetDirectorState();
 
         RemoveFear();
         UnlockCamera();
@@ -2832,16 +3279,18 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         float bgmVolume = AudioManager.BgmVolume;
         float dist = Mathf.Abs(player.position.x - transform.position.x);
+        // ★1116 吃到燭火後的喘息：追逐音樂降下來幾秒（漏點逼近時不降）
+        float duck = usePacingDirector ? 1f - candleReliefBgmDuck * Relief01 : 1f;
         if (dist < 8.5f)
         {
             // 怪物越靠近，追逐音樂音量與緊張度稍微提高
             float t = Mathf.InverseLerp(8.5f, 2.5f, dist);
-            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t) * bgmVolume;
+            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t) * bgmVolume * duck;
             _chaseAudioSource.pitch = Mathf.Lerp(1.0f, 1.05f, t);
         }
         else
         {
-            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume * bgmVolume, Time.unscaledDeltaTime * 0.5f);
+            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume * bgmVolume * duck, Time.unscaledDeltaTime * (usePacingDirector ? 1.5f : 0.5f));
             _chaseAudioSource.pitch = Mathf.MoveTowards(_chaseAudioSource.pitch, 1.0f, Time.deltaTime * 0.5f);
         }
     }

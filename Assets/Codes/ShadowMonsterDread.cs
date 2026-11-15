@@ -402,7 +402,9 @@ public class ShadowMonsterDread : MonoBehaviour
         Bounds b = _body.bounds;
         float dx = Mathf.Max(0f, Mathf.Abs(_pm.transform.position.x - b.center.x) - b.extents.x);
         float t = Mathf.InverseLerp(farDistance, nearDistance, dx);
-        return t * t * (3f - 2f * t);
+        // ★1116 吃到燭火後放鬆、漏點後加重（由 ShadowMonsterController 的節奏導演決定）
+        float scale = _ctrl != null ? _ctrl.DreadScale : 1f;
+        return Mathf.Clamp01(t * t * (3f - 2f * t) * scale);
     }
 
     // ── 抽搐 ──────────────────────────────────
