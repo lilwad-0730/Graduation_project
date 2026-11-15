@@ -29,6 +29,21 @@ public class EmotionColorGradeFX : MonoBehaviour
     public static Color SuffocationTint = new Color(0.86f, 0.93f, 1f, 1f);
     public static float Priority = 50f;
 
+    // ★1115 B4 墜落色調連續漸變：從粉彩雲一路褪色、變暗、偏冷，落地前已經是廢墟的灰；落地後慢慢退回（約 5 秒），不是兩段硬切。
+    //   只在有「控制式墜落」的場景會動（目前只有廢墟）；關掉：FallGradeEnabled = false。
+    public static bool FallGradeEnabled = true;
+    public static float FallDesaturate = -34f;
+    public static float FallContrast = 8f;
+    public static float FallExposure = -0.3f;                                   // 曝光（檔位）
+    public static Color FallTint = new Color(0.78f, 0.84f, 0.95f, 1f);          // 偏冷偏暗
+    public static float FallReleasePerSecond = 0.5f;                            // 落地後色調退回的速度（越小退得越慢）
+
+    // ★1115 B2 重落地的「眼前一黑」：落地瞬間曝光掉下去，約 3 秒慢慢亮回來（RuinsHeavyLandingFX 設 ImpactDip＝1 觸發）
+    public static float ImpactDip;
+    public static float ImpactDipExposure = -1.0f;
+    public static float ImpactDipDesaturate = -12f;
+    public static float ImpactDipSeconds = 3f;
+
     /// <summary>目前這個效果打算輸出的飽和度（驗收／除錯用）。</summary>
     public static float CurrentSaturation;
 
@@ -58,6 +73,9 @@ public class EmotionColorGradeFX : MonoBehaviour
     private UniversalAdditionalCameraData _camData;
     private bool _weOpenedPost, _prevPost;
     private float _sat, _con, _tintK, _coolK;   // 平滑後的輸出
+    private float _fall;                         // ★1115 墜落色調（0～1，平滑後）
+    private PlayerMovement _pm;
+    private float _nextPmFind;
 
     private void Awake()
     {
@@ -66,6 +84,7 @@ public class EmotionColorGradeFX : MonoBehaviour
         _ca.saturation.Override(0f);
         _ca.contrast.Override(0f);
         _ca.colorFilter.Override(Color.white);
+        _ca.postExposure.Override(0f);
         _vol = gameObject.AddComponent<Volume>();
         _vol.isGlobal = true;
         _vol.priority = Priority;
@@ -78,6 +97,26 @@ public class EmotionColorGradeFX : MonoBehaviour
         float dt = Time.unscaledDeltaTime;
         float tension = EmotionDirector.Enabled ? EmotionDirector.Tension : 0f;
         float calm = EmotionDirector.Enabled ? EmotionDirector.Calm : 0f;
+
+        // ★1115 B4 墜落色調：依「墜落進度」連續漸變。上升跟著進度走；落地後用比較慢的速度退回，不要啪一下變回原色
+        if (_pm == null && Time.unscaledTime >= _nextPmFind)
+        {
+            _nextPmFind = Time.unscaledTime + 1f;
+            _pm = FindFirstObjectByType<PlayerMovement>();
+        }
+        float fallT = 0f;
+        if (Enabled && FallGradeEnabled && _pm != null)
+            fallT = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.04f, 1f, _pm.FallProgress01));
+        float fallRate = fallT > _fall ? 1.6f : Mathf.Max(0.05f, FallReleasePerSecond);
+        _fall = Mathf.Lerp(_fall, fallT, 1f - Mathf.Exp(-fallRate * dt));
+        if (_fall < 0.002f && fallT <= 0f) _fall = 0f;
+
+        // ★1115 B2 重落地眼前一黑：ImpactDip 由 RuinsHeavyLandingFX 在落地瞬間設成 1，這裡負責退回 0
+        if (ImpactDip > 0f) ImpactDip = Mathf.MoveTowards(ImpactDip, 0f, dt / Mathf.Max(0.3f, ImpactDipSeconds));
+        float dip = ImpactDip * ImpactDip;   // 一開始掉得深、後面慢慢亮回來
+
+        // 墜落中（以及剛落地、色調還沒退完）不套「安心」的暖色：安心感是落地、緩過來之後才慢慢長出來的
+        calm *= 1f - _fall;
 
         // 目標值（0 ＝ 不動畫面）
         float satT = Mathf.Lerp(0f, FearDesaturate, Mathf.SmoothStep(0f, 1f, EmotionDirector.Fear))
@@ -96,15 +135,19 @@ public class EmotionColorGradeFX : MonoBehaviour
         _coolK = Mathf.Lerp(_coolK, coolT, k);
         CurrentSaturation = _sat;
 
-        bool need = Mathf.Abs(_sat) > 0.4f || Mathf.Abs(_con) > 0.2f || _tintK > 0.01f || _coolK > 0.01f;
+        bool need = Mathf.Abs(_sat) > 0.4f || Mathf.Abs(_con) > 0.2f || _tintK > 0.01f || _coolK > 0.01f
+                    || _fall > 0.01f || dip > 0.01f;
         if (need)
         {
             if (!OpenPost()) return;
             Color f = Color.Lerp(Color.white, CalmTint, _tintK);
             f = Color.Lerp(f, SuffocationTint, _coolK);
-            _ca.saturation.value = _sat;
-            _ca.contrast.value = _con;
+            f *= Color.Lerp(Color.white, FallTint, _fall);   // ★1115 墜落偏冷偏暗
+            f.a = 1f;
+            _ca.saturation.value = _sat + FallDesaturate * _fall + ImpactDipDesaturate * dip;
+            _ca.contrast.value = _con + FallContrast * _fall;
             _ca.colorFilter.value = f;
+            _ca.postExposure.value = FallExposure * _fall + ImpactDipExposure * dip;
             _vol.weight = 1f;
         }
         else if (_weOpenedPost || _vol.weight > 0f)
@@ -158,5 +201,6 @@ public class EmotionColorGradeFX : MonoBehaviour
         if (_camData != null && _weOpenedPost) ClosePost();
         if (_profile != null) Destroy(_profile);
         CurrentSaturation = 0f;
+        ImpactDip = 0f;
     }
 }

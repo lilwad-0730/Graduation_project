@@ -82,6 +82,14 @@ public class AudioManager : MonoBehaviour
     private readonly Dictionary<AudioSource, DuckState> _ducked = new Dictionary<AudioSource, DuckState>();
     private readonly List<AudioSource> _duckRemove = new List<AudioSource>();
 
+    /// <summary>★1115 演出要求壓低其他聲音的倍率（1＝不壓）。例如重落地後的安靜時刻設 0.3。用完請設回 1。</summary>
+    public static float ExternalDuckTarget = 1f;
+    /// <summary>★1115 外部壓低放開後，聲音回來花的秒數（0 以下＝用語音的 voiceDuckUpSeconds）。</summary>
+    public static float ExternalReleaseSeconds = 0f;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetExternalDuck() { ExternalDuckTarget = 1f; ExternalReleaseSeconds = 0f; }
+
     /// <summary>旁白語音是否正在播。</summary>
     public bool IsVoicePlaying => _voiceSource != null && _voiceSource.isPlaying;
 
@@ -111,9 +119,13 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     private void LateUpdate()
     {
-        float target = IsVoicePlaying ? voiceDuckLevel : 1f;
-        float seconds = target < _duck ? voiceDuckDownSeconds : voiceDuckUpSeconds;
-        float span = Mathf.Max(0.01f, 1f - voiceDuckLevel);
+        // ★1115 除了旁白，演出也可以要求「其他聲音壓低」（例如重落地後的安靜時刻）：ExternalDuckTarget＜1 就壓到那個倍率，
+        //   旁白與外部要求同時存在時取較小的那個。外部放開時回來的秒數可用 ExternalReleaseSeconds 指定（沒有旁白在播時才用）。
+        float ext = Mathf.Clamp01(ExternalDuckTarget);
+        float target = Mathf.Min(IsVoicePlaying ? voiceDuckLevel : 1f, ext);
+        float upSeconds = (!IsVoicePlaying && ExternalReleaseSeconds > 0f) ? ExternalReleaseSeconds : voiceDuckUpSeconds;
+        float seconds = target < _duck ? voiceDuckDownSeconds : upSeconds;
+        float span = Mathf.Max(0.01f, 1f - Mathf.Min(voiceDuckLevel, ext));
         _duck = Mathf.MoveTowards(_duck, target, Time.unscaledDeltaTime * span / Mathf.Max(0.01f, seconds));
 
         if (_duck >= 0.999f && _ducked.Count == 0) return;

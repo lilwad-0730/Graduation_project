@@ -60,11 +60,13 @@ public class RuinsHeavyLandingFX : MonoBehaviour
     {
         if (_pm != null) _pm.OnHeavyRuinsLanding -= OnLand;
         CameraTargetXFollower.ImpactShakeOffset = Vector2.zero;
+        if (_quietT >= 0f) { _quietT = -1f; AudioManager.ExternalDuckTarget = 1f; }   // 安靜到一半被關掉：把聲音還回去
     }
 
     private void OnDestroy()
     {
         CameraTargetXFollower.ImpactShakeOffset = Vector2.zero;
+        if (_quietT >= 0f) { _quietT = -1f; AudioManager.ExternalDuckTarget = 1f; }
         if (_mat != null) Destroy(_mat);
         if (_tex != null) Destroy(_tex);
         if (_dust != null) Destroy(_dust.gameObject);
@@ -74,14 +76,56 @@ public class RuinsHeavyLandingFX : MonoBehaviour
     {
         if (!enableFX) return;
         float k = Mathf.Clamp(impactSpeed / 14f, 0.5f, 1.4f);
+        if (enableQuietMoment) StartQuietMoment();
         _kickT = 0f;
         _kickAmp = kickMeters * k * MotionComfort.Scale;   // ★1115 動態強度（減少晃動）：鏡頭頓挫跟著縮，塵土是畫面內的粒子不算晃動
         if (enableDust) EmitDust(k);
         Debug.Log($"[重落地] 落地速度 {impactSpeed:F1} 米／秒，鏡頭頓 {_kickAmp:F2} 公尺、塵土 {Mathf.RoundToInt(dustCount * k)} 顆");
     }
 
+    // ───────── ★1115 B2 落地後的安靜時刻 ─────────
+    //  砸地的聲音先聽到，過 quietDelay 秒世界忽然安靜下來（其他聲音壓到 quietLevel 倍，只剩風與腳邊的細碎聲），
+    //  同時眼前一黑（曝光掉下去、慢慢亮回來，EmotionColorGradeFX.ImpactDip），停 quietHold 秒後，聲音慢慢回來。
+    //  從「摔下來的緊張」到「活下來了」的釋放。聲音壓低走 AudioManager 本來就有的語音壓低機制（ExternalDuckTarget），不另開一套。
+    [Header("★1115 落地後的安靜時刻")]
+    public bool enableQuietMoment = true;
+    [Tooltip("砸地後先讓砸地聲完整聽到，過這麼久（秒）才安靜下來")]
+    public float quietDelay = 0.35f;
+    [Tooltip("安靜維持多久（秒）")]
+    public float quietHold = 2.2f;
+    [Tooltip("安靜時其他聲音剩幾倍（0＝全靜、1＝不壓）")]
+    [Range(0f, 1f)] public float quietLevel = 0.3f;
+    [Tooltip("安靜結束後聲音慢慢回來花多久（秒）")]
+    public float quietReleaseSeconds = 2.5f;
+    [Tooltip("落地瞬間眼前一黑（曝光掉下去、慢慢亮回來）")]
+    public bool quietEyeDip = true;
+    private float _quietT = -1f;
+
+    private void StartQuietMoment()
+    {
+        _quietT = 0f;
+        if (quietEyeDip) EmotionColorGradeFX.ImpactDip = 1f;
+    }
+
+    private void UpdateQuietMoment()
+    {
+        if (_quietT < 0f) return;
+        _quietT += Time.unscaledDeltaTime;
+        if (_quietT >= quietDelay + quietHold)
+        {
+            AudioManager.ExternalDuckTarget = 1f;   // 放開；聲音依 ExternalReleaseSeconds 慢慢回來
+            _quietT = -1f;
+        }
+        else if (_quietT >= quietDelay)
+        {
+            AudioManager.ExternalDuckTarget = quietLevel;
+            AudioManager.ExternalReleaseSeconds = quietReleaseSeconds;
+        }
+    }
+
     private void LateUpdate()
     {
+        UpdateQuietMoment();
         if (_kickT < 0f) return;
         _kickT += Time.unscaledDeltaTime;
         if (_kickT >= kickSeconds)

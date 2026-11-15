@@ -613,6 +613,17 @@ public class PlayerMovement : MonoBehaviour
     private float _fallLandingK = 1f;
     /// <summary>★1114 墜落中離地面多近：1＝還很高、0＝貼地（給墜落晃動 FallSwayFX 落地前收掉用，純讀取）。</summary>
     public float FallLandingK => _fallLandingK;
+    /// <summary>★1115 墜落進度 0～1（給色調漸變用，純讀取）：沒在墜落＝0；傳送進廢墟後的快速段＝1；天空段按已掉秒數除以預計總秒數。</summary>
+    public float FallProgress01
+    {
+        get
+        {
+            if (!_controlledFall) return 0f;
+            if (_ruinsDropPhase) return 1f;
+            float total = Mathf.Max(1f, ruinsFallRampSecondsPerScale * Mathf.Max(0.25f, ruinsFallDurationScale));
+            return Mathf.Clamp01(ControlledFallSeconds / total);
+        }
+    }
     private float _nextFallTelemetry;
     private string _fallGroundSeen = "無";
     private float _savedDamping;
