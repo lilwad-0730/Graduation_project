@@ -185,7 +185,13 @@ public class RollingRockVisual : MonoBehaviour
 
         // 僅沿著 Z 軸旋轉視覺子物件（順時針滾動，所以帶負號）
         visualTransform.Rotate(Vector3.forward, -_spinDegPerSec * Time.deltaTime, Space.Self);
+    }
 
+    // ★1115 外觀貼合改在 LateUpdate：這一幀她的動畫姿勢已經套用完，量到的網格輪廓是「現在畫出來的樣子」，
+    //   不是上一幀的姿勢（Update 時骨頭還停在上一幀，推石前傾、轉身時會差一點點而蓋到她）。
+    void LateUpdate()
+    {
+        if (rb == null || visualTransform == null) return;
         UpdateSlopePushVisualPull();
     }
 
@@ -266,16 +272,7 @@ public class RollingRockVisual : MonoBehaviour
         center = axisX = axisY = Vector2.zero;
         halfX = halfY = 0f;
         if (player == null) return false;
-        if (_bodyVisualOwner != player)
-        {
-            _bodyVisualOwner = player;
-            _bodyCalibrated = false;
-            _bodyCalibStable = 0f;
-            _bodyVisual = null;
-            Animator a = player.GetComponentInChildren<Animator>();
-            if (a != null && a.transform != player) _bodyVisual = a.transform;
-        }
-        if (_bodyVisual == null) return false;
+        if (EnsureBodyVisual(player) == null) return false;
         if (!_bodyCalibrated) return false;
 
         Vector3 c = _bodyVisual.TransformPoint(_bodyLocalCenter);
@@ -289,6 +286,81 @@ public class RollingRockVisual : MonoBehaviour
         halfX = Mathf.Abs(Vector2.Dot(new Vector2(hx3.x, hx3.y), axisX));
         center = new Vector2(c.x, c.y);
         return halfX > 0.01f;
+    }
+
+    /// <summary>她的外觀子物件（Animator 那層：傾斜、往下補、翻面都在它身上）。換了玩家就重找，連帶清掉以它為準的換算。</summary>
+    private Transform EnsureBodyVisual(Transform player)
+    {
+        if (player == null) return null;
+        if (_bodyVisualOwner != player)
+        {
+            _bodyVisualOwner = player;
+            _bodyCalibrated = false;
+            _bodyCalibStable = 0f;
+            _flatPushCalibrated = false;
+            _flatPushStable = 0f;
+            _bodyVisual = null;
+            Animator a = player.GetComponentInChildren<Animator>();
+            if (a != null && a.transform != player) _bodyVisual = a.transform;
+        }
+        return _bodyVisual;
+    }
+
+    // ───────── ★1115 坡上推石＝照平地推石的相對位置 ─────────
+    // Root Cause（M 11-15 實測截圖＋Editor.log【推石間距】）：
+    //   平地推石時外觀不用補（外觀滑 0.00m），石頭跟她的距離由物理碰撞決定，剛好碰到胸口和手。
+    //   坡上改由 ★1017 的「沿坡滑到碰到她的網格輪廓為止」決定，而推石動畫本身身體往前傾，
+    //   輪廓上離石頭最近的點是頭，所以石頭一定停在頭頂、胸口和手前面留一大塊縫。
+    //   她推石時已經垂直坡面（PlayerMovement ★1115），把坡面當地面看，跟平地是同一個畫面，只差石頭擺的位置。
+    // 修法：平地推石時記下「石頭中心在她外觀子物件裡的位置」；坡上推石時把這個位置換回世界座標，
+    //   石頭外觀沿坡面滑到那裡（只取沿坡的分量，石頭還是貼著坡面）。跟平地推石完全同一個相對位置。
+    //   還沒在平地推過（記不到）就照 ★1017 的輪廓量法。
+    [Header("★1115 坡上推石＝照平地推石的相對位置")]
+    [Tooltip("打勾＝坡上推石時，石頭外觀擺在「平地推石時」相對她身體的同一個位置（碰到胸口和手，不是頭頂）。\n" +
+             "要先在平地推過一小段才記得到；記到之前照網格輪廓量。取消＝只用網格輪廓量（石頭會停在頭頂）")]
+    public bool matchFlatPushOnSlope = true;
+    [Tooltip("平地推石要穩定推這麼久（秒）才記下相對位置")]
+    public float flatPushCalibSeconds = 0.3f;
+    private bool _flatPushCalibrated;
+    private float _flatPushStable;
+    private Vector3 _flatPushLocal;
+
+    /// <summary>★1115 平地推石時記下石頭中心在她外觀子物件裡的位置（持續平均，跟著最新的推石姿勢）。</summary>
+    private void TryCalibrateFlatPush(Transform player, float groundAngle)
+    {
+        Transform body = EnsureBodyVisual(player);
+        bool ok = body != null && groundAngle >= 0f && groundAngle < 1f
+                  && _pusher != null && _pusher.isGrounded && rb != null && Mathf.Abs(rb.linearVelocity.x) > 0.5f
+                  && _visualPullWorld.sqrMagnitude < 0.0025f;   // 平地推石時外觀沒有滑（＝畫面上就是物理位置）
+        _flatPushStable = ok ? _flatPushStable + Time.deltaTime : 0f;
+        if (_flatPushStable < Mathf.Max(0f, flatPushCalibSeconds)) return;
+
+        Vector3 local = body.InverseTransformPoint(transform.position);
+        if (!_flatPushCalibrated)
+        {
+            _flatPushLocal = local;
+            _flatPushCalibrated = true;
+            if (Application.isEditor || TesterMode.Enabled)
+                Debug.Log($"【巨石外觀】★1115 記下平地推石的相對位置（她的外觀 local）{local.ToString("F2")}，坡上推石照這個擺");
+        }
+        else _flatPushLocal = Vector3.Lerp(_flatPushLocal, local, 1f - Mathf.Exp(-2f * Time.deltaTime));
+    }
+
+    /// <summary>★1115 坡上推石：石頭外觀沿坡面滑多遠，才會在「平地推石時」相對她身體的同一個位置。</summary>
+    private bool TryFlatPushPull(Transform player, out Vector2 dir, out float along)
+    {
+        dir = Vector2.zero;
+        along = 0f;
+        if (!_flatPushCalibrated) return false;
+        Transform body = EnsureBodyVisual(player);
+        if (body == null) return false;
+        Vector3 want = body.TransformPoint(_flatPushLocal);
+        float signX = Mathf.Sign(player.position.x - transform.position.x);
+        if (Mathf.Approximately(signX, 0f)) signX = -1f;
+        if (!TryGetGroundTangentToward(signX, out dir)) return false;
+        Vector2 delta = new Vector2(want.x - transform.position.x, want.y - transform.position.y);
+        along = Mathf.Clamp(Vector2.Dot(delta, dir), -1f, Mathf.Max(0f, slopeTouchMaxPull));
+        return true;
     }
 
     /// <summary>★1017 平地、站穩、朝右、外觀已經轉正 0.5 秒：把身體方框換算成外觀子物件的 local（只做一次）。</summary>
@@ -545,6 +617,24 @@ public class RollingRockVisual : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// ★1115 坡上放手後外觀留在貼住的位置（_heldPullAlong），但她走回來時還沒碰到物理石頭，會先走進留在下面的外觀＝穿模。
+    /// 這裡每幀量「從石頭本體沿坡往她那邊，最多能滑多遠還不蓋到她」，留住的距離不超過這個值：她走近，外觀就跟著退回本體。
+    /// 她在另一邊（外觀往遠離她的方向留）或離很遠就不用量。
+    /// </summary>
+    private void ClampHeldPullToPlayer()
+    {
+        if (_heldPullAlong <= 0.001f) return;
+        if (_calibPlayer == null) _calibPlayer = _pusher != null ? _pusher : FindAnyObjectByType<PlayerMovement>();
+        Transform player = _lastPlayerTouch != null ? _lastPlayerTouch : (_calibPlayer != null ? _calibPlayer.transform : null);
+        if (player == null) return;
+        float dx = player.position.x - transform.position.x;
+        if (Mathf.Sign(dx) != _heldPullSignX) return;                                    // 她在另一邊：外觀不會往她那邊留
+        if (Mathf.Abs(dx) > radius + _heldPullAlong + 4f) return;                        // 還很遠：碰不到
+        if (TryVisibleBodyPull(player, out _, out float allowed) && allowed < _heldPullAlong)
+            _heldPullAlong = allowed;
+    }
+
     private void UpdateSlopePushVisualPull()
     {
         if (visualTransform == null || visualTransform == transform) return;
@@ -576,11 +666,31 @@ public class RollingRockVisual : MonoBehaviour
         //   現在只要最近 0.35 秒內有碰到玩家（不管是推、下滾、還是回頭被追上），就用同一套補償。
         bool pushedUp = !IsRollingBack && _pusher != null && IsBeingPushedByPlayer;
         bool carriedDown = IsRollingBack && _rollbackPlayerRb != null && Time.time - _rollbackPlayerContactTime < 0.35f;
-        bool touchingPlayer = _lastPlayerTouch != null && Time.time - _lastPlayerTouchTime < 0.35f;
+        // ★1115 只是「碰到她」（不是推、不是下滾）的緩衝從 0.35 秒縮到 0.1 秒。
+        //   Root Cause（Editor.log【巨石外觀】：推的時候外觀只滑 0.13～0.2m，一放手就變成「放手・坡上停住 外觀滑 2.4～3.5m」）：
+        //   她放手往下坡走開後，這 0.35 秒內還算「碰到她」，外觀每幀重新量、一路沿坡追著她滑了將近 2 米，
+        //   之後留在那裡；她回頭再推時，物理石頭還在上面 3 米，她就直接走進石頭的外觀裡＝穿模。
+        //   物理接觸每個物理步（0.02 秒）都會回報，0.1 秒足夠銜接，又不會讓外觀追著走開的她跑。
+        bool touchingPlayer = _lastPlayerTouch != null && Time.time - _lastPlayerTouchTime < 0.1f;
         Transform other = pushedUp ? _pusher.transform : (carriedDown ? _rollbackPlayerRb.transform : (touchingPlayer ? _lastPlayerTouch : null));
 
         bool usedVisibleBody = false;
-        if (matchVisibleBody && slopePushVisualPull > 0.001f)
+        bool usedFlatPush = false;
+        if (matchFlatPushOnSlope && pushedUp && slopePushVisualPull > 0.001f)
+        {
+            float pushGroundAngle = TryGetGroundNormal(out Vector3 pgn) ? Vector3.Angle(Vector3.up, pgn) : -1f;
+            TryCalibrateFlatPush(_pusher.transform, pushGroundAngle);
+            if (pushGroundAngle >= slopeIdleMinAngle &&TryFlatPushPull(_pusher.transform, out Vector2 fDir, out float fAlong))
+            {
+                target = KeepVisualAboveGround(new Vector3(fDir.x, fDir.y, 0f) * fAlong);
+                _heldPullAlong = Mathf.Max(0f, fAlong);
+                if (Mathf.Abs(fDir.x) > 0.01f) _heldPullSignX = Mathf.Sign(fDir.x);
+                usedVisibleBody = usedFlatPush = true;
+            }
+        }
+        else _flatPushStable = 0f;
+
+        if (!usedFlatPush && matchVisibleBody && slopePushVisualPull > 0.001f)
         {
             if (other != null && TryVisibleBodyPull(other, out Vector2 pullDir, out float along))
             {
@@ -595,6 +705,7 @@ public class RollingRockVisual : MonoBehaviour
                 // ★1017 沒碰到她：坡上留在剛才貼住的位置（跟著現在的坡面方向）；平地慢慢收回
                 bool onSlope = TryGetGroundNormal(out Vector3 gn) && Vector3.Angle(Vector3.up, gn) >= slopeIdleMinAngle;
                 if (!onSlope) _heldPullAlong = Mathf.MoveTowards(_heldPullAlong, 0f, Mathf.Max(0.01f, heldPullReturnSpeed) * Time.deltaTime);
+                ClampHeldPullToPlayer();
                 if (TryGetGroundTangentToward(_heldPullSignX, out Vector2 holdDir))
                     target = KeepVisualAboveGround(new Vector3(holdDir.x, holdDir.y, 0f) * _heldPullAlong);
                 else
@@ -638,8 +749,15 @@ public class RollingRockVisual : MonoBehaviour
             }
         }
 
-        float t = 1f - Mathf.Exp(-Mathf.Max(0.1f, slopePushVisualSmooth) * Time.deltaTime);
-        _visualPullWorld = Vector3.Lerp(_visualPullWorld, target, t);
+        // ★1115 外觀「往石頭本體收回」時直接到位，不平滑：收回幾乎都是因為她正在走近（或身體前傾），
+        //   平滑的話外觀會慢半拍（走路 4.9 m/s、平滑 12 時約落後 0.4 米），那段時間就蓋在她身上。往外滑（貼過去）照舊平滑。
+        if (target.sqrMagnitude < _visualPullWorld.sqrMagnitude)
+            _visualPullWorld = target;
+        else
+        {
+            float t = 1f - Mathf.Exp(-Mathf.Max(0.1f, slopePushVisualSmooth) * Time.deltaTime);
+            _visualPullWorld = Vector3.Lerp(_visualPullWorld, target, t);
+        }
         visualTransform.localPosition = transform.InverseTransformVector(_visualPullWorld);
 
         // ★1017 測試模式／編輯器：每秒一行，看外觀貼合與坡上放手的狀態（正式版不印；巨石停在平地不印）
@@ -652,7 +770,7 @@ public class RollingRockVisual : MonoBehaviour
             string idle = !logSlope ? "放手・平地" : (Time.time - _idleSince < slopeIdleHoldSeconds ? "放手・坡上停住" : "放手・坡上慢滾");
             string state = IsRollingBack ? "失敗下滾" : (IsBeingPushedByPlayer ? "推" : (_idleSince >= 0f ? idle : "沒人推"));
             Debug.Log($"【巨石外觀】{state} | 石頭 ({transform.position.x:F1},{transform.position.y:F1}) v=({rb.linearVelocity.x:F2},{rb.linearVelocity.y:F2}) 坡 {ga:F1}° | " +
-                      $"外觀滑 {_visualPullWorld.magnitude:F2}m（目標 {target.magnitude:F2}，{(usedVisibleBody ? (_silMode > 0 ? "照她的網格輪廓" : "照她的身體方框") : "舊量法")}，碰到她={(other != null)}，身體換算={_bodyCalibrated}）");
+                      $"外觀滑 {_visualPullWorld.magnitude:F2}m（目標 {target.magnitude:F2}，{(usedFlatPush ? "照平地推石位置" : usedVisibleBody ? (_silMode > 0 ? "照她的網格輪廓" : "照她的身體方框") : "舊量法")}，碰到她={(other != null)}，身體換算={_bodyCalibrated}）");
         }
     }
 
@@ -952,6 +1070,17 @@ public class RollingRockVisual : MonoBehaviour
     [Tooltip("坡度超過這個角度才算在坡上（度）")]
     public float slopeIdleMinAngle = 6f;
 
+    // ★1115 坡上沒人推時照重力滾（M 11-15：「巨石不受外力往下滾的速度太慢，看起來像飄起來」）
+    //   原本固定 0.8 m/s、加速度 1.5 m/s²，34.6° 的坡上一顆巨石慢慢飄下來，完全沒有重量。
+    //   改成真實滾動的球：沿坡加速度 = g × sin(坡度) × 5/7（實心球滾動，有一部分重力拿去轉動），34.6° 約 4 m/s²，
+    //   一路加速到 idleRollMaxSpeed。停住的那一下（slopeIdleHoldSeconds）照舊。
+    [Tooltip("打勾＝坡上沒人推時照重力加速往下滾（加速度跟坡度走、越滾越快）；取消＝用上面的固定 Slope Idle Roll Speed／Accel")]
+    public bool idleRollUseGravity = true;
+    [Tooltip("照重力滾時的加速度倍率。1＝真實滾動的球（34.6° 約 4 m/s²）；想更快就調大")]
+    [Range(0.2f, 2f)] public float idleRollGravityScale = 1f;
+    [Tooltip("照重力滾時，沿坡最快幾公尺／秒")]
+    public float idleRollMaxSpeed = 6f;
+
     private float _idleSince = -1f;
     private bool _everPushed;
 
@@ -995,9 +1124,17 @@ public class RollingRockVisual : MonoBehaviour
             if (downhill.y > 0f) downhill = -downhill;
             downhill.Normalize();
             bool holding = Time.time - _idleSince < slopeIdleHoldSeconds;
-            Vector3 target = holding ? Vector3.zero : downhill * Mathf.Max(0f, slopeIdleRollSpeed);
-            // 整個速度（含 y）沿坡逼近目標：加速慢（slopeIdleRollAccel）、收速度快（boulderBraking），不會飛離坡面
-            float rate = target.sqrMagnitude > v.sqrMagnitude ? slopeIdleRollAccel : Mathf.Max(slopeIdleRollAccel, releaseBrake);   // ★1024 放手收速度用比較柔的 releaseBrake
+            float rollSpeed = slopeIdleRollSpeed, rollAccel = slopeIdleRollAccel;
+            if (idleRollUseGravity)
+            {
+                // ★1115 沿坡的重力分量：n 是單位法線，sin(坡度) = √(1 − n.y²)
+                float sinSlope = Mathf.Sqrt(Mathf.Max(0f, 1f - n.y * n.y));
+                rollAccel = Physics.gravity.magnitude * sinSlope * (5f / 7f) * idleRollGravityScale;
+                rollSpeed = idleRollMaxSpeed;
+            }
+            Vector3 target = holding ? Vector3.zero : downhill * Mathf.Max(0f, rollSpeed);
+            // 整個速度（含 y）沿坡逼近目標：加速照 rollAccel、收速度用 releaseBrake，不會飛離坡面
+            float rate = target.sqrMagnitude > v.sqrMagnitude ? rollAccel : Mathf.Max(rollAccel, releaseBrake);   // ★1024 放手收速度用比較柔的 releaseBrake
             Vector3 next = Vector3.MoveTowards(v, target, Mathf.Max(0.1f, rate) * dt);
             rb.linearVelocity = new Vector3(next.x, next.y, 0f);
         }

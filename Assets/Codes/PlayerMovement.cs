@@ -42,6 +42,14 @@ public class PlayerMovement : MonoBehaviour
              "原因：坡面往右上升時，跟著坡面傾斜 = 頭往左（遠離石頭）倒最多 30°，3.4 米高的身體頭部離石頭多出約 1.7 米，是推坡時「石頭離身體很遠」的主要來源之一。")]
     [Range(0f, 1f)] public float pushingSlopeTiltKeep = 0.2f;
 
+    [Tooltip("★1115 上坡推石時身體完全跟著坡面傾斜（垂直坡面），石頭碰到的位置就跟平地一樣是胸口和手，不是頭頂。\n" +
+             "原因：石頭半徑 2.7 比她的肩高還大，34.6° 坡上她站直時，石頭左下的弧線先碰到頭頂，胸口和手離石頭約 1.7 米。\n" +
+             "把整個畫面看成「坡面當地面」：她垂直坡面、石頭也立在坡面上，兩者的相對位置就跟平地完全一樣。\n" +
+             "打勾＝推石時傾角照坡度（上限 Pushing Slope Max Angle），不吃 Pushing Slope Tilt Keep；取消＝回到 ★1018 的做法")]
+    public bool pushAlignToSlope = true;
+    [Tooltip("★1115 推石跟著坡面傾斜時，最多傾斜幾度。廢墟坡 34.6°，要大於它才會完全垂直坡面")]
+    [Range(0f, 45f)] public float pushingSlopeMaxAngle = 40f;
+
     [Tooltip("★1001 斜坡視覺空隙補償：0 ＝ 完全關閉，1 ＝ 完整幾何補償（預設）。\n" +
              "成因是純幾何、不是物理穿透：剛體鎖了 FreezeRotation，碰撞盒永遠保持水平，\n" +
              "放在斜坡上時只有下坡側的底角碰得到坡面，底面中心必然懸空「半寬 × tan(坡度)」。\n" +
@@ -1404,10 +1412,19 @@ public class PlayerMovement : MonoBehaviour
                 if (enableSlopeVisualTilt && !isUnderwater && isGrounded && !isJumping)
                 {
                     Vector3 n = GroundNormal;
-                    targetTilt = Mathf.Clamp(Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg,
-                                             -maxSlopeVisualAngle, maxSlopeVisualAngle);
-                    // ★1018 正在推巨石：身體不要跟著坡面往後倒（頭離石頭遠），站直，前傾交給推石動畫
-                    if (isPushing && RollingRockVisual.ActivelyPushed != null) targetTilt *= pushingSlopeTiltKeep;
+                    float slopeTilt = Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg;
+                    bool pushingRock = isPushing && RollingRockVisual.ActivelyPushed != null;
+                    if (pushingRock && pushAlignToSlope)
+                    {
+                        // ★1115 推石：完全垂直坡面，跟石頭的相對位置＝平地推石
+                        targetTilt = Mathf.Clamp(slopeTilt, -pushingSlopeMaxAngle, pushingSlopeMaxAngle);
+                    }
+                    else
+                    {
+                        targetTilt = Mathf.Clamp(slopeTilt, -maxSlopeVisualAngle, maxSlopeVisualAngle);
+                        // ★1018 正在推巨石：身體不要跟著坡面往後倒（頭離石頭遠），站直，前傾交給推石動畫
+                        if (pushingRock) targetTilt *= pushingSlopeTiltKeep;
+                    }
                 }
                 _slopeVisualAngle = Mathf.LerpAngle(_slopeVisualAngle, targetTilt,
                                                     1f - Mathf.Exp(-slopeVisualTiltSpeed * Time.deltaTime));
