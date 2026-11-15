@@ -186,7 +186,7 @@ public class ShiftPushRock : MonoBehaviour
 
         float input = pm.CurrentMoveInput;
         float toRock = Mathf.Sign(transform.position.x - pm.transform.position.x);
-        if (Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == toRock && !Input.GetKey(KeyCode.LeftShift))
+        if (Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == toRock && !Input.GetKey(KeyCode.LeftShift) && !PadInput.GrabHeld)
         {
             _bumpTime += Time.deltaTime;
             if (_bumpTime >= hintAfterSeconds) InputHint.Once("shift_push_rock", "按住 Shift　推拉石頭", 4f);

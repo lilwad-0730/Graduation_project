@@ -249,7 +249,7 @@ public class PlayerMovement : MonoBehaviour
     public bool requireShiftToPushBoulder = true;
 
     /// <summary>★1115 這一刻可以推巨石嗎（按住左或右 Shift；關掉 requireShiftToPushBoulder 時永遠可以）。</summary>
-    public bool BoulderPushKeyHeld => !requireShiftToPushBoulder || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    public bool BoulderPushKeyHeld => !requireShiftToPushBoulder || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || PadInput.GrabHeld;   // ★1115 手把 X
 
     private static bool IsBoulderCollider(Collider col) => col != null && col.GetComponentInParent<RollingRockVisual>() != null;
 
@@ -958,7 +958,7 @@ public class PlayerMovement : MonoBehaviour
 
         bool anyKey = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S)
                    || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)
-                   || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow);
+                   || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || PadInput.AnyHeld;   // ★1115 手把
         _entryFloatRemaining -= Time.deltaTime;
         if (anyKey || _entryFloatRemaining <= 0f)
         {
@@ -1204,6 +1204,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) rawInput = 1f;
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) rawInput = -1f;
+            else rawInput = PadInput.DpadHorizontal;   // ★1115 手把十字鍵（搖桿本來就走 Horizontal 軸）
         }
 
         float moveInput = 0f;
@@ -1245,7 +1246,8 @@ public class PlayerMovement : MonoBehaviour
                 bool wantsToMove = Mathf.Abs(rawInput) > 0.1f
                                    || Input.GetKeyDown(KeyCode.W)
                                    || Input.GetKeyDown(KeyCode.Space)
-                                   || Input.GetKeyDown(KeyCode.UpArrow);
+                                   || Input.GetKeyDown(KeyCode.UpArrow)
+                                   || PadInput.JumpDown;   // ★1115 手把 A
                 if (wantsToMove && !_waitingForRuinsLanding)
                 {
                     // 若非演出/重生狀態且玩家主動按鍵，才解除掉落鎖死
@@ -1412,7 +1414,8 @@ public class PlayerMovement : MonoBehaviour
                                    || Input.GetKey(KeyCode.UpArrow) 
                                    || Input.GetKey(KeyCode.DownArrow) 
                                    || Input.GetKey(KeyCode.LeftArrow) 
-                                   || Input.GetKey(KeyCode.RightArrow);
+                                   || Input.GetKey(KeyCode.RightArrow)
+                                   || PadInput.AnyHeld;   // ★1115 手把
 
             bool isMovingInWater = hasActiveSwimInput && !IsControlLocked;
             if (isMovingInWater)
@@ -1556,7 +1559,8 @@ public class PlayerMovement : MonoBehaviour
                                  || Input.GetKey(KeyCode.D) 
                                  || Input.GetKey(KeyCode.LeftArrow) 
                                  || Input.GetKey(KeyCode.RightArrow)
-                                 || Input.GetKey(KeyCode.UpArrow);
+                                 || Input.GetKey(KeyCode.UpArrow)
+                                 || PadInput.AnyHeld;   // ★1115 手把
 
             if (isUnderwater)
             {
@@ -1679,8 +1683,9 @@ public class PlayerMovement : MonoBehaviour
         // ==========================================
         // 3. 處理抓取與移動 (恢復原本的邏輯)
         // ==========================================
-        if (Input.GetKeyDown(KeyCode.LeftShift)) TryGrabObject();
-        if (Input.GetKeyUp(KeyCode.LeftShift)) ReleaseObject();
+        // ★1115 手把 X 等於左 Shift（抓取）
+        if (Input.GetKeyDown(KeyCode.LeftShift) || PadInput.GrabDown) TryGrabObject();
+        if (Input.GetKeyUp(KeyCode.LeftShift) || PadInput.GrabUp) ReleaseObject();
 
         // 防呆校正：沒被狼咬的時候，速度一律回到 baseSpeed
         // ★0910：原本的條件是「attachedWolvesCount == 0 || currentSpeed <= 0f」。
@@ -1891,8 +1896,8 @@ public class PlayerMovement : MonoBehaviour
 
         // ★1014 水下划水 (實際推進在 FixedUpdate)：
         //   按一下 → 划一下；按住 → 每隔 swimHoldRepeatInterval 自動再划一下，直到體力耗盡
-        bool swimUpDown = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow);
-        bool swimUpHeld = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+        bool swimUpDown = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || PadInput.JumpDown;
+        bool swimUpHeld = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || PadInput.JumpHeld || PadInput.UpHeld;   // ★1115 手把 A／搖桿上
         if (!swimUpHeld) _swimHoldBlocked = false;
         if (!IsControlLocked && isUnderwater)
         {
@@ -1927,14 +1932,14 @@ public class PlayerMovement : MonoBehaviour
         {
             // ★1015 紅光只在「力竭、而且她還想往上游」時亮（按著或剛按過往上鍵）。
             //   以前力竭一發生就亮，划到一半紅光突然冒出來，看起來像無緣無故的警示。
-            bool wantsUp = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
+            bool wantsUp = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || PadInput.JumpHeld || PadInput.UpHeld;
             if (wantsUp) _lastSwimWantTime = Time.time;
             bool tryingWhileExhausted = isUnderwater && isSwimExhausted && (Time.time - _lastSwimWantTime) < 0.4f;
             UnderwaterSuffocationEffect.Instance.SetSwimExhausted(tryingWhileExhausted);
         }
 
         // 陸地跳躍 (非水下、非演出中、非重生中)
-        bool _jumpPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space);
+        bool _jumpPressed = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space) || PadInput.JumpDown;   // ★1115 手把 A
 
         // ★按了跳躍卻沒起跳時，直接指名是哪個條件擋住的
         // (水下按 W 是划水，不是跳躍，不必警告)
@@ -2769,7 +2774,7 @@ public class PlayerMovement : MonoBehaviour
             float diveTargetSpeed = Mathf.Min(-underwaterDiveSpeed, effectiveMaxFallSpeed * underwaterDiveFallMultiplier);
 
             // 3. 水下游泳：W/Space/↑ 划一下往上升一段 (瑪利歐式)，S/↓ 主動下潛
-            bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow));
+            bool isPressingSwimDown = !IsControlLocked && (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) || PadInput.DownHeld);   // ★1115 手把搖桿下
 
             bool stroke = _swimStrokeQueued;
             _swimStrokeQueued = false;
