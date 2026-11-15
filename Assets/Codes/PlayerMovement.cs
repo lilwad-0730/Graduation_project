@@ -253,6 +253,42 @@ public class PlayerMovement : MonoBehaviour
 
     private static bool IsBoulderCollider(Collider col) => col != null && col.GetComponentInParent<RollingRockVisual>() != null;
 
+    // ★1116 按住 Shift 推巨石時不能回頭：一推上（ActivelyPushed）就鎖住「往巨石那邊」，
+    //   Shift 沒放開之前按反方向（A）不會倒退、也不會轉身——狼看的是 FacingDirection，所以想回頭嚇狼一定要先放開 Shift。
+    //   巨石離開身邊（滾遠、被推遠）或失敗下滾就自動解鎖，不會卡住。
+    [Tooltip("打勾＝按住 Shift 推巨石時不能按反方向倒退或轉身，要先放開 Shift 才能回頭（推石時又要顧狼，應接不暇）")]
+    public bool lockTurnWhilePushingBoulder = true;
+    [Tooltip("巨石離她超過這個距離（公尺，表面到表面）就自動解鎖")]
+    public float boulderTurnLockReleaseGap = 1.0f;
+    private RollingRockVisual _boulderTurnLockRock;
+    private float _boulderTurnLockDirX;   // 0＝沒鎖；±1＝巨石在她哪一邊
+
+    /// <summary>★1116 按住 Shift 推巨石中：反方向的輸入歸零（不倒退、不轉身）。</summary>
+    private float ApplyBoulderTurnLock(float mv)
+    {
+        if (!lockTurnWhilePushingBoulder || !requireShiftToPushBoulder || !BoulderPushKeyHeld)
+        {
+            _boulderTurnLockDirX = 0f;
+            _boulderTurnLockRock = null;
+            return mv;
+        }
+        RollingRockVisual pushed = RollingRockVisual.ActivelyPushed;
+        if (pushed != null && pushed.IsBeingPushedByPlayer)
+        {
+            float side = Mathf.Sign(pushed.transform.position.x - transform.position.x);
+            if (side != 0f) { _boulderTurnLockDirX = side; _boulderTurnLockRock = pushed; }
+        }
+        if (_boulderTurnLockDirX == 0f) return mv;
+        if (_boulderTurnLockRock == null || _boulderTurnLockRock.IsRollingBack
+            || !RollingRockVisual.IsBlockingPlayer(this, _boulderTurnLockDirX, Mathf.Max(0.1f, boulderTurnLockReleaseGap)))
+        {
+            _boulderTurnLockDirX = 0f;
+            _boulderTurnLockRock = null;
+            return mv;
+        }
+        return mv * _boulderTurnLockDirX < 0f ? 0f : mv;
+    }
+
     [Header("🕯️ 點燃燭火動作")]
     [Tooltip("PlayerAnimator 裡點燃動作的 State 名稱")]
     public string lightCandleAnimState = "LightCandle";
@@ -1210,6 +1246,7 @@ public class PlayerMovement : MonoBehaviour
                 }
 
                 moveInput = (actuallyFreeze || isCutsceneFrozen || IsHardCutsceneLocked) ? 0f : rawInput;
+                moveInput = ApplyBoulderTurnLock(moveInput);   // ★1116 按住 Shift 推巨石：不能倒退、不能轉身
 
                 // 抓取物件中 (LeftShift) 鎖定面向：往後拉時保持面向物件倒退走，不轉身
                 bool isHoldingObject = pulledObject != null;
