@@ -2315,7 +2315,9 @@ public class PlayerMovement : MonoBehaviour
             Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
             if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
             if (hit.collider == null || hit.collider.isTrigger) continue;
-            if (IsPushableObject(hit.collider.gameObject, hit.collider)) continue;
+            // ★1115 要按 Shift 才能推的石頭（沒抓著時）是堵牆，風推要停；其他可推物維持原本「不算障礙」
+            if (IsPushableObject(hit.collider.gameObject, hit.collider)
+                && !(pulledObject == null && ShiftPushRock.IsShiftOnly(hit.collider.gameObject, hit.collider))) continue;
             if (hit.normal.x * normalSignNeeded > 0.15f) return true;
         }
 
@@ -2998,6 +3000,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (col == null) return false;
         if (!IsPushableObject(col.gameObject, col)) return false;
+        // ★1115 要按 Shift 才能推的石頭：沒抓著時只是一堵牆，不算「前方可推物」（不播推動動畫）
+        if (pulledObject == null && ShiftPushRock.IsShiftOnly(col.gameObject, col)) return false;
 
         float playerFeetY = playerCenter.y - playerExtents.y;
         float playerHeadY = playerCenter.y + playerExtents.y;
@@ -3121,6 +3125,8 @@ public class PlayerMovement : MonoBehaviour
         if (collision == null || collision.collider == null) return;
         if (IsPushableObject(collision.gameObject, collision.collider))
         {
+            // ★1115 要按 Shift 才能推的石頭：沒抓著就不登記「正在推」
+            if (pulledObject == null && ShiftPushRock.IsShiftOnly(collision.gameObject, collision.collider)) return;
             if (Mathf.Abs(CurrentMoveInput) > 0.05f)
             {
                 Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
