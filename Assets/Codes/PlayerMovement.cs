@@ -42,6 +42,14 @@ public class PlayerMovement : MonoBehaviour
              "原因：坡面往右上升時，跟著坡面傾斜 = 頭往左（遠離石頭）倒最多 30°，3.4 米高的身體頭部離石頭多出約 1.7 米，是推坡時「石頭離身體很遠」的主要來源之一。")]
     [Range(0f, 1f)] public float pushingSlopeTiltKeep = 0.2f;
 
+    [Tooltip("★1115 上坡推石時身體完全跟著坡面傾斜（垂直坡面），石頭碰到的位置就跟平地一樣是胸口和手，不是頭頂。\n" +
+             "原因：石頭半徑 2.7 比她的肩高還大，34.6° 坡上她站直時，石頭左下的弧線先碰到頭頂，胸口和手離石頭約 1.7 米。\n" +
+             "把整個畫面看成「坡面當地面」：她垂直坡面、石頭也立在坡面上，兩者的相對位置就跟平地完全一樣。\n" +
+             "打勾＝推石時傾角照坡度（上限 Pushing Slope Max Angle），不吃 Pushing Slope Tilt Keep；取消＝回到 ★1018 的做法")]
+    public bool pushAlignToSlope = true;
+    [Tooltip("★1115 推石跟著坡面傾斜時，最多傾斜幾度。廢墟坡 34.6°，要大於它才會完全垂直坡面")]
+    [Range(0f, 45f)] public float pushingSlopeMaxAngle = 40f;
+
     [Tooltip("★1001 斜坡視覺空隙補償：0 ＝ 完全關閉，1 ＝ 完整幾何補償（預設）。\n" +
              "成因是純幾何、不是物理穿透：剛體鎖了 FreezeRotation，碰撞盒永遠保持水平，\n" +
              "放在斜坡上時只有下坡側的底角碰得到坡面，底面中心必然懸空「半寬 × tan(坡度)」。\n" +
@@ -234,6 +242,16 @@ public class PlayerMovement : MonoBehaviour
 
     [HideInInspector] public bool isPushing = false;
     private float _collisionPushableTimer = 0f;
+
+    [Header("★1115 推巨石要按住 Shift")]
+    [Tooltip("打勾＝按住 Shift 才會推巨石（rock-new）；沒按 Shift 走到巨石旁只會被擋住，巨石不動。\n" +
+             "只管巨石，其他 Pushable 物件（箱子）照原本：碰到就推、按 Shift 抓住拉。取消＝巨石也是碰到就推")]
+    public bool requireShiftToPushBoulder = true;
+
+    /// <summary>★1115 這一刻可以推巨石嗎（按住左或右 Shift；關掉 requireShiftToPushBoulder 時永遠可以）。</summary>
+    public bool BoulderPushKeyHeld => !requireShiftToPushBoulder || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+    private static bool IsBoulderCollider(Collider col) => col != null && col.GetComponentInParent<RollingRockVisual>() != null;
 
     [Header("🕯️ 點燃燭火動作")]
     [Tooltip("PlayerAnimator 裡點燃動作的 State 名稱")]
@@ -1448,10 +1466,19 @@ public class PlayerMovement : MonoBehaviour
                 if (enableSlopeVisualTilt && !isUnderwater && isGrounded && !isJumping)
                 {
                     Vector3 n = GroundNormal;
-                    targetTilt = Mathf.Clamp(Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg,
-                                             -maxSlopeVisualAngle, maxSlopeVisualAngle);
-                    // ★1018 正在推巨石：身體不要跟著坡面往後倒（頭離石頭遠），站直，前傾交給推石動畫
-                    if (isPushing && RollingRockVisual.ActivelyPushed != null) targetTilt *= pushingSlopeTiltKeep;
+                    float slopeTilt = Mathf.Atan2(-n.x, n.y) * Mathf.Rad2Deg;
+                    bool pushingRock = isPushing && RollingRockVisual.ActivelyPushed != null;
+                    if (pushingRock && pushAlignToSlope)
+                    {
+                        // ★1115 推石：完全垂直坡面，跟石頭的相對位置＝平地推石
+                        targetTilt = Mathf.Clamp(slopeTilt, -pushingSlopeMaxAngle, pushingSlopeMaxAngle);
+                    }
+                    else
+                    {
+                        targetTilt = Mathf.Clamp(slopeTilt, -maxSlopeVisualAngle, maxSlopeVisualAngle);
+                        // ★1018 正在推巨石：身體不要跟著坡面往後倒（頭離石頭遠），站直，前傾交給推石動畫
+                        if (pushingRock) targetTilt *= pushingSlopeTiltKeep;
+                    }
                 }
                 _slopeVisualAngle = Mathf.LerpAngle(_slopeVisualAngle, targetTilt,
                                                     1f - Mathf.Exp(-slopeVisualTiltSpeed * Time.deltaTime));
@@ -1729,17 +1756,22 @@ public class PlayerMovement : MonoBehaviour
                 windOffset = 0f;
             }
 
+            // ★1115 沒按 Shift 往巨石走、已經貼到巨石：這一幀當作沒按移動鍵（站在巨石前面被擋住，不往裡面擠）。
+            //   巨石滾過來撞她時，照原本「沒按鍵被巨石推」那一段（_externalPushTimer）被推著走。
+            float mv = moveInput;
+            if (Mathf.Abs(mv) > 0.05f && !BoulderPushKeyHeld && RollingRockVisual.IsBlockingPlayer(this, mv)) mv = 0f;
+
             if (isOnSlope)
             {
                 // ★★★ 核心修復：在斜坡上關閉 Unity PhysX 重力！
                 rb.useGravity = false;
 
-                if (Mathf.Abs(moveInput) > 0.05f)
+                if (Mathf.Abs(mv) > 0.05f)
                 {
                     // 玩家主動按鍵移動：貼合斜坡移動並疊加逆風阻力
-                    Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
+                    Vector3 moveDir = new Vector3(Mathf.Sign(mv), 0, 0);
                     Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
-                    float slopeSpeed = finalSpeed * Mathf.Abs(moveInput);
+                    float slopeSpeed = finalSpeed * Mathf.Abs(mv);
 
                     // ★1001 狼咬住的向下拖曳：沿「坡面往下」的方向疊加一段速度。
                     //   ・方向用 world down 投影到坡面，所以是真正的順坡向下，不是粗暴的世界 −Y
@@ -1817,10 +1849,10 @@ public class PlayerMovement : MonoBehaviour
                 // 平地、空中或水下：開啟正常重力
                 rb.useGravity = true;
 
-                float targetX = (moveInput * finalSpeed) + windOffset;
+                float targetX = (mv * finalSpeed) + windOffset;
 
                 // 夾角推移緩衝：如果玩家在平地受到巨石撞擊且未按移動鍵，順應巨石推力平滑滑動
-                if (Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer > 0f)
+                if (Mathf.Abs(mv) <= 0.05f && _externalPushTimer > 0f)
                 {
                     _externalPushTimer -= Time.deltaTime;
                     targetX = (_externalPushVelocity.x * 0.85f) + windOffset;
@@ -1843,7 +1875,7 @@ public class PlayerMovement : MonoBehaviour
                 // ★1001 平地／空中／水下也記錄同一個語意的值（見 CommandedHorizontalSpeed 的說明）
                 CommandedHorizontalSpeed = targetVelocity.x;
 
-                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(mv) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     targetVelocity.y = 0f;
                 }
@@ -2234,6 +2266,8 @@ public class PlayerMovement : MonoBehaviour
         foreach (RaycastHit hit in hits)
         {
             if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
+            // ★1115 巨石的 Shift 是「推」，不是抓起來拉（抓住會把巨石變成 kinematic、掛到她身上，巨石挑戰會當成被收回重置）
+            if (IsBoulderCollider(hit.collider)) continue;
             if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
                 // 優先抓取帶有 Rigidbody 的根物件
@@ -2315,7 +2349,8 @@ public class PlayerMovement : MonoBehaviour
             Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
             if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
             if (hit.collider == null || hit.collider.isTrigger) continue;
-            // ★1115 要按 Shift 才能推的石頭（沒抓著時）是堵牆，風推要停；其他可推物維持原本「不算障礙」
+            if (IsBoulderCollider(hit.collider)) continue;   // ★1115 巨石擋不擋由 RollingRockVisual.IsBlockingPlayer 用實際碰撞形狀判斷（這裡的射線會提早 0.4 米停住）
+            // ★1115 要按 Shift 才能推的方塊石頭（沒抓著時）是堵牆，風推要停；其他可推物維持原本「不算障礙」
             if (IsPushableObject(hit.collider.gameObject, hit.collider)
                 && !(pulledObject == null && ShiftPushRock.IsShiftOnly(hit.collider.gameObject, hit.collider))) continue;
             if (hit.normal.x * normalSignNeeded > 0.15f) return true;
@@ -2974,6 +3009,9 @@ public class PlayerMovement : MonoBehaviour
         if (go == null && col == null) return false;
         if (go != null && (go == gameObject || go.transform.IsChildOf(transform))) return false;
         if (col != null && (col == playerCollider || col.transform.IsChildOf(transform))) return false;
+
+        // ★1115 沒按 Shift：巨石不算可推物件（不播推的動畫，靠近只會被擋住）
+        if (!BoulderPushKeyHeld && (IsBoulderCollider(col) || (go != null && go.GetComponentInParent<RollingRockVisual>() != null))) return false;
 
         // 1. 直接 Tag 檢測
         if (go != null && go.CompareTag("Pushable")) return true;

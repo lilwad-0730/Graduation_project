@@ -108,17 +108,19 @@ public static class SubtitleShowcaseRecorder
     [MenuItem("Tools/字幕展示錄影")]
     public static void RecordAll() { Begin(0, SubtitleShowcaseRunner.Levels.Length - 1, true); }
 
-    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/荒原")] static void Dry0() { Begin(0, 0, false); }
-    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/水下")] static void Dry1() { Begin(1, 1, false); }
-    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/玻璃館")] static void Dry2() { Begin(2, 2, false); }
-    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/棉花堡")] static void Dry3() { Begin(3, 3, false); }
-    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/廢墟")] static void Dry4() { Begin(4, 4, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/1 棉花堡")] static void Dry0() { Begin(0, 0, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/2 墜落")] static void Dry1() { Begin(1, 1, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/3 廢墟")] static void Dry2() { Begin(2, 2, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/4 荒原")] static void Dry3() { Begin(3, 3, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/5 水下")] static void Dry4() { Begin(4, 4, false); }
+    [MenuItem("Tools/字幕展示錄影（試跑，不錄影）/6 玻璃館")] static void Dry5() { Begin(5, 5, false); }
 
-    [MenuItem("Tools/字幕展示錄影（單關）/荒原")] static void One0() { Begin(0, 0, true); }
-    [MenuItem("Tools/字幕展示錄影（單關）/水下")] static void One1() { Begin(1, 1, true); }
-    [MenuItem("Tools/字幕展示錄影（單關）/玻璃館")] static void One2() { Begin(2, 2, true); }
-    [MenuItem("Tools/字幕展示錄影（單關）/棉花堡")] static void One3() { Begin(3, 3, true); }
-    [MenuItem("Tools/字幕展示錄影（單關）/廢墟")] static void One4() { Begin(4, 4, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/1 棉花堡")] static void One0() { Begin(0, 0, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/2 墜落")] static void One1() { Begin(1, 1, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/3 廢墟")] static void One2() { Begin(2, 2, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/4 荒原")] static void One3() { Begin(3, 3, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/5 水下")] static void One4() { Begin(4, 4, true); }
+    [MenuItem("Tools/字幕展示錄影（單關）/6 玻璃館")] static void One5() { Begin(5, 5, true); }
 
     [MenuItem("Tools/字幕展示錄影（中止）")]
     public static void Abort()

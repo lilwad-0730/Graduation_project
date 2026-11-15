@@ -22,6 +22,7 @@ using TMPro;
 ///
 /// ★1020 M：「後面的關卡需要的地方都幫我補上類似的教學」→ 再補五張（同樣的線色、她的造型、比例）：
 ///   ・廢墟　Hints/Ruins_Push：按住 D，把巨石推上坡、推到光那裡（修毅「回頭看狼」圖的右邊、同一條地線）。
+///     ★1115 推巨石改成要按住 Shift → 這個位置改用 Hints/Ruins_PushShift（SHIFT＋D），山坡腳前面再放一張同樣的圖。
 ///   ・荒原　Hints/Desert_Bird：鳥抖一下就要衝下來；按住 S 硬撐，鳥啄不動、彈開（掩體帶結束、開始有鳥的空地前）。
 ///   ・水下　Hints/Swim_Air_light：光圈縮小＝氣快沒了；碰到光球、撿到日誌，光圈撐開（W／S 圖下面）。
 ///   ・水下　Hints/Swim_Notes_light：撿到三張日誌，擋路的大石頭才會散開（大石頭左邊；石頭散掉後收起來）。
@@ -208,6 +209,7 @@ public class LineHintDirector : MonoBehaviour
                 if (lb == null) { wait += Time.unscaledDeltaTime; yield return null; }
             }
             PlaceRuinsPush(lb, behindZ);
+            PlaceRuinsShiftPush(FindAnyObjectByType<BoulderChallengeController>(), behindZ);
         }
 
         // ── 5　★1020 玻璃館：鏡牆後、第一根燭火前「碰到每一根燭火，黑影變小、消失」──
@@ -227,8 +229,10 @@ public class LineHintDirector : MonoBehaviour
     // ★1020 廢墟推巨石
     private static void PlaceRuinsPush(RuinsLookBackHint lb, float behindZ)
     {
-        Texture2D mine = Resources.Load<Texture2D>("Hints/Ruins_Push");
-        if (mine == null) { Debug.LogWarning("【線條畫提示】★1020 找不到 Hints/Ruins_Push，廢墟推巨石的圖沒放"); return; }
+        // ★1115 推巨石改成要按住 Shift：這張也換成「SHIFT＋D」的圖（原本只畫 D 的 Ruins_Push.png 留著沒刪）
+        const string RuinsPushRes = "Hints/Ruins_PushShift";
+        Texture2D mine = Resources.Load<Texture2D>(RuinsPushRes);
+        if (mine == null) { Debug.LogWarning("【線條畫提示】★1020 找不到 " + RuinsPushRes + "，廢墟推巨石的圖沒放"); return; }
         float w = mine.width / PxPerMeter, h = mine.height / PxPerMeter;
         Vector3 anchor; float hisW, hisH;
         Texture2D his = Resources.Load<Texture2D>("Hints/LookBackKey");
@@ -243,13 +247,83 @@ public class LineHintDirector : MonoBehaviour
         // 兩張的底邊對齊（修毅的圖底下就是地線），放在他右邊
         float bottom = anchor.y - hisH * 0.5f;
         Vector3 pos = new Vector3(anchor.x + hisW * 0.5f + 1.2f + w * 0.5f, bottom + h * 0.5f, Mathf.Max(anchor.z, behindZ));
-        LineHintSign s = LineHintSign.Create("LineHint_廢墟推巨石", "Hints/Ruins_Push", pos, w);
+        LineHintSign s = LineHintSign.Create("LineHint_廢墟推巨石", RuinsPushRes, pos, w);
         s.bobAmplitude = 0f;            // 跟修毅的圖並排
         s.verticalRange = 14f;
         s.appearFar = 22f;
         s.appearFull = 12f;
         s.fadeOutStart = 9f;
         s.fadeOutEnd = 20f;
+    }
+
+    // ★1115 廢墟山坡前：「按住 SHIFT＋D，把巨石推上坡」（推巨石改成要按住 Shift，山坡腳前面再提醒一次）
+    //   位置：從巨石起點往右找第一段坡（地面坡度超過 20°）＝坡腳；圖放在坡腳左邊 1.5 米，底邊離平地 6 米（跟推巨石那張差不多高，在巨石上方看得到）
+    private const float RuinsShiftHintLift = 6f;
+
+    private static void PlaceRuinsShiftPush(BoulderChallengeController bc, float behindZ)
+    {
+        Texture2D tex = Resources.Load<Texture2D>("Hints/Ruins_PushShift");
+        if (tex == null) { Debug.LogWarning("【線條畫提示】★1115 找不到 Hints/Ruins_PushShift，山坡前按 Shift 推巨石的圖沒放"); return; }
+        if (!TryFindRuinsSlopeFoot(bc, out float footX, out float groundY))
+        {
+            Debug.LogWarning("【線條畫提示】★1115 廢墟：從巨石起點往右找不到山坡，山坡前按 Shift 推巨石的圖沒放");
+            return;
+        }
+        float w = tex.width / PxPerMeter, h = tex.height / PxPerMeter;
+        Vector3 pos = new Vector3(footX - 1.5f - w * 0.5f, groundY + RuinsShiftHintLift + h * 0.5f, behindZ);
+        LineHintSign s = LineHintSign.Create("LineHint_廢墟山坡Shift推巨石", "Hints/Ruins_PushShift", pos, w);
+        s.bobAmplitude = 0f;
+        s.verticalRange = 14f;
+        s.appearFar = 22f;
+        s.appearFull = 12f;
+        s.fadeOutStart = 9f;
+        s.fadeOutEnd = 20f;
+    }
+
+    /// <summary>從巨石起點（Boulder Spawn，沒有就用巨石本身）往右每 0.5 米往下打，第一個坡度超過 20° 的地面＝坡腳。</summary>
+    private static bool TryFindRuinsSlopeFoot(BoulderChallengeController bc, out float footX, out float groundY)
+    {
+        footX = groundY = 0f;
+        Transform start = bc != null ? bc.BoulderSpawnPoint : null;
+        if (start == null)
+        {
+            RollingRockVisual rock = FindAnyObjectByType<RollingRockVisual>();
+            if (rock == null) return false;
+            start = rock.transform;
+        }
+        // 起點只比巨石起點高 12 米：再往上會先打到整片廢墟上方的 Area_Ruined（實心的大方塊，頂面約 −109.5），量錯地面
+        float topY = start.position.y + 12f;
+        bool haveFlat = false;
+        for (float x = start.position.x; x < start.position.x + 150f; x += 0.5f)
+        {
+            if (!TryGroundBelow(new Vector3(x, topY, 0f), 40f, out RaycastHit hit)) continue;
+            float angle = Vector3.Angle(Vector3.up, hit.normal);
+            if (angle < 5f) { groundY = hit.point.y; haveFlat = true; continue; }
+            if (angle > 20f && haveFlat)
+            {
+                footX = x;
+                Debug.Log($"【線條畫提示】★1115 廢墟山坡腳 x={footX:F1}、平地 y={groundY:F2}（坡度 {angle:F1}°，{hit.collider.name}）");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>往下打到的第一個地面（略過 Trigger、玩家、巨石、狼）。</summary>
+    private static bool TryGroundBelow(Vector3 origin, float dist, out RaycastHit best)
+    {
+        best = default;
+        RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, dist, ~0, QueryTriggerInteraction.Ignore);
+        float bestD = float.MaxValue;
+        foreach (RaycastHit h in hits)
+        {
+            Collider c = h.collider;
+            if (c == null) continue;
+            if (c.GetComponentInParent<PlayerMovement>() != null || c.GetComponentInParent<RollingRockVisual>() != null
+                || c.GetComponentInParent<WolfEnemy>() != null) continue;
+            if (h.distance < bestD) { bestD = h.distance; best = h; }
+        }
+        return bestD < float.MaxValue;
     }
 
     // ★1020 荒原的鳥

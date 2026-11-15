@@ -18,19 +18,21 @@ public class SubtitleShowcaseRunner : MonoBehaviour
         public string scene;     // Assets/Scenes/{scene}.unity
         public string title;     // 左上角小標題
         public string clip;      // 輸出檔名（不含副檔名）
-        public LevelDef(string sc, string t, string c) { scene = sc; title = t; clip = c; }
+        public bool fall;        // 廢墟開場的雲層墜落：不搬玩家、不關機關，照真實流程從開場錄到落地
+        public LevelDef(string sc, string t, string c, bool f = false) { scene = sc; title = t; clip = c; fall = f; }
     }
 
     public static readonly LevelDef[] Levels =
     {
-        new LevelDef("desert", "荒原", "clip1_desert"),
-        new LevelDef("underwater", "水下", "clip2_underwater"),
-        new LevelDef("dark glasses", "玻璃館", "clip3_glasshall"),
-        new LevelDef("CottonCastle", "棉花堡", "clip4_cottoncastle"),
-        new LevelDef("Ruined", "廢墟", "clip5_ruined"),
+        new LevelDef("CottonCastle", "棉花堡", "clip1_cottoncastle"),
+        new LevelDef("Ruined", "墜落", "clip2_fall", true),
+        new LevelDef("Ruined", "廢墟", "clip3_ruined"),
+        new LevelDef("desert", "荒原", "clip4_desert"),
+        new LevelDef("underwater", "水下", "clip5_underwater"),
+        new LevelDef("dark glasses", "玻璃館", "clip6_glasshall"),
     };
 
-    public const string OutputDir = "C:/Users/andyw/Desktop/字幕展示";
+    public const string OutputDir = "C:/Users/andyw/Desktop/processing project/ai project/字幕展示/new edited";
 
     // 由編輯器端（SubtitleShowcaseRecorder，Assets/Editor）在 InitializeOnLoad 時掛上；Runner 放在非 Editor 資料夾才能 AddComponent
     public static System.Action<string> LogHook;
@@ -133,6 +135,7 @@ public class SubtitleShowcaseRunner : MonoBehaviour
         Application.runInBackground = true;
         _sceneName = SceneManager.GetActiveScene().name;
         if (_sceneName != def.scene) { Hook_Log("!!! 目前場景是 " + _sceneName + "，不是預期的 " + def.scene); Hook_LevelFinished(false); yield break; }
+        if (def.fall) { yield return RunFall(def); yield break; }
         yield return new WaitForSecondsRealtime(1.5f);
 
         GameObject pgo = GameObject.FindGameObjectWithTag("Player");
@@ -206,6 +209,55 @@ public class SubtitleShowcaseRunner : MonoBehaviour
             Hook_StopRecorder();
             yield return new WaitForSecondsRealtime(1.0f);
         }
+        Hook_LevelFinished(!_sceneChanged);
+    }
+
+    // 墜落：場景一開始玩家就在墜落通道裡，Play 一開就開錄，全程不干預（旁白由 RuinsFallCinematics 自己播），落地起身後收尾
+    IEnumerator RunFall(LevelDef def)
+    {
+        BuildOverlay(def.title);
+        SetBlack(0f);
+        if (FocusHook != null) FocusHook();
+        _recStart = Time.unscaledTime;
+        if (record)
+        {
+            string path = OutputDir + "/" + def.clip;
+            if (System.IO.File.Exists(path + ".mp4")) System.IO.File.Delete(path + ".mp4");
+            if (!Hook_StartRecorder(path)) { Hook_Log("!!! Recorder 啟動失敗"); Hook_LevelFinished(false); yield break; }
+            _recStart = Time.unscaledTime;
+        }
+        LogEv("錄影開始（墜落，照真實流程）");
+        StartCoroutine(TitleRoutine());
+
+        PlayerMovement pm = null;
+        RuinsFallCinematics rfc = null;
+        float t0 = Time.time;
+        while (Time.time - t0 < 5f && (pm == null || rfc == null))
+        {
+            if (pm == null) { var pgo = GameObject.FindGameObjectWithTag("Player"); if (pgo != null) pm = pgo.GetComponent<PlayerMovement>(); }
+            if (rfc == null) rfc = FindFirstObjectByType<RuinsFallCinematics>();
+            yield return null;
+        }
+        if (pm == null || rfc == null) { Hook_Log("!!! 找不到玩家或 RuinsFallCinematics"); Hook_StopRecorder(); Hook_LevelFinished(false); yield break; }
+
+        // 旁白全長：開始墜落後 firstLineDelay 秒第一句，之後每句接 lineGap
+        float narr = rfc.firstLineDelay;
+        for (int i = 0; i < rfc.lines.Length; i++)
+            if (rfc.lines[i] != null && rfc.lines[i].clip != null) narr += rfc.lines[i].clip.length + (i < rfc.lines.Length - 1 ? rfc.lineGap : 0f);
+        float fadeOut = rfc.subtitleStyleSource != null && rfc.subtitleStyleSource.subtitleStyle != null ? rfc.subtitleStyleSource.subtitleStyle.fadeOut : 0.6f;
+
+        while (!pm.IsInControlledFall && Time.time - t0 < 8f) yield return null;
+        float fallStart = Time.time;
+        LogEv("開始墜落，旁白預計 " + narr.ToString("F1") + " 秒播完");
+        while (pm.IsInControlledFall && Time.time - fallStart < 60f) yield return null;
+        LogEv("落地（墜落 " + (Time.time - fallStart).ToString("F1") + " 秒）");
+        float end = Mathf.Max(Time.time + 3.0f, fallStart + narr + fadeOut + 0.9f);
+        while (Time.time < end) yield return null;
+
+        yield return Fade(_blackGroup, 0f, 1f, 0.7f);
+        yield return new WaitForSeconds(0.3f);
+        LogEv("收尾，停止錄影");
+        if (record) { Hook_StopRecorder(); yield return new WaitForSecondsRealtime(1.0f); }
         Hook_LevelFinished(!_sceneChanged);
     }
 
