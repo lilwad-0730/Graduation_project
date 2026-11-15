@@ -112,7 +112,7 @@ public class FallSwayFX : MonoBehaviour
         float fade = fadeInSeconds <= 0.01f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / fadeInSeconds));
         float build = 0.7f + 0.3f * Mathf.Clamp01(t / Mathf.Max(0.1f, buildUpSeconds));
         float settle = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_pm.FallLandingK / Mathf.Max(0.1f, settleStartK)));   // 接近地面→0
-        float amp = intensity * fade * build * settle;
+        float amp = intensity * MotionComfort.Scale * fade * build * settle;   // ★1115 動態強度（減少晃動）
         if (amp <= 0.001f) return;
 
         float s = _seed;

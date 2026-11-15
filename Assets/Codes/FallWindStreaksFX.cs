@@ -156,7 +156,7 @@ public class FallWindStreaksFX : MonoBehaviour
         float t = _pm.ControlledFallSeconds;
         float fade = fadeInSeconds <= 0.01f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / fadeInSeconds));
         float settle = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_pm.FallLandingK / 0.6f));   // 接近地面→0
-        float amp = intensity * fade * settle;
+        float amp = intensity * MotionComfort.Scale * fade * settle;   // ★1115 動態強度（減少晃動）
 
         // 依鏡頭視野調整：線從畫面底下外面生出，寬度＝畫面寬
         float halfH = _cam.orthographic ? _cam.orthographicSize : 15f;

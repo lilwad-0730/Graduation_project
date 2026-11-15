@@ -972,6 +972,9 @@ public class CameraTargetXFollower : MonoBehaviour
     [Tooltip("上下相連的墜落背景圖合併成一個範圍給鏡頭用，鏡頭才能連續跟著主角、不會換張時整頁跳。取消勾選＝回到原本只看單張")]
     public bool mergeStackedFallingBackgrounds = true;
 
+    [Tooltip("打勾＝編輯器裡廢墟每秒印一大段 [RuinsCamera] 鏡頭邊界數字（除錯用，會把 Console 洗滿）。預設關")]
+    public bool verboseRuinsCameraLog = false;
+
     /// <summary>把跟 fb 左右對得上、上下相接或重疊的墜落背景一路併起來（只用來算鏡頭 Y 的上下界）。</summary>
     private Bounds MergeStackedFallingBounds(Bounds fb)
     {
@@ -1249,7 +1252,8 @@ public class CameraTargetXFollower : MonoBehaviour
         }
 
         #if UNITY_EDITOR
-        if (!isDesertScene && playerY <= ruinedZoneThresholdY && Time.frameCount % 60 == 0)
+        // ★1115 這段每秒洗 9 行 Console，會把真正的警告淹掉：加開關，預設關（要看廢墟鏡頭邊界時勾 verboseRuinsCameraLog）
+        if (verboseRuinsCameraLog && !isDesertScene && playerY <= ruinedZoneThresholdY && Time.frameCount % 60 == 0)
         {
             Debug.Log($"[RuinsCamera]\nPlayerX = {rawX:F2}\nRawCameraX = {rawX:F2}\nBackgroundMinX = {minBoundX:F2}\nBackgroundMaxX = {maxBoundX:F2}\nHalfWidth = {halfWidth:F2}\nMinCameraX = {minCamX:F2}\nMaxCameraX = {maxCamX:F2}\nFinalCameraX = {finalCameraX:F2}");
         }

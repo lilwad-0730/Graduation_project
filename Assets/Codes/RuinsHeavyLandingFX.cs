@@ -75,7 +75,7 @@ public class RuinsHeavyLandingFX : MonoBehaviour
         if (!enableFX) return;
         float k = Mathf.Clamp(impactSpeed / 14f, 0.5f, 1.4f);
         _kickT = 0f;
-        _kickAmp = kickMeters * k;
+        _kickAmp = kickMeters * k * MotionComfort.Scale;   // ★1115 動態強度（減少晃動）：鏡頭頓挫跟著縮，塵土是畫面內的粒子不算晃動
         if (enableDust) EmitDust(k);
         Debug.Log($"[重落地] 落地速度 {impactSpeed:F1} 米／秒，鏡頭頓 {_kickAmp:F2} 公尺、塵土 {Mathf.RoundToInt(dustCount * k)} 顆");
     }
