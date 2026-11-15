@@ -254,7 +254,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         //    ★1023 荒原要先拿到光球才能硬撐（DesertOrbDirector）：拿到之前按 S 沒有作用，風只能靠岩柱躲。
         if (holdToPetrify && IsPetrifyAllowedInCurrentScene() && DesertOrbDirector.BraceAllowed)
         {
-            bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow);
+            bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow) || PadInput.DownHeld;   // ★1115 手把搖桿下
             if (holding && !isPetrified)
             {
                 EnsureComponents();

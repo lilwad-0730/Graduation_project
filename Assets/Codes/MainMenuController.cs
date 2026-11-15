@@ -171,14 +171,15 @@ public class MainMenuController : MonoBehaviour
             ClearKeyboardSelection();
         }
 
-        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) MoveSelection(+1);
-        else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) MoveSelection(-1);
-        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
+        int padStep = PadInput.MenuStep;   // ★1115 手把：搖桿／十字鍵上下、A 確定、Start 返回
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S) || padStep > 0) MoveSelection(+1);
+        else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W) || padStep < 0) MoveSelection(-1);
+        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space) || PadInput.JumpDown)
         {
             if (_kbIndex < 0) MoveSelection(+1);   // 還沒選過就先選第一個，再按一次確定
             else ActivateSelected();
         }
-        else if (Input.GetKeyDown(KeyCode.Escape))
+        else if (Input.GetKeyDown(KeyCode.Escape) || PadInput.BackDown)
         {
             if (_backFocus != null) _backFocus.Focus();
         }

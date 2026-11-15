@@ -152,6 +152,8 @@ public class CameraTargetXFollower : MonoBehaviour
     /// 過場（CinematicOverride）、墜落等模式完全不受影響。
     /// </summary>
     public static Vector2 AmbientLookOffset;
+    /// <summary>★1115 落地衝擊的鏡頭晃動量（RuinsHeavyLandingFX 寫、這裡疊在最後；平常 0）。</summary>
+    public static Vector2 ImpactShakeOffset;
 
     // ★1027 廢墟背景板是階梯狀的（山坡左邊的背景比較矮）：這一幀鏡頭中心最高能到哪，畫面上緣才不會超出背景圖。
     //   float.MaxValue＝不限制。只限制上方，下方照舊（推巨石的鏡頭下沉不受影響）。
@@ -770,6 +772,8 @@ public class CameraTargetXFollower : MonoBehaviour
     {
         UpdatePositionCore();
         StepBlend();   // ★1011 有鏡頭過渡時，把算好的位置與大小從舊的慢慢混過去
+        // ★1115 落地衝擊的鏡頭晃動：疊在最後（過渡之後），每次都是從頭重算位置所以不會累加；平常是 0，沒有任何影響
+        if (ImpactShakeOffset.sqrMagnitude > 0.000001f) transform.position += new Vector3(ImpactShakeOffset.x, ImpactShakeOffset.y, 0f);
         // ★1028 特寫結束、還原的過渡也走完了，才把鏡頭阻尼還回去（還原途中維持 0，鏡頭不會拖在後面）
         if (_overrideFollowTuned && !isOverridden && !_blendActive) EndOverrideFollowTuning();
     }
@@ -964,6 +968,38 @@ public class CameraTargetXFollower : MonoBehaviour
         }
     }
 
+    [Header("★1115 墜落鏡頭")]
+    [Tooltip("上下相連的墜落背景圖合併成一個範圍給鏡頭用，鏡頭才能連續跟著主角、不會換張時整頁跳。取消勾選＝回到原本只看單張")]
+    public bool mergeStackedFallingBackgrounds = true;
+
+    [Tooltip("打勾＝編輯器裡廢墟每秒印一大段 [RuinsCamera] 鏡頭邊界數字（除錯用，會把 Console 洗滿）。預設關")]
+    public bool verboseRuinsCameraLog = false;
+
+    /// <summary>把跟 fb 左右對得上、上下相接或重疊的墜落背景一路併起來（只用來算鏡頭 Y 的上下界）。</summary>
+    private Bounds MergeStackedFallingBounds(Bounds fb)
+    {
+        Bounds merged = fb;
+        bool changed = true;
+        int guard = 0;
+        while (changed && guard++ < 16)
+        {
+            changed = false;
+            for (int i = 0; i < _fallingBoundsList.Count; i++)
+            {
+                Bounds b = _fallingBoundsList[i];
+                bool sameColumn = Mathf.Abs(b.center.x - merged.center.x) < Mathf.Max(2f, merged.extents.x * 0.25f);
+                bool touches = b.min.y <= merged.max.y + 0.6f && b.max.y >= merged.min.y - 0.6f;
+                bool already = b.min.y >= merged.min.y - 0.01f && b.max.y <= merged.max.y + 0.01f;
+                if (sameColumn && touches && !already)
+                {
+                    merged.Encapsulate(b);
+                    changed = true;
+                }
+            }
+        }
+        return merged;
+    }
+
     private void ApplyFallingModePosition(Bounds fb, Vector3 playerPos, bool instant)
     {
         float camX = fb.center.x;
@@ -985,8 +1021,12 @@ public class CameraTargetXFollower : MonoBehaviour
 
         float targetY = playerPos.y + fallingCameraYOffset;
         float halfHeight = currentOrthoSize;
-        float minY = fb.min.y + halfHeight;
-        float maxY = fb.max.y - halfHeight;
+        // ★1115 墜落背景是好幾張圖上下疊起來，原本鏡頭只被關在「主角目前那一張」裡；每一張剛好等於一個畫面高，
+        //   結果鏡頭在每張裡完全不動、主角從畫面頂掉到底，換張時鏡頭整頁瞬間跳（實測一次跳 12 公尺、一次 20 公尺）。
+        //   改成把上下相連的幾張合併起來算範圍，鏡頭就能連續跟著主角。
+        Bounds yb = mergeStackedFallingBackgrounds ? MergeStackedFallingBounds(fb) : fb;
+        float minY = yb.min.y + halfHeight;
+        float maxY = yb.max.y - halfHeight;
 
         if (minY <= maxY)
         {
@@ -994,7 +1034,7 @@ public class CameraTargetXFollower : MonoBehaviour
         }
         else
         {
-            targetY = fb.center.y;
+            targetY = yb.center.y;
         }
 
         if (instant || !Application.isPlaying)
@@ -1212,7 +1252,8 @@ public class CameraTargetXFollower : MonoBehaviour
         }
 
         #if UNITY_EDITOR
-        if (!isDesertScene && playerY <= ruinedZoneThresholdY && Time.frameCount % 60 == 0)
+        // ★1115 這段每秒洗 9 行 Console，會把真正的警告淹掉：加開關，預設關（要看廢墟鏡頭邊界時勾 verboseRuinsCameraLog）
+        if (verboseRuinsCameraLog && !isDesertScene && playerY <= ruinedZoneThresholdY && Time.frameCount % 60 == 0)
         {
             Debug.Log($"[RuinsCamera]\nPlayerX = {rawX:F2}\nRawCameraX = {rawX:F2}\nBackgroundMinX = {minBoundX:F2}\nBackgroundMaxX = {maxBoundX:F2}\nHalfWidth = {halfWidth:F2}\nMinCameraX = {minCamX:F2}\nMaxCameraX = {maxCamX:F2}\nFinalCameraX = {finalCameraX:F2}");
         }

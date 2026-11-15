@@ -232,7 +232,7 @@ public class PlayerShield : MonoBehaviour, IResettable
         }
 
         // 按 Q 發動
-        if (Input.GetKeyDown(shieldKey) || Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(shieldKey) || Input.GetKeyDown(KeyCode.Q) || PadInput.ShieldDown)   // ★1115 手把 B
         {
             if (petrification != null && petrification.isPetrified)
             {
