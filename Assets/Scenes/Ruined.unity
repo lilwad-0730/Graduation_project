@@ -5111,6 +5111,19 @@ Transform:
   - {fileID: 1415987088}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &850440953
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &852219067
 GameObject:
   m_ObjectHideFlags: 0
@@ -8647,19 +8660,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!134 &1404051650
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ' (Instance) (Instance)'
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1 &1415987087
 GameObject:
   m_ObjectHideFlags: 0
@@ -9477,6 +9477,11 @@ MonoBehaviour:
   matchVisibleBody: 1
   slopeTouchMaxPull: 3.6
   heldPullReturnSpeed: 1.2
+  matchFlatPushOnSlope: 1
+  flatPushCalibSeconds: 0.3
+  flatPushAlongSmooth: 6
+  flatPushGraceSeconds: 0.3
+  pullShrinkExtraSpeed: 3
   useMeshSilhouette: 1
   silhouetteRefreshSeconds: 0.05
   boulderAcceleration: 12
@@ -9496,6 +9501,9 @@ MonoBehaviour:
   idleFlatBrake: 4
   releaseBrake: 6
   slopeIdleMinAngle: 6
+  idleRollUseGravity: 1
+  idleRollGravityScale: 1
+  idleRollMaxSpeed: 6
   debugPushGapLog: 0
 --- !u!1 &1488007601
 GameObject:
@@ -11565,6 +11573,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!134 &1784949770
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance) (Instance) (Instance)'
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &1792095774
 GameObject:
   m_ObjectHideFlags: 0
@@ -18278,7 +18299,7 @@ GameObject:
   - component: {fileID: 2103394475}
   - component: {fileID: 2103394479}
   m_Layer: 0
-  m_Name: spritesheet-table-360-360 (1)_0
+  m_Name: Lever
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18291,7 +18312,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2103394474}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 850440953}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -18654,7 +18675,7 @@ PrefabInstance:
     - target: {fileID: 632722414381505080, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: m_Material
       value: 
-      objectReference: {fileID: 1404051650}
+      objectReference: {fileID: 1784949770}
     - target: {fileID: 745830173811474750, guid: 22a6e0d0eccb0c349aa6d95f0f62ef0a, type: 3}
       propertyPath: respawnSFX
       value: 
