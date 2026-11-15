@@ -243,6 +243,16 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool isPushing = false;
     private float _collisionPushableTimer = 0f;
 
+    [Header("★1115 推巨石要按住 Shift")]
+    [Tooltip("打勾＝按住 Shift 才會推巨石（rock-new）；沒按 Shift 走到巨石旁只會被擋住，巨石不動。\n" +
+             "只管巨石，其他 Pushable 物件（箱子）照原本：碰到就推、按 Shift 抓住拉。取消＝巨石也是碰到就推")]
+    public bool requireShiftToPushBoulder = true;
+
+    /// <summary>★1115 這一刻可以推巨石嗎（按住左或右 Shift；關掉 requireShiftToPushBoulder 時永遠可以）。</summary>
+    public bool BoulderPushKeyHeld => !requireShiftToPushBoulder || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+    private static bool IsBoulderCollider(Collider col) => col != null && col.GetComponentInParent<RollingRockVisual>() != null;
+
     [Header("🕯️ 點燃燭火動作")]
     [Tooltip("PlayerAnimator 裡點燃動作的 State 名稱")]
     public string lightCandleAnimState = "LightCandle";
@@ -1701,17 +1711,22 @@ public class PlayerMovement : MonoBehaviour
                 windOffset = 0f;
             }
 
+            // ★1115 沒按 Shift 往巨石走、已經貼到巨石：這一幀當作沒按移動鍵（站在巨石前面被擋住，不往裡面擠）。
+            //   巨石滾過來撞她時，照原本「沒按鍵被巨石推」那一段（_externalPushTimer）被推著走。
+            float mv = moveInput;
+            if (Mathf.Abs(mv) > 0.05f && !BoulderPushKeyHeld && RollingRockVisual.IsBlockingPlayer(this, mv)) mv = 0f;
+
             if (isOnSlope)
             {
                 // ★★★ 核心修復：在斜坡上關閉 Unity PhysX 重力！
                 rb.useGravity = false;
 
-                if (Mathf.Abs(moveInput) > 0.05f)
+                if (Mathf.Abs(mv) > 0.05f)
                 {
                     // 玩家主動按鍵移動：貼合斜坡移動並疊加逆風阻力
-                    Vector3 moveDir = new Vector3(Mathf.Sign(moveInput), 0, 0);
+                    Vector3 moveDir = new Vector3(Mathf.Sign(mv), 0, 0);
                     Vector3 slopeDir = Vector3.ProjectOnPlane(moveDir, groundHit.normal).normalized;
-                    float slopeSpeed = finalSpeed * Mathf.Abs(moveInput);
+                    float slopeSpeed = finalSpeed * Mathf.Abs(mv);
 
                     // ★1001 狼咬住的向下拖曳：沿「坡面往下」的方向疊加一段速度。
                     //   ・方向用 world down 投影到坡面，所以是真正的順坡向下，不是粗暴的世界 −Y
@@ -1789,10 +1804,10 @@ public class PlayerMovement : MonoBehaviour
                 // 平地、空中或水下：開啟正常重力
                 rb.useGravity = true;
 
-                float targetX = (moveInput * finalSpeed) + windOffset;
+                float targetX = (mv * finalSpeed) + windOffset;
 
                 // 夾角推移緩衝：如果玩家在平地受到巨石撞擊且未按移動鍵，順應巨石推力平滑滑動
-                if (Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer > 0f)
+                if (Mathf.Abs(mv) <= 0.05f && _externalPushTimer > 0f)
                 {
                     _externalPushTimer -= Time.deltaTime;
                     targetX = (_externalPushVelocity.x * 0.85f) + windOffset;
@@ -1815,7 +1830,7 @@ public class PlayerMovement : MonoBehaviour
                 // ★1001 平地／空中／水下也記錄同一個語意的值（見 CommandedHorizontalSpeed 的說明）
                 CommandedHorizontalSpeed = targetVelocity.x;
 
-                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(moveInput) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+                if (isGrounded && !isJumping && !isUnderwater && Mathf.Abs(mv) <= 0.05f && _externalPushTimer <= 0f && Mathf.Abs(windOffset) <= 0.01f && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     targetVelocity.y = 0f;
                 }
@@ -2206,6 +2221,8 @@ public class PlayerMovement : MonoBehaviour
         foreach (RaycastHit hit in hits)
         {
             if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
+            // ★1115 巨石的 Shift 是「推」，不是抓起來拉（抓住會把巨石變成 kinematic、掛到她身上，巨石挑戰會當成被收回重置）
+            if (IsBoulderCollider(hit.collider)) continue;
             if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
                 // 優先抓取帶有 Rigidbody 的根物件
@@ -2287,6 +2304,7 @@ public class PlayerMovement : MonoBehaviour
             Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
             if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
             if (hit.collider == null || hit.collider.isTrigger) continue;
+            if (IsBoulderCollider(hit.collider)) continue;   // ★1115 巨石擋不擋由 RollingRockVisual.IsBlockingPlayer 用實際碰撞形狀判斷（這裡的射線會提早 0.4 米停住）
             if (IsPushableObject(hit.collider.gameObject, hit.collider)) continue;
             if (hit.normal.x * normalSignNeeded > 0.15f) return true;
         }
@@ -2942,6 +2960,9 @@ public class PlayerMovement : MonoBehaviour
         if (go == null && col == null) return false;
         if (go != null && (go == gameObject || go.transform.IsChildOf(transform))) return false;
         if (col != null && (col == playerCollider || col.transform.IsChildOf(transform))) return false;
+
+        // ★1115 沒按 Shift：巨石不算可推物件（不播推的動畫，靠近只會被擋住）
+        if (!BoulderPushKeyHeld && (IsBoulderCollider(col) || (go != null && go.GetComponentInParent<RollingRockVisual>() != null))) return false;
 
         // 1. 直接 Tag 檢測
         if (go != null && go.CompareTag("Pushable")) return true;

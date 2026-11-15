@@ -830,8 +830,72 @@ public class RollingRockVisual : MonoBehaviour
         else if (ActivelyPushed == this) ActivelyPushed = null;
     }
 
+    // ───────── ★1115 推巨石要按住 Shift：沒按就只會被擋住 ─────────
+    private static readonly List<RollingRockVisual> s_Rocks = new List<RollingRockVisual>();
+    private float _unheldTouchTime = -999f;   // 最近一次「她往巨石走、但沒按 Shift」碰到巨石的時間
+
+    private void OnEnable()
+    {
+        if (!s_Rocks.Contains(this)) s_Rocks.Add(this);
+    }
+
+    /// <summary>
+    /// ★1115 她往 dirX 走的話，是不是已經貼到巨石（差不到 margin 公尺）。用石頭真正碰的形狀算：
+    /// 她身上的推石圓頭膠囊（★1018；沒有就用碰撞框）對石頭的球，3D 距離（她在 z≈-0.9、石頭在 z=0 也算進去）。
+    /// 射線式的擋牆判定會提早約 0.4 米停住，像撞到空氣牆，所以巨石不走那一套。
+    /// </summary>
+    public static bool IsBlockingPlayer(PlayerMovement pm, float dirX, float margin = 0.06f)
+    {
+        if (pm == null || Mathf.Abs(dirX) < 0.01f) return false;
+        if (!TryGetPlayerCapsule(pm, out Vector3 c, out float halfSeg, out float r)) return false;
+        foreach (RollingRockVisual rock in s_Rocks)
+        {
+            if (rock == null || !rock.isActiveAndEnabled) continue;
+            Vector3 p = rock.transform.position;
+            if (Mathf.Sign(p.x - c.x) != Mathf.Sign(dirX)) continue;   // 石頭不在她要走的那一邊
+            float y = Mathf.Clamp(p.y, c.y - halfSeg, c.y + halfSeg);
+            float gap = Vector3.Distance(p, new Vector3(c.x, y, c.z)) - r - rock.radius;
+            if (gap <= margin) return true;
+        }
+        return false;
+    }
+
+    /// <summary>她跟巨石碰撞用的膠囊（世界座標）：中心、中間直線段的半長、半徑。</summary>
+    private static bool TryGetPlayerCapsule(PlayerMovement pm, out Vector3 center, out float halfSeg, out float radiusWorld)
+    {
+        center = Vector3.zero;
+        halfSeg = radiusWorld = 0f;
+        Vector3 ls = pm.transform.lossyScale;
+        RockPushCapsuleTag tag = pm.GetComponent<RockPushCapsuleTag>();
+        if (tag != null && tag.capsule != null && tag.capsule.enabled)
+        {
+            CapsuleCollider cap = tag.capsule;
+            center = pm.transform.TransformPoint(cap.center);
+            radiusWorld = cap.radius * Mathf.Max(Mathf.Abs(ls.x), Mathf.Abs(ls.z));
+            halfSeg = Mathf.Max(0f, cap.height * Mathf.Abs(ls.y) * 0.5f - radiusWorld);
+            return true;
+        }
+        Collider col = pm.GetComponent<Collider>();
+        if (col == null) return false;
+        Bounds b = col.bounds;
+        center = b.center;
+        radiusWorld = b.extents.x;
+        halfSeg = Mathf.Max(0f, b.extents.y - radiusWorld);
+        return true;
+    }
+
+    /// <summary>★1115 她沒按 Shift 頂著巨石：巨石不能被她頂走（只拿掉「離開她那個方向」的速度，自己往她滾過來照舊）。</summary>
+    private void HoldAgainstUnheldPush()
+    {
+        if (rb == null || rb.isKinematic || _lastPlayerTouch == null || Time.time - _unheldTouchTime > 0.1f) return;
+        float away = Mathf.Sign(transform.position.x - _lastPlayerTouch.position.x);
+        Vector3 v = rb.linearVelocity;
+        if (v.x * away > 0f) rb.linearVelocity = new Vector3(0f, Mathf.Min(v.y, 0f), 0f);
+    }
+
     private void OnDisable()
     {
+        s_Rocks.Remove(this);
         // static 會跨場景留著，物件被關掉／場景卸載時一定要清掉，否則相機會對著不存在的石頭下沉
         SetPushedState(false);
         IsRollingBack = false;
@@ -1148,8 +1212,8 @@ public class RollingRockVisual : MonoBehaviour
     {
         if (rb != null && rb.isKinematic) _everPushed = false;   // ★1017 被收回樓頂（拉桿重置）＝重新開始，還沒被推過
         if (IsRollingBack) { _idleSince = -1f; RollbackStep(); return; }   // ★1002 失敗下滾：整段接管，不跑玩家推石邏輯
-        if (rb == null || rb.isKinematic || _pusher == null) { SetPushedState(false); IdleStep(); return; }
-        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; SetPushedState(false); IdleStep(); return; }
+        if (rb == null || rb.isKinematic || _pusher == null) { SetPushedState(false); IdleStep(); HoldAgainstUnheldPush(); return; }
+        if (Time.time - _lastPushTime > PushGraceTime) { _pusher = null; SetPushedState(false); IdleStep(); HoldAgainstUnheldPush(); return; }
         if (!_pusher.isGrounded) { SetPushedState(false); return; }   // 空中不接續推力
         _idleSince = -1f;   // ★1017 有人在推（或剛放手 0.15 秒的緩衝內）：不算放手
 
@@ -1157,7 +1221,8 @@ public class RollingRockVisual : MonoBehaviour
         float input = _pusher.CurrentMoveInput;
         float dirToRock = Mathf.Sign(transform.position.x - _pusher.transform.position.x);
         float gap = Mathf.Abs(transform.position.x - _pusher.transform.position.x) - radius;
-        bool stillPushing = Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f;
+        bool stillPushing = Mathf.Abs(input) > 0.05f && Mathf.Sign(input) == dirToRock && gap < 1.5f
+                            && _pusher.BoulderPushKeyHeld;   // ★1115 推的途中放開 Shift＝不推了（巨石照放手煞車）
         SetPushedState(stillPushing);   // ★1001 只回報狀態，不改變任何既有判定
 
         // ★0920 重量感：目標速度不再「當幀直接指定」，改成用加速度／減速度逼近。
@@ -1292,7 +1357,11 @@ public class RollingRockVisual : MonoBehaviour
                 }
 
                 // ★0919 人在空中就不算在推：跳起來、從石頭上跳開時，巨石不該跟著動
-                if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f && pm.isGrounded)
+                // ★1115 要按住 Shift 才推；沒按就記下「被她頂著」（FixedUpdate 不讓她頂走巨石），然後照沒按鍵那樣把巨石的速度傳給她
+                bool towardRock = Mathf.Abs(pm.CurrentMoveInput) > 0.05f
+                                  && Mathf.Sign(pm.CurrentMoveInput) == Mathf.Sign(transform.position.x - pm.transform.position.x);
+                if (towardRock && !pm.BoulderPushKeyHeld) _unheldTouchTime = Time.time;
+                if (Mathf.Abs(pm.CurrentMoveInput) > 0.05f && pm.isGrounded && pm.BoulderPushKeyHeld)
                 {
                     // ★0920 這裡只登記「玩家想把石頭推到多快」，實際速度統一在 FixedUpdate 用加速度逼近。
                     //   原本在這裡直接指定速度，等於每幀瞬間同步，石頭才會完全沒有重量。
