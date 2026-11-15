@@ -60,6 +60,7 @@ public static class HangRescue
         try
         {
             s_dataPath = Application.persistentDataPath;
+            SaveSlot.EnsureInit();   // 主執行緒先讀好存檔槽，之後背景執行緒重開遊戲時才能帶同一個槽
             s_startMs = NowMs();
             Beat();
             string[] args = Environment.GetCommandLineArgs();
@@ -133,7 +134,7 @@ public static class HangRescue
             int next = upSec > 120 ? 1 : s_chain + 1;          // 這次跑超過 2 分鐘才卡住＝新的一段，次數重算
             if (!string.IsNullOrEmpty(s_exePath) && next <= 3)
             {
-                ProcessStartInfo psi = new ProcessStartInfo(s_exePath, "-hangrestart " + next) { UseShellExecute = false };
+                ProcessStartInfo psi = new ProcessStartInfo(s_exePath, "-hangrestart " + next + SaveSlot.RelaunchArgs()) { UseShellExecute = false };
                 Process.Start(psi);
             }
         }

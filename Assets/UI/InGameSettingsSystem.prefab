@@ -1592,7 +1592,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.316, y: 1.12}
+  m_Size: {x: 2.4, y: 2}
   m_EdgeRadius: 0
 --- !u!114 &5696997971104052697
 MonoBehaviour:
@@ -1608,6 +1608,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VolumeSliderHandle
   slider: {fileID: 7254235185618839002}
   inputCamera: {fileID: 0}
+  pressSound: {fileID: 8300000, guid: de4a4d7a5f813374fa03d04c215c4fe6, type: 3}
+  pressVolume: 0.5
 --- !u!1 &1958052847987106187
 GameObject:
   m_ObjectHideFlags: 0
@@ -1884,7 +1886,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 9.968362, y: 0.18075536}
+  m_Size: {x: 9.968362, y: 1.6}
   m_EdgeRadius: 0
 --- !u!114 &7254235185618839002
 MonoBehaviour:
@@ -2143,7 +2145,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.316, y: 1.12}
+  m_Size: {x: 2.4, y: 2}
   m_EdgeRadius: 0
 --- !u!114 &2790357731737820967
 MonoBehaviour:
@@ -2159,6 +2161,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VolumeSliderHandle
   slider: {fileID: 1922676870664399494}
   inputCamera: {fileID: 0}
+  pressSound: {fileID: 8300000, guid: de4a4d7a5f813374fa03d04c215c4fe6, type: 3}
+  pressVolume: 0.5
 --- !u!1 &2249060574144943014
 GameObject:
   m_ObjectHideFlags: 0
@@ -3751,7 +3755,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.316, y: 1.12}
+  m_Size: {x: 2.4, y: 2}
   m_EdgeRadius: 0
 --- !u!114 &7038769409918601274
 MonoBehaviour:
@@ -3767,6 +3771,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VolumeSliderHandle
   slider: {fileID: 1224724523685862288}
   inputCamera: {fileID: 0}
+  pressSound: {fileID: 8300000, guid: de4a4d7a5f813374fa03d04c215c4fe6, type: 3}
+  pressVolume: 0.5
 --- !u!1 &4586809302567003696
 GameObject:
   m_ObjectHideFlags: 0
@@ -4043,7 +4049,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 9.968362, y: 0.18075536}
+  m_Size: {x: 9.968362, y: 1.6}
   m_EdgeRadius: 0
 --- !u!114 &1224724523685862288
 MonoBehaviour:
@@ -8232,7 +8238,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 9.968362, y: 0.18075536}
+  m_Size: {x: 9.968362, y: 1.6}
   m_EdgeRadius: 0
 --- !u!114 &1922676870664399494
 MonoBehaviour:

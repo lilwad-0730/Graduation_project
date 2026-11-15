@@ -537,7 +537,8 @@ public class PlayerRespawnSystem : MonoBehaviour
             //   墜落中先不理它，落地之後一切照舊；墜落超過 25 秒還沒落地才當作掉出地圖，照舊判死。
             PlayerMovement fallPm = GetComponent<PlayerMovement>();
             if (fallPm == null) fallPm = GetComponentInParent<PlayerMovement>();
-            if (fallPm != null && fallPm.IsInControlledFall && fallPm.ControlledFallSeconds < 25f)
+            // ★1114 廢墟墜落拉長到約 31 秒（ruinsFallDurationScale 3＋通道加長兩格），上限從 25 放寬到 50，留足餘裕
+            if (fallPm != null && fallPm.IsInControlledFall && fallPm.ControlledFallSeconds < 50f)
             {
                 Debug.Log($"【墜落免死】固定速度墜落中碰到「{other.name}」（{other.transform.position.ToString("F1")}），玩家在 {transform.position.ToString("F1")}；墜落中不算死，要落地才算。已墜落 {fallPm.ControlledFallSeconds:F1} 秒");
                 return;

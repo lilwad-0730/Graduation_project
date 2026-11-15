@@ -212,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
     /// 當前主角是否處於完全鎖定操作狀態
     /// </summary>
     public bool IsControlLocked =>
+        _standUpLocked ||
         _candleLightLocked ||
         isCutsceneFrozen ||
         freezeHorizontal ||
@@ -522,6 +523,8 @@ public class PlayerMovement : MonoBehaviour
     public float ruinsFallBrakeDistance = 9f;
     [Tooltip("落地前的速度（米／秒）")]
     public float ruinsFallLandingSpeed = 6f;
+    [Tooltip("★1114 墜落時間拉長倍率：1＝原本（約 7 秒）、1.5＝約 10.5 秒、2＝約 14 秒。速度與加速度一起照比例縮放，掉的距離不變，所以只是變慢、不會掉到別的地方。要再調長短只改這個數字")]
+    [Min(0.25f)] public float ruinsFallDurationScale = 1.5f;
     [Tooltip("★1024 墜落開始後這幾秒內不做「接近地面放慢」。從平台邊進墜落區時腳下就有地面，會被誤判成快落地而一開始就慢下來")]
     public float ruinsFallBrakeGraceSeconds = 0.6f;
     [Tooltip("★1024 固定速度墜落開始後幾秒播落下動畫（每次都一樣，不看滯空計時）")]
@@ -570,7 +573,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!controlledRuinsFall || rb == null || rb.isKinematic || _controlledFall) return;
         _controlledFall = true;
-        _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed);
+        _controlledFallVy = -Mathf.Abs(ruinsFallStartSpeed) / Mathf.Max(0.25f, ruinsFallDurationScale);
         _controlledFallStartTime = Time.time;
         _savedDamping = rb.linearDamping;
         _savedInterpolation = rb.interpolation;
@@ -603,7 +606,10 @@ public class PlayerMovement : MonoBehaviour
         if (!_waitingForRuinsLanding) { EndControlledFall("墜落旗標已解除"); return; }
 
         float dt = Time.fixedDeltaTime;
-        float target = -Mathf.Abs(ruinsFallTerminalSpeed);
+        float durScale = Mathf.Max(0.25f, ruinsFallDurationScale);   // ★1114 速度除以倍率、加速度除以倍率平方 → 時間剛好乘倍率、距離不變
+        float terminalSpd = Mathf.Abs(ruinsFallTerminalSpeed) / durScale;
+        float landingSpd = Mathf.Abs(ruinsFallLandingSpeed) / durScale;
+        float target = -terminalSpd;
 
         // 離地面近就固定放慢到落地速度
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
@@ -624,13 +630,14 @@ public class PlayerMovement : MonoBehaviour
             {
                 float dist = Mathf.Max(0f, hit.distance - b.extents.y);
                 float k = Mathf.Clamp01(dist / Mathf.Max(0.1f, ruinsFallBrakeDistance));
-                target = -Mathf.Lerp(Mathf.Abs(ruinsFallLandingSpeed), Mathf.Abs(ruinsFallTerminalSpeed), k);
+                target = -Mathf.Lerp(landingSpd, terminalSpd, k);
                 _fallGroundSeen = hit.collider.name;
             }
             else _fallGroundSeen = "無";
         }
 
-        float rate = target < _controlledFallVy ? ruinsFallAcceleration : ruinsFallAcceleration * 2.5f;   // 加速慢慢來、減速稍快
+        float accel = ruinsFallAcceleration / (durScale * durScale);
+        float rate = target < _controlledFallVy ? accel : accel * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
         rb.linearVelocity = new Vector3(0f, _controlledFallVy, 0f);
@@ -641,6 +648,104 @@ public class PlayerMovement : MonoBehaviour
             _nextFallTelemetry = Time.time + 0.5f;
             Debug.Log($"【墜落遙測】t={ControlledFallSeconds:F1}s y={transform.position.y:F1} vy={rb.linearVelocity.y:F1} 目標={target:F1} 地面={_fallGroundSeen} timeScale={Time.timeScale:F2} 凍結={isCutsceneFrozen} 硬鎖={IsHardCutsceneLocked}");
         }
+    }
+
+    [Header("★1114 廢墟落地起身動作")]
+    [Tooltip("從天空掉到廢墟落地的那一刻播起身動作（趴在地上 → 撐起 → 跌回 → 再站起來），播完才能操作")]
+    public bool playStandUpOnRuinsLanding = true;
+    [Tooltip("PlayerAnimator 裡起身動作的 State 名稱")]
+    public string standUpAnimState = "StandUp";
+    [Tooltip("從落下姿勢淡入起身動作的秒數")]
+    public float standUpBlendInSeconds = 0.2f;
+    [Tooltip("起身播完後淡回站立的秒數")]
+    public float standUpBlendOutSeconds = 0.3f;
+    [Tooltip("起身時頭部中心至少要比地板高多少（世界單位）。原動畫有一段額頭貼地，套到主角比例會穿進地面；低於這個高度就把胸口、脖子往上抬")]
+    public float standUpHeadClearance = 0.25f;
+    [Tooltip("為了讓頭不穿地，胸口最多往上抬幾度")]
+    [Range(0f, 60f)] public float standUpMaxChestLift = 35f;
+    [Tooltip("為了讓頭不穿地，脖子最多往上抬幾度")]
+    [Range(0f, 90f)] public float standUpMaxNeckLift = 60f;
+    private bool _standUpAnim;
+    private bool _standUpLocked;
+    private float _standUpEndTime;
+    private float _standUpFloorY;
+
+    /// <summary>★1114 正在播落地起身動作（播完前不能操作）。</summary>
+    public bool IsStandingUp => _standUpAnim;
+
+    private void BeginRuinsStandUp()
+    {
+        if (!playStandUpOnRuinsLanding || animator == null || isUnderwater) return;
+        float len = 0f;
+        if (animator.runtimeAnimatorController != null)
+            foreach (AnimationClip c in animator.runtimeAnimatorController.animationClips)
+                if (c != null && c.name == "Standing Up") { len = c.length; break; }
+        if (len <= 0.01f) { Debug.LogWarning("[起身動作] PlayerAnimator 裡找不到 Standing Up 片段，略過起身"); return; }
+        try
+        {
+            animator.CrossFadeInFixedTime(standUpAnimState, Mathf.Max(0f, standUpBlendInSeconds), 0, 0f);
+            currentAnimState = standUpAnimState;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[起身動作] 找不到 State '{standUpAnimState}'：{e.Message}");
+            return;
+        }
+        _standUpAnim = true;
+        _standUpLocked = true;
+        _standUpEndTime = Time.time + len;
+        // 地板高度：從身體中心往下打射線找腳下地面；找不到就用碰撞體底部
+        Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
+        _standUpFloorY = col != null ? col.bounds.min.y : transform.position.y;
+        if (col != null && Physics.Raycast(col.bounds.center, Vector3.down, out RaycastHit hit, col.bounds.extents.y + 3f, ~0, QueryTriggerInteraction.Ignore)
+            && hit.collider != col && !hit.collider.transform.IsChildOf(transform))
+            _standUpFloorY = hit.point.y;
+        if (rb != null && !rb.isKinematic) rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        Debug.Log($"[起身動作] 廢墟落地，播起身 {len:F2} 秒，期間鎖住操作");
+    }
+
+    /// <summary>
+    /// ★1114 起身時頭不穿地：動畫算完之後（LateUpdate）檢查頭部中心是否低於 地板＋clearance，
+    /// 低於就先抬胸口、不夠再抬脖子，剛好抬到需要的高度（各有角度上限）。每格依當下姿勢重算，跟著動畫連續變化。
+    /// </summary>
+    public static void LiftHeadAboveFloor(Animator anim, float floorY, float clearance, float maxChestDeg, float maxNeckDeg)
+    {
+        if (anim == null || !anim.isHuman) return;
+        Transform head = anim.GetBoneTransform(HumanBodyBones.Head);
+        Transform neck = anim.GetBoneTransform(HumanBodyBones.Neck);
+        Transform chest = anim.GetBoneTransform(HumanBodyBones.UpperChest);
+        if (chest == null) chest = anim.GetBoneTransform(HumanBodyBones.Chest);
+        if (head == null || neck == null) return;
+        float targetY = floorY + clearance;
+        if (head.position.y >= targetY) return;
+        if (chest != null) LiftPivotToward(chest, head, targetY, maxChestDeg);
+        if (head.position.y < targetY) LiftPivotToward(neck, head, targetY, maxNeckDeg);
+    }
+
+    /// <summary>以 pivot 為軸心、在垂直面內把 tip 往上轉，讓 tip 的高度到 targetY（最多轉 maxDeg 度）。</summary>
+    private static void LiftPivotToward(Transform pivot, Transform tip, float targetY, float maxDeg)
+    {
+        if (maxDeg <= 0f) return;
+        Vector3 v = tip.position - pivot.position;
+        float len = v.magnitude;
+        if (len < 1e-4f) return;
+        Vector3 axis = Vector3.Cross(v, Vector3.up);   // 垂直面的法線：繞它轉就是讓 v 往上抬
+        if (axis.sqrMagnitude < 1e-8f) return;
+        axis.Normalize();
+        float cur = Mathf.Asin(Mathf.Clamp(v.y / len, -1f, 1f)) * Mathf.Rad2Deg;
+        float want = Mathf.Asin(Mathf.Clamp((targetY - pivot.position.y) / len, -1f, 1f)) * Mathf.Rad2Deg;
+        float deg = Mathf.Clamp(want - cur, 0f, maxDeg);
+        if (deg <= 0.01f) return;
+        // 兩個方向都算，挑讓 tip 變高的那個（不依賴座標系左右手的正負號慣例）
+        Quaternion qa = Quaternion.AngleAxis(deg, axis), qb = Quaternion.AngleAxis(-deg, axis);
+        pivot.rotation = ((qa * v).y >= (qb * v).y ? qa : qb) * pivot.rotation;
+    }
+
+    /// <summary>★1114 中斷起身（重生、傳送、進水…），立刻放開操作。</summary>
+    public void CancelStandUp()
+    {
+        _standUpAnim = false;
+        _standUpLocked = false;
     }
 
     [Header("★1011 廢墟墜落特寫還給玩家")]
@@ -1158,7 +1263,10 @@ public class PlayerMovement : MonoBehaviour
             if (rb.linearVelocity.y <= 0.1f) isJumping = false;
 
             // ★★★ 關鍵修正：只要玩家落地踩到任何地面，自動解除掉落鎖定，恢復自由控制！
-            if (freezeHorizontal)
+            // ★1111 「繼續」把人直接放在廢墟存檔點時，瞬間移動偵測會先把 freezeHorizontal 清掉，但「等待廢墟落地」旗標還亮著，
+            //   原本只在 freezeHorizontal 時才解鎖，結果旗標永遠不熄：光球守護一直把光球補傳回 P12 → 光球飛行演出一直重播（無限迴圈）。
+            //   現在只要還在等落地、而且已經踩到廢墟地面，就算沒有 freezeHorizontal 也解鎖。
+            if (freezeHorizontal || _waitingForRuinsLanding)
             {
                 if (!_waitingForRuinsLanding || IsRuinsLandingGround(groundHit))
                 {
@@ -1392,6 +1500,17 @@ public class PlayerMovement : MonoBehaviour
                 }
                 _candleLightAnim = false;
                 _candleLightHold = false;
+                if (_standUpAnim) CancelStandUp();
+            }
+            else if (_standUpAnim)
+            {
+                // ★1114 廢墟落地起身：播完整段才放開操作、回到一般動作
+                if (Time.time < _standUpEndTime) targetAnim = standUpAnimState;
+                else
+                {
+                    CancelStandUp();
+                    targetAnim = hasHorizontalSpeed ? "Run" : "Idle";
+                }
             }
             else
             {
@@ -1455,6 +1574,8 @@ public class PlayerMovement : MonoBehaviour
                     // 奔跑 ↔ 站立 也用淡入淡出，停下來時不會像換圖片一樣瞬間跳成站姿
                     else if (currentAnimState == "Run" && targetAnim == "Idle") blend = runToIdleBlendSeconds;
                     else if (currentAnimState == "Idle" && targetAnim == "Run") blend = idleToRunBlendSeconds;
+                    // ★1114 起身播完淡回站立／奔跑，不是硬切
+                    else if (currentAnimState == standUpAnimState) blend = standUpBlendOutSeconds;
 
                     if (blend > 0.001f)
                     {
@@ -1783,6 +1904,10 @@ public class PlayerMovement : MonoBehaviour
 
     void LateUpdate()
     {
+        // ★1114 起身時頭不穿地（動畫已經套用完，這裡改骨頭會直接畫出來；下一幀動畫會重新覆蓋，不會累積）
+        if (_standUpAnim && animator != null)
+            LiftHeadAboveFloor(animator, _standUpFloorY, standUpHeadClearance, standUpMaxChestLift, standUpMaxNeckLift);
+
         // ==========================================
         // 【最高層級防破圖系統】確保玩家絕對不出界
         // ==========================================
@@ -2247,6 +2372,7 @@ public class PlayerMovement : MonoBehaviour
     public void WarpTo(Vector3 position)
     {
         EndControlledFall("被傳送");   // ★1012 重生／傳送一律把物理還給剛體
+        CancelStandUp();               // ★1114 起身中被傳送／重生：不要卡在鎖住操作
         transform.position = position;
         if (rb != null)
         {
@@ -2404,6 +2530,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         SetCameraFollow((smoothCameraY && cameraTarget != null) ? cameraTarget : this.transform);
+        if (wasRuinsLanding) BeginRuinsStandUp();   // ★1114 落地起身，播完才恢復操作
         Debug.Log($"【掉落解鎖】{reason}，玩家已落到廢墟地面，鏡頭還給玩家並恢復操作。");
         StartCoroutine(EnableRespawnWithDelay());
     }
