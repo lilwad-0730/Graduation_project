@@ -2359,6 +2359,7 @@ public class PlayerMovement : MonoBehaviour
             bool crate = IsShiftCrate(hit.collider.gameObject, hit.collider);
             if (cratesOnly && !crate) continue;
             if (crate && (hit.distance > crateGrabDistance || !isGrounded || isJumping || !IsPushableInFront(hit.collider, center, extents))) continue;   // 懸空抓不住
+            if (crate && !hit.collider.GetComponentInParent<MirrorCrate>().CanBeHeld) continue;   // ★1116 箱子正在往下掉：抓不住
             if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
                 // 優先抓取帶有 Rigidbody 的根物件

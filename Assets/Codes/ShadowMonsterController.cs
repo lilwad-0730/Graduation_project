@@ -454,10 +454,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private float _surgeStart = -999f;
     private float _knockStart = -999f, _knockDir;
     private float _knockDone, _knockDist;
-    private float _stunUntil = -999f;   // ★1116 被鏡光打中：定住到這個時間
-
-    /// <summary>★1116 被鏡子反射的燭光打中、定住中（不移動、不出爪）。</summary>
-    public bool IsStunned => Time.time < _stunUntil;
     private bool[] _beatDone;
     private int _beatPhase;            // 0＝沒有、1＝撲過來、2＝揮爪
     private float _beatPhaseStart;
@@ -1000,7 +996,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (_revealActive) return;   // ★登場運鏡期間主角是凍住的，不能被吃
         if (_finaleDash) return;     // ★最後衝刺只嚇人，不攻擊
         if (_nearMissActive) return; // ★1116 險些被抓的橋段：只嚇人，不攻擊
-        if (IsStunned) return;       // ★1116 被鏡光定住：不出爪
         if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
         if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
         {
@@ -2261,7 +2256,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _dirSpeed = -1f;
         _playerPrevX = float.NaN;
         _playerFwdSmooth = 0f;
-        _reliefStart = _surgeStart = _knockStart = _stunUntil = -999f;
+        _reliefStart = _surgeStart = _knockStart = -999f;
         _reliefAmount = 0f;
         _beatPhase = 0;
         _nearMissActive = false;
@@ -2300,28 +2295,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _knockDone = 0f;
         _knockDist = Mathf.Max(0f, distance);
         _knockDir = player != null && player.position.x >= transform.position.x ? -1f : 1f;   // 往遠離她的方向退
-    }
-
-    /// <summary>
-    /// ★1116 鏡光反擊：被玻璃牆反射的燭光打中。往後震退 knockback 公尺、定住 seconds 秒（不移動、不出爪），之後喘息幾秒。
-    /// 只在追逐中有效（懲罰、最後衝刺、消失中都不理）。回傳 true＝有打中。
-    /// </summary>
-    public bool StunByMirrorLight(float seconds, float knockback)
-    {
-        if (currentState != MonsterState.Chasing && currentState != MonsterState.Appearing) return false;
-        if (_finaleDash || _revealActive) return false;
-        _stunUntil = Time.time + Mathf.Max(0f, seconds);
-        StartKnockback(knockback);
-        StartRelief(1f);
-        _beatPhase = 0;
-        _nearMissActive = false;
-        PlayAnimationByName(hitAnimationName, true);
-        _hitAnimLockUntil = Time.time + Mathf.Max(0.3f, smoothShrinkDuration);
-        StartCoroutine(LockUntilHitAnimEnds());
-        PlayMonsterRoar(0.8f);
-        Shake(0.5f, 0.4f);
-        Debug.Log($"【追逐節奏】★1116 鏡光反擊：怪物被打中，震退 {knockback:F0} 公尺、定住 {seconds:F1} 秒");
-        return true;
     }
 
     private void StartRelief(float amount)
@@ -2494,7 +2467,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // 停著多久：點燭火（被鎖住）、橋段、重生、登場運鏡都不算她停著
         bool busy = IsPlayerLightingCandle() || CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time;
         UpdatePlayerProgress();
-        if (busy || _beatPhase != 0 || IsStunned || PlayerRespawnSystem.IsAnyRespawning || _revealActive) _lastProgressTime = Time.time;
+        if (busy || _beatPhase != 0 || PlayerRespawnSystem.IsAnyRespawning || _revealActive) _lastProgressTime = Time.time;
 
         // 1. 被燭火的光震退
         float kt = (Time.time - _knockStart) / Mathf.Max(0.05f, candleKnockbackSeconds);
@@ -2504,15 +2477,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             SetMonsterX(mx + _knockDir * (want - _knockDone));
             _knockDone = want;
             _dirSpeed = 0f;
-            return;
-        }
-
-        // 1b. ★1116 被鏡光定住：站著不動（受擊動作播完就停在待機）
-        if (IsStunned)
-        {
-            _dirSpeed = 0f;
-            PlayAnimationByName(idleAnimationName);
-            DebugLag = lag; DebugSpeed = 0f; DebugPace = "鏡光定住";
             return;
         }
 
@@ -2754,7 +2718,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (player == null || currentState == MonsterState.Devouring) return;
         if (_finaleDash) return;   // ★最後衝刺只嚇人，不攻擊
         if (_nearMissActive) return;   // ★1116 險些被抓的橋段：只嚇人，不攻擊
-        if (IsStunned) return;         // ★1116 被鏡光定住：不出爪
 
         float xDist = Mathf.Abs(transform.position.x - player.position.x);
 

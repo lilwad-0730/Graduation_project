@@ -27,6 +27,7 @@ using TMPro;
 ///   ・水下　Hints/Swim_Air_light：光圈縮小＝氣快沒了；碰到光球、撿到日誌，光圈撐開（W／S 圖下面）。
 ///   ・水下　Hints/Swim_Notes_light：撿到三張日誌，擋路的大石頭才會散開（大石頭左邊；石頭散掉後收起來）。
 ///   ・玻璃館 Hints/Glass_Candles_light：黑影追來，一路碰到每一根燭火，它就變小、消失（鏡牆後、第一根燭火前）。
+/// ★1116 玻璃館 Hints/Glass_CratePush_light：SHIFT＋D 把鏡箱推到玻璃牆邊、踩上去翻牆（鏡箱上方；取代畫面下方「按住 Shift 推拉箱子」的字）。
 /// ★1020 出現方式：測試檔寫一行 hints=page → 全部改成「翻頁」（LineHintSign.Style.PageTurn）；沒寫就是原本的淡入。
 ///
 /// 開關：LineHintDirector.Enabled＝false 就全部照舊（字回來、不放圖）。
@@ -215,6 +216,40 @@ public class LineHintDirector : MonoBehaviour
         // ── 5　★1020 玻璃館：鏡牆後、第一根燭火前「碰到每一根燭火，黑影變小、消失」──
         if (LaterLevels && FindAnyObjectByType<ShadowMonsterTriggerZone>() != null)
             PlaceGlassCandles(behindZ);
+
+        // ── 6　★1116 玻璃館：鏡箱上方「SHIFT＋D 把箱子推到牆邊、踩上去翻牆」──
+        if (LaterLevels)
+        {
+            MirrorCrate crate = FindAnyObjectByType<MirrorCrate>();
+            if (crate != null) PlaceGlassCrate(crate, behindZ);
+        }
+    }
+
+    // ★1116 玻璃館鏡箱：圖的地線放在箱子頂上方一點（箱子、她都不會擋到圖），左右以箱子為中心再往右挪一點
+    private const float CrateHintAboveTop = 0.6f;
+    private const float CrateHintGroundRow = 422f / 470f;   // 圖裡的地線（虛線）在第 422 列／共 470 列
+    private const float CrateHintOffsetX = 2f;   // 往右挪：圖左邊的 SHIFT 鍵不要疊在箱子前面的燭台上
+
+    private static void PlaceGlassCrate(MirrorCrate crate, float behindZ)
+    {
+        const string Res = "Hints/Glass_CratePush_light";
+        Texture2D tex = Resources.Load<Texture2D>(Res);
+        if (tex == null) { Debug.LogWarning("【線條畫提示】★1116 找不到 " + Res + "，鏡箱的圖沒放"); return; }
+        float w = tex.width / PxPerMeter, h = tex.height / PxPerMeter;
+        Collider col = crate.GetComponent<Collider>();
+        Bounds b = col != null ? col.bounds : new Bounds(crate.transform.position, Vector3.one * 2f);
+        float groundLineY = b.max.y + CrateHintAboveTop;
+        Vector3 pos = new Vector3(b.center.x + CrateHintOffsetX, groundLineY - h * 0.5f + h * CrateHintGroundRow, behindZ);
+        LineHintSign s = LineHintSign.Create("LineHint_玻璃館鏡箱", Res, pos, w);
+        s.glowColor = new Color(1f, 0.86f, 0.62f, 1f);   // 跟燭火那張一樣：暖光、深色星空裡淺色線
+        s.glowIdle = 0.12f;
+        s.glowLit = 0.38f;
+        s.bobAmplitude = 0.08f;
+        s.appearFar = 10f;    // ★1116 縮短：圖中心左邊 10 公尺才開始淡入（燭台附近），5 公尺內全亮（走到箱子前）
+        s.appearFull = 5f;
+        s.fadeOutStart = 10f;
+        s.fadeOutEnd = 20f;
+        Debug.Log($"【線條畫提示】★1116 玻璃館鏡箱的圖放在 ({pos.x:F1}, {pos.y:F1})，寬 {w:F1} 公尺");
     }
 
     private static void SetWaterGlow(LineHintSign s)
