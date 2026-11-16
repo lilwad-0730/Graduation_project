@@ -492,13 +492,31 @@ public class ContinueMenuButton : MonoBehaviour
     private Text _label;
     private float _nextCheck;
     private string _lastShown;
+    private bool _hasHome;
+    private Vector3 _homePos;
+    private float _homeSize;
 
     private void Update()
     {
         if (_btnGo == null || Time.unscaledTime < _nextCheck) return;
         _nextCheck = Time.unscaledTime + 0.25f;
         bool has = ProgressSave.HasSave;
-        if (_btnGo.activeSelf != has) _btnGo.SetActive(has);
+        // ★1117 只在「主選單首頁」顯示：鏡頭移去設定頁／製作名單頁、或按了開始正在轉場時，這顆螢幕前景的按鈕不能還浮在畫面上
+        bool home = true;
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            if (!_hasHome) { _hasHome = true; _homePos = cam.transform.position; _homeSize = cam.orthographicSize; }
+            else
+            {
+                float tol = Mathf.Max(0.05f, _homeSize * 0.05f);
+                home = (cam.transform.position - _homePos).sqrMagnitude < tol * tol && Mathf.Abs(cam.orthographicSize - _homeSize) < tol;
+            }
+        }
+        PixeLadder.EasyTransition.SceneTransitioner st = PixeLadder.EasyTransition.SceneTransitioner.Instance;
+        if (st != null && st.IsTransitioning) home = false;
+        bool show = has && home;
+        if (_btnGo.activeSelf != show) _btnGo.SetActive(show);
         if (has)
         {
             string t = "繼續　" + ProgressSave.Describe();

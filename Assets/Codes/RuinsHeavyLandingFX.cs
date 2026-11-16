@@ -19,9 +19,12 @@ public class RuinsHeavyLandingFX : MonoBehaviour
 
     [Header("鏡頭頓挫")]
     [Tooltip("最大下頓量（公尺）。鏡頭視野約 22 公尺高，1.5 約 7%，實測鏡頭阻尼會吃掉約一半")]
-    public float kickMeters = 1.5f;
+    public float kickMeters = 2.4f;   // ★1117 隊友反應落地力度不夠：1.5 → 2.4
     [Tooltip("衰減時間（秒）")]
-    public float kickSeconds = 0.75f;
+    public float kickSeconds = 1.3f;   // ★1117 0.75 → 1.3（多出來的是顫抖的尾巴）
+    [Tooltip("★1117 震顫的大小（占下頓量的比例）與頻率")]
+    public float tremorRatio = 0.28f;
+    public float tremorHz = 9f;
     [Tooltip("搖回來的頻率（赫茲）。低頻才不會被鏡頭阻尼抹平")]
     public float kickHz = 2.4f;
 
@@ -137,7 +140,12 @@ public class RuinsHeavyLandingFX : MonoBehaviour
         float u = _kickT / Mathf.Max(0.05f, kickSeconds);
         float env = Mathf.Exp(-5f * u);                                           // 衰減
         float osc = Mathf.Cos(_kickT * kickHz * 6.2832f);                          // 第一下往下頓
-        CameraTargetXFollower.ImpactShakeOffset = new Vector2(Mathf.Sin(_kickT * 31f) * 0.12f * env, -_kickAmp * env * osc);
+        // ★1117 震顫：頓挫之後疊一段中頻、慢慢衰減的顫抖（鏡頭阻尼會抹掉太快的抖動，所以用約 9 Hz、振幅大一點）
+        float tEnv = Mathf.Exp(-3.2f * u) * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_kickT / 0.04f));
+        float trem = _kickAmp * tremorRatio * tEnv;
+        float tx = Mathf.Sin(_kickT * tremorHz * 6.2832f) * trem * 0.8f;
+        float ty = Mathf.Sin(_kickT * tremorHz * 6.2832f * 1.31f + 1.3f) * trem * 0.55f;
+        CameraTargetXFollower.ImpactShakeOffset = new Vector2(tx, -_kickAmp * env * osc + ty);
     }
 
     private void EnsureDust()
