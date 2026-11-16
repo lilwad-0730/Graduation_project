@@ -232,6 +232,9 @@ public static class ProgressSave
         return scene;
     }
 
+    /// <summary>只有關卡名（例如「荒原」），主選單的「繼續」按鈕用。</summary>
+    public static string DescribeScene() { return SceneLabel(Load().scene); }
+
     public static string Describe()
     {
         Data d = Load();
@@ -432,6 +435,74 @@ public class ContinueMenuButton : MonoBehaviour
 {
     private void Start()
     {
+        if (BuildWorldButton()) return;   // ★1117 優先用跟其他選單一樣的美術框；找不到才退回舊的簡易按鈕
+        BuildOverlayButton();
+    }
+
+    // ★1117 主選單風格的「繼續」：複製「開始遊戲」的框與字型，放在它正上方一格（跟其他按鈕同間距），
+    //   是世界座標的物件，鏡頭移去設定頁／製作名單頁時自然看不到。滑鼠移上去微放大、字變亮；點下去 = 繼續。
+    private bool _world;
+    private SpriteRenderer _wSr;
+    private TMPro.TMP_Text _wTmp;
+    private GameObject _wTxtGo;
+    private Vector3 _wScale;
+    private Color _wTxtColor;
+
+    private bool BuildWorldButton()
+    {
+        GameObject start = GameObject.Find("menu_slection_start");
+        GameObject setting = GameObject.Find("menu_slection_setting");
+        GameObject text = GameObject.Find("Text_start");
+        if (start == null || setting == null || text == null) return false;
+        SpriteRenderer srcSr = start.GetComponent<SpriteRenderer>();
+        TMPro.TMP_Text srcTmp = text.GetComponent<TMPro.TMP_Text>();
+        if (srcSr == null || srcTmp == null) return false;
+
+        Vector3 step = start.transform.position - setting.transform.position;   // 按鈕之間的間距（往上）
+        step.z = 0f;
+
+        GameObject b = new GameObject("ContinueButtonFrame");
+        SceneManager.MoveGameObjectToScene(b, gameObject.scene);
+        b.transform.position = start.transform.position + step;
+        b.transform.localScale = start.transform.lossyScale;
+        _wScale = b.transform.localScale;
+        _wSr = b.AddComponent<SpriteRenderer>();
+        _wSr.sprite = srcSr.sprite;
+        _wSr.sharedMaterial = srcSr.sharedMaterial;
+        _wSr.color = srcSr.color;
+        _wSr.sortingLayerID = srcSr.sortingLayerID;
+        _wSr.sortingOrder = srcSr.sortingOrder;
+
+        _wTxtGo = Instantiate(text, text.transform.parent, true);
+        _wTxtGo.name = "Text_continue";
+        _wTxtGo.transform.position = text.transform.position + step;
+        _wTmp = _wTxtGo.GetComponent<TMPro.TMP_Text>();
+        _wTxtColor = _wTmp.color;
+        _wTmp.text = BuildLabel();
+        _btnGo = b;
+        _world = true;
+        return true;
+    }
+
+    private void WorldHoverAndClick()
+    {
+        if (_wSr == null || !_wSr.gameObject.activeInHierarchy) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
+        Vector3 mp = Input.mousePosition;
+        Vector3 wp = cam.ScreenToWorldPoint(new Vector3(mp.x, mp.y, Mathf.Abs(cam.transform.position.z)));
+        Bounds b = _wSr.bounds;
+        bool over = b.Contains(new Vector3(wp.x, wp.y, b.center.z));
+        float k = Mathf.Lerp(_wSr.transform.localScale.x / _wScale.x, over ? 1.04f : 1f, 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
+        _wSr.transform.localScale = _wScale * k;
+        if (_wTmp != null) _wTmp.color = over ? Color.Lerp(_wTxtColor, Color.white, 0.6f) : _wTxtColor;
+        if (over && Input.GetMouseButtonDown(0)) ProgressSave.Continue();
+    }
+
+    private static string BuildLabel() { return "繼續　" + ProgressSave.DescribeScene(); }
+
+    private void BuildOverlayButton()
+    {
         GameObject canvasGo = new GameObject("ContinueButtonCanvas");
         canvasGo.transform.SetParent(transform, false);
         Canvas canvas = canvasGo.AddComponent<Canvas>();
@@ -498,13 +569,14 @@ public class ContinueMenuButton : MonoBehaviour
 
     private void Update()
     {
+        if (_world) WorldHoverAndClick();
         if (_btnGo == null || Time.unscaledTime < _nextCheck) return;
         _nextCheck = Time.unscaledTime + 0.25f;
         bool has = ProgressSave.HasSave;
         // ★1117 只在「主選單首頁」顯示：鏡頭移去設定頁／製作名單頁、或按了開始正在轉場時，這顆螢幕前景的按鈕不能還浮在畫面上
         bool home = true;
         Camera cam = Camera.main;
-        if (cam != null)
+        if (!_world && cam != null)
         {
             if (!_hasHome) { _hasHome = true; _homePos = cam.transform.position; _homeSize = cam.orthographicSize; }
             else
@@ -517,7 +589,13 @@ public class ContinueMenuButton : MonoBehaviour
         if (st != null && st.IsTransitioning) home = false;
         bool show = has && home;
         if (_btnGo.activeSelf != show) _btnGo.SetActive(show);
-        if (has)
+        if (_world && _wTxtGo != null && _wTxtGo.activeSelf != show) _wTxtGo.SetActive(show);
+        if (has && _world)
+        {
+            string wt = BuildLabel();
+            if (wt != _lastShown) { _lastShown = wt; if (_wTmp != null) _wTmp.text = wt; }
+        }
+        else if (has)
         {
             string t = "繼續　" + ProgressSave.Describe();
             if (t != _lastShown) { _lastShown = t; if (_label != null) _label.text = t; }
