@@ -156,6 +156,36 @@ public class ShiftPushRock : MonoBehaviour
         Collider rc = _rockCols[0];
         if (rc == null) return;
         Bounds b = rc.bounds;
+
+        // ★ 沿著地形走：推到小山坡時，石頭底邊跟著前方地面升降（不然底邊會陷進坡面、卡死）。
+        //   在石頭「下一步」的底邊取 5 個點往下量地面，取最高的那個，把石頭底邊放在它上面一點點；每步最多升 0.12 公尺。
+        float stepX = vx * Time.fixedDeltaTime;
+        float groundTop = float.MinValue;
+        for (int i = 0; i < 5; i++)
+        {
+            float sx = b.min.x + 0.05f + (b.size.x - 0.1f) * (i / 4f) + stepX * 1.5f;
+            foreach (RaycastHit gh in Physics.RaycastAll(new Vector3(sx, b.min.y + 0.8f, b.center.z), Vector3.down, 2.0f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (gh.collider == null || gh.collider.isTrigger) continue;
+                if (gh.collider.transform.IsChildOf(transform)) continue;
+                if (gh.collider.GetComponentInParent<PlayerMovement>() != null) continue;
+                if (gh.normal.y < 0.5f) continue;   // 陡壁不算地面（由下面的擋牆處理）
+                if (gh.point.y > groundTop) groundTop = gh.point.y;
+            }
+        }
+        if (groundTop > float.MinValue)
+        {
+            float want = groundTop + carryLift;
+            float dy = want - b.min.y;
+            if (dy > 0.12f) dy = 0.12f;          // 往上：慢慢爬
+            else if (dy < -0.12f) dy = -0.12f;   // 往下：慢慢貼回
+            if (Mathf.Abs(dy) > 0.002f)
+            {
+                transform.position += Vector3.up * dy;
+                Physics.SyncTransforms();
+                b = rc.bounds;
+            }
+        }
         Vector3 half = new Vector3(b.extents.x * 0.98f, b.extents.y * 0.93f, b.extents.z * 0.98f);
         float dist = Mathf.Abs(vx) * Time.fixedDeltaTime + 0.03f;
         // 用「往前一小步之後會不會重疊」判斷（掃描式 BoxCast 抓不到「已經微微陷進去」的情況，實測 25 度坡會被一路推進去）
