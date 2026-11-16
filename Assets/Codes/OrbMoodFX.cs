@@ -19,7 +19,7 @@ using UnityEngine.SceneManagement;
 public class OrbMoodFX : MonoBehaviour
 {
     public static bool Enabled = true;
-    public static bool WolfFlashEnabled = true;
+    public static bool WolfFlashEnabled = false;   // ★1117 企劃不要：回頭逼退狼時的光球閃爍，預設關掉
     public static bool IdleCompanionEnabled = true;
     public static bool ConsoleOnDeathsEnabled = true;
 
