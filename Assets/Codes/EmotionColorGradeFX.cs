@@ -44,6 +44,9 @@ public class EmotionColorGradeFX : MonoBehaviour
     public static float ImpactDipDesaturate = -12f;
     public static float ImpactDipSeconds = 3f;
 
+    // ★1116 B8 呼吸：BreathPulseFX 每幀寫入的曝光微動（檔位，正負皆可），平常是 0
+    public static float ExposurePulse;
+
     /// <summary>目前這個效果打算輸出的飽和度（驗收／除錯用）。</summary>
     public static float CurrentSaturation;
 
@@ -136,7 +139,7 @@ public class EmotionColorGradeFX : MonoBehaviour
         CurrentSaturation = _sat;
 
         bool need = Mathf.Abs(_sat) > 0.4f || Mathf.Abs(_con) > 0.2f || _tintK > 0.01f || _coolK > 0.01f
-                    || _fall > 0.01f || dip > 0.01f;
+                    || _fall > 0.01f || dip > 0.01f || Mathf.Abs(ExposurePulse) > 0.002f;
         if (need)
         {
             if (!OpenPost()) return;
@@ -147,7 +150,7 @@ public class EmotionColorGradeFX : MonoBehaviour
             _ca.saturation.value = _sat + FallDesaturate * _fall + ImpactDipDesaturate * dip;
             _ca.contrast.value = _con + FallContrast * _fall;
             _ca.colorFilter.value = f;
-            _ca.postExposure.value = FallExposure * _fall + ImpactDipExposure * dip;
+            _ca.postExposure.value = FallExposure * _fall + ImpactDipExposure * dip + ExposurePulse;
             _vol.weight = 1f;
         }
         else if (_weOpenedPost || _vol.weight > 0f)
