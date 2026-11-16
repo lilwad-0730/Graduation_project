@@ -72,7 +72,8 @@ public class OrbMoodFX : MonoBehaviour
     private static void Ensure(Scene s)
     {
         if (!Enabled || !s.IsValid()) return;
-        if (!s.name.ToLowerInvariant().Contains("ruin")) return;
+        string n = s.name.ToLowerInvariant();
+        if (!(n.Contains("ruin") || n.Contains("desert"))) return;   // 廢墟與荒原
         if (FindFirstObjectByType<OrbMoodFX>() != null) return;
         new GameObject("[光球性格]").AddComponent<OrbMoodFX>();
     }
@@ -179,7 +180,8 @@ public class OrbMoodFX : MonoBehaviour
         _core.sortingOrder = best.sortingOrder + 1;
         _halo.sortingOrder = best.sortingOrder;
         _ring.sortingOrder = best.sortingOrder - 1;
-        Color c = best.color; c.a = 1f;
+        // ★實測：荒原是橘色背景，跟真光球同色的分身會融進去看不見，所以往白色拉 45%，亮一點才讀得出來
+        Color c = Color.Lerp(best.color, Color.white, 0.45f); c.a = 1f;
         _coreColor = c;
         _coreBaseScale = best.transform.lossyScale;
         if (_coreBaseScale.x < 0.01f) _coreBaseScale = Vector3.one * 0.5f;
@@ -299,17 +301,17 @@ public class OrbMoodFX : MonoBehaviour
                 target = new Vector3(pp.x - face * 0.85f, center.y + 0.95f + 0.07f * Mathf.Sin(_modeT * 1.1f) * comfort, pp.z - 0.2f);
                 targetVis = 0.55f;
                 flick = Mathf.Lerp(0.55f, 0.85f, br);
-                scaleMul = 0.8f;
+                scaleMul = 0.9f;
             }
             else
             {
                 // 繞著她慢慢飄：約 7 秒一圈，橢圓、略偏上
                 float ang = _modeT * 6.2832f / 7f;
                 float k = comfort;
-                target = new Vector3(center.x + Mathf.Cos(ang) * 1.5f, center.y + 0.7f + Mathf.Sin(ang) * 0.45f * k, pp.z - 0.2f);
-                targetVis = 0.85f;
-                flick = 0.8f + 0.2f * (0.5f + 0.5f * Mathf.Sin(_modeT * 2.1f));
-                scaleMul = 0.62f;
+                target = new Vector3(center.x + Mathf.Cos(ang) * 2.4f, center.y + 1.0f + Mathf.Sin(ang) * 0.7f * k, pp.z - 0.2f);
+                targetVis = 0.95f;
+                flick = 0.85f + 0.15f * (0.5f + 0.5f * Mathf.Sin(_modeT * 2.1f));
+                scaleMul = 1.0f;
             }
             _ring.transform.localScale = _coreBaseScale * 1.0f;
             SetA(_ring, _coreColor, 0f);
@@ -326,10 +328,10 @@ public class OrbMoodFX : MonoBehaviour
         Fade(targetVis, dt);
         transform.position = _pos;
         _core.transform.localScale = _coreBaseScale * scaleMul;
-        _halo.transform.localScale = _coreBaseScale * scaleMul * 2.4f;
+        _halo.transform.localScale = _coreBaseScale * scaleMul * 3.0f;
         float a = _vis * flick;
         SetA(_core, _coreColor, a);
-        SetA(_halo, _coreColor, a * 0.35f);
+        SetA(_halo, _coreColor, a * 0.5f);
         bool vis = _vis > 0.003f;
         if (_core.enabled != vis) SetVisible(vis);
         if (_ring.enabled && !vis) _ring.enabled = false;

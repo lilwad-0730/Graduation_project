@@ -68,7 +68,8 @@ public class RuinsFootprintFX : MonoBehaviour
     private static void Ensure(Scene s)
     {
         if (!Enabled || !s.IsValid()) return;
-        if (!s.name.ToLowerInvariant().Contains("ruin")) return;
+        string n = s.name.ToLowerInvariant();
+        if (!(n.Contains("ruin") || n.Contains("desert"))) return;   // 廢墟與荒原（沙地）
         if (FindFirstObjectByType<RuinsFootprintFX>() != null) return;
         new GameObject("[足跡]").AddComponent<RuinsFootprintFX>();
     }
@@ -156,17 +157,23 @@ public class RuinsFootprintFX : MonoBehaviour
         if (_col == null) return;
         Bounds b = _col.bounds;
         // 從腳邊往下打，找腳底下的地面（忽略觸發區、玩家自己）
-        Vector3 from = new Vector3(b.center.x, b.min.y + 0.4f, _pm.transform.position.z);
-        RaycastHit[] hits = Physics.RaycastAll(from, Vector3.down, 1.2f, ~0, QueryTriggerInteraction.Ignore);
+        // ★實測：荒原的地面是 z=0 上很薄的一片（厚度約 0.13），角色在 z=-0.3，只打角色那條 z 會整個射偏。
+        //   所以同時試「角色的 z」與「z=0」兩條線，取最近的一個。
+        float[] zs = { _pm.transform.position.z, 0f };
         float bestD = float.MaxValue;
         RaycastHit best = default;
         bool found = false;
-        for (int i = 0; i < hits.Length; i++)
+        for (int zi = 0; zi < zs.Length; zi++)
         {
-            Collider c = hits[i].collider;
-            if (c == null || c.transform.IsChildOf(_pm.transform)) continue;
-            if (hits[i].normal.y < 0.6f) continue;   // 牆壁不算
-            if (hits[i].distance < bestD) { bestD = hits[i].distance; best = hits[i]; found = true; }
+            Vector3 from = new Vector3(b.center.x, b.min.y + 0.6f, zs[zi]);
+            RaycastHit[] hits = Physics.RaycastAll(from, Vector3.down, 2.5f, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                Collider c = hits[i].collider;
+                if (c == null || c.transform.IsChildOf(_pm.transform)) continue;
+                if (hits[i].normal.y < 0.6f) continue;   // 牆壁不算
+                if (hits[i].distance < bestD) { bestD = hits[i].distance; best = hits[i]; found = true; }
+            }
         }
         if (!found) return;
 
