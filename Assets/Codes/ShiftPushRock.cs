@@ -86,7 +86,7 @@ public class ShiftPushRock : MonoBehaviour
             _wasGrabbed = grabbed;
             if (grabbed) OnGrabStart(); else OnGrabEnd();
         }
-        if (grabbed) return;   // 被玩家抓著（掛在玩家身上、kinematic）時不插手
+        if (grabbed) { GuardWhileGrabbed(); return; }   // 被玩家抓著（掛在玩家身上、kinematic）：只做「別穿牆」的保護
 
         // ★ 不能用 Freeze Position X：實測（玩家 6 公尺/秒撞上去）鎖 X 的石頭，玩家會直接穿過去（石頭很薄、玩家碰撞框很深，物理引擎改往 Z 方向分開）。
         //   改成：石頭站穩在地上就設成 kinematic（固定不動的實心障礙，玩家撞上去是牆）；按 Shift 抓取時 PlayerMovement 本來就會設 kinematic 掛到玩家身上。
@@ -119,8 +119,61 @@ public class ShiftPushRock : MonoBehaviour
     private Collider _matCol;
     private static PhysicsMaterial _slick;
 
+    // ★1116 抓著石頭「往石頭那邊推」推不動、「往後拉」卻正常的原因（實測確認）：
+    //   抓住的石頭是 kinematic 又保有自己的剛體，玩家身體往前推就是頂著一顆硬物，被它自己擋死（速度有、位置不動）。
+    //   做法：抓著的期間，玩家與這顆石頭互相不碰撞；石頭被牆／別的石頭擋住時，改由這裡把玩家的水平速度歸零（掃一小段，擋住就停），
+    //   所以仍然推不穿牆。放手時還原碰撞。
+    private Rigidbody _playerRb;
+    private Collider[] _ignoredPlayerCols;
+    private Collider[] _rockCols;
+
+    private void SetIgnorePlayer(bool ignore)
+    {
+        if (_rockCols == null) return;
+        if (!ignore)
+        {
+            if (_ignoredPlayerCols != null)
+                foreach (Collider pc in _ignoredPlayerCols)
+                    foreach (Collider rc in _rockCols)
+                        if (pc != null && rc != null) Physics.IgnoreCollision(pc, rc, false);
+            _ignoredPlayerCols = null; _playerRb = null; _rockCols = null;
+            return;
+        }
+        PlayerMovement pm = transform.parent != null ? transform.parent.GetComponentInParent<PlayerMovement>() : null;
+        if (pm == null) return;
+        _playerRb = pm.GetComponent<Rigidbody>();
+        _ignoredPlayerCols = pm.GetComponentsInChildren<Collider>();
+        foreach (Collider pc in _ignoredPlayerCols)
+            foreach (Collider rc in _rockCols)
+                if (pc != null && rc != null && !pc.transform.IsChildOf(transform)) Physics.IgnoreCollision(pc, rc, true);
+    }
+
+    private void GuardWhileGrabbed()
+    {
+        if (_playerRb == null || _rockCols == null || _rockCols.Length == 0) return;
+        float vx = _playerRb.linearVelocity.x;
+        if (Mathf.Abs(vx) < 0.01f) return;
+        Collider rc = _rockCols[0];
+        if (rc == null) return;
+        Bounds b = rc.bounds;
+        Vector3 half = new Vector3(b.extents.x * 0.98f, b.extents.y * 0.93f, b.extents.z * 0.98f);
+        float dist = Mathf.Abs(vx) * Time.fixedDeltaTime + 0.03f;
+        // 用「往前一小步之後會不會重疊」判斷（掃描式 BoxCast 抓不到「已經微微陷進去」的情況，實測 25 度坡會被一路推進去）
+        Vector3 next = b.center + (vx > 0f ? Vector3.right : Vector3.left) * dist;
+        foreach (Collider o in Physics.OverlapBox(next, half, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (o == null || o.isTrigger) continue;
+            if (o.transform.IsChildOf(transform)) continue;
+            if (o.GetComponentInParent<PlayerMovement>() != null) continue;
+            _playerRb.linearVelocity = new Vector3(0f, _playerRb.linearVelocity.y, _playerRb.linearVelocity.z);
+            return;
+        }
+    }
+
     private void OnGrabStart()
     {
+        _rockCols = GetComponentsInChildren<Collider>();
+        SetIgnorePlayer(true);
         if (_slick == null)
         {
             _slick = new PhysicsMaterial("ShiftRockSlick")
@@ -137,6 +190,7 @@ public class ShiftPushRock : MonoBehaviour
 
     private void OnGrabEnd()
     {
+        SetIgnorePlayer(false);
         if (_matCol != null) _matCol.sharedMaterial = _origMat;
         _matCol = null;
         _restTime = 0f;
@@ -172,6 +226,7 @@ public class ShiftPushRock : MonoBehaviour
     private void OnDisable()
     {
         // 這個規則被關掉（或物件被移除）：把我固定住的石頭放回去，變回可以直接推
+        SetIgnorePlayer(false);
         if (_rb != null && _weFroze && !IsGrabbed()) _rb.isKinematic = false;
         _weFroze = false;
     }
