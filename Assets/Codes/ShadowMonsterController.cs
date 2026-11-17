@@ -744,6 +744,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         ShadowChaseCamera chaseCam = GetComponent<ShadowChaseCamera>();
         if (chaseCam == null) chaseCam = gameObject.AddComponent<ShadowChaseCamera>();
         chaseCam.ctrl = this;
+
+        // ★1116 眼罩透出的紅光、最後一根燭火前的熄燈
+        if (GetComponent<ShadowMonsterEyeGlow>() == null) gameObject.AddComponent<ShadowMonsterEyeGlow>();
+        if (GetComponent<GlassFinaleBlackout>() == null) gameObject.AddComponent<GlassFinaleBlackout>();
     }
 
     /// <summary>
@@ -3016,9 +3020,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
     }
 
+    /// <summary>★1116 目前顯示的透明度（0＝看不見）：眼罩紅光跟著它淡入淡出。</summary>
+    public float VisualAlpha { get; private set; }
+
+    /// <summary>★1116 最後一根燭火（X 最大的那根）。</summary>
+    public CandleCollectible LastCandle => _lastCandleByX;
+
+    /// <summary>★1116 外部壓低追逐音樂（1＝不壓）：熄燈時音樂退後，只剩腳步和呼吸。</summary>
+    [System.NonSerialized] public float externalBgmDuck = 1f;
+
     private void SetVisualAlpha(float alpha)
     {
         EnsureInitialized();
+        VisualAlpha = Mathf.Max(0f, alpha);
 
         bool showVisuals = alpha > 0.001f;
 
@@ -3244,6 +3258,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         float dist = Mathf.Abs(player.position.x - transform.position.x);
         // ★1116 吃到燭火後的喘息：追逐音樂降下來幾秒（漏點逼近時不降）
         float duck = usePacingDirector ? 1f - candleReliefBgmDuck * Relief01 : 1f;
+        duck *= Mathf.Clamp01(externalBgmDuck);
         if (dist < 8.5f)
         {
             // 怪物越靠近，追逐音樂音量與緊張度稍微提高
