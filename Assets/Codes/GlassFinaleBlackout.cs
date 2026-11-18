@@ -22,10 +22,11 @@ public class GlassFinaleBlackout : MonoBehaviour
     public static bool Enabled = true;
 
     [Header("什麼時候暗")]
+    // ★1118b 玻璃橋拉長 2.5 倍（41.5 → 約 104 公尺）：開始暗的距離、全暗的距離一起 ×2.5
     [Tooltip("離最後一根燭火還有幾公尺時開始暗")]
-    public float startBefore = 48f;
+    public float startBefore = 104f;
     [Tooltip("離最後一根燭火還有幾公尺時全暗")]
-    public float fullBefore = 16f;
+    public float fullBefore = 35f;
     [Tooltip("分幾段暗下去（一盞一盞熄）")]
     public int steps = 5;
     [Range(0f, 1f)] public float maxDarkness = 0.96f;
@@ -45,16 +46,16 @@ public class GlassFinaleBlackout : MonoBehaviour
     public float candleRadius = 2.2f;
     public float candleSoft = 4.5f;
     [Range(0f, 1f)] public float candleReveal = 0.85f;
-    [Tooltip("紅光周圍透出來的半徑（怪物原始大小時）")]
-    public float eyeRadius = 1.6f;
-    public float eyeSoft = 3f;
+    [Tooltip("紅光周圍透出來的半徑（怪物原始大小時）。★1118e 紅光縮成眼球大小的微光，洞跟著縮小（原本 1.6／3）")]
+    public float eyeRadius = 0.7f;
+    public float eyeSoft = 1.4f;
     [Range(0f, 1f)] public float eyeReveal = 1f;
 
     [Header("聲音與紅光")]
     [Tooltip("全暗時追逐音樂剩幾成")]
     [Range(0f, 1f)] public float bgmDuck = 0.35f;
-    [Tooltip("全暗時紅光亮幾倍")]
-    public float eyeBoost = 1.8f;
+    [Tooltip("全暗時紅光亮幾倍（★1118e 微光，原本 1.8）")]
+    public float eyeBoost = 1.35f;
     [Tooltip("每熄一段的聲音（留空＝Resources/Sfx/Glass_LightOut）")]
     public AudioClip lightOutSfx;
     [Range(0f, 1f)] public float lightOutVolume = 0.7f;

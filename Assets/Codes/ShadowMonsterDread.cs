@@ -116,7 +116,7 @@ public class ShadowMonsterDread : MonoBehaviour
     private Quaternion _twitchRot = Quaternion.identity;
     private bool _twApplied;
     private Quaternion _twBaseHead, _twSetHead, _twBaseNeck, _twSetNeck;
-    private class Ghost { public GameObject go; public Mesh mesh; public MeshRenderer mr; public Material mat; public float life; public Vector3 drift; }
+    private class Ghost { public GameObject go; public Mesh mesh; public MeshRenderer mr; public Material mat; public float life; public Vector3 drift; public Vector3 rootPrev; }
     private readonly List<Ghost> _ghosts = new List<Ghost>();
     private int _bakeMode;   // 0＝還沒試、1＝BakeMesh(縮放)＋localToWorld、2＝BakeMesh(不縮放)＋TRS(不含縮放)、-1＝都不對
 
@@ -385,6 +385,7 @@ public class ShadowMonsterDread : MonoBehaviour
 
     private float BodyAlpha()
     {
+        if (_mpb == null) _mpb = new MaterialPropertyBlock(); // ★1108 AutoFix：遊戲中重新編譯程式後 _mpb 會變空（_inited 卻還是 true），用到時補建一個
         _body.GetPropertyBlock(_mpb);
         if (_mpb.HasColor(ID_BaseColor)) return Mathf.Clamp01(_mpb.GetColor(ID_BaseColor).a);
         if (_mpb.HasColor(ID_Color)) return Mathf.Clamp01(_mpb.GetColor(ID_Color).a);
@@ -760,6 +761,7 @@ public class ShadowMonsterDread : MonoBehaviour
             g.go.transform.localScale = Vector3.one;
         }
         g.life = afterimageLife;
+        g.rootPrev = transform.position;   // ★1119 殘影跟著怪物走（見 UpdateGhosts），不留在世界座標裡被拋在後面
         g.drift = (-_faceDir * 0.35f + Random.insideUnitSphere * 0.2f) * _headH;
         g.go.SetActive(true);
     }
@@ -809,7 +811,11 @@ public class ShadowMonsterDread : MonoBehaviour
             g.life -= dt;
             float k = Mathf.Clamp01(g.life / Mathf.Max(0.01f, afterimageLife));
             g.mat.color = new Color(afterimageColor.r, afterimageColor.g, afterimageColor.b, afterimageColor.a * k * k);
-            g.go.transform.position += g.drift * dt * 2f;
+            // ★1119 怪物衝刺時殘影原本釘在世界座標，被拋在後面 5～10 公尺（看起來像一團紅影在追怪物）：
+            //   每幀加上怪物物件這一幀的位移，殘影只剩 drift 的小飄移，永遠貼在身體旁邊
+            Vector3 rp = transform.position;
+            g.go.transform.position += (rp - g.rootPrev) + g.drift * dt * 2f;
+            g.rootPrev = rp;
             if (g.life <= 0f) g.go.SetActive(false);
         }
     }
