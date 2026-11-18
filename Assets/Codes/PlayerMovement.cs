@@ -179,6 +179,12 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
+    /// <summary>★1118 劇情自動走路：開著時 moveInput 由 scriptedMoveInput（-1～1）取代，不管操作有沒有被鎖住（結局：她自動走上觀景台）。重生／傳送會清掉。</summary>
+    [System.NonSerialized] public bool scriptedMove = false;
+    [System.NonSerialized] public float scriptedMoveInput = 0f;
+    /// <summary>★1118 劇情用：把她轉向左（-1）或右（+1）。</summary>
+    public void SetFacingScripted(float dir) { facingDirection = dir < 0f ? Vector3.left : Vector3.right; }
+
     private float _lastGroundContactTime = -999f;
     private Vector3 _lastGroundContactNormal = Vector3.up;
     private Vector3 _lastGroundContactPoint = Vector3.zero;
@@ -1299,6 +1305,14 @@ public class PlayerMovement : MonoBehaviour
                 if (moveInput > 0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.right;
                 if (moveInput < -0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.left;
             }
+        }
+
+        if (scriptedMove && !isWindSuctionActive)
+        {
+            // ★1118 劇情自動走路（結局走上觀景台）：蓋過鎖定後的 moveInput，跟玩家按方向鍵一樣會轉向、跑步
+            moveInput = Mathf.Clamp(scriptedMoveInput, -1f, 1f);
+            if (moveInput > 0.1f) facingDirection = Vector3.right;
+            else if (moveInput < -0.1f) facingDirection = Vector3.left;
         }
 
         CurrentMoveInput = moveInput;
@@ -2579,6 +2593,7 @@ public class PlayerMovement : MonoBehaviour
     {
         EndControlledFall("被傳送");   // ★1012 重生／傳送一律把物理還給剛體
         CancelStandUp();               // ★1114 起身中被傳送／重生：不要卡在鎖住操作
+        scriptedMove = false;          // ★1118 重生／傳送：劇情自動走路一律取消
         transform.position = position;
         if (rb != null)
         {

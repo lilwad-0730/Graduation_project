@@ -48,6 +48,40 @@ public class CandleVoiceDirector : MonoBehaviour
     /// <summary>目前這段語音預計播完的時間（Time.unscaledTime）。沒在播就是過去的時間。</summary>
     public float VoiceEndTime { get { return _voiceEndTime; } }
 
+    private readonly Dictionary<int, float> _playedEnd = new Dictionary<int, float>();   // ★1119b 已經播出去的段落 → 播完的時間（unscaled）
+    private int _lastPlayedIndex = -1;
+
+    /// <summary>
+    /// ★1119b 第 index 段語音「預計播完」的時間（Time.unscaledTime）。
+    ///   已經在播／播完：實際的結束時間；還在排隊：照現在的佇列推算（上一段播完＋queueGapSeconds＋各段長度）。
+    ///   還沒觸發、沒放語音檔、編號不對：回傳 false。
+    /// </summary>
+    public bool TryGetExpectedEndTime(int index, out float endTime)
+    {
+        endTime = 0f;
+        if (voices == null || index < 0 || index >= voices.Length || voices[index] == null || voices[index].clip == null) return false;
+        if (_playedEnd.TryGetValue(index, out endTime))
+        {
+            // 播出去了：還在播才算數（被別的語音蓋掉、被停掉＝實際上已經結束）
+            bool stillPlaying = AudioManager.Instance == null || AudioManager.Instance.IsVoicePlaying;
+            return stillPlaying && index == _lastPlayedIndex;
+        }
+
+        // 在排隊：模擬 TryPlayNext 的排程
+        float start = Mathf.Max(Time.unscaledTime, _voiceEndTime + queueGapSeconds);
+        bool found = false, first = true;
+        foreach (int idx in _pending)
+        {
+            CandleVoice v = idx >= 0 && idx < voices.Length ? voices[idx] : null;
+            if (v == null || v.clip == null) continue;   // 沒語音檔的段落會被跳過，不佔時間
+            if (!first) start += queueGapSeconds;
+            first = false;
+            start += v.clip.length;
+            if (idx == index) { endTime = start; found = true; break; }
+        }
+        return found;
+    }
+
     private void Start() { ScanCandles(); }
 
     private void OnDestroy()
@@ -98,6 +132,8 @@ public class CandleVoiceDirector : MonoBehaviour
         else AudioSource.PlayClipAtPoint(v.clip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(v.volume));
         VoiceSubtitle.Show(v.subtitle, v.clip.length, subtitleStyle);   // 字幕留空會直接略過
         _voiceEndTime = Time.unscaledTime + v.clip.length;
+        _playedEnd[idx] = _voiceEndTime;
+        _lastPlayedIndex = idx;
     }
 
     [ContextMenu("預覽字幕（Play 中）")]
