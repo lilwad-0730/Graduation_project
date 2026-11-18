@@ -336,6 +336,7 @@ public class TextSeeThrough : MonoBehaviour
 
         TMP_TextInfo ti = text.textInfo;
         int n = (ti != null) ? ti.characterCount : 0;
+        if (ti != null) n = Mathf.Min(n, ti.characterInfo != null ? ti.characterInfo.Length : 0); // ★1108 AutoFix：TMP 換字／重建網格的那一幀，字數可能比字元陣列還多，超出就會出錯，只看陣列裡真的有的字
         if (t.glyph.Length != n)
         {
             float[] g = new float[n];
@@ -375,6 +376,7 @@ public class TextSeeThrough : MonoBehaviour
     {
         TMP_TextInfo ti = text.textInfo;
         int n = ti.characterCount;
+        n = Mathf.Min(n, ti.characterInfo != null ? ti.characterInfo.Length : 0); // ★1108 AutoFix：同上，字數和字元陣列長度對不上時不要讀超過陣列
         for (int i = 0; i < n; i++)
         {
             TMP_CharacterInfo ci = ti.characterInfo[i];
