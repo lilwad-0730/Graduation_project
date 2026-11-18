@@ -217,6 +217,7 @@ public class MonsterGlassBreaker : MonoBehaviour, IResettable
         foreach (var t in _targets)
         {
             if (t.broken || t.protectedFromBreak || t.tr == null) continue;
+            if (GlassBridgeCollapse.Owns(t.tr)) continue;   // ★1117 碎橋的玻璃由崩塌前緣碎，怪物不整片打碎
             if (other.transform != t.tr && !other.transform.IsChildOf(t.tr)) continue;
 
             // ★1016 她腳下、她前面的玻璃先不碎
