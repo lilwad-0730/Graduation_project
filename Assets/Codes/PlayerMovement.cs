@@ -607,6 +607,20 @@ public class PlayerMovement : MonoBehaviour
     public float ruinsDropAcceleration = 45f;
     private bool _ruinsDropPhase;
     private float _lastFallEndSpeed;
+    /// <summary>★1120 墜落速度倍率（由 RuinsFallCinematics 每幀設定：播旁白時 1、沒播時 silentFallSpeedMultiplier）。天空段與白霧傳送後的快速砸地都套用。</summary>
+    [System.NonSerialized] public float ruinsFallSpeedMultiplier = 1f;
+    /// <summary>★1120 天空段加減速度倍率（由 RuinsFallCinematics 設定，跟速度倍率一起放大，切換才跟得上）。</summary>
+    [System.NonSerialized] public float ruinsFallAccelMultiplier = 1f;
+
+    /// <summary>★1120 天空段「原本」（倍率 1）在墜落第 seconds 秒的速度（米／秒，正值）。給 RuinsFallCinematics 估算旁白講完要掉多遠。</summary>
+    public float RuinsFallBaseSpeedAt(float seconds)
+    {
+        float durScale = Mathf.Max(0.25f, ruinsFallDurationScale);
+        float terminalSpd = Mathf.Abs(ruinsFallTerminalSpeed) / durScale;
+        if (!ruinsFallAccelerating) return terminalSpd;
+        float rampSec = Mathf.Max(1f, ruinsFallRampSecondsPerScale * durScale);
+        return terminalSpd * Mathf.Lerp(ruinsFallRampStartMult, ruinsFallRampEndMult, Mathf.Clamp01(seconds / rampSec));
+    }
     /// <summary>★1115 是否在「傳送進廢墟之後」的快速墜落段（給落地特效、風線用，純讀取）。</summary>
     public bool IsRuinsDropPhase => _ruinsDropPhase;
     /// <summary>★1115 目前墜落速度（米／秒，沒在墜落＝0）。</summary>
@@ -704,7 +718,7 @@ public class PlayerMovement : MonoBehaviour
         bool drop = _ruinsDropPhase;
         if (drop)
         {
-            target = -Mathf.Abs(ruinsDropSpeed);   // ★1115 傳送進廢墟後：快速墜落
+            target = -Mathf.Abs(ruinsDropSpeed) * Mathf.Max(0.1f, ruinsFallSpeedMultiplier);   // ★1115 傳送進廢墟後：快速墜落（★1120 一樣套用沒播旁白時的倍率）
         }
         else if (ruinsFallAccelerating)
         {
@@ -713,6 +727,7 @@ public class PlayerMovement : MonoBehaviour
             float tau = Mathf.Clamp01(ControlledFallSeconds / rampSec);
             target = -terminalSpd * Mathf.Lerp(ruinsFallRampStartMult, ruinsFallRampEndMult, tau);
         }
+        if (!drop) target *= Mathf.Max(0.1f, ruinsFallSpeedMultiplier);   // ★1120 沒播旁白時掉快一點
 
         // 離地面近就固定放慢到落地速度（快速墜落段不放慢：要重重砸到地上）
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
@@ -740,7 +755,8 @@ public class PlayerMovement : MonoBehaviour
             else { _fallGroundSeen = "無"; _fallLandingK = 1f; }
         }
 
-        float accel = drop ? Mathf.Max(1f, ruinsDropAcceleration) : ruinsFallAcceleration / (durScale * durScale);
+        float accel = drop ? Mathf.Max(1f, ruinsDropAcceleration) * Mathf.Max(1f, ruinsFallSpeedMultiplier)
+                           : ruinsFallAcceleration / (durScale * durScale) * Mathf.Max(0.1f, ruinsFallAccelMultiplier);
         float rate = target < _controlledFallVy ? accel : accel * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
