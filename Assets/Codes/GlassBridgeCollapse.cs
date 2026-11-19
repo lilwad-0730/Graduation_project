@@ -65,7 +65,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     public float fragmentLife = 1.6f;
 
     [Header("聲音")]
-    [Tooltip("每碎一塊的聲音（留空＝Resources/Sfx/Glass_BridgeCrack，原檔 玻璃碎裂.mp3）")]
+    [Tooltip("每碎一塊的聲音（留空＝Resources/Sfx/Glass_BridgeCrackFiltered：原本的 Glass_BridgeCrack 濾掉 6 kHz 以上的高頻、壓低音量（約低 10 dB），原檔太大聲太尖）")]
     public AudioClip crackSfx;
     [Range(0f, 1f)] public float crackVolume = 0.5f;
     [Tooltip("點燃最後一根、整座橋崩下去的聲音（留空＝Resources/Sfx/Glass_BridgeCollapse，原檔 玻璃館_破鏡牆.wav）")]
@@ -127,7 +127,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     private void Start()
     {
         _ctrl = GetComponent<ShadowMonsterController>();
-        if (crackSfx == null) crackSfx = Resources.Load<AudioClip>("Sfx/Glass_BridgeCrack");
+        if (crackSfx == null) crackSfx = Resources.Load<AudioClip>("Sfx/Glass_BridgeCrackFiltered");
         if (collapseSfx == null) collapseSfx = Resources.Load<AudioClip>("Sfx/Glass_BridgeCollapse");
     }
 
@@ -221,7 +221,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
                 {
                     _state = State.Arming;
                     _t = 0f;
-                    PlayCrack(1.3f, 0.75f);
+                    PlayCrack(1.05f, 0.75f);
                     Debug.Log($"【碎橋】她踏上橋（x={px:F1}），身後開始崩塌");
                 }
                 break;
@@ -349,7 +349,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
             f.life = fragmentLife * Random.Range(0.4f, 0.8f);
         }
 
-        PlayCrack(Random.Range(0.92f, 1.22f), 1f);
+        PlayCrack(Random.Range(0.85f, 1.05f), 1f);   // 音調只往下飄：往上會更尖
     }
 
     private Frag SpawnFrag(Sprite s, bool own, Vector3 pos, Vector3 scale, Color c, Piece p)

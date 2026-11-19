@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 影子怪物（MonsterMutant7_Run1）主控制器。
@@ -118,6 +119,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     [Tooltip("燭火判定的垂直額外寬容量（實際判定＝怪物目前半高 ＋ 這個值）")]
     public float candleReachYMargin = 3f;
+
+    [Tooltip("★1119 以怪物「身體最前緣」碰到已點亮的燭台就算受傷（★1119b 只算軀幹＋頭，見 candleHitTorsoOnly）。\n關掉＝舊行為：要等身體中心離燭台 candleReachX 以內，手已經伸過燭台十公尺左右才觸發")]
+    public bool candleHitByFrontEdge = true;
+    [Tooltip("★1119 前緣離燭台中心多近算碰到（公尺）。約等於燭台本體的半寬；0＝手要伸到燭台中心線，調大＝更早觸發")]
+    public float candleFrontTouchMargin = 0.4f;
+    [Tooltip("★1119 只看燭台這個高度範圍內的身體（燭台底部往下／燭台頂端往上各多少公尺）。從燭台下方或上方經過的手不算碰到")]
+    public float candleFrontYMargin = 0.5f;
+    [Tooltip("★1119 燭台本體的高度（公尺，從燭台的 Pivot 往上算），用來決定判定的高度範圍")]
+    public float candleBodyHeight = 3f;
 
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
@@ -241,6 +251,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float deathFadeSeconds = 1.2f;
     [Tooltip("★1118c 倒下時把鏡頭往下拉遠，框住她和倒下的怪物（怪物站在橋下的深坑，倒下去會躺到畫面外）")]
     public bool deathFrameCamera = true;
+    [Tooltip("★1119c 倒下後：肢體與身體逐漸碎成粒子 → 聚成白色光球 → 飛向鏡頭蓋滿畫面變全白 → 從白淡入結局漫畫（MonsterDisintegrateFinale 調細節）。關掉＝倒下後直接淡黑")]
+    public bool crumbleToOrbFinale = true;
+    [Tooltip("★1119e 倒下後先播結局漫畫（疊加載入，玻璃館留在背景不動），翻完回玻璃館再碎裂成光球；光球飛向鏡頭全白後直接捲名單。關掉＝倒下後直接碎裂、全白後才進漫畫")]
+    public bool comicBeforeCrumble = true;
     [Tooltip("★1118c 往左（身後）倒下，會躺到離怪物原點多遠（怪物站著高度的倍數）")]
     public float finaleFallReach = 1.15f;
     [Tooltip("★1118c 倒下鏡頭最多拉到多大（正交半高）")]
@@ -1450,7 +1464,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         // ★先讓怪物縮小消失演完，再轉場（最多等 6 秒保底，避免卡死）
         //   ★1118 倒下演出（她走上觀景台＋death1＋淡出）比較長，保底拉到 18 秒
-        float waited = 0f, maxWait = deathFinale ? 18f : 6f;
+        float waited = 0f, maxWait = deathFinale ? (crumbleToOrbFinale ? 40f : 18f) : 6f;   // ★1119c 碎裂＋光球飛向鏡頭再多約 10 秒
+        if (deathFinale && crumbleToOrbFinale && comicBeforeCrumble && string.IsNullOrEmpty(endingCardId))
+            maxWait = float.PositiveInfinity;   // ★1119e 中間要看完結局漫畫（玩家自己翻），不設保底時間
         while (!_vanishDone && waited < maxWait)
         {
             waited += Time.deltaTime;
@@ -1466,6 +1482,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         EndCredits.EndingMode = true;
         if (string.IsNullOrEmpty(endingBookScene)) yield break;
+        if (EndingFade.Instance != null) yield break;   // ★1119c 碎裂演出已經開始白幕轉場
 
         // ★1118d 沒播卡：怪物倒下後畫面慢慢淡成全黑 → 載入繪本 → 從全黑淡入漫畫（不再用碎裂轉場）
         if (string.IsNullOrEmpty(endingCardId))
@@ -1802,6 +1819,162 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         return dy <= VisualHalfHeight + candleReachYMargin;
     }
 
+    // ── ★1119 身體前緣碰燭台 ─────────────────────────────────────────────
+    //   怪物的 Pivot／視覺中心在身體中間，但牠是往前伸手的巨影：實測手在中心前方 16 公尺以上。
+    //   OverlapsCandle 用「中心 ±candleReachX(6)」判定，畫面上手早就蓋過燭台十公尺才受傷。
+    //   骨頭位置也不準（多出來的手臂頂點綁在別的骨頭上，畫面上的手比骨頭前面很多），
+    //   所以直接把當下的動畫網格烘焙出來，用真正畫在畫面上的頂點算最前緣。
+    //   被扯掉的手臂只是拿掉三角形、頂點還在，所以只算「還有三角形用到」的頂點。
+    [Tooltip("★1119b 只有身體（軀幹＋頭）算碰撞，手臂、腿、多出來的手臂伸過燭台都不算")]
+    public bool candleHitTorsoOnly = true;
+    [Tooltip("★1119 身體前緣多久重算一次（秒）。烘焙一次網格約 0.3 毫秒")]
+    public float candleFrontRefreshSeconds = 0.05f;
+
+    private class FrontMeshCache { public SkinnedMeshRenderer smr; public bool[] used; public int sig = -1; }
+    private readonly List<FrontMeshCache> _frontMeshes = new List<FrontMeshCache>();
+    private readonly List<Vector3> _frontWorld = new List<Vector3>();
+    private readonly List<Vector3> _frontTmp = new List<Vector3>();
+    private Mesh _frontBake;
+    private float _frontMeshesAt = -10f, _frontBakedAt = -10f;
+    private float _frontReachHold = -1f;
+
+    private static int MeshIndexSignature(Mesh m)
+    {
+        int sig = m.vertexCount * 31;
+        for (int s = 0; s < m.subMeshCount; s++) sig = sig * 17 + (int)m.GetIndexCount(s);
+        return sig;
+    }
+
+    private void RefreshFrontVertices()
+    {
+        if (Time.time - _frontBakedAt < Mathf.Max(0f, candleFrontRefreshSeconds) && _frontBakedAt >= 0f) return;
+        _frontBakedAt = Time.time;
+
+        if (Time.time - _frontMeshesAt > 1f || _frontMeshes.Count == 0)
+        {
+            _frontMeshesAt = Time.time;
+            var keep = new List<FrontMeshCache>();
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(false))
+            {
+                if (r == null || r.sharedMesh == null) continue;
+                var c = _frontMeshes.Find(x => x.smr == r) ?? new FrontMeshCache { smr = r };
+                keep.Add(c);
+            }
+            _frontMeshes.Clear(); _frontMeshes.AddRange(keep);
+        }
+
+        if (_frontBake == null) _frontBake = new Mesh { name = "MonsterFrontBake" };
+        _frontWorld.Clear();
+        foreach (var c in _frontMeshes)
+        {
+            var r = c.smr;
+            if (r == null || !r.enabled || !r.gameObject.activeInHierarchy || r.sharedMesh == null) continue;
+            Mesh sm = r.sharedMesh;
+            var shed = GetComponent<MonsterArmShedding>();
+            bool armsKnown = shed != null && shed.BodyRenderer == r;
+            int sig = MeshIndexSignature(sm) * 3 + (armsKnown ? 1 : 0);
+            if (c.used == null || c.sig != sig || c.used.Length != sm.vertexCount)
+            {
+                c.sig = sig;
+                c.used = new bool[sm.vertexCount];
+                for (int s = 0; s < sm.subMeshCount; s++)
+                    foreach (int i in sm.GetTriangles(s)) if (i >= 0 && i < c.used.Length) c.used[i] = true;
+                if (candleHitTorsoOnly) KeepTorsoVertices(r, sm, c.used, armsKnown ? shed : null);
+            }
+            // 實測：BakeMesh(useScale:false) 出來的頂點已經是世界尺寸（骨架本身帶縮放），只差位置和旋轉
+            r.BakeMesh(_frontBake, false);
+            _frontBake.GetVertices(_frontTmp);
+            Matrix4x4 m = Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one);
+            int n = Mathf.Min(_frontTmp.Count, c.used.Length);
+            for (int i = 0; i < n; i++) if (c.used[i]) _frontWorld.Add(m.MultiplyPoint3x4(_frontTmp[i]));
+        }
+    }
+
+    /// <summary>
+    /// ★1119b 只留軀幹＋頭的頂點：主要綁在 Hips／Spine／Neck／Head／Shoulder（鎖骨）骨頭上的才算，
+    /// 手臂、腿（Arm／ForeArm／Hand／UpLeg／Leg／Foot…）不算；多出來的手臂整塊綁在 Spine2 上，另外用 MonsterArmShedding 的分析排除。
+    /// </summary>
+    private static void KeepTorsoVertices(SkinnedMeshRenderer r, Mesh sm, bool[] mask, MonsterArmShedding shed)
+    {
+        Transform[] bones = r.bones;
+        BoneWeight[] bw = sm.boneWeights;
+        if (bones == null || bones.Length == 0 || bw == null || bw.Length != mask.Length)
+        {
+            // 沒有骨頭權重的網格（例如只綁在頭上的眼睛、牙齒用單一骨頭）：看它自己掛在哪根骨頭
+            Transform t = r.rootBone != null ? r.rootBone : r.transform;
+            if (!IsTorsoBone(t)) for (int i = 0; i < mask.Length; i++) mask[i] = false;
+            return;
+        }
+        var torso = new bool[bones.Length];
+        for (int b = 0; b < bones.Length; b++) torso[b] = IsTorsoBone(bones[b]);
+        for (int i = 0; i < mask.Length; i++)
+        {
+            if (!mask[i]) continue;
+            BoneWeight w = bw[i];
+            int bi = w.boneIndex0; float best = w.weight0;
+            if (w.weight1 > best) { best = w.weight1; bi = w.boneIndex1; }
+            if (w.weight2 > best) { best = w.weight2; bi = w.boneIndex2; }
+            if (w.weight3 > best) { bi = w.boneIndex3; }
+            bool keep = bi >= 0 && bi < torso.Length && torso[bi];
+            if (keep && shed != null && shed.IsExtraArmVertex(i)) keep = false;
+            mask[i] = keep;
+        }
+    }
+
+    private static bool IsTorsoBone(Transform t)
+    {
+        if (t == null) return false;
+        string n = t.name;
+        int colon = n.LastIndexOf(':');
+        if (colon >= 0) n = n.Substring(colon + 1);
+        return n.StartsWith("Hips") || n.StartsWith("Spine") || n.StartsWith("Neck") || n.StartsWith("Head")
+            || n.EndsWith("Shoulder");
+    }
+
+    /// <summary>★1119 怪物在 dir 方向（+1＝往 +X）、高度 yMin～yMax 之間最前面那個頂點的世界 X。找不到回傳 NaN。</summary>
+    private float FrontEdgeX(float dir, float yMin, float yMax)
+    {
+        RefreshFrontVertices();
+        float best = float.NaN;
+        for (int i = 0; i < _frontWorld.Count; i++)
+        {
+            Vector3 p = _frontWorld[i];
+            if (p.y < yMin || p.y > yMax) continue;
+            if (float.IsNaN(best) || p.x * dir > best * dir) best = p.x;
+        }
+        return best;
+    }
+
+    private float ChaseDir => (player != null && player.position.x < transform.position.x) ? -1f : 1f;
+
+    /// <summary>★1119 怪物身體最前緣（軀幹、頭）有沒有碰到這根燭台。身體中心已經整個越過燭台 candleReachX 就不算（那是已經走過去了）。</summary>
+    public bool FrontTouchesCandle(Vector3 candlePosition)
+    {
+        if (!candleHitByFrontEdge) return false;
+        float dir = ChaseDir;
+        float cx = VisualCenter.x;
+        if ((cx - candlePosition.x) * dir > candleReachX) return false;      // 身體已經整個走過去了
+        if ((candlePosition.x - cx) * dir > 80f) return false;              // 還很遠，不用烘焙網格
+        float yMin = candlePosition.y - candleFrontYMargin;
+        float yMax = candlePosition.y + candleBodyHeight + candleFrontYMargin;
+        float front = FrontEdgeX(dir, yMin, yMax);
+        if (float.IsNaN(front)) return false;
+        return (front - candlePosition.x) * dir >= -Mathf.Max(0f, candleFrontTouchMargin);
+    }
+
+    /// <summary>★1119 前緣離 Pivot 多遠（公尺，朝追逐方向）。手臂擺動會讓它前後晃，這裡取「快升慢降」的值，給「停在燭台前等」用。</summary>
+    private float FrontReachForHold(Vector3 candlePosition)
+    {
+        float dir = ChaseDir;
+        float yMin = candlePosition.y - candleFrontYMargin;
+        float yMax = candlePosition.y + candleBodyHeight + candleFrontYMargin;
+        float front = FrontEdgeX(dir, yMin, yMax);
+        float now = float.IsNaN(front) ? 0f : Mathf.Max(0f, (front - transform.position.x) * dir);
+        if (_frontReachHold < 0f || now > _frontReachHold) _frontReachHold = now;
+        else _frontReachHold = Mathf.MoveTowards(_frontReachHold, now, 1.5f * Time.deltaTime);
+        return _frontReachHold;
+    }
+
     private static void AccumulateBounds(ref Bounds acc, ref bool any, Bounds local, Matrix4x4 m)
     {
         Vector3 c = local.center, ex = local.extents;
@@ -2020,6 +2193,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private bool _finaleLensRestoring;
     private readonly List<CinemachineDeathZoneFloor> _finaleDisabledFloors = new List<CinemachineDeathZoneFloor>();
 
+    private float _finaleExtraRight, _finaleExtraTop;
+    /// <summary>★1119d 倒下鏡頭在她右邊／上面多留幾公尺（白色光球繞她一圈時用），鏡頭會平滑拉開。</summary>
+    public void SetFinaleFrameExtra(float right, float top)
+    {
+        _finaleExtraRight = Mathf.Max(0f, right);
+        _finaleExtraTop = Mathf.Max(0f, top);
+    }
+
     private void FinaleCamOn()
     {
         if (_finaleCamOn) return;
@@ -2151,9 +2332,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _finaleBottomSm = Mathf.SmoothDamp(_finaleBottomSm, bodyBottom, ref _finaleBottomVel, 0.3f);
 
             float left = _finaleLeftMin - 3f;
-            float right = player.position.x + 4f;
+            float right = player.position.x + 4f + _finaleExtraRight;
             float bottom = _finaleBottomSm;
-            float top = Mathf.Max(player.position.y + 8f, bottom + 2f);
+            float top = Mathf.Max(player.position.y + 8f + _finaleExtraTop, bottom + 2f);
             float size = Mathf.Max((top - bottom) * 0.5f, (right - left) * 0.5f / aspect);
             float maxSize = Mathf.Max(_finaleOrigLens[0], finaleMaxOrthoSize);
             if (size > maxSize && !_finaleWarnedClamp) { _finaleWarnedClamp = true; Debug.LogWarning($"【影子怪物】★1118d 倒下鏡頭需要 {size:F1} 但上限 {maxSize:F1}（finaleMaxOrthoSize），會切到畫面"); }
@@ -2440,9 +2621,20 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (playEndingAfterAllCandles && !string.IsNullOrEmpty(endingBookScene))
         {
             if (_pm != null) _pm.scriptedMoveInput = 0f;
+            RestoreDeathAnimSpeed();
+            if (crumbleToOrbFinale && string.IsNullOrEmpty(endingCardId))
+            {
+                // ★1119c 碎裂 → 白色光球 → 飛向鏡頭全白；白幕（EndingFade）由碎裂演出自己開始，PlayEndingRoutine 看到就不再淡黑
+                EndCredits.EndingMode = true;
+                // ★1119e 先看結局漫畫，翻完回到這個畫面（倒下的怪物、她站在觀景台）才碎裂
+                if (comicBeforeCrumble) yield return EndingComicInterlude();
+                var crumble = GetComponent<MonsterDisintegrateFinale>();
+                if (crumble == null) crumble = gameObject.AddComponent<MonsterDisintegrateFinale>();
+                EndCredits.CreditsOnly = comicBeforeCrumble;   // 光球全白後進 Book：漫畫看過了，直接捲名單
+                yield return crumble.Play(SetVisualAlpha, endingBookScene, _mainCam != null ? _mainCam : Camera.main);
+            }
             currentState = MonsterState.Dormant;
             _vanishDone = true;
-            RestoreDeathAnimSpeed();
             Debug.Log("【影子怪物】★1118d 怪物倒下停在畫面上，接結局淡黑");
             yield break;
         }
@@ -2462,6 +2654,115 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         currentState = MonsterState.Dormant;
         _vanishDone = true;
         Debug.Log("【影子怪物】★1118 怪物倒下、消散，接結局");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // ★1119e 結局漫畫插在「倒下」和「碎裂」中間：Book 場景疊加載入，玻璃館留著（怪物倒下的姿勢、她的位置、鏡頭都不動），
+    //   漫畫期間把玻璃館的鏡頭、聲音接收、UI、EventSystem 關掉、正在播的聲音暫停；翻完卸載 Book、全部還原。
+    // ──────────────────────────────────────────────────────────────────────────
+    private readonly List<Behaviour> _glassHidden = new List<Behaviour>();
+    private readonly List<AudioSource> _glassPaused = new List<AudioSource>();
+    private Scene _glassScene;
+
+    private IEnumerator EndingComicInterlude()
+    {
+        bool finished = false;
+        _glassScene = gameObject.scene;
+        EndCredits.EndingMode = true;
+        EndCredits.ComicFinishedHook = () => finished = true;
+        while (EndingFade.Instance != null) yield return null;
+        EndingFade.BeginCustom(LoadEndingComicAdditive, "疊加載入結局漫畫 " + endingBookScene,
+            endingFadeOutSeconds, endingBlackHoldSeconds, endingFadeInSeconds, Color.black);
+        Debug.Log("【影子怪物】★1119e 倒下演完 → 結局漫畫（翻完回玻璃館碎裂成光球）");
+        while (!finished) yield return null;
+
+        while (EndingFade.Instance != null) yield return null;
+        EndingFade.BeginCustom(UnloadEndingComic, "卸載結局漫畫、回玻璃館", 1.2f, 0.4f, 1.2f, Color.black);
+        while (EndingFade.Instance != null) yield return null;   // 等畫面完全淡回玻璃館
+        yield return new WaitForSeconds(0.5f);                    // 先讓玩家看到倒下的怪物，再開始碎
+        Debug.Log("【影子怪物】★1119e 回到玻璃館，開始碎裂");
+    }
+
+    private IEnumerator LoadEndingComicAdditive()
+    {
+        // 玻璃館鏡頭要在載入前關掉：PageBook 會拿現成的 Camera.main 來用，沒有才自己建一台。
+        // 但 Book 載入要好幾幀，這中間沒有任何鏡頭，畫面會閃一下「Display 1 No cameras rendering」，
+        // 所以載入期間放一台只畫黑色的暫代鏡頭（不標 MainCamera，PageBook 不會拿它），漫畫的鏡頭出現後再拆掉。
+        SetGlassSceneHidden(true, false);
+        SetGlassSceneHidden(true, true);
+        var placeholder = new GameObject("結局漫畫載入中（暫代黑色鏡頭）");
+        var phCam = placeholder.AddComponent<Camera>();
+        phCam.clearFlags = CameraClearFlags.SolidColor;
+        phCam.backgroundColor = Color.black;
+        phCam.cullingMask = 0;
+        phCam.depth = -100f;
+        AsyncOperation op = null;
+        try { op = SceneManager.LoadSceneAsync(endingBookScene, LoadSceneMode.Additive); }
+        catch (System.Exception e) { Debug.LogError($"【影子怪物】★1119e 疊加載入 {endingBookScene} 失敗：{e.Message}"); }
+        if (op != null) while (!op.isDone) yield return null;
+        for (int i = 0; i < 30 && Camera.allCamerasCount < 2; i++) yield return null;   // 等 PageBook 建好自己的鏡頭
+        Destroy(placeholder);
+        Scene book = SceneManager.GetSceneByName(endingBookScene);
+        if (book.IsValid() && book.isLoaded) SceneManager.SetActiveScene(book);
+        else
+        {
+            // 載不到漫畫：不要卡死，直接當作看完
+            Debug.LogError($"【影子怪物】★1119e 找不到 {endingBookScene} 場景，略過漫畫");
+            var hook = EndCredits.ComicFinishedHook; EndCredits.ComicFinishedHook = null;
+            hook?.Invoke();
+        }
+    }
+
+    private IEnumerator UnloadEndingComic()
+    {
+        if (_glassScene.IsValid() && _glassScene.isLoaded) SceneManager.SetActiveScene(_glassScene);
+        SetGlassSceneHidden(false, true);   // 先開回玻璃館的鏡頭再卸載 Book，中間才不會有沒鏡頭的幀
+        Scene book = SceneManager.GetSceneByName(endingBookScene);
+        if (book.IsValid() && book.isLoaded)
+        {
+            AsyncOperation op = SceneManager.UnloadSceneAsync(book);
+            if (op != null) while (!op.isDone) yield return null;
+        }
+        SetGlassSceneHidden(false, false);
+        yield return null;
+    }
+
+    private readonly List<Camera> _glassCams = new List<Camera>();
+
+    /// <summary>cameras＝true 只處理鏡頭；false 處理聲音接收、UI、EventSystem 和聲音（兩者分開，換場時隨時都有一台鏡頭在畫）。</summary>
+    private void SetGlassSceneHidden(bool hide, bool cameras)
+    {
+        if (hide)
+        {
+            if (cameras) _glassCams.Clear(); else { _glassHidden.Clear(); _glassPaused.Clear(); }
+            if (!_glassScene.IsValid()) return;
+            foreach (GameObject root in _glassScene.GetRootGameObjects())
+            {
+                if (cameras)
+                {
+                    foreach (var c in root.GetComponentsInChildren<Camera>()) if (c.enabled) { c.enabled = false; _glassCams.Add(c); }
+                    continue;
+                }
+                foreach (var l in root.GetComponentsInChildren<AudioListener>()) if (l.enabled) { l.enabled = false; _glassHidden.Add(l); }
+                foreach (var cv in root.GetComponentsInChildren<Canvas>()) if (cv.enabled && cv.isRootCanvas) { cv.enabled = false; _glassHidden.Add(cv); }
+                foreach (var es in root.GetComponentsInChildren<UnityEngine.EventSystems.EventSystem>()) if (es.enabled) { es.enabled = false; _glassHidden.Add(es); }
+                foreach (var a in root.GetComponentsInChildren<AudioSource>()) if (a.isPlaying) { a.Pause(); _glassPaused.Add(a); }
+            }
+            Debug.Log(cameras
+                ? $"【影子怪物】★1119e 漫畫載好，關掉玻璃館 {_glassCams.Count} 台鏡頭"
+                : $"【影子怪物】★1119e 玻璃館暫時隱藏：關掉 {_glassHidden.Count} 個聲音接收／UI，暫停 {_glassPaused.Count} 個聲音");
+        }
+        else if (cameras)
+        {
+            foreach (var c in _glassCams) if (c != null) c.enabled = true;
+            _glassCams.Clear();
+        }
+        else
+        {
+            foreach (var b in _glassHidden) if (b != null) b.enabled = true;
+            foreach (var a in _glassPaused) if (a != null) a.UnPause();
+            _glassHidden.Clear(); _glassPaused.Clear();
+        }
     }
 
     private IEnumerator VanishSequence()
@@ -2769,7 +3070,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   玩家已經走過燭火還沒點，就放行讓怪物衝過去，照漏點處理。
         if (rest != null && dir > 0f && !rest.IsLitByPlayer && player.position.x < rest.transform.position.x + finalePassMargin)
         {
-            float holdX = rest.transform.position.x - candleReachX - finaleWaitMargin;
+            // ★1119 燭台改成「手碰到就算」之後，要用手的位置來停，不然手會伸到燭台上方等她點
+            float reach = candleHitByFrontEdge ? Mathf.Max(candleReachX, FrontReachForHold(rest.transform.position) + candleFrontTouchMargin) : candleReachX;
+            float holdX = rest.transform.position.x - reach - finaleWaitMargin;
             targetX = transform.position.x >= holdX ? transform.position.x : Mathf.Min(targetX, holdX);
         }
         float gap = Mathf.Abs(targetX - transform.position.x);

@@ -26,16 +26,44 @@ public class EndingFade : MonoBehaviour
 
     public static void Begin(string scene, float fadeOut, float blackHold, float fadeIn)
     {
+        Begin(scene, fadeOut, blackHold, fadeIn, Color.black);
+    }
+
+    /// <summary>★1119c 指定幕的顏色（玻璃館結局：白色光球飛向鏡頭 → 全白 → 從白淡入漫畫）。</summary>
+    public static void Begin(string scene, float fadeOut, float blackHold, float fadeIn, Color color)
+    {
         if (Instance != null) return;   // 防重入
         var go = new GameObject("EndingFade（自動生成）");
         DontDestroyOnLoad(go);
         var ef = go.AddComponent<EndingFade>();
         Instance = ef;
-        ef.BuildCanvas();
-        ef.StartCoroutine(ef.Run(scene, Mathf.Max(0f, fadeOut), Mathf.Max(0f, blackHold), Mathf.Max(0f, fadeIn)));
+        ef.BuildCanvas(color);
+        ef.StartCoroutine(ef.Run(() => ef.LoadScene(scene), $"載入 {scene}", Mathf.Max(0f, fadeOut), Mathf.Max(0f, blackHold), Mathf.Max(0f, fadeIn)));
     }
 
-    private void BuildCanvas()
+    /// <summary>★1119e 淡出到全色 → 跑 middle（例如疊加載入／卸載結局漫畫）→ 停留 → 淡入。middle 在全色幕下執行。</summary>
+    public static void BeginCustom(System.Func<IEnumerator> middle, string label, float fadeOut, float hold, float fadeIn, Color color)
+    {
+        if (Instance != null) return;
+        var go = new GameObject("EndingFade（自動生成）");
+        DontDestroyOnLoad(go);
+        var ef = go.AddComponent<EndingFade>();
+        Instance = ef;
+        ef.BuildCanvas(color);
+        ef.StartCoroutine(ef.Run(middle, label, Mathf.Max(0f, fadeOut), Mathf.Max(0f, hold), Mathf.Max(0f, fadeIn)));
+    }
+
+    private IEnumerator LoadScene(string scene)
+    {
+        if (string.IsNullOrEmpty(scene)) yield break;
+        AsyncOperation op = SceneLoader.Load(scene);
+        if (op != null) { while (!op.isDone) yield return null; }
+        // SceneLoader 在「已經在載入別的場景」時回傳 null：等到真的進了目標場景（最多 15 秒）
+        float guard = 0f;
+        while (SceneManager.GetActiveScene().name != scene && guard < 15f) { guard += Time.unscaledDeltaTime; yield return null; }
+    }
+
+    private void BuildCanvas(Color color)
     {
         var canvas = gameObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -51,7 +79,7 @@ public class EndingFade : MonoBehaviour
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
         var img = imgGo.AddComponent<Image>();
-        img.color = Color.black;
+        img.color = new Color(color.r, color.g, color.b, 1f);
         img.raycastTarget = true;   // 黑幕可見時擋住點擊（CanvasGroup.blocksRaycasts 控制開關）
     }
 
@@ -62,11 +90,11 @@ public class EndingFade : MonoBehaviour
         if (_volumeTouched) AudioListener.volume = _origVolume * (1f - a);
     }
 
-    private IEnumerator Run(string scene, float fadeOut, float blackHold, float fadeIn)
+    private IEnumerator Run(System.Func<IEnumerator> middle, string label, float fadeOut, float blackHold, float fadeIn)
     {
         _origVolume = AudioListener.volume;
         _volumeTouched = true;
-        Debug.Log($"【結局】★1118d 淡出 {fadeOut:F1}s → 載入 {scene} → 黑屏 {blackHold:F1}s → 淡入 {fadeIn:F1}s");
+        Debug.Log($"【結局】★1118d 淡出 {fadeOut:F1}s → {label} → 停留 {blackHold:F1}s → 淡入 {fadeIn:F1}s");
 
         Phase = 0;
         for (float t = 0f; t < fadeOut; t += Time.unscaledDeltaTime)
@@ -77,14 +105,7 @@ public class EndingFade : MonoBehaviour
         SetAlpha(1f);
 
         Phase = 1;
-        if (!string.IsNullOrEmpty(scene))
-        {
-            AsyncOperation op = SceneLoader.Load(scene);
-            if (op != null) { while (!op.isDone) yield return null; }
-            // SceneLoader 在「已經在載入別的場景」時回傳 null：等到真的進了目標場景（最多 15 秒）
-            float guard = 0f;
-            while (SceneManager.GetActiveScene().name != scene && guard < 15f) { guard += Time.unscaledDeltaTime; yield return null; }
-        }
+        if (middle != null) { IEnumerator m = middle(); if (m != null) yield return m; }
         yield return null; yield return null; yield return null;   // 新場景的 Awake／Start 跑完、第一個畫面畫好
         for (float t = 0f; t < blackHold; t += Time.unscaledDeltaTime) yield return null;
 

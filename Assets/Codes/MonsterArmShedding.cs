@@ -97,6 +97,10 @@ public class MonsterArmShedding : MonoBehaviour
     public int ShedCount => _shed;
     /// <summary>目前還在空中掉的手臂數（測試用）。</summary>
     public int FlyingCount => _flying.Count;
+    /// <summary>★1119 這個 Body 網格頂點是不是「多出來的手臂」（給燭台碰撞排除手臂用）。還沒分析完一律回 false。</summary>
+    public bool IsExtraArmVertex(int i) => _vArm != null && i >= 0 && i < _vArm.Length && _vArm[i] >= 0;
+    /// <summary>★1119 Body 的 SkinnedMeshRenderer（分析完才有）。</summary>
+    public SkinnedMeshRenderer BodyRenderer => _ready ? _body : null;
 
     private void Start() { Prepare(); _lastPos = transform.position; }
 
@@ -111,6 +115,14 @@ public class MonsterArmShedding : MonoBehaviour
     // ───────── 準備：複製網格、找手臂 ─────────
     private bool Prepare()
     {
+        // ★1108 AutoFix：遊戲中改程式觸發重新編譯後，_ready／_live 會留下但 _keepTris（鋸齒陣列）和手臂清單會被清空，導致 ApplyShedMesh 空參照；這時換回原始網格、重新分析一次
+        if (_ready && (_keepTris == null || _live == null))
+        {
+            _ready = false;
+            if (_body != null && _orig != null) _body.sharedMesh = _orig;
+            if (_live != null) Destroy(_live);
+            _live = null;
+        }
         if (_ready) return true;
         if (_failed) return false;
         if (!gameObject.activeInHierarchy) return false;   // 場景裡那隻關掉的舊影子怪物（不同模型）不用管，等它真的啟用再說
