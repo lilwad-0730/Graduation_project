@@ -29,6 +29,14 @@ public class NearMissSlowMoFX : MonoBehaviour
     public static float ImminentCooldown = 1.0f;  // 「快咬到」那種：每次要咬到都會慢，只留這點間隔避免一直閃（每一口都有）
     public static float CloseGap = 0.7f;           // 身體縫隙小於幾公尺算「貼到身上」（0＝已經碰到＝咬住）
     public static float EscapeGap = 0.8f;          // 縫隙拉開多少算「甩開」
+    // ★1119 玻璃館書頭怪：撲到她前一刻進子彈時間
+    public static float MonsterLeadSeconds = 0.3f;  // 照現在接近的速度，再幾秒（遊戲時間）就會碰到她 → 開始慢
+    public static float MonsterMaxGap = 5f;         // 縫隙（公尺）超過這個不管多快都不算
+    public static float MonsterMinClosing = 0.3f;   // 接近速度（公尺/秒）低於這個＝沒在逼近
+    public static float MonsterSlowScale = 0.25f;
+    public static float MonsterMaxHold = 1.6f;      // 慢動作最長停多久（真實時間）；正常會一路慢到碰到她那一刻
+    public static float MonsterRecover = 0.4f;      // 真實時間
+    public static float MonsterCooldown = 5f;
     /// <summary>已經演過幾次（驗收／除錯用）。</summary>
     public static int PlayCount;
 
@@ -72,6 +80,10 @@ public class NearMissSlowMoFX : MonoBehaviour
     private readonly Dictionary<Object, Track> _tracks = new Dictionary<Object, Track>();
     private WolfEnemy[] _wolves = new WolfEnemy[0];
     private IndividualBirdEnemy[] _birds = new IndividualBirdEnemy[0];
+    private ShadowMonsterController[] _monsters = new ShadowMonsterController[0];
+    private readonly Dictionary<Object, float> _prevMonsterGap = new Dictionary<Object, float>();
+    private float _scale = 0.3f, _recover = 0.22f, _pendingScale = -1f, _pendingRecover = -1f, _lastMonsterTrigger = -999f;
+    private bool _pendingMonster;
     private Transform _player;
     private PlayerMovement _pm;
     private float _nextScan, _lastTrigger = -999f;
@@ -107,6 +119,7 @@ public class NearMissSlowMoFX : MonoBehaviour
             _nextScan = Time.unscaledTime + 0.4f;
             _wolves = FindObjectsByType<WolfEnemy>(FindObjectsSortMode.None);
             _birds = FindObjectsByType<IndividualBirdEnemy>(FindObjectsSortMode.None);
+            _monsters = FindObjectsByType<ShadowMonsterController>(FindObjectsSortMode.None);
             if (_player == null)
             {
                 GameObject p = GameObject.FindWithTag("Player");
@@ -123,6 +136,8 @@ public class NearMissSlowMoFX : MonoBehaviour
         Vector2 pp = _player.position;
         bool miss = false;
         _pendingHold = -1f;     // 每次重新判斷：只有這一幀真的「快咬到」才會再設成咬前慢動作
+        _pendingScale = -1f; _pendingRecover = -1f; _pendingMonster = false;
+        if (CheckMonsterImminent(pp)) return true;
 
         for (int i = 0; i < _wolves.Length; i++)
         {
@@ -172,6 +187,30 @@ public class NearMissSlowMoFX : MonoBehaviour
             }
         }
         return miss;
+    }
+
+    /// <summary>★1119 書頭怪照現在的接近速度，再不到 MonsterLeadSeconds 就會抓到她 → 子彈時間。
+    /// 怪物是用水平距離 ≤ attackTriggerDistance 抓人，所以縫隙＝水平距離 − 抓人距離。</summary>
+    private bool CheckMonsterImminent(Vector2 pp)
+    {
+        float dt = Time.deltaTime;
+        for (int i = 0; i < _monsters.Length; i++)
+        {
+            ShadowMonsterController m = _monsters[i];
+            if (m == null || !m.isActiveAndEnabled) continue;
+            float gap = Mathf.Abs(m.transform.position.x - pp.x) - m.attackTriggerDistance;
+            float prev;
+            bool had = _prevMonsterGap.TryGetValue(m, out prev);
+            _prevMonsterGap[m] = gap;
+            if (!m.CanCatchNow || !had || dt <= 0f || gap <= 0f || gap > MonsterMaxGap) continue;
+            float closing = (prev - gap) / dt;
+            if (closing < MonsterMinClosing) continue;
+            if (gap / closing > MonsterLeadSeconds) continue;
+            if (Time.unscaledTime - _lastMonsterTrigger < MonsterCooldown) continue;
+            _pendingHold = Mathf.Min(MonsterMaxHold, gap / closing / MonsterSlowScale + 0.2f); _pendingScale = MonsterSlowScale; _pendingRecover = MonsterRecover; _pendingMonster = true;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>狼與她的碰撞體在畫面平面（XY）上的縫隙；碰到＝0。</summary>
@@ -228,7 +267,10 @@ public class NearMissSlowMoFX : MonoBehaviour
         _active = true;
         _t = 0f;
         _hold = _pendingHold > 0f ? _pendingHold : HoldSeconds;
-        _pendingHold = -1f;
+        _scale = _pendingScale > 0f ? _pendingScale : SlowScale;
+        _recover = _pendingRecover > 0f ? _pendingRecover : RecoverSeconds;
+        if (_pendingMonster) _lastMonsterTrigger = Time.unscaledTime;
+        _pendingHold = -1f; _pendingScale = -1f; _pendingRecover = -1f; _pendingMonster = false;
         _lastTrigger = Time.unscaledTime;
         PlayCount++;
         if (_hv == null)
@@ -240,7 +282,7 @@ public class NearMissSlowMoFX : MonoBehaviour
             _hv.Spread = 0.9f;
             _hv.Bps = 1.5f;
         }
-        Set(SlowScale);
+        Set(_scale);
     }
 
     private void RunEffect(float dt)
@@ -253,14 +295,14 @@ public class NearMissSlowMoFX : MonoBehaviour
         _t += dt;
         if (_t < _hold)
         {
-            Set(SlowScale);
+            Set(_scale);
             if (_hv != null) _hv.Intensity = Mathf.MoveTowards(_hv.Intensity, 0.85f, dt * 8f);
         }
         else
         {
-            float k = (_t - _hold) / RecoverSeconds;
+            float k = (_t - _hold) / _recover;
             if (k >= 1f) { ForceRestore(); return; }
-            Set(Mathf.Lerp(SlowScale, 1f, k * k));
+            Set(Mathf.Lerp(_scale, 1f, k * k));
             if (_hv != null) _hv.Intensity = Mathf.MoveTowards(_hv.Intensity, 0f, dt * 2.5f);
         }
     }

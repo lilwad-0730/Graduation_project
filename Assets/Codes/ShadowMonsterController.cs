@@ -440,6 +440,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float stallGraceSeconds = 1f;
     [Tooltip("她停著的時候，怪物每秒多逼近幾公尺。1.6：開頭停約 7 秒、結尾停約 3 秒會被抓")]
     public float stallCloseRate = 1.6f;
+    [Tooltip("★1119 她停著時怪物主動加速撲上來：每秒多快多少（公尺/秒²）。取代原本照距離比例、越靠近越慢的爬行（看起來像在等她）")]
+    public float stallChaseAccel = 1.5f;
+    [Tooltip("★1119 她停著時怪物撲上來的最高速度（公尺/秒）")]
+    public float stallChaseMaxSpeed = 5f;
     [Tooltip("距離差 1 公尺，速度差多少（公尺/秒）。越大越緊跟曲線")]
     public float directorGain = 0.9f;
     [Tooltip("怪物最低速度（公尺/秒）：永遠不站著不動")]
@@ -541,6 +545,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     /// <summary>★1118e 撲擊進行中（預告／加速／巡航／煞車／收尾）。</summary>
     public bool IsLunging => _lungePhase != 0;
+    /// <summary>★1119 現在碰到她會不會被抓（給子彈時間判斷「快被抓到」用）。</summary>
+    public bool CanCatchNow => !_revealActive && !_finaleDash &&
+        (currentState == MonsterState.Chasing || currentState == MonsterState.Punishing || currentState == MonsterState.Appearing);
     /// <summary>★1118e 撲擊階段：0＝沒有、1＝預告、2＝加速、3＝巡航、4＝煞車＋揮爪、5＝收尾。</summary>
     public int LungePhase => _lungePhase;
     /// <summary>★1118e 撲擊現在的速度（公尺/秒）。</summary>
@@ -3346,6 +3353,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             desired = _approachSpeed;
         }
         else desired = Mathf.Clamp(_playerFwdSmooth + directorGain * (lag - target), directorMinSpeed, directorMaxSpeed);
+        // ★1119 她停著：不再照「離目標多遠」比例爬行（越靠近越慢＝像在放水），停越久衝越快，一路衝到抓到為止（最後一刻交給子彈時間）
+        if (!busy && stall > 0f && _lungePhase == 0)
+            desired = Mathf.Max(desired, Mathf.Min(Mathf.Max(0f, stallChaseMaxSpeed), stall * Mathf.Max(0f, stallChaseAccel)));
+        // ★1119 她站著不動（不在喘息、不在點燭火）：怪物不再為了「回到跟隨距離」減速，原本多快就照樣衝過來
+        if (!busy && _lungePhase == 0 && Relief01 <= 0f && _playerFwdSmooth < 0.5f && _dirSpeed > 0f)
+            desired = Mathf.Max(desired, Mathf.Min(_dirSpeed, directorMaxSpeed));
         if (!busy) _approachSpeed = -1f;
         if (_dirSpeed < 0f) _dirSpeed = desired;
         _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, Mathf.Max(0.1f, directorAccel) * dt);
