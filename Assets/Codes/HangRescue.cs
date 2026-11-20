@@ -66,7 +66,7 @@ public static class HangRescue
             string[] args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length; i++)
                 if (args[i] == "-hangrestart" && i + 1 < args.Length) int.TryParse(args[i + 1], out s_chain);
-#if !UNITY_EDITOR
+#if !UNITY_EDITOR && !UNITY_WEBGL
             try { s_exePath = Process.GetCurrentProcess().MainModule.FileName; } catch { s_exePath = null; }
 #endif
             GameObject go = new GameObject("[緊急救援]");
@@ -80,11 +80,15 @@ public static class HangRescue
     // ═════════════ 第二層：背景執行緒 ═════════════
     private static void StartThread()
     {
+#if UNITY_WEBGL
+        return;   // 網頁版沒有背景執行緒也不能重開程式：只留第一層（長按 Backspace 回主選單）與安全位置記錄
+#else
         if (s_threadStarted) return;
         s_threadStarted = true;
         int gen = s_gen;
         Thread t = new Thread(() => WatchLoop(gen)) { IsBackground = true, Name = "HangWatchdog" };
         t.Start();
+#endif
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -127,6 +131,8 @@ public static class HangRescue
     {
 #if UNITY_EDITOR
         Debug.LogWarning("【緊急救援】（編輯器）略過重開遊戲");
+#elif UNITY_WEBGL
+        Debug.LogWarning("【緊急救援】（網頁版）不能重開遊戲，略過");
 #else
         try
         {
@@ -198,7 +204,7 @@ public static class HangRescue
                 catch (Exception e) { Debug.LogWarning("【緊急救援】自動繼續失敗：" + e.Message); }
             }
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if (DEVELOPMENT_BUILD || UNITY_EDITOR) && !UNITY_WEBGL
             // 只有開發版／編輯器才有的測試開關：-simulatehang 秒數 → 進入關卡後過這麼多秒，故意把整個遊戲卡死（驗收看門狗用，正式版不含這段）
             if (!_simDone && ProgressSave.IsGameplay(SceneManager.GetActiveScene().name))
             {
