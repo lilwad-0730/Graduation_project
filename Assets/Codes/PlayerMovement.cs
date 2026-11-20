@@ -785,6 +785,21 @@ public class PlayerMovement : MonoBehaviour
     [Range(0f, 60f)] public float standUpMaxChestLift = 35f;
     [Tooltip("為了讓頭不穿地，脖子最多往上抬幾度")]
     [Range(0f, 90f)] public float standUpMaxNeckLift = 60f;
+    [Header("★1120 起身後左右查看周遭（Looking Around）")]
+    [Tooltip("起身播完後，接著播「左右查看周遭」，播完才能操作")]
+    public bool playLookAroundAfterStandUp = true;
+    [Tooltip("PlayerAnimator 裡查看周遭的 State 名稱")]
+    public string lookAroundAnimState = "LookAround";
+    [Tooltip("查看周遭播幾秒就交還操作（0＝整段 13 秒）。原動畫：1～4 秒看一邊、4.5～5.5 秒看另一邊、約 6 秒回正；之後又來回看一輪，11 秒才回正。\n" +
+             "預設 5.75：左右各看一次，淡出的 0.8 秒剛好落在回正的時候，下一輪轉頭的幅度還很小，接站立不會抽一下")]
+    public float lookAroundSeconds = 5.75f;
+    [Tooltip("起身 → 查看周遭的淡入秒數（兩段的腳步站姿不同，淡入短了會看到腳一跳）")]
+    public float lookAroundBlendInSeconds = 0.8f;
+    [Tooltip("查看周遭 → 站立／奔跑的淡出秒數")]
+    public float lookAroundBlendOutSeconds = 0.8f;
+    private bool _lookAround;
+    private float _lookAroundEndTime;
+
     private bool _standUpAnim;
     private bool _standUpLocked;
     private float _standUpEndTime;
@@ -866,6 +881,27 @@ public class PlayerMovement : MonoBehaviour
     {
         _standUpAnim = false;
         _standUpLocked = false;
+        _lookAround = false;
+    }
+
+    /// <summary>★1120 起身播完：有 LookAround 這個 State 就接著播查看周遭（照樣鎖住操作），回傳 true；沒有就回傳 false。</summary>
+    private bool TryBeginLookAround()
+    {
+        if (!playLookAroundAfterStandUp || animator == null || string.IsNullOrEmpty(lookAroundAnimState)) return false;
+        if (!animator.HasState(0, Animator.StringToHash(lookAroundAnimState)))
+        {
+            Debug.LogWarning($"[查看周遭] PlayerAnimator 裡找不到 State '{lookAroundAnimState}'，起身後直接交還操作");
+            return false;
+        }
+        float len = 0f;
+        foreach (AnimationClip c in animator.runtimeAnimatorController.animationClips)
+            if (c != null && c.name == "Looking Around") { len = c.length; break; }
+        if (len <= 0.01f) return false;
+        float secs = lookAroundSeconds > 0.01f ? Mathf.Min(lookAroundSeconds, len) : len;
+        _lookAround = true;
+        _lookAroundEndTime = Time.time + secs;
+        Debug.Log($"[查看周遭] 起身完，左右查看 {secs:F2} 秒，期間鎖住操作");
+        return true;
     }
 
     [Header("★1011 廢墟墜落特寫還給玩家")]
@@ -1647,7 +1683,10 @@ public class PlayerMovement : MonoBehaviour
             else if (_standUpAnim)
             {
                 // ★1114 廢墟落地起身：播完整段才放開操作、回到一般動作
-                if (Time.time < _standUpEndTime) targetAnim = standUpAnimState;
+                // ★1120 起身播完先接「左右查看周遭」，查看完才放開操作
+                if (!_lookAround && Time.time < _standUpEndTime) targetAnim = standUpAnimState;
+                else if (!_lookAround && TryBeginLookAround()) targetAnim = lookAroundAnimState;
+                else if (_lookAround && Time.time < _lookAroundEndTime) targetAnim = lookAroundAnimState;
                 else
                 {
                     CancelStandUp();
@@ -1717,6 +1756,9 @@ public class PlayerMovement : MonoBehaviour
                     // 奔跑 ↔ 站立 也用淡入淡出，停下來時不會像換圖片一樣瞬間跳成站姿
                     else if (currentAnimState == "Run" && targetAnim == "Idle") blend = runToIdleBlendSeconds;
                     else if (currentAnimState == "Idle" && targetAnim == "Run") blend = idleToRunBlendSeconds;
+                    // ★1120 起身 → 查看周遭、查看周遭 → 站立／奔跑：都用淡入淡出
+                    else if (targetAnim == lookAroundAnimState) blend = lookAroundBlendInSeconds;
+                    else if (currentAnimState == lookAroundAnimState) blend = lookAroundBlendOutSeconds;
                     // ★1114 起身播完淡回站立／奔跑，不是硬切
                     else if (currentAnimState == standUpAnimState) blend = standUpBlendOutSeconds;
 
@@ -2056,7 +2098,7 @@ public class PlayerMovement : MonoBehaviour
     void LateUpdate()
     {
         // ★1114 起身時頭不穿地（動畫已經套用完，這裡改骨頭會直接畫出來；下一幀動畫會重新覆蓋，不會累積）
-        if (_standUpAnim && animator != null)
+        if (_standUpAnim && !_lookAround && animator != null)   // ★1120 查看周遭時已經站好，不用抬頭
             LiftHeadAboveFloor(animator, _standUpFloorY, standUpHeadClearance, standUpMaxChestLift, standUpMaxNeckLift);
 
         // ==========================================
