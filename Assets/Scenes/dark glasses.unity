@@ -18384,7 +18384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb81677c3057ef446b58d830af665114, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlassBridgeCollapse
-  collapseSpeed: 4.6
+  collapseSpeed: 6.2
   maxLag: 7
   catchUpSpeed: 12
   startDelay: 0.6

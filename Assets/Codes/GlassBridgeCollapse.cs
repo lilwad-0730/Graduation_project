@@ -7,7 +7,7 @@ using UnityEngine;
 /// 倒數第二根到最後一根燭火之間那五片「踩上去 2 秒就整片碎掉」的玻璃，改成：
 ///   ・她踏上第一片，身後傳來一聲碎裂——崩塌從橋頭開始，一小塊一小塊（約 1.4 公尺）往她追過來，
 ///     每塊碎掉都往下掉成碎片、配一聲玻璃碎裂。
-///   ・崩塌比她慢（4.6 m/s，她跑 6），一直往前跑一定來得及；但它最多只落後她 maxLag 公尺，
+///   ・崩塌速度（★1120 6.2 m/s，比她跑的 6 稍快；原本 4.6 比她慢），一直跑會被慢慢逼近，要不停地跑；它最多只落後她 maxLag 公尺，
 ///     停下來、回頭，大約 1.5 秒腳下就碎了（掉下去＝回到橋頭的存檔點 229.5 重來）。
 ///   ・最後一根燭火的光擋住崩塌：她點燃之前，崩塌進不了燭台那片玻璃，點燃時（不能動的那 1.5～1.9 秒）不會被追上。
 ///   ・點燃的那一刻：整座橋往她腳邊崩下去（一聲破鏡巨響），停在她身後、燭台旁邊——她被光接住，接結局。
@@ -17,7 +17,7 @@ using UnityEngine;
 ///   ・原本的 BreakablePlatform／BreakableGlassFloor／GlassShatterFX 開始崩落前會問 Owns()，這幾片由這支接管就不自己碎；
 ///     怪物（MonsterGlassBreaker）也不整片打碎它們。
 ///   ・碎掉的部分：碰撞框從左邊縮短；畫面用一張 SpriteMask 蓋住「已經碎掉的範圍」（只影響這幾片玻璃）；
-///     碎片是用玻璃原圖切出來的小塊，自己做重力、旋轉、淡出。
+///     碎片：★1120 照 mirror wall_001 的碎法，把那一小塊玻璃原圖切成細小不規則四邊形，往下掉、3D 翻轉、2 秒後縮小消失。
 ///   ・★1118 崩塌前緣不再有任何光提示（冷光、熄燈的透光洞都拿掉），黑暗裡只靠聲音和腳下的碎裂感。
 ///   ・重生（IResettable）：全部復原。
 /// 由 ShadowMonsterController.EnsureInitialized 自動掛上（場景裡也掛了一份，Inspector 數值會保留）。
@@ -37,7 +37,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
 
     [Header("崩塌的速度（她跑 6 m/s）")]
     [Tooltip("崩塌往前追的速度（公尺／秒）。要比她慢，一直跑就一定來得及")]
-    public float collapseSpeed = 4.6f;
+    public float collapseSpeed = 6.2f;   // ★1120 4.6 → 6.2（碎得太慢）；注意：比她跑的 6 m/s 快
     [Tooltip("崩塌最多落後她幾公尺：她跑太前面，崩塌會加速追到這個距離。停下來大約 maxLag ÷ collapseSpeed 秒腳下就碎")]
     public float maxLag = 7f;
     [Tooltip("落後太多時追上來的速度")]
@@ -55,14 +55,21 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     [Tooltip("點燃後崩到她身後幾公尺停（也不會崩進燭台左右這個距離）")]
     public float finaleStopBehind = 2f;
 
-    [Header("碎片")]
-    [Tooltip("每一小塊碎成幾大片")]
-    public int chunksPerTile = 3;
-    [Tooltip("每一小塊另外噴幾顆細碎屑")]
-    public int shardsPerTile = 7;
-    public float fragmentGravity = 18f;
-    [Tooltip("碎片多久消失（秒）")]
-    public float fragmentLife = 1.6f;
+    [Header("碎片（★1120 照 mirror wall_001 的碎法：Destructible 切細小不規則四邊形 + ShatteredObject 的力道與縮小消失）")]
+    [Tooltip("玻璃短邊（高度）切成幾列；長邊照比例算。mirror wall_001 是 6")]
+    [Range(3, 10)] public int gridRows = 6;
+    [Tooltip("四邊形頂點的不規則抖動。mirror wall_001 是 0.35")]
+    [Range(0.1f, 0.45f)] public float jitterAmount = 0.35f;
+    [Tooltip("碎裂爆裂力道。mirror wall_001 是 2.5")]
+    public float explosionForce = 2.5f;
+    [Tooltip("碎片維持原大的時間（秒），之後開始縮小。mirror wall_001 是 2")]
+    public float disappearDelay = 2f;
+    [Tooltip("縮小到消失的時間（秒）。mirror wall_001 是 1")]
+    public float shrinkDuration = 1f;
+    [Tooltip("碎片翻轉的最快角速度（弧度／秒）。mirror wall_001 的碎片是剛體，Unity 預設上限 7")]
+    public float maxSpin = 7f;
+    [Tooltip("同時存在的碎片上限；超過就把新碎的那一小塊切粗一點（列數減半），避免整座橋崩下去時太多")]
+    public int maxLiveShards = 1400;
 
     [Header("聲音")]
     [Tooltip("每碎一塊的聲音（留空＝Resources/Sfx/Glass_BridgeCrackFiltered：原本的 Glass_BridgeCrack 濾掉 6 kHz 以上的高頻、壓低音量（約低 10 dB），原檔太大聲太尖）")]
@@ -87,6 +94,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
         public float left, right, tileW;
         public int tiles, broken;
         public bool isCandle;
+        public Material shardMat;   // 碎片用的材質（玻璃原本的材質＋原圖），每片玻璃一個
     }
     private readonly List<Piece> _pieces = new List<Piece>();
     private Piece _candlePiece;
@@ -94,11 +102,9 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     private class Frag
     {
         public Transform t;
-        public SpriteRenderer sr;
-        public Sprite ownSprite;
-        public Vector3 v;
-        public float w, age, life;
-        public Color c;
+        public Mesh mesh;
+        public Vector3 v, axis, scale0;
+        public float spin, age;
     }
     private readonly List<Frag> _frags = new List<Frag>();
 
@@ -119,7 +125,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     public float BridgeFloorTop => _floorTop;
 
     private SpriteMask _mask;
-    private Sprite _dot, _square;
+    private Sprite _square;
     private AudioSource[] _src;
     private int _srcNext;
     private float _lastCrackAt = -1f;
@@ -175,8 +181,7 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
         _floorMidY = _pieces[0].sr.bounds.center.y;
         _front = _left;
 
-        _dot = MakeDot(32);
-        _square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
+        _square =Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
 
         // 蓋住「已經碎掉的範圍」的遮罩（只影響這幾片玻璃）
         _mask = new GameObject("碎橋_已碎範圍遮罩（自動生成）").AddComponent<SpriteMask>();
@@ -306,88 +311,121 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
     }
 
     // ───────── 碎一小塊 ─────────
+    // ★1120 照 mirror wall_001 的碎法（Destructible.ShatterSpriteToMicroGlassQuads ＋ ShatteredObject）：
+    //   這一小塊玻璃的原圖切成「短邊 gridRows 列、長邊照比例」的網格，內部頂點不規則抖動，每格是一片小四邊形碎片；
+    //   碎片往下掉、3D 翻轉（翻到側面會一閃一閃，像真的玻璃片），disappearDelay 秒後 shrinkDuration 秒內縮小消失。
     private void BreakTile(Piece p, int i)
     {
-        float x0 = p.left + i * p.tileW, x1 = x0 + p.tileW;
         SpriteRenderer sr = p.sr;
         Sprite sp = sr.sprite;
-        Color baseC = sr.color;
-        baseC.a = Mathf.Clamp01(Mathf.Max(baseC.a * 1.8f, 0.45f));
-
         if (sp != null && sp.texture != null)
         {
             Bounds sb = sr.bounds;
-            Rect tr = sp.textureRect;
-            // 隨機切成幾大片
-            int n = Mathf.Max(1, chunksPerTile);
-            float[] cuts = new float[n + 1];
-            cuts[0] = x0; cuts[n] = x1;
-            for (int k = 1; k < n; k++) cuts[k] = Mathf.Lerp(x0, x1, (k + Random.Range(-0.3f, 0.3f)) / n);
-            for (int k = 0; k < n; k++)
-            {
-                float a = Mathf.Max(cuts[k], sb.min.x), b = Mathf.Min(cuts[k + 1], sb.max.x);
-                if (b - a < 0.05f) continue;
-                float u0 = tr.x + (a - sb.min.x) / sb.size.x * tr.width;
-                float u1 = tr.x + (b - sb.min.x) / sb.size.x * tr.width;
-                if (sr.flipX) { float f0 = tr.x + tr.xMax - u1, f1 = tr.x + tr.xMax - u0; u0 = f0; u1 = f1; }
-                Sprite piece = Sprite.Create(sp.texture, new Rect(u0, tr.y, Mathf.Max(1f, u1 - u0), tr.height), new Vector2(0.5f, 0.5f), sp.pixelsPerUnit, 0, SpriteMeshType.FullRect);
-                var f = SpawnFrag(piece, true, new Vector3((a + b) * 0.5f, sb.center.y, sr.transform.position.z - 0.02f), p.tr.lossyScale, baseC, p);
-                f.v = new Vector3(Random.Range(-0.8f, 0.8f), Random.Range(-0.5f, 1.4f), 0f);
-                f.w = Random.Range(-220f, 220f);
-                f.sr.flipX = sr.flipX;
-            }
+            float x0 = Mathf.Max(p.left + i * p.tileW, sb.min.x), x1 = Mathf.Min(p.left + (i + 1) * p.tileW, sb.max.x);
+            if (x1 - x0 > 0.02f) ShatterRegion(p, sb, x0, x1);
         }
-
-        // 細碎屑
-        for (int k = 0; k < shardsPerTile; k++)
-        {
-            float s = Random.Range(0.06f, 0.2f);
-            Color c = Color.Lerp(new Color(0.8f, 0.92f, 1f, 0.9f), baseC, Random.value * 0.5f);
-            var f = SpawnFrag(_dot, false, new Vector3(Random.Range(x0, x1), _floorTop + Random.Range(-0.3f, 0.2f), p.tr.position.z - 0.03f), new Vector3(s, s, 1f), c, p);
-            f.v = new Vector3(Random.Range(-1.5f, 1.5f), Random.Range(0.5f, 3f), 0f);
-            f.w = Random.Range(-400f, 400f);
-            f.life = fragmentLife * Random.Range(0.4f, 0.8f);
-        }
-
         PlayCrack(Random.Range(0.85f, 1.05f), 1f);   // 音調只往下飄：往上會更尖
     }
 
-    private Frag SpawnFrag(Sprite s, bool own, Vector3 pos, Vector3 scale, Color c, Piece p)
+    private void ShatterRegion(Piece p, Bounds sb, float x0, float x1)
     {
-        var go = new GameObject("碎橋碎片");
-        go.transform.position = pos;
-        go.transform.localScale = scale;
-        var r = go.AddComponent<SpriteRenderer>();
-        r.sprite = s;
-        r.sharedMaterial = p.sr.sharedMaterial;
-        r.sortingLayerID = p.sr.sortingLayerID;
-        r.sortingOrder = p.sr.sortingOrder + 1;
-        r.color = c;
-        var f = new Frag { t = go.transform, sr = r, ownSprite = own ? s : null, c = c, life = fragmentLife * Random.Range(0.8f, 1.1f) };
-        _frags.Add(f);
-        return f;
+        SpriteRenderer sr = p.sr;
+        Sprite sp = sr.sprite;
+        Texture2D tex = sp.texture;
+        Rect rect = sp.textureRect;
+        if (p.shardMat == null)
+        {
+            p.shardMat = new Material(sr.sharedMaterial) { name = "碎橋碎片（自動生成）" };
+            p.shardMat.mainTexture = tex;
+        }
+
+        float w = x1 - x0, h = Mathf.Max(0.01f, sb.size.y);
+        int rows = Mathf.Max(3, gridRows);
+        if (_frags.Count > maxLiveShards) rows = Mathf.Max(2, rows / 2);
+        int cols = Mathf.Clamp(Mathf.RoundToInt(rows * w / h), 2, 60);
+
+        // 網格（0～1，x 是這一小塊的範圍、y 是整片玻璃的高度）；外框不抖
+        Vector2[,] g = new Vector2[cols + 1, rows + 1];
+        for (int x = 0; x <= cols; x++)
+            for (int y = 0; y <= rows; y++)
+            {
+                float ox = (x > 0 && x < cols) ? Random.Range(-jitterAmount, jitterAmount) / cols : 0f;
+                float oy = (y > 0 && y < rows) ? Random.Range(-jitterAmount, jitterAmount) / rows : 0f;
+                g[x, y] = new Vector2(Mathf.Clamp01((float)x / cols + ox), Mathf.Clamp01((float)y / rows + oy));
+            }
+
+        Color32 col = sr.color;
+        float z = sb.center.z;
+        for (int x = 0; x < cols; x++)
+            for (int y = 0; y < rows; y++)
+            {
+                Vector2 q0 = g[x, y], q1 = g[x + 1, y], q2 = g[x + 1, y + 1], q3 = g[x, y + 1];
+                Vector2 c = (q0 + q1 + q2 + q3) * 0.25f;
+                Vector3 world = new Vector3(x0 + c.x * w, sb.min.y + c.y * h, z + Random.Range(-0.02f, 0.02f));
+
+                var verts = new Vector3[4];
+                var uvs = new Vector2[4];
+                Vector2[] q = { q0, q1, q2, q3 };
+                for (int k = 0; k < 4; k++)
+                {
+                    float wx = x0 + q[k].x * w, wy = sb.min.y + q[k].y * h;
+                    verts[k] = new Vector3(wx - world.x, wy - world.y, 0f);
+                    float u = (wx - sb.min.x) / sb.size.x;            // 在整張玻璃圖上的位置
+                    if (sr.flipX) u = 1f - u;                          // 原圖左右翻面：碎片貼圖跟著翻
+                    uvs[k] = new Vector2((rect.x + u * rect.width) / tex.width, (rect.y + q[k].y * rect.height) / tex.height);
+                }
+                var mesh = new Mesh { name = "碎橋碎片" };
+                mesh.vertices = verts;
+                mesh.uv = uvs;
+                mesh.colors32 = new[] { col, col, col, col };
+                mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+                mesh.RecalculateBounds();
+
+                var go = new GameObject("碎橋碎片");
+                go.transform.position = world;
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = go.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = p.shardMat;
+                mr.sortingLayerID = sr.sortingLayerID;
+                mr.sortingOrder = sr.sortingOrder + 1;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                mr.receiveShadows = false;
+
+                // 力道照 mirror wall_001：Destructible 的自由落體推力 ＋ ShatteredObject 的爆裂推力（碎片質量 1）
+                float f = explosionForce;
+                Vector3 v = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.8f, -0.2f), 0f) * (f * Random.Range(0.5f, 1f))
+                          + new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(-3.5f, 0.5f), 0f) * f;
+                _frags.Add(new Frag
+                {
+                    t = go.transform, mesh = mesh, v = v, scale0 = Vector3.one,
+                    axis = Random.onUnitSphere, spin = Random.Range(0.45f, 1f) * maxSpin * Mathf.Rad2Deg,
+                });
+            }
     }
 
     private void UpdateFragments(float dt)
     {
+        float gy = Physics.gravity.y;
         for (int i = _frags.Count - 1; i >= 0; i--)
         {
             Frag f = _frags[i];
             f.age += dt;
-            if (f.t == null || f.age >= f.life) { KillFrag(f); _frags.RemoveAt(i); continue; }
-            f.v.y -= fragmentGravity * dt;
+            if (f.t == null || f.age >= disappearDelay + shrinkDuration) { KillFrag(f); _frags.RemoveAt(i); continue; }
+            f.v.y += gy * dt;
             f.t.position += f.v * dt;
-            f.t.Rotate(0f, 0f, f.w * dt);
-            float fade = 1f - Mathf.Clamp01((f.age - f.life * 0.45f) / (f.life * 0.55f));
-            Color c = f.c; c.a *= fade;
-            f.sr.color = c;
+            f.t.rotation = Quaternion.AngleAxis(f.spin * dt, f.axis) * f.t.rotation;
+            if (f.age > disappearDelay)
+            {
+                float t = (f.age - disappearDelay) / Mathf.Max(0.01f, shrinkDuration);
+                f.t.localScale = f.scale0 * Mathf.Clamp01(1f - t * t * t);   // 跟 ShatteredObject 一樣：三次方縮小
+            }
         }
     }
 
     private static void KillFrag(Frag f)
     {
         if (f.t != null) Destroy(f.t.gameObject);
-        if (f.ownSprite != null) Destroy(f.ownSprite);
+        if (f.mesh != null) Destroy(f.mesh);
     }
 
     // ───────── 前緣：遮罩 ─────────
@@ -463,24 +501,6 @@ public class GlassBridgeCollapse : MonoBehaviour, IResettable
         }
         for (int i = _frags.Count - 1; i >= 0; i--) KillFrag(_frags[i]);
         if (_mask != null) Destroy(_mask.gameObject);
-    }
-
-    private static Sprite MakeDot(int size)
-    {
-        Texture2D t = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        t.wrapMode = TextureWrapMode.Clamp;
-        Color32[] px = new Color32[size * size];
-        float c = (size - 1) * 0.5f;
-        for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
-                float a = Mathf.Clamp01(1f - d);
-                a = a * a * (3f - 2f * a);
-                px[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
-            }
-        t.SetPixels32(px);
-        t.Apply(false, true);
-        return Sprite.Create(t, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        foreach (var p in _pieces) if (p.shardMat != null) Destroy(p.shardMat);
     }
 }
