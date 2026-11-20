@@ -241,6 +241,7 @@ public class WolfShadowForewarnFX : MonoBehaviour
 
     private void UpdateDust(float dt)
     {
+        if (_dust == null) return; // ★1108 AutoFix：遊戲中重新編譯腳本後，灰塵陣列（不可序列化的 struct）會被清空、Awake 也不會再跑，沒灰塵就跳過，影子照常
         float W = Screen.width, H = Screen.height;
         for (int i = 0; i < _dust.Length; i++)
         {
