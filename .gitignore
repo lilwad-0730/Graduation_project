@@ -109,3 +109,13 @@ Poster
 # Local Codex pstack installation
 /.agents/
 /skills-lock.json
+
+# ── 專案自訂：本機產生、不需要進版控 ──
+# Unity 當機後自動救回的場景備份
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
+# 匯出的暫存檔（預覽圖、轉出的模型等）
+/_Exports/
+# Performance Testing 套件每次跑測試都會重寫
+/[Aa]ssets/[Rr]esources/PerformanceTestRun*.json
+/[Aa]ssets/[Rr]esources/PerformanceTestRun*.json.meta
