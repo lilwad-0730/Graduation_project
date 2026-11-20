@@ -695,6 +695,7 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log($"【墜落】耗時 {ControlledFallSeconds:F2} 秒、結束時速度 {_controlledFallVy:F1} 米／秒（{why}）");   // ★1024 方便比對每次墜落是否一致
         _lastFallEndSpeed = Mathf.Abs(_controlledFallVy);
         _controlledFall = false;
+        _fallAnimFromStart = false;
         if (rb != null)
         {
             rb.linearDamping = _savedDamping;
@@ -1245,6 +1246,43 @@ public class PlayerMovement : MonoBehaviour
                   $" isUnderwater: {isUnderwater}\n" +
                   $" baseSpeed: {baseSpeed} | currentSpeed: {currentSpeed}\n" +
                   $"==============================================");
+
+        TryStartRuinsFallAtSceneStart();
+    }
+
+    [Header("★1120 廢墟開場：從擺放的位置直接開始墜落")]
+    [Tooltip("廢墟場景一開始她在半空中、正下方就是墜落通道（FallingBackground）時：第一格就播落下動作，固定速度墜落也從她擺放的位置開始算，\n" +
+             "不再先用站姿往下掉、碰到墜落通道才切動作。鏡頭照場景裡擺的位置，不另外移動")]
+    public bool ruinsStartFallImmediately = true;
+    private bool _fallAnimFromStart;
+
+    private void TryStartRuinsFallAtSceneStart()
+    {
+        if (!ruinsStartFallImmediately || rb == null || rb.isKinematic || isUnderwater) return;
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.IndexOf("ruined", System.StringComparison.OrdinalIgnoreCase) < 0) return;
+        Vector3 from = playerCollider != null ? playerCollider.bounds.center : transform.position;
+        float below = playerCollider != null ? playerCollider.bounds.extents.y + 0.5f : 1.5f;
+        // 腳下有地板：不是開場墜落
+        foreach (RaycastHit h in Physics.RaycastAll(from, Vector3.down, below, ~0, QueryTriggerInteraction.Ignore))
+            if (h.collider != null && h.collider != playerCollider && !h.collider.transform.IsChildOf(transform)) return;
+        // 正下方 40 米內有墜落通道（只比左右、上下：通道的碰撞框很薄，Z 跟主角不在同一層，射線打不到）
+        bool fallingShaftBelow = false;
+        foreach (GameObject fb in GameObject.FindGameObjectsWithTag("FallingBackground"))
+            foreach (Collider c in fb.GetComponents<Collider>())
+            {
+                if (c == null || !c.enabled) continue;
+                Bounds b = c.bounds;
+                if (from.x >= b.min.x && from.x <= b.max.x && b.max.y <= from.y + 0.5f && b.max.y >= from.y - 40f) fallingShaftBelow = true;
+            }
+        if (!fallingShaftBelow) return;
+        EnterFallingBackground("★1120 開場就在墜落");
+        _fallAnimFromStart = true;
+        if (animator != null)
+        {
+            animator.Play("Falling", 0, 0f);   // 第一格就是落下動作，不從站姿淡過去
+            animator.Update(0f);
+            currentAnimState = "Falling";
+        }
     }
 
     void Update()
@@ -1644,7 +1682,7 @@ public class PlayerMovement : MonoBehaviour
             // ★1024 固定速度墜落是演出：落下動畫從「墜落開始」算固定秒數就播，不看滯空計時、地面偵測、垂直速度（那些每次進墜落區的狀態都不同，
             //   會讓動畫時間忽早忽晚）；傳送接力時 _controlledFall 不中斷，動畫也不會重播。
             bool scriptedFall = _controlledFall;
-            if (scriptedFall) rawFalling = ControlledFallSeconds >= controlledFallAnimDelay;
+            if (scriptedFall) rawFalling = ControlledFallSeconds >= controlledFallAnimDelay || _fallAnimFromStart;   // ★1120 開場就在墜落：第一格就是落下動作
 
             // ★1011 防抖：條件要連續成立 fallAnimDebounceSeconds 秒才真的切成落下動畫（速度剛好在門檻上下抖動時不會閃一下）；
             //   一落地（或條件消失）馬上放掉，落地不拖。
@@ -2705,6 +2743,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("FallingBackground"))
         {
+            EnterFallingBackground("碰觸到 FallingBackground");
+        }
+        else if (other.CompareTag("RuinedBackground"))
+        {
+            if (_ruinsIntroCloseupStarted) return;
+            OnEnterRuinedBackground();
+        }
+    }
+
+    /// <summary>進入墜落通道：鎖橫向、開始固定速度墜落（★1120 抽出來，開場就在墜落時也走這裡）。</summary>
+    private void EnterFallingBackground(string why)
+    {
+        {
             // ★ 防止重複觸發：同一次墜落只允許進入一次
             if (_fallingBGEntered) return;
             _fallingBGEntered = true;
@@ -2713,7 +2764,7 @@ public class PlayerMovement : MonoBehaviour
             _ruinsIntroLightSynced = false;
             _ruinsIntroCloseupStarted = false;
 
-            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始順暢高速向下墜落！");
+            Debug.Log($"{why}！鎖死橫向移動，開始順暢高速向下墜落！");
             freezeHorizontal = true;
             SyncGuidanceLightToRuinsIntroOnce();
             StartRuinsIntroLightGuard();
@@ -2731,10 +2782,11 @@ public class PlayerMovement : MonoBehaviour
                 respawnSystem.enabled = false;
             }
         }
-        else if (other.CompareTag("RuinedBackground"))
-        {
-            if (_ruinsIntroCloseupStarted) return;
+    }
 
+    private void OnEnterRuinedBackground()
+    {
+        {
             Debug.Log("碰觸到 RuinedBackground！維持墜落鎖定，鏡頭暫時特寫廢墟第一光球，直到玩家落到廢墟地板。");
             freezeHorizontal = true;
             _waitingForRuinsLanding = true;

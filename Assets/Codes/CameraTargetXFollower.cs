@@ -669,17 +669,51 @@ public class CameraTargetXFollower : MonoBehaviour
         if (_fallingBoundsList == null || _fallingBoundsList.Count == 0) return null;
         // ★1006 要真的掉進通道（低於頂端 fallingEntryDepth）才切進墜落模式；已在墜落模式中照原本的寬容（頂端上方 1 米）
         bool alreadyFalling = currentMode == CameraMode.Falling;
+        // ★1120 她已經在固定速度墜落（廢墟開場從通道頂端上方就開始掉）：還沒碰到通道也算墜落模式，
+        //   鏡頭直接停在通道最上面那張圖裡等她掉進來，不要照到上面沒有背景的天空（藍屏）
+        bool scriptedFall = PlayerInControlledFall();
+        Bounds? above = null;
         for (int i = 0; i < _fallingBoundsList.Count; i++)
         {
             Bounds b = _fallingBoundsList[i];
             float topY = alreadyFalling ? b.max.y + 1f : b.max.y - fallingEntryDepth;
-            if (playerPos.x >= b.min.x - 3f && playerPos.x <= b.max.x + 3f &&
-                playerPos.y >= b.min.y - 1f && playerPos.y <= topY)
+            bool inColumn = playerPos.x >= b.min.x - 3f && playerPos.x <= b.max.x + 3f;
+            if (inColumn && playerPos.y >= b.min.y - 1f && playerPos.y <= topY)
             {
                 return b;
             }
+            if (scriptedFall && inColumn && playerPos.y > topY && (!above.HasValue || b.max.y > above.Value.max.y)) above = b;
         }
-        return null;
+        return above;
+    }
+
+    [Header("★1120 廢墟墜落：鏡頭最高只到這張圖的上緣")]
+    [Tooltip("墜落中鏡頭畫面的上緣不會超過這個物件（圖）的上緣，不會照到上面沒有背景圖的藍色天空。留空＝不鎖")]
+    public string fallCameraTopLockName = "connect_0 (1)";
+    private float _fallTopLockY = float.PositiveInfinity;
+    private bool _fallTopLockSearched;
+    private PlayerMovement _followPm;
+
+    private bool PlayerInControlledFall()
+    {
+        if (_followPm == null) _followPm = FindAnyObjectByType<PlayerMovement>();
+        return _followPm != null && _followPm.IsInControlledFall;
+    }
+
+    /// <summary>鎖鏡頭上緣的高度：那張圖（SpriteRenderer）的上緣；沒有圖就用碰撞框。找不到＝不鎖。</summary>
+    private float FallTopLockY()
+    {
+        if (_fallTopLockSearched) return _fallTopLockY;
+        _fallTopLockSearched = true;
+        if (string.IsNullOrEmpty(fallCameraTopLockName)) return _fallTopLockY;
+        GameObject go = GameObject.Find(fallCameraTopLockName);
+        if (go == null) return _fallTopLockY;
+        Renderer r = go.GetComponent<Renderer>();
+        Collider c = go.GetComponent<Collider>();
+        if (r != null) _fallTopLockY = r.bounds.max.y;
+        else if (c != null) _fallTopLockY = c.bounds.max.y;
+        Debug.Log($"【墜落鏡頭】★1120 畫面上緣鎖在 '{fallCameraTopLockName}' 的上緣 y={_fallTopLockY:F2}");
+        return _fallTopLockY;
     }
 
     public void ReinitializeCameraForZone(BackgroundZone zone, Vector3 playerPos)
@@ -890,7 +924,8 @@ public class CameraTargetXFollower : MonoBehaviour
             {
                 if (_vcam != null) _vcam.PreviousStateIsValid = false;
                 ApplyFallingModePosition(activeFallingBounds.Value, playerPos, true);
-                BeginModeSwitchBlend(switchFromPos, switchFromOrtho);
+                // ★1120 場景剛開始就在墜落（廢墟開場）：直接到位，不從開場的天空位置（藍屏）慢慢混過來
+                if (Time.timeSinceLevelLoad > 1f) BeginModeSwitchBlend(switchFromPos, switchFromOrtho);
                 return;
             }
         }
@@ -1027,6 +1062,9 @@ public class CameraTargetXFollower : MonoBehaviour
         Bounds yb = mergeStackedFallingBackgrounds ? MergeStackedFallingBounds(fb) : fb;
         float minY = yb.min.y + halfHeight;
         float maxY = yb.max.y - halfHeight;
+        // ★1120 畫面上緣不超過 connect_0 (1) 的上緣（不照到上面沒有背景的藍色）
+        float lockTop = FallTopLockY();
+        if (!float.IsInfinity(lockTop)) maxY = Mathf.Min(maxY, lockTop - halfHeight);
 
         if (minY <= maxY)
         {
