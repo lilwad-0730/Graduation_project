@@ -157,6 +157,7 @@ public class RuinsFallCinematics : MonoBehaviour
             }
         }
         player.ruinsFallSpeedMultiplier = fast ? Mathf.Max(0.1f, silentFallSpeedMultiplier) : 1f;
+        player.ruinsFallFastMultiplier = Mathf.Max(1f, silentFallSpeedMultiplier);   // ★1120 給落下動作對照：全速＝這個倍率
     }
 
     /// <summary>★1120 從現在到最後一句旁白講完還要幾秒（照目前的排程：句長＋句間空檔）。</summary>

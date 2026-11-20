@@ -613,6 +613,42 @@ public class PlayerMovement : MonoBehaviour
     [System.NonSerialized] public float ruinsFallAccelMultiplier = 1f;
 
     /// <summary>★1120 天空段「原本」（倍率 1）在墜落第 seconds 秒的速度（米／秒，正值）。給 RuinsFallCinematics 估算旁白講完要掉多遠。</summary>
+    /// <summary>★1120 沒播旁白時的墜落倍率（RuinsFallCinematics 每幀設定）。落下動作的播放速度＝目前實際墜落速度相對這個全速的比例。</summary>
+    [System.NonSerialized] public float ruinsFallFastMultiplier = 1f;
+    [Tooltip("★1120 墜落時，落下動作的播放速度跟著墜落速度變：沒旁白全速時 1 倍，播人聲旁白、墜落放慢時，動作照同樣的比例放慢")]
+    public bool fallAnimFollowsFallSpeed = true;
+    private bool _fallAnimSpeedOwned;
+
+    /// <summary>
+    /// ★1120 落下動作跟著墜落速度放慢：比例＝實際墜落速度 ÷（這個時間點的基本速度 × 全速倍率）。
+    /// 用「實際速度」算，所以人聲開始時墜落怎麼減速，動作就怎麼一起慢下來（不是瞬間切換）。
+    /// </summary>
+    private void UpdateFallAnimSpeed()
+    {
+        if (animator == null) return;
+        // 只管「旁白造成的放慢」：開場剛起步、傳送進廢墟後的快速墜落也會有速度變化，但那不是放慢，動作維持原速
+        bool apply = fallAnimFollowsFallSpeed && _controlledFall && !_ruinsDropPhase && currentAnimState == "Falling" && ruinsFallFastMultiplier > 1.001f;
+        if (!apply)
+        {
+            _narrationSlowed = false;
+            if (_fallAnimSpeedOwned) { animator.speed = 1f; _fallAnimSpeedOwned = false; }
+            return;
+        }
+        float fast = ruinsFallFastMultiplier;
+        if (ruinsFallSpeedMultiplier < fast - 0.01f) _narrationSlowed = true;   // 旁白開始：墜落要放慢了
+        float baseSpd = RuinsFallBaseSpeedAt(ControlledFallSeconds);
+        float speed = 1f;
+        if (_narrationSlowed && baseSpd > 0.01f)
+        {
+            float mult = Mathf.Clamp(Mathf.Abs(_controlledFallVy) / baseSpd, 1f, fast);   // 實際墜落速度是基本速度的幾倍（1＝旁白中、fast＝全速）
+            speed = mult / fast;
+            if (ruinsFallSpeedMultiplier >= fast - 0.01f && mult >= fast - 0.05f) { _narrationSlowed = false; speed = 1f; }   // 旁白結束、已經加速回全速
+        }
+        animator.speed = speed;
+        _fallAnimSpeedOwned = true;
+    }
+    private bool _narrationSlowed;
+
     public float RuinsFallBaseSpeedAt(float seconds)
     {
         float durScale = Mathf.Max(0.25f, ruinsFallDurationScale);
@@ -1826,6 +1862,8 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogError("[動畫診斷] animator 是 NULL！請確認皮套子物件上有 Animator 組件，或在 Inspector 手動指定！");
         }
+
+        UpdateFallAnimSpeed();   // ★1120 墜落時落下動作跟著墜落速度放慢／加快
 
         // ==========================================
         // 3. 處理抓取與移動 (恢復原本的邏輯)
