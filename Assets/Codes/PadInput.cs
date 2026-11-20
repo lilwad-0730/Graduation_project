@@ -39,13 +39,15 @@ public static class PadInput
     }
 
     // ── 跳／確定 ──
-    public static bool JumpDown => Pad != null && Pad.buttonSouth.wasPressedThisFrame;
-    public static bool JumpHeld => Pad != null && Pad.buttonSouth.isPressed;
+    // 新輸入系統認得手把就讀 buttonSouth；另外多接舊輸入的 joystick button 0（Xbox 的 A），認不到標準手把時也能跳
+    public static bool JumpDown => (Pad != null && Pad.buttonSouth.wasPressedThisFrame) || Input.GetKeyDown(KeyCode.JoystickButton0);
+    public static bool JumpHeld => (Pad != null && Pad.buttonSouth.isPressed) || Input.GetKey(KeyCode.JoystickButton0);
 
     // ── 抓取（＝Shift）──
-    public static bool GrabDown => Pad != null && Pad.buttonWest.wasPressedThisFrame;
-    public static bool GrabUp => Pad != null && Pad.buttonWest.wasReleasedThisFrame;
-    public static bool GrabHeld => Pad != null && Pad.buttonWest.isPressed;
+    // 同跳躍：另外多接舊輸入的 joystick button 2（Xbox 的 X）
+    public static bool GrabDown => (Pad != null && Pad.buttonWest.wasPressedThisFrame) || Input.GetKeyDown(KeyCode.JoystickButton2);
+    public static bool GrabUp => (Pad != null && Pad.buttonWest.wasReleasedThisFrame) || Input.GetKeyUp(KeyCode.JoystickButton2);
+    public static bool GrabHeld => (Pad != null && Pad.buttonWest.isPressed) || Input.GetKey(KeyCode.JoystickButton2);
 
     // ── 其他動作 ──
     public static bool ShieldDown => Pad != null && Pad.buttonEast.wasPressedThisFrame;
