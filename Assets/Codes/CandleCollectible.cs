@@ -109,6 +109,12 @@ public class CandleCollectible : MonoBehaviour, IResettable
             {
                 Collect();
             }
+            // ★1119 已點亮的燭台：怪物的手（身體最前緣）一碰到就受傷，不用等身體中心走到燭台上。
+            //   還沒點亮的燭台照舊用上面的身體判定來算「漏掉」，不然她點到一半、手先伸過來就直接判漏。
+            else if (IsLitByPlayer && ShadowMonsterController.Instance.FrontTouchesCandle(transform.position))
+            {
+                TryCollect();
+            }
             else if (_unlitSince >= 0f)
             {
                 // ★1029 怪物碰到時玩家還沒點燃，寬限還沒滿怪物就衝過去了（最後衝刺速度快、重疊不到 0.3 秒）：

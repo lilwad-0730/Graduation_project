@@ -152,6 +152,14 @@ public class ScreenFeedbackManager : MonoBehaviour
         flashCoroutine = StartCoroutine(FlashRedBorderCoroutine(3, flashHalfCycleDuration));
     }
 
+    /// <summary>★1116 只震畫面、不閃紅邊（怪物撲空、燭火爆光用）。</summary>
+    public void TriggerShake(float duration, float power)
+    {
+        if (duration <= 0f || power <= 0f) return;
+        if (shakeDuration > 0f && shakePower >= power) return;   // 正在震得更大：不要蓋掉
+        TriggerCameraShake(duration, power);
+    }
+
     private void TriggerCameraShake(float duration, float power)
     {
         shakeDuration = duration;

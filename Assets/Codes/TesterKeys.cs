@@ -19,6 +19,8 @@ using UnityEngine.SceneManagement;
 ///   F4（★1017，CottonCastle）：傳到上層城堡跳崖處上方，直接掉進跳崖觸發區（看墜落、落進廢墟那一段）。
 ///   F10（★1021，任何場景）：直接跳到「結局漫畫」——跟玻璃館吃完最後一根燭火之後一樣，進 Book 場景翻結尾漫畫，翻完自動捲名單。
 ///     用來測結局漫畫的翻頁、倒數圈，不用每次從頭打到玻璃館。
+///   F2（★1118，星空玻璃館）：直接測「碎橋衝刺」——傳到碎橋前面 8 米，除了最後一根以外的燭火都算吃過、略過怪物登場運鏡，
+///     怪物立刻從她身後開追；掉下橋會從 x 229.5 的追逐存檔點重生。
 ///   演出、重生、文字卡期間不傳送。
 /// </summary>
 public class TesterKeys : MonoBehaviour
@@ -69,7 +71,8 @@ public class TesterKeys : MonoBehaviour
         bool orb = Input.GetKeyDown(KeyCode.F6);
         bool ruins = Input.GetKeyDown(KeyCode.F5);
         bool skyDive = Input.GetKeyDown(KeyCode.F4);
-        if (!next && !prev && !rock && !orb && !ruins && !skyDive) return;
+        bool bridgeTest = Input.GetKeyDown(KeyCode.F2);   // ★1118
+        if (!next && !prev && !rock && !orb && !ruins && !skyDive && !bridgeTest) return;
 
         if (_pm == null) _pm = FindAnyObjectByType<PlayerMovement>();
         if (_pm == null) return;
@@ -77,6 +80,22 @@ public class TesterKeys : MonoBehaviour
 
         string sceneName = SceneManager.GetActiveScene().name.ToLower();
         Vector3 p = _pm.transform.position;
+
+        if (bridgeTest)
+        {
+            // ★1118 直接測碎橋衝刺：先傳到橋前面，再叫怪物跳過前面劇情從她身後開追（順序不能反，怪物要照她的新位置擺）
+            if (!sceneName.Contains("dark glasses")) { Debug.Log("【測試鍵】F2 只在 星空玻璃館（dark glasses）有用"); return; }
+            GlassBridgeCollapse bridge = FindAnyObjectByType<GlassBridgeCollapse>();
+            ShadowMonsterController ctrl = FindAnyObjectByType<ShadowMonsterController>();
+            if (bridge == null || !bridge.IsReady || ctrl == null) { Debug.LogWarning("【測試鍵】F2：找不到碎橋或影子怪物（碎橋還沒就緒）"); return; }
+            float bx = bridge.BridgeLeftX - 8f;
+            float by = bridge.BridgeFloorTop + 1.6f;
+            if (Physics.Raycast(new Vector3(bx, bridge.BridgeFloorTop + 6f, 0f), Vector3.down, out RaycastHit hit, 40f, ~0, QueryTriggerInteraction.Ignore))
+                by = hit.point.y + 1.6f;
+            Warp(new Vector3(bx, by, 0f), "碎橋前（怪物直接開追）");
+            ctrl.TesterSkipToFinalStretch();
+            return;
+        }
 
         if (orb)
         {

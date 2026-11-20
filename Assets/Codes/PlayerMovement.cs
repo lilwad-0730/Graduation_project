@@ -179,6 +179,12 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector] public bool freezeHorizontal = false;
     [HideInInspector] public bool isCutsceneFrozen = false; // 用於劇情鎖定 (例如光絮移動時)
 
+    /// <summary>★1118 劇情自動走路：開著時 moveInput 由 scriptedMoveInput（-1～1）取代，不管操作有沒有被鎖住（結局：她自動走上觀景台）。重生／傳送會清掉。</summary>
+    [System.NonSerialized] public bool scriptedMove = false;
+    [System.NonSerialized] public float scriptedMoveInput = 0f;
+    /// <summary>★1118 劇情用：把她轉向左（-1）或右（+1）。</summary>
+    public void SetFacingScripted(float dir) { facingDirection = dir < 0f ? Vector3.left : Vector3.right; }
+
     private float _lastGroundContactTime = -999f;
     private Vector3 _lastGroundContactNormal = Vector3.up;
     private Vector3 _lastGroundContactPoint = Vector3.zero;
@@ -601,6 +607,56 @@ public class PlayerMovement : MonoBehaviour
     public float ruinsDropAcceleration = 45f;
     private bool _ruinsDropPhase;
     private float _lastFallEndSpeed;
+    /// <summary>★1120 墜落速度倍率（由 RuinsFallCinematics 每幀設定：播旁白時 1、沒播時 silentFallSpeedMultiplier）。天空段與白霧傳送後的快速砸地都套用。</summary>
+    [System.NonSerialized] public float ruinsFallSpeedMultiplier = 1f;
+    /// <summary>★1120 天空段加減速度倍率（由 RuinsFallCinematics 設定，跟速度倍率一起放大，切換才跟得上）。</summary>
+    [System.NonSerialized] public float ruinsFallAccelMultiplier = 1f;
+
+    /// <summary>★1120 天空段「原本」（倍率 1）在墜落第 seconds 秒的速度（米／秒，正值）。給 RuinsFallCinematics 估算旁白講完要掉多遠。</summary>
+    /// <summary>★1120 沒播旁白時的墜落倍率（RuinsFallCinematics 每幀設定）。落下動作的播放速度＝目前實際墜落速度相對這個全速的比例。</summary>
+    [System.NonSerialized] public float ruinsFallFastMultiplier = 1f;
+    [Tooltip("★1120 墜落時，落下動作的播放速度跟著墜落速度變：沒旁白全速時 1 倍，播人聲旁白、墜落放慢時，動作照同樣的比例放慢")]
+    public bool fallAnimFollowsFallSpeed = true;
+    private bool _fallAnimSpeedOwned;
+
+    /// <summary>
+    /// ★1120 落下動作跟著墜落速度放慢：比例＝實際墜落速度 ÷（這個時間點的基本速度 × 全速倍率）。
+    /// 用「實際速度」算，所以人聲開始時墜落怎麼減速，動作就怎麼一起慢下來（不是瞬間切換）。
+    /// </summary>
+    private void UpdateFallAnimSpeed()
+    {
+        if (animator == null) return;
+        // 只管「旁白造成的放慢」：開場剛起步、傳送進廢墟後的快速墜落也會有速度變化，但那不是放慢，動作維持原速
+        bool apply = fallAnimFollowsFallSpeed && _controlledFall && !_ruinsDropPhase && currentAnimState == "Falling" && ruinsFallFastMultiplier > 1.001f;
+        if (!apply)
+        {
+            _narrationSlowed = false;
+            if (_fallAnimSpeedOwned) { animator.speed = 1f; _fallAnimSpeedOwned = false; }
+            return;
+        }
+        float fast = ruinsFallFastMultiplier;
+        if (ruinsFallSpeedMultiplier < fast - 0.01f) _narrationSlowed = true;   // 旁白開始：墜落要放慢了
+        float baseSpd = RuinsFallBaseSpeedAt(ControlledFallSeconds);
+        float speed = 1f;
+        if (_narrationSlowed && baseSpd > 0.01f)
+        {
+            float mult = Mathf.Clamp(Mathf.Abs(_controlledFallVy) / baseSpd, 1f, fast);   // 實際墜落速度是基本速度的幾倍（1＝旁白中、fast＝全速）
+            speed = mult / fast;
+            if (ruinsFallSpeedMultiplier >= fast - 0.01f && mult >= fast - 0.05f) { _narrationSlowed = false; speed = 1f; }   // 旁白結束、已經加速回全速
+        }
+        animator.speed = speed;
+        _fallAnimSpeedOwned = true;
+    }
+    private bool _narrationSlowed;
+
+    public float RuinsFallBaseSpeedAt(float seconds)
+    {
+        float durScale = Mathf.Max(0.25f, ruinsFallDurationScale);
+        float terminalSpd = Mathf.Abs(ruinsFallTerminalSpeed) / durScale;
+        if (!ruinsFallAccelerating) return terminalSpd;
+        float rampSec = Mathf.Max(1f, ruinsFallRampSecondsPerScale * durScale);
+        return terminalSpd * Mathf.Lerp(ruinsFallRampStartMult, ruinsFallRampEndMult, Mathf.Clamp01(seconds / rampSec));
+    }
     /// <summary>★1115 是否在「傳送進廢墟之後」的快速墜落段（給落地特效、風線用，純讀取）。</summary>
     public bool IsRuinsDropPhase => _ruinsDropPhase;
     /// <summary>★1115 目前墜落速度（米／秒，沒在墜落＝0）。</summary>
@@ -686,6 +742,7 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log($"【墜落】耗時 {ControlledFallSeconds:F2} 秒、結束時速度 {_controlledFallVy:F1} 米／秒（{why}）");   // ★1024 方便比對每次墜落是否一致
         _lastFallEndSpeed = Mathf.Abs(_controlledFallVy);
         _controlledFall = false;
+        _fallAnimFromStart = false;
         if (rb != null)
         {
             rb.linearDamping = _savedDamping;
@@ -709,7 +766,7 @@ public class PlayerMovement : MonoBehaviour
         bool drop = _ruinsDropPhase;
         if (drop)
         {
-            target = -Mathf.Abs(ruinsDropSpeed);   // ★1115 傳送進廢墟後：快速墜落
+            target = -Mathf.Abs(ruinsDropSpeed) * Mathf.Max(0.1f, ruinsFallSpeedMultiplier);   // ★1115 傳送進廢墟後：快速墜落（★1120 一樣套用沒播旁白時的倍率）
         }
         else if (ruinsFallAccelerating)
         {
@@ -718,6 +775,7 @@ public class PlayerMovement : MonoBehaviour
             float tau = Mathf.Clamp01(ControlledFallSeconds / rampSec);
             target = -terminalSpd * Mathf.Lerp(ruinsFallRampStartMult, ruinsFallRampEndMult, tau);
         }
+        if (!drop) target *= Mathf.Max(0.1f, ruinsFallSpeedMultiplier);   // ★1120 沒播旁白時掉快一點
 
         // 離地面近就固定放慢到落地速度（快速墜落段不放慢：要重重砸到地上）
         Collider col = playerCollider != null ? playerCollider : GetComponent<Collider>();
@@ -745,7 +803,8 @@ public class PlayerMovement : MonoBehaviour
             else { _fallGroundSeen = "無"; _fallLandingK = 1f; }
         }
 
-        float accel = drop ? Mathf.Max(1f, ruinsDropAcceleration) : ruinsFallAcceleration / (durScale * durScale);
+        float accel = drop ? Mathf.Max(1f, ruinsDropAcceleration) * Mathf.Max(1f, ruinsFallSpeedMultiplier)
+                           : ruinsFallAcceleration / (durScale * durScale) * Mathf.Max(0.1f, ruinsFallAccelMultiplier);
         float rate = target < _controlledFallVy ? accel : accel * 2.5f;   // 加速慢慢來、減速稍快
         _controlledFallVy = Mathf.MoveTowards(_controlledFallVy, target, rate * dt);
         rb.useGravity = false;
@@ -774,6 +833,21 @@ public class PlayerMovement : MonoBehaviour
     [Range(0f, 60f)] public float standUpMaxChestLift = 35f;
     [Tooltip("為了讓頭不穿地，脖子最多往上抬幾度")]
     [Range(0f, 90f)] public float standUpMaxNeckLift = 60f;
+    [Header("★1120 起身後左右查看周遭（Looking Around）")]
+    [Tooltip("起身播完後，接著播「左右查看周遭」，播完才能操作")]
+    public bool playLookAroundAfterStandUp = true;
+    [Tooltip("PlayerAnimator 裡查看周遭的 State 名稱")]
+    public string lookAroundAnimState = "LookAround";
+    [Tooltip("查看周遭播幾秒就交還操作（0＝整段 13 秒）。原動畫：1～4 秒看一邊、4.5～5.5 秒看另一邊、約 6 秒回正；之後又來回看一輪，11 秒才回正。\n" +
+             "預設 5.75：左右各看一次，淡出的 0.8 秒剛好落在回正的時候，下一輪轉頭的幅度還很小，接站立不會抽一下")]
+    public float lookAroundSeconds = 5.75f;
+    [Tooltip("起身 → 查看周遭的淡入秒數（兩段的腳步站姿不同，淡入短了會看到腳一跳）")]
+    public float lookAroundBlendInSeconds = 0.8f;
+    [Tooltip("查看周遭 → 站立／奔跑的淡出秒數")]
+    public float lookAroundBlendOutSeconds = 0.8f;
+    private bool _lookAround;
+    private float _lookAroundEndTime;
+
     private bool _standUpAnim;
     private bool _standUpLocked;
     private float _standUpEndTime;
@@ -855,6 +929,27 @@ public class PlayerMovement : MonoBehaviour
     {
         _standUpAnim = false;
         _standUpLocked = false;
+        _lookAround = false;
+    }
+
+    /// <summary>★1120 起身播完：有 LookAround 這個 State 就接著播查看周遭（照樣鎖住操作），回傳 true；沒有就回傳 false。</summary>
+    private bool TryBeginLookAround()
+    {
+        if (!playLookAroundAfterStandUp || animator == null || string.IsNullOrEmpty(lookAroundAnimState)) return false;
+        if (!animator.HasState(0, Animator.StringToHash(lookAroundAnimState)))
+        {
+            Debug.LogWarning($"[查看周遭] PlayerAnimator 裡找不到 State '{lookAroundAnimState}'，起身後直接交還操作");
+            return false;
+        }
+        float len = 0f;
+        foreach (AnimationClip c in animator.runtimeAnimatorController.animationClips)
+            if (c != null && c.name == "Looking Around") { len = c.length; break; }
+        if (len <= 0.01f) return false;
+        float secs = lookAroundSeconds > 0.01f ? Mathf.Min(lookAroundSeconds, len) : len;
+        _lookAround = true;
+        _lookAroundEndTime = Time.time + secs;
+        Debug.Log($"[查看周遭] 起身完，左右查看 {secs:F2} 秒，期間鎖住操作");
+        return true;
     }
 
     [Header("★1011 廢墟墜落特寫還給玩家")]
@@ -1198,6 +1293,43 @@ public class PlayerMovement : MonoBehaviour
                   $" isUnderwater: {isUnderwater}\n" +
                   $" baseSpeed: {baseSpeed} | currentSpeed: {currentSpeed}\n" +
                   $"==============================================");
+
+        TryStartRuinsFallAtSceneStart();
+    }
+
+    [Header("★1120 廢墟開場：從擺放的位置直接開始墜落")]
+    [Tooltip("廢墟場景一開始她在半空中、正下方就是墜落通道（FallingBackground）時：第一格就播落下動作，固定速度墜落也從她擺放的位置開始算，\n" +
+             "不再先用站姿往下掉、碰到墜落通道才切動作。鏡頭照場景裡擺的位置，不另外移動")]
+    public bool ruinsStartFallImmediately = true;
+    private bool _fallAnimFromStart;
+
+    private void TryStartRuinsFallAtSceneStart()
+    {
+        if (!ruinsStartFallImmediately || rb == null || rb.isKinematic || isUnderwater) return;
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.IndexOf("ruined", System.StringComparison.OrdinalIgnoreCase) < 0) return;
+        Vector3 from = playerCollider != null ? playerCollider.bounds.center : transform.position;
+        float below = playerCollider != null ? playerCollider.bounds.extents.y + 0.5f : 1.5f;
+        // 腳下有地板：不是開場墜落
+        foreach (RaycastHit h in Physics.RaycastAll(from, Vector3.down, below, ~0, QueryTriggerInteraction.Ignore))
+            if (h.collider != null && h.collider != playerCollider && !h.collider.transform.IsChildOf(transform)) return;
+        // 正下方 40 米內有墜落通道（只比左右、上下：通道的碰撞框很薄，Z 跟主角不在同一層，射線打不到）
+        bool fallingShaftBelow = false;
+        foreach (GameObject fb in GameObject.FindGameObjectsWithTag("FallingBackground"))
+            foreach (Collider c in fb.GetComponents<Collider>())
+            {
+                if (c == null || !c.enabled) continue;
+                Bounds b = c.bounds;
+                if (from.x >= b.min.x && from.x <= b.max.x && b.max.y <= from.y + 0.5f && b.max.y >= from.y - 40f) fallingShaftBelow = true;
+            }
+        if (!fallingShaftBelow) return;
+        EnterFallingBackground("★1120 開場就在墜落");
+        _fallAnimFromStart = true;
+        if (animator != null)
+        {
+            animator.Play("Falling", 0, 0f);   // 第一格就是落下動作，不從站姿淡過去
+            animator.Update(0f);
+            currentAnimState = "Falling";
+        }
     }
 
     void Update()
@@ -1310,6 +1442,14 @@ public class PlayerMovement : MonoBehaviour
                 if (moveInput > 0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.right;
                 if (moveInput < -0.1f && !isStrictLockingX && !isHoldingObject) facingDirection = Vector3.left;
             }
+        }
+
+        if (scriptedMove && !isWindSuctionActive)
+        {
+            // ★1118 劇情自動走路（結局走上觀景台）：蓋過鎖定後的 moveInput，跟玩家按方向鍵一樣會轉向、跑步
+            moveInput = Mathf.Clamp(scriptedMoveInput, -1f, 1f);
+            if (moveInput > 0.1f) facingDirection = Vector3.right;
+            else if (moveInput < -0.1f) facingDirection = Vector3.left;
         }
 
         CurrentMoveInput = moveInput;
@@ -1589,7 +1729,7 @@ public class PlayerMovement : MonoBehaviour
             // ★1024 固定速度墜落是演出：落下動畫從「墜落開始」算固定秒數就播，不看滯空計時、地面偵測、垂直速度（那些每次進墜落區的狀態都不同，
             //   會讓動畫時間忽早忽晚）；傳送接力時 _controlledFall 不中斷，動畫也不會重播。
             bool scriptedFall = _controlledFall;
-            if (scriptedFall) rawFalling = ControlledFallSeconds >= controlledFallAnimDelay;
+            if (scriptedFall) rawFalling = ControlledFallSeconds >= controlledFallAnimDelay || _fallAnimFromStart;   // ★1120 開場就在墜落：第一格就是落下動作
 
             // ★1011 防抖：條件要連續成立 fallAnimDebounceSeconds 秒才真的切成落下動畫（速度剛好在門檻上下抖動時不會閃一下）；
             //   一落地（或條件消失）馬上放掉，落地不拖。
@@ -1628,7 +1768,10 @@ public class PlayerMovement : MonoBehaviour
             else if (_standUpAnim)
             {
                 // ★1114 廢墟落地起身：播完整段才放開操作、回到一般動作
-                if (Time.time < _standUpEndTime) targetAnim = standUpAnimState;
+                // ★1120 起身播完先接「左右查看周遭」，查看完才放開操作
+                if (!_lookAround && Time.time < _standUpEndTime) targetAnim = standUpAnimState;
+                else if (!_lookAround && TryBeginLookAround()) targetAnim = lookAroundAnimState;
+                else if (_lookAround && Time.time < _lookAroundEndTime) targetAnim = lookAroundAnimState;
                 else
                 {
                     CancelStandUp();
@@ -1698,6 +1841,9 @@ public class PlayerMovement : MonoBehaviour
                     // 奔跑 ↔ 站立 也用淡入淡出，停下來時不會像換圖片一樣瞬間跳成站姿
                     else if (currentAnimState == "Run" && targetAnim == "Idle") blend = runToIdleBlendSeconds;
                     else if (currentAnimState == "Idle" && targetAnim == "Run") blend = idleToRunBlendSeconds;
+                    // ★1120 起身 → 查看周遭、查看周遭 → 站立／奔跑：都用淡入淡出
+                    else if (targetAnim == lookAroundAnimState) blend = lookAroundBlendInSeconds;
+                    else if (currentAnimState == lookAroundAnimState) blend = lookAroundBlendOutSeconds;
                     // ★1114 起身播完淡回站立／奔跑，不是硬切
                     else if (currentAnimState == standUpAnimState) blend = standUpBlendOutSeconds;
 
@@ -1728,12 +1874,15 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("[動畫診斷] animator 是 NULL！請確認皮套子物件上有 Animator 組件，或在 Inspector 手動指定！");
         }
 
+        UpdateFallAnimSpeed();   // ★1120 墜落時落下動作跟著墜落速度放慢／加快
+
         // ==========================================
         // 3. 處理抓取與移動 (恢復原本的邏輯)
         // ==========================================
         // ★1115 手把 X 等於左 Shift（抓取）
         if (Input.GetKeyDown(KeyCode.LeftShift) || PadInput.GrabDown) TryGrabObject();
         if (Input.GetKeyUp(KeyCode.LeftShift) || PadInput.GrabUp) ReleaseObject();
+        UpdateCrateGrab();   // ★1116 玻璃館鏡箱：按住 Shift 貼著就抓住（推、拉），放開 Shift 就放手
 
         // 防呆校正：沒被狼咬的時候，速度一律回到 baseSpeed
         // ★0910：原本的條件是「attachedWolvesCount == 0 || currentSpeed <= 0f」。
@@ -2011,6 +2160,7 @@ public class PlayerMovement : MonoBehaviour
         if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked)
         {
             // 陸地標準跳躍
+            if (IsHoldingCrate) ReleaseObject();   // ★1116 抓著鏡箱起跳＝放手（不然箱子會跟著她飛起來）
             isJumping = true;
             rb.useGravity = true; // 跳躍時立即還原重力
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
@@ -2035,7 +2185,7 @@ public class PlayerMovement : MonoBehaviour
     void LateUpdate()
     {
         // ★1114 起身時頭不穿地（動畫已經套用完，這裡改骨頭會直接畫出來；下一幀動畫會重新覆蓋，不會累積）
-        if (_standUpAnim && animator != null)
+        if (_standUpAnim && !_lookAround && animator != null)   // ★1120 查看周遭時已經站好，不用抬頭
             LiftHeadAboveFloor(animator, _standUpFloorY, standUpHeadClearance, standUpMaxChestLift, standUpMaxNeckLift);
 
         // ==========================================
@@ -2303,7 +2453,50 @@ public class PlayerMovement : MonoBehaviour
     // ==========================================
     // 抓取物件邏輯 (Pull Range 可在 Inspector 自訂調整)
     // ==========================================
-    void TryGrabObject()
+    // ───────── ★1116 玻璃館鏡箱：照巨石的規則（按住 Shift 才動，沒按只會被擋住），再加上拉 ─────────
+    //   按住 Shift、面向箱子、貼著它（crateGrabDistance 以內）＝抓住：往箱子走是推、往後退是拉（面向鎖住，原本抓取物件的做法）。
+    //   放開 Shift、起跳、被鎖住操作＝放手。沒按 Shift 走過去只會被箱子擋住（IsPushableObject 對它回 false）。
+    [Header("★1116 鏡箱（玻璃館）")]
+    [Tooltip("離鏡箱多近（公尺）按住 Shift 才抓得住。太遠抓住的話，箱子會隔空跟著她走")]
+    public float crateGrabDistance = 0.6f;
+    private float _nextCrateGrabTry;
+    private float _crateAirTime;
+
+    private static bool IsShiftCrate(GameObject go, Collider col)
+    {
+        if (col != null && col.GetComponentInParent<MirrorCrate>() != null) return true;
+        return go != null && go.GetComponentInParent<MirrorCrate>() != null;
+    }
+
+    private bool IsHoldingCrate => pulledObject != null && pulledObject.GetComponent<MirrorCrate>() != null;
+
+    private void UpdateCrateGrab()
+    {
+        if (IsHoldingCrate)
+        {
+            // ★1116 腳離地超過 0.1 秒（走出邊緣掉下去、被彈起來）就放手：懸空推不動箱子。0.1 秒是避開地面判定單幀閃一下
+            _crateAirTime = isGrounded && !isJumping ? 0f : _crateAirTime + Time.deltaTime;
+            if (!BoulderPushKeyHeld || IsControlLocked || isUnderwater || _crateAirTime > 0.1f) ReleaseObject();
+            return;
+        }
+        _crateAirTime = 0f;
+        if (pulledObject != null || !requireShiftToPushBoulder || !BoulderPushKeyHeld) return;
+        if (!isGrounded || isJumping || IsControlLocked || Time.time < _nextCrateGrabTry) return;
+        _nextCrateGrabTry = Time.time + 0.1f;
+        TryGrabObject(true);   // 按住 Shift 走過去貼到箱子也抓得住（不用剛好在箱子旁邊才按下 Shift）
+    }
+
+    /// <summary>抓著鏡箱、往 directionX 走的話，箱子前面有沒有東西擋住（箱子被抓住時是跟著她走的 kinematic，自己不會被牆擋）。</summary>
+    private bool IsHeldCrateBlocked(float directionX)
+    {
+        if (!IsHoldingCrate || Mathf.Abs(directionX) < 0.01f) return false;
+        MirrorCrate crate = pulledObject.GetComponent<MirrorCrate>();
+        return crate != null && crate.IsBlockedToward(directionX, transform);
+    }
+
+    void TryGrabObject() { TryGrabObject(false); }
+
+    void TryGrabObject(bool cratesOnly)
     {
         Vector3 center = (playerCollider != null) ? playerCollider.bounds.center : transform.position;
         Vector3 extents = (playerCollider != null) ? playerCollider.bounds.extents : new Vector3(0.6f, 1.0f, 0.6f);
@@ -2321,6 +2514,11 @@ public class PlayerMovement : MonoBehaviour
             if (hit.collider.gameObject == this.gameObject || hit.collider.transform.IsChildOf(transform)) continue;
             // ★1115 巨石的 Shift 是「推」，不是抓起來拉（抓住會把巨石變成 kinematic、掛到她身上，巨石挑戰會當成被收回重置）
             if (IsBoulderCollider(hit.collider)) continue;
+            // ★1116 鏡箱：要貼著（不能隔空抓）、在她正前方（不是站在箱子上面）
+            bool crate = IsShiftCrate(hit.collider.gameObject, hit.collider);
+            if (cratesOnly && !crate) continue;
+            if (crate && (hit.distance > crateGrabDistance || !isGrounded || isJumping || !IsPushableInFront(hit.collider, center, extents))) continue;   // 懸空抓不住
+            if (crate && !hit.collider.GetComponentInParent<MirrorCrate>().CanBeHeld) continue;   // ★1116 箱子正在往下掉：抓不住
             if (IsPushableObject(hit.collider.gameObject, hit.collider))
             {
                 // 優先抓取帶有 Rigidbody 的根物件
@@ -2331,13 +2529,22 @@ public class PlayerMovement : MonoBehaviour
                 }
 
                 pulledObject = targetObj;
-                pulledObject.transform.SetParent(this.transform);
+                // ★1116 鏡箱不掛到她身上：她是用剛體速度移動的，掛在底下的剛體不會跟著走（驗收時她走了 5.9 公尺、箱子只動 0.3）。
+                //   改由 MirrorCrate 每個物理步自己跟著她（保持抓住時的距離）。
+                if (crate) pulledObject.GetComponent<MirrorCrate>().BeginHold(this);
+                else pulledObject.transform.SetParent(this.transform);
                 Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
                 if (objRb != null)
                 {
                     objRb.isKinematic = true;
                 }
-                return; 
+                // ★1116 鏡箱：抓住時跟她的碰撞體互相忽略。
+                //   Root Cause（M 11/16：「不管怎麼按都無法推動」）：箱子抓住後變成掛在她身上的 kinematic，卻還跟她的碰撞框相撞——
+                //   她往前被箱子擋住不動，箱子是跟著她動的，所以兩個都不動。貼著抓的箱子一定會碰到她，必須忽略。
+                if (crate) SetCrateIgnorePlayer(pulledObject, true);
+                if (crate && (Application.isEditor || TesterMode.Enabled))
+                    Debug.Log($"【鏡箱】抓住 {pulledObject.name}（距離 {hit.distance:F2} 公尺）：按住 Shift 往箱子走＝推、往後退＝拉");
+                return;
             }
         }
     }
@@ -2346,13 +2553,33 @@ public class PlayerMovement : MonoBehaviour
     {
         if (pulledObject != null)
         {
+            bool crate = pulledObject.GetComponent<MirrorCrate>() != null;
             pulledObject.transform.SetParent(null);
             Rigidbody objRb = pulledObject.GetComponent<Rigidbody>();
             if (objRb != null)
             {
                 objRb.isKinematic = false;
             }
+            if (crate)
+            {
+                pulledObject.GetComponent<MirrorCrate>().EndHold();
+                SetCrateIgnorePlayer(pulledObject, false);   // ★1116 放手：恢復碰撞（可以站上去、沒按 Shift 會被擋住）
+                if (Application.isEditor || TesterMode.Enabled) Debug.Log($"【鏡箱】放手 {pulledObject.name}（x={pulledObject.transform.position.x:F1}）");
+            }
             pulledObject = null;
+        }
+    }
+
+    /// <summary>★1116 鏡箱的碰撞體跟她身上所有碰撞體互相忽略／恢復。</summary>
+    private void SetCrateIgnorePlayer(GameObject crateObj, bool ignore)
+    {
+        if (crateObj == null) return;
+        Collider[] mine = GetComponents<Collider>();
+        foreach (Collider cc in crateObj.GetComponentsInChildren<Collider>(true))
+        {
+            if (cc == null) continue;
+            foreach (Collider pc in mine)
+                if (pc != null && pc != cc) Physics.IgnoreCollision(cc, pc, ignore);
         }
     }
 
@@ -2380,6 +2607,7 @@ public class PlayerMovement : MonoBehaviour
     private bool IsBlockedByObstacle(float directionX)
     {
         if (Mathf.Abs(directionX) < 0.01f) return false;
+        if (IsHeldCrateBlocked(directionX)) return true;   // ★1116 抓著鏡箱：箱子撞到牆就停
         if (playerCollider == null) playerCollider = GetComponent<Collider>();
         if (playerCollider == null) return false;
 
@@ -2402,6 +2630,8 @@ public class PlayerMovement : MonoBehaviour
             Vector3 origin = centerPos + Vector3.up * (b.extents.y * h);
             if (!Physics.Raycast(origin, dir, out RaycastHit hit, rayLen, obstacleMask, QueryTriggerInteraction.Ignore)) continue;
             if (hit.collider == null || hit.collider.isTrigger) continue;
+            if (hit.collider.transform.IsChildOf(transform)) continue;
+            if (pulledObject != null && hit.collider.transform.IsChildOf(pulledObject.transform)) continue;   // ★1116 抓在手上的鏡箱不能當成擋住她的牆
             if (IsBoulderCollider(hit.collider)) continue;   // ★1115 巨石擋不擋由 RollingRockVisual.IsBlockingPlayer 用實際碰撞形狀判斷（這裡的射線會提早 0.4 米停住）
             // ★1115 要按 Shift 才能推的方塊石頭（沒抓著時）是堵牆，風推要停；其他可推物維持原本「不算障礙」
             if (IsPushableObject(hit.collider.gameObject, hit.collider)
@@ -2508,6 +2738,7 @@ public class PlayerMovement : MonoBehaviour
     {
         EndControlledFall("被傳送");   // ★1012 重生／傳送一律把物理還給剛體
         CancelStandUp();               // ★1114 起身中被傳送／重生：不要卡在鎖住操作
+        scriptedMove = false;          // ★1118 重生／傳送：劇情自動走路一律取消
         transform.position = position;
         if (rb != null)
         {
@@ -2561,6 +2792,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("FallingBackground"))
         {
+            EnterFallingBackground("碰觸到 FallingBackground");
+        }
+        else if (other.CompareTag("RuinedBackground"))
+        {
+            if (_ruinsIntroCloseupStarted) return;
+            OnEnterRuinedBackground();
+        }
+    }
+
+    /// <summary>進入墜落通道：鎖橫向、開始固定速度墜落（★1120 抽出來，開場就在墜落時也走這裡）。</summary>
+    private void EnterFallingBackground(string why)
+    {
+        {
             // ★ 防止重複觸發：同一次墜落只允許進入一次
             if (_fallingBGEntered) return;
             _fallingBGEntered = true;
@@ -2569,7 +2813,7 @@ public class PlayerMovement : MonoBehaviour
             _ruinsIntroLightSynced = false;
             _ruinsIntroCloseupStarted = false;
 
-            Debug.Log("碰觸到 FallingBackground！鎖死橫向移動，開始順暢高速向下墜落！");
+            Debug.Log($"{why}！鎖死橫向移動，開始順暢高速向下墜落！");
             freezeHorizontal = true;
             SyncGuidanceLightToRuinsIntroOnce();
             StartRuinsIntroLightGuard();
@@ -2587,10 +2831,11 @@ public class PlayerMovement : MonoBehaviour
                 respawnSystem.enabled = false;
             }
         }
-        else if (other.CompareTag("RuinedBackground"))
-        {
-            if (_ruinsIntroCloseupStarted) return;
+    }
 
+    private void OnEnterRuinedBackground()
+    {
+        {
             Debug.Log("碰觸到 RuinedBackground！維持墜落鎖定，鏡頭暫時特寫廢墟第一光球，直到玩家落到廢墟地板。");
             freezeHorizontal = true;
             _waitingForRuinsLanding = true;
@@ -3065,6 +3310,8 @@ public class PlayerMovement : MonoBehaviour
 
         // ★1115 沒按 Shift：巨石不算可推物件（不播推的動畫，靠近只會被擋住）
         if (!BoulderPushKeyHeld && (IsBoulderCollider(col) || (go != null && go.GetComponentInParent<RollingRockVisual>() != null))) return false;
+        // ★1116 鏡箱同一套規則：沒按 Shift 不算可推物件（被它擋住）；★懸空（跳起來、掉下去）也不算，撞上去只會被擋住
+        if (IsShiftCrate(go, col) && ((requireShiftToPushBoulder && !BoulderPushKeyHeld) || !isGrounded || isJumping)) return false;
 
         // 1. 直接 Tag 檢測
         if (go != null && go.CompareTag("Pushable")) return true;

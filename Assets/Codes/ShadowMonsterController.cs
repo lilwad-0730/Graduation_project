@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 影子怪物（MonsterMutant7_Run1）主控制器。
@@ -44,6 +45,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
     [Tooltip("結局要載入的場景（繪本）")]
     public string endingBookScene = "Book";
+
+    [Tooltip("★1118d 怪物倒下後，畫面淡成全黑的秒數（沒有文字卡時才用這個淡黑，取代碎裂轉場）")]
+    public float endingFadeOutSeconds = 1.5f;
+    [Tooltip("★1118d 全黑之後、繪本載入完再多停幾秒才開始淡入")]
+    public float endingBlackHoldSeconds = 0.5f;
+    [Tooltip("★1118d 繪本從全黑淡入的秒數")]
+    public float endingFadeInSeconds = 1.5f;
 
     [Header("★ 登場運鏡：先看怪物，再回到主角")]
     [Tooltip("觸發追逐時，先把鏡頭帶到怪物身上演一段，再把鏡頭交還主角")]
@@ -112,6 +120,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("燭火判定的垂直額外寬容量（實際判定＝怪物目前半高 ＋ 這個值）")]
     public float candleReachYMargin = 3f;
 
+    [Tooltip("★1119 以怪物「身體最前緣」碰到已點亮的燭台就算受傷（★1119b 只算軀幹＋頭，見 candleHitTorsoOnly）。\n關掉＝舊行為：要等身體中心離燭台 candleReachX 以內，手已經伸過燭台十公尺左右才觸發")]
+    public bool candleHitByFrontEdge = true;
+    [Tooltip("★1119 前緣離燭台中心多近算碰到（公尺）。約等於燭台本體的半寬；0＝手要伸到燭台中心線，調大＝更早觸發")]
+    public float candleFrontTouchMargin = 0.4f;
+    [Tooltip("★1119 只看燭台這個高度範圍內的身體（燭台底部往下／燭台頂端往上各多少公尺）。從燭台下方或上方經過的手不算碰到")]
+    public float candleFrontYMargin = 0.5f;
+    [Tooltip("★1119 燭台本體的高度（公尺，從燭台的 Pivot 往上算），用來決定判定的高度範圍")]
+    public float candleBodyHeight = 3f;
+
     [Header("⚔️ 揮爪攻擊距離自由微調 (Attack Distance Settings)")]
     [Tooltip("怪物登場出現時，是否同步朝玩家追擊？")]
     public bool chaseWhileAppearing = true;
@@ -166,6 +183,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("空間 2D/3D 混合 (0 = 全景環繞電影級BGM，1 = 純3D定位音效，建議 0.15 保持音樂清晰且具方向感)")]
     [Range(0f, 1f)]
     public float spatialBlend = 0.15f;
+    [Tooltip("★1119b 怪物每撞到（吃掉）一根燭火，追逐音樂的基準音量再降掉原本的幾成：第 1 根→80%、第 2 根→60%、第 3 根→40%、第 4 根→20%（0.2＝每根降 20%）。和逼近緊張度、喘息壓低、熄燈壓低相乘。最後一根（倒下）另外淡出到 0")]
+    [Range(0f, 0.5f)] public float chaseBgmStepPerCandle = 0.2f;
+    [Tooltip("★1119b 撞到燭火後，追逐音樂降到新音量要花幾秒（平滑下降，不跳）")]
+    public float chaseBgmStepRampSeconds = 1.0f;
+    [Tooltip("★1119b 最後一根燭火倒下時，追逐音樂淡出時間的下限（實際淡出長度＝倒下動畫剩餘時間，讓音樂和動畫、最後一句語音一起結束）")]
+    public float finaleBgmFadeMinSeconds = 1.5f;
+    [Tooltip("★1119b 倒下動畫的播放速度範圍：動畫會被拉快／放慢到剛好和最後一句語音一起結束，超出這個範圍就夾住（會在 Console 提示）")]
+    public Vector2 finaleDeathSpeedRange = new Vector2(0.5f, 1.6f);
 
     [Header("💡 音效進階增強 (Proximity & Victory)")]
     [Tooltip("當怪物極度逼近主角時 (距離 < 8米)，是否自動增強追逐音樂緊張度/音量")]
@@ -212,6 +237,28 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float vanishDuration = 2.0f;
     [Tooltip("吃到燭火後平滑漸漸變小的持續時間（秒）")]
     public float smoothShrinkDuration = 1.2f;
+
+    [Header("★1118 結局：怪物倒下（death1）")]
+    [Tooltip("最後一根燭火點完後：她自動走上右邊的觀景台、轉身看著怪物，怪物播 death1 倒下、淡出，然後才接結局漫畫。關掉＝回到原本的縮小消散")]
+    public bool deathFinale = true;
+    [Tooltip("死亡動畫的狀態名（要在 Animator Controller 裡）")]
+    public string deathAnimationName = "death1";
+    [Tooltip("她自動走到燭火右邊幾公尺停下、轉身看怪物（觀景台上）")]
+    public float finaleWatchOffsetX = 12f;
+    [Tooltip("死亡動畫播完後多停幾秒再淡出")]
+    public float deathHoldSeconds = 0.8f;
+    [Tooltip("怪物倒下後淡出的秒數")]
+    public float deathFadeSeconds = 1.2f;
+    [Tooltip("★1118c 倒下時把鏡頭往下拉遠，框住她和倒下的怪物（怪物站在橋下的深坑，倒下去會躺到畫面外）")]
+    public bool deathFrameCamera = true;
+    [Tooltip("★1119c 倒下後：肢體與身體逐漸碎成粒子 → 聚成白色光球 → 飛向鏡頭蓋滿畫面變全白 → 從白淡入結局漫畫（MonsterDisintegrateFinale 調細節）。關掉＝倒下後直接淡黑")]
+    public bool crumbleToOrbFinale = true;
+    [Tooltip("★1119e 倒下後先播結局漫畫（疊加載入，玻璃館留在背景不動），翻完回玻璃館再碎裂成光球；光球飛向鏡頭全白後直接捲名單。關掉＝倒下後直接碎裂、全白後才進漫畫")]
+    public bool comicBeforeCrumble = true;
+    [Tooltip("★1118c 往左（身後）倒下，會躺到離怪物原點多遠（怪物站著高度的倍數）")]
+    public float finaleFallReach = 1.15f;
+    [Tooltip("★1118c 倒下鏡頭最多拉到多大（正交半高）")]
+    public float finaleMaxOrthoSize = 30f;
     [Tooltip("懲罰時光暈增大的漸變時間（秒）")]
     public float punishHaloGrowDuration = 1.5f;
 
@@ -222,6 +269,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Range(0.1f, 0.6f)]
     [Tooltip("怪物縮小的下限，避免縮到消失（0.2 = 最小為原本的 20%）")]
     public float minScaleMultiplier = 0.2f;
+    [Tooltip("★1118b 開著＝吃燭火不再縮小，改成牠多出來的四隻手臂一根燭火掉一隻（由下到上、先左後右，掉完剩原本兩隻手）；關掉＝照舊縮小")]
+    public bool shedArmsInsteadOfShrink = true;
 
     [Header("光暈設定")]
     [Tooltip("光暈基礎半徑/倍率")]
@@ -253,6 +302,10 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("追趕速度每秒最多增加多少（公尺/秒²）。越小起速越緩，沒有暴衝感")]
     public float finaleAccel = 1.5f;
     private float _finaleSpeed = -1f;
+    private float _finalePrevPx = float.NaN, _finalePlayerV = 5f;
+    [Tooltip("★1118e 最後一根：她站住時，怪物走到身後 finaleStopDistance 之前的減速度（公尺/秒²），不再從全速一幀硬停")]
+    public float finaleStopDecel = 12f;
+    private float _finaleApproach = -1f;   // ★1118e 最後一根點燭火時的固定逼近速度
     [Tooltip("追到主角身後多遠停下來（公尺）。要大於 attackTriggerDistance 以外都安全；這段期間不會攻擊、也不會減速主角")]
     public float finaleStopDistance = 4f;
     [Tooltip("離目標距離多遠以內開始減速收尾（公尺）")]
@@ -374,6 +427,173 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float DebugLag { get; private set; }
     public float DebugSpeed { get; private set; }
     public string DebugPace { get; private set; } = "-";
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★1116 追逐節奏導演（M 11/16：拿掉耐心機制／hoverLag，改成有起伏的節奏）
+    //   Root Cause：耐心機制（她一直往前就只跟在 16 公尺外）＋智慧調速＋預先拉開＋點燭安全網＋難度九折疊在一起，
+    //   只要她一直往前走，程式上就保證抓不到——真正會死只有掉下去、站著超過 9 秒、漏點燭火，怪物只是跟著。
+    // 做法：一條「該離她多遠」的曲線取代上面那幾層（只管追逐／登場，懲罰照舊）：
+    //   ・距離隨關卡進度從 directorLagStart 收緊到 directorLagEnd（後半段明顯更緊）
+    //   ・她停下、等平台、往回走：過了 stallGraceSeconds 秒，距離每秒縮短 stallCloseRate 公尺，縮到揮爪距離就被抓（沒有 9 秒耐心）
+    //   ・她一直往前時距離最近只到「揮爪距離 + directorMinMovingLag」：跑著不會被抓，但很近
+    //   ・點燭火時她被鎖住：★1119 怪物維持「開始點那一刻的速度」（至少 lightingPressureSpeed）照樣追，不放慢、不等她；離太近就會被抓
+    //   ・追逐撲擊（★1118e）：走到 nearMissBeatsX（另有隨機）時怪物照事先算好的路徑猛撲，她一直跑就停在 ~12 公尺外，停下就會被抓
+    //   ・燭火反擊：吃到燭火被光震退、追逐音樂與畫面壓迫放鬆幾秒
+    //   ・漏點燭火：當下吼一聲、長大一點、逼近幾秒
+    // 關掉 usePacingDirector＝回到原本那幾層。
+    [Header("★1116 追逐節奏導演（取代耐心機制／hoverLag／預先拉開）")]
+    [Tooltip("打勾＝用下面的節奏曲線控制怪物距離（拿掉耐心機制、hoverLag、預先拉開、點燭安全網）。取消＝原本的做法")]
+    public bool usePacingDirector = true;
+    [Tooltip("關卡開頭（第一根燭火）怪物離她多遠（公尺）")]
+    public float directorLagStart = 20f;
+    [Tooltip("關卡結尾（最後一根燭火）怪物離她多遠（公尺）。要大於揮爪距離（場景裡是 10）")]
+    public float directorLagEnd = 13.5f;
+    [Tooltip("她一直往前走時，怪物最近能到「揮爪距離 + 這個值」（公尺）。跑著不會被抓，但很近")]
+    public float directorMinMovingLag = 1.5f;
+    [Tooltip("她停下來多久之後開始逼近（秒）")]
+    public float stallGraceSeconds = 1f;
+    [Tooltip("她停著的時候，怪物每秒多逼近幾公尺。1.6：開頭停約 7 秒、結尾停約 3 秒會被抓")]
+    public float stallCloseRate = 1.6f;
+    [Tooltip("★1119 她停著時怪物主動加速撲上來：每秒多快多少（公尺/秒²）。取代原本照距離比例、越靠近越慢的爬行（看起來像在等她）")]
+    public float stallChaseAccel = 1.5f;
+    [Tooltip("★1119 她停著時怪物撲上來的最高速度（公尺/秒）")]
+    public float stallChaseMaxSpeed = 5f;
+    [Tooltip("距離差 1 公尺，速度差多少（公尺/秒）。越大越緊跟曲線")]
+    public float directorGain = 0.9f;
+    [Tooltip("怪物最低速度（公尺/秒）：永遠不站著不動")]
+    public float directorMinSpeed = 1f;
+    [Tooltip("怪物最高速度（公尺/秒）")]
+    public float directorMaxSpeed = 8f;
+    [Tooltip("怪物加速／減速（公尺/秒²）")]
+    public float directorAccel = 4f;
+
+    // ★1118e 追逐撲擊（取代 ★1116 的「撲到 attack+1.8 公尺就硬停、揮空氣、而且那段時間不抓人」）
+    //   Root Cause：舊版撲過來後用 MoveTowards 在固定距離硬停，而且撲＋揮期間 CheckCatch 直接略過——
+    //   看起來就是「怪物故意在碰到她之前停下來」。
+    //   新版：觸發那一刻就在世界座標算好整條路徑（起跑→加速→巡航→煞車→追擊收尾），
+    //   終點 X_end ＝ 她「照目前速度一直跑」到煞車結束時的位置往後 endLag 公尺；
+    //   路徑固定、不看她之後在哪（沒有靠近就煞車），也沒有免疫：她一直跑＝終點離她約 12 公尺（險些被抓），
+    //   她停下或往回走＝怪物照走完整條路，CheckCatch 正常抓人。
+    [Header("★1116 險些被抓／★1118e 追逐撲擊")]
+    [Tooltip("打勾＝她走到下面這些 X 時，怪物猛撲一次（真的會抓人）。也會有隨機的額外撲擊（見下面）")]
+    public bool useNearMissBeats = true;
+    [Tooltip("固定撲擊的位置（世界 X）。預設在每兩根燭火的中間")]
+    public float[] nearMissBeatsX = new float[] { 20f, 101f, 181.5f, 263f };
+    [Tooltip("撲擊結束後交還導演時的喘息強度（公尺，÷ candleReliefLag 換算成 0～1）。讓距離慢慢重新拉開")]
+    public float nearMissRecoverLag = 6f;
+
+    [Tooltip("★1118e 預告秒數：吼一聲＋撲擊音效，速度維持現在的速度（絕不站著）")]
+    public float lungeTelegraphSeconds = 0.3f;
+    [Tooltip("★1118e 撲擊最高速度（公尺/秒）")]
+    public float lungePeakSpeed = 12f;
+    [Tooltip("★1118e 加速度（公尺/秒²）。★1119 從約 6 加到 12 約 0.2 秒、1.9 公尺（原 45/16）")]
+    public float lungeAccel = 30f;
+    [Tooltip("★1118e 煞車減速度（公尺/秒²）。★1119 12 → 3.5 約 0.6 秒、4.7 公尺（原 20/16）；煞車開始就播 attack2 揮爪，讓減速看起來是為了出爪而踩穩")]
+    public float lungeBrakeDecel = 14f;
+    [Tooltip("★1118e 煞車結束時的速度＝她的速度 × 這個值（≈4.2 公尺/秒），之後繼續往前不停")]
+    [Range(0.3f, 1f)] public float lungeEndSpeedFactor = 0.7f;
+    [Tooltip("★1118e 終點離她多遠＝揮爪距離 + 這個值（公尺）。★1119 4＝爪子落在她身後約 4 公尺、煞車結束約離她 14 公尺（原 2）")]
+    public float lungeEndExtraLag = 4f;
+    [Tooltip("★1118e 煞車之後以煞車結束速度繼續往前走幾秒，才交還給導演")]
+    public float lungeRecoverySeconds = 1.5f;
+    [Tooltip("★1118e 她往前的速度（平滑後）至少多少（公尺/秒）才會撲。她沒在跑，預測不準，不撲")]
+    public float lungeMinPlayerSpeed = 3f;
+    [Tooltip("★1118e 落後距離超過這個就不撲（公尺）")]
+    public float lungeMaxLag = 60f;
+    [Tooltip("★1118e 打勾＝固定位置之外，隨機再撲幾次")]
+    public bool useRandomLunges = true;
+    [Tooltip("★1118e 隨機額外撲擊：離上一次撲擊（含固定位置）至少隔幾秒（最短）")]
+    public float randomLungeCooldownMin = 70f;
+    [Tooltip("★1118e 隨機額外撲擊：離上一次撲擊至少隔幾秒（最長）。每次在最短～最長之間隨機")]
+    public float randomLungeCooldownMax = 100f;
+    [Tooltip("★1118e 前方這麼多公尺以內有還沒點的燭火就不撲（公尺）")]
+    public float lungeNoCandleAhead = 20f;
+
+    [Header("★1116 燭火反擊（吃到燭火的回饋）")]
+    [Tooltip("吃到燭火時被光震退幾公尺")]
+    public float candleKnockback = 9f;
+    [Tooltip("震退花幾秒")]
+    public float candleKnockbackSeconds = 0.7f;
+    [Tooltip("震退之後幾秒內多離她幾公尺（喘息）")]
+    public float candleReliefLag = 8f;
+    [Tooltip("喘息持續幾秒（慢慢回到原本的距離）")]
+    public float candleReliefSeconds = 5f;
+    [Tooltip("喘息時追逐音樂最多降多少（0.5＝降一半）")]
+    [Range(0f, 1f)] public float candleReliefBgmDuck = 0.5f;
+    [Tooltip("燭火爆出的光有多亮")]
+    public float candleBurstIntensity = 40f;
+    [Tooltip("燭火爆光的範圍（公尺）")]
+    public float candleBurstRange = 30f;
+
+    [Header("★1116 漏點燭火的當下反應")]
+    [Tooltip("漏點時怪物逼近幾公尺（幾秒內慢慢恢復）")]
+    public float missedSurgeLag = 6f;
+    [Tooltip("逼近持續幾秒")]
+    public float missedSurgeSeconds = 5f;
+    [Tooltip("漏點一根，怪物長大多少（跟吃到燭火縮小同一個單位）")]
+    public float missedRegrow = 0.15f;
+
+    // 導演的內部狀態
+    private float _dirSpeed = -1f;
+    private float _playerFwdSmooth;
+    private float _firstCandleX = float.NaN;
+    private float _reliefStart = -999f, _reliefAmount;
+    private float _surgeStart = -999f;
+    private float _knockStart = -999f, _knockDir;
+    private float _knockDone, _knockDist;
+    private bool[] _beatDone;
+    private int _beatTriedIdx = -1;    // ★1118e 已到位置但還在等條件（她停下、點燭火中…）的固定撲擊
+    // ★1118e 撲擊狀態：0＝沒有、1＝預告、2＝加速、3＝巡航、4＝煞車＋揮爪、5＝收尾
+    private int _lungePhase;
+    private float _lungePhaseStart;
+    private float _lungeSide;                          // 她在怪物哪一邊（+1＝右）
+    private float _lungeV;                             // 現在的撲擊速度
+    private float _lungeV0, _lungeVEnd, _lungePlayerV; // 起跑速度、煞車結束速度、規劃時她的速度
+    private float _lungeXBrake, _lungeXEnd, _lungeXStart;
+    private float _lungeLag0, _lungeMinLag, _lungePlanLen;
+    private string _lungeTag = "";
+    private float _lungeLast = -999f;                  // 上一次撲擊（開始）的時間
+    private float _lungeRandomWait = -1f;              // 下一次隨機撲擊要隔多久
+    private float _approachSpeed = -1f;                // ★1119 點燭火鎖定期間怪物維持的速度＝開始點的那一刻的速度（至少 lightingPressureSpeed）（<0＝這次還沒定）
+    private static AudioClip _roarClip, _lungeClip;
+
+    /// <summary>★1118e 撲擊進行中（預告／加速／巡航／煞車／收尾）。</summary>
+    public bool IsLunging => _lungePhase != 0;
+    /// <summary>★1119 現在碰到她會不會被抓（給子彈時間判斷「快被抓到」用）。</summary>
+    public bool CanCatchNow => !_revealActive && !_finaleDash &&
+        (currentState == MonsterState.Chasing || currentState == MonsterState.Punishing || currentState == MonsterState.Appearing);
+    /// <summary>★1118e 撲擊階段：0＝沒有、1＝預告、2＝加速、3＝巡航、4＝煞車＋揮爪、5＝收尾。</summary>
+    public int LungePhase => _lungePhase;
+    /// <summary>★1118e 撲擊現在的速度（公尺/秒）。</summary>
+    public float LungeSpeed => _lungeV;
+
+    /// <summary>★1116 給鏡頭用：追逐框景現在要不要作用（1＝作用、0＝回到原本、-1＝別碰，例如登場運鏡或懲罰鎖鏡頭中）。</summary>
+    public int ChaseFramingMode
+    {
+        get
+        {
+            if (_revealActive || _revealCamTaken || IsRevealRunning || _camLocked) return -1;
+            if (player == null) return 0;
+            return (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing || currentState == MonsterState.Punishing) ? 1 : 0;
+        }
+    }
+    /// <summary>★1116 她離怪物多遠（公尺，水平）。</summary>
+    public float ChaseDistance => player != null ? Mathf.Abs(player.position.x - transform.position.x) : 999f;
+    /// <summary>★1116 怪物在她哪一邊（−1＝左、+1＝右）。</summary>
+    public float MonsterSide => player != null && transform.position.x < player.position.x ? -1f : 1f;
+    /// <summary>★1116 吃到燭火後的喘息（0～1）。</summary>
+    public float Relief01 => Decay01(_reliefStart, candleReliefSeconds) * Mathf.Clamp01(_reliefAmount);
+    /// <summary>★1116 漏點後的逼近（0～1）。</summary>
+    public float Surge01 => Decay01(_surgeStart, missedSurgeSeconds);
+    /// <summary>★1116 給 ShadowMonsterDread：畫面壓迫的倍率（喘息時放鬆、漏點時加重）。</summary>
+    public float DreadScale => Mathf.Clamp(1f - 0.6f * Relief01 + 0.35f * Surge01, 0.3f, 1.35f);
+
+    private static float Decay01(float start, float seconds)
+    {
+        float t = (Time.time - start) / Mathf.Max(0.1f, seconds);
+        if (t < 0f || t >= 1f) return 0f;
+        return 1f - t * t * (3f - 2f * t);   // 先撐住、再慢慢退
+    }
 
     [Header("★1016 追逐中途存檔點")]
     [Tooltip("打開＝她站上下面這些位置之後，死掉就從那裡重生（不用從玻璃館起點重追 340 公尺），\n" +
@@ -626,6 +846,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         SetupChaseAudioSource();
         ApplyCurrentScale();
         EnsureCameraSafeDepth();
+
+        // ★1116 追逐鏡頭：怪物在中距離時鏡頭偏向牠、越近越往外拉（只在追逐中作用）
+        ShadowChaseCamera chaseCam = GetComponent<ShadowChaseCamera>();
+        if (chaseCam == null) chaseCam = gameObject.AddComponent<ShadowChaseCamera>();
+        chaseCam.ctrl = this;
+
+        // ★1116 眼罩透出的紅光、最後一根燭火前的熄燈
+        if (GetComponent<ShadowMonsterEyeGlow>() == null) gameObject.AddComponent<ShadowMonsterEyeGlow>();
+        if (GetComponent<GlassFinaleBlackout>() == null) gameObject.AddComponent<GlassFinaleBlackout>();
+        // ★1117 倒數第二根到最後一根燭火之間：碎橋衝刺
+        if (GetComponent<GlassBridgeCollapse>() == null) gameObject.AddComponent<GlassBridgeCollapse>();
+        // ★1118b 吃燭火不縮小，改成多出來的四隻手臂一隻一隻掉下來
+        if (GetComponent<MonsterArmShedding>() == null) gameObject.AddComponent<MonsterArmShedding>();
     }
 
     /// <summary>
@@ -817,6 +1050,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         EnsurePlayerReference();
         UpdateGameplayCollidersPosition();
         UpdateChaseCheckpoints();
+        UpdateFinaleCam();   // ★1118
 
         switch (currentState)
         {
@@ -948,6 +1182,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   只改 X，Y／Z 保持美術擺好的樣子（牠是半身埋在玻璃地板下的巨影）。
         EnsurePlayerReference();
         _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;   // 每次重新開追都從當下的目標速度起步
+        _dirSpeed = -1f; _playerPrevX = float.NaN; _playerFwdSmooth = 0f;   // ★1116
+        _lungePhase = 0; _lungeLast = Time.time; _lungeRandomWait = -1f; _approachSpeed = -1f;   // ★1118e 撲擊冷卻從開追起算
         if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
         {
             Vector3 sp = transform.position;
@@ -968,6 +1204,41 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _stateCoroutine = StartCoroutine(AppearSequence());
     }
 
+    /// <summary>
+    /// ★1118 測試鍵 F2 用：跳過前面的劇情直接測碎橋衝刺。
+    /// 除了最後一根以外的燭火都安靜算成已吃、略過登場運鏡，怪物立刻從她身後開追（已經在追就把怪物搬到她身後）。
+    /// </summary>
+    public void TesterSkipToFinalStretch()
+    {
+        if (candles == null) return;
+        EnsurePlayerReference();
+
+        foreach (var c in candles)
+        {
+            if (c == null || c.isCollected || c == _lastCandleByX) continue;
+            c.MarkCollectedSilently();
+        }
+        _candlesCollected = RecountCollected();
+        _currentScaleMultiplier = CandleScaleMult(_candlesCollected);   // ★1118b 開著掉手臂時維持原大小
+        ApplyCurrentScale();
+        SyncArms(false);
+
+        _revealPlayed = true;   // 登場運鏡當作已經演過
+        _chaseStepRamp = false;  // ★1119b 追逐音樂階梯直接對齊已吃的燭火數
+
+        if (currentState == MonsterState.Dormant)
+        {
+            ActivateChaseNow();
+        }
+        else if (player != null)
+        {
+            Vector3 sp = transform.position;
+            sp.x = player.position.x - spawnDistanceBehindPlayer;
+            transform.position = sp;
+        }
+        Debug.Log($"【影子怪物】★1118 測試鍵：跳到最後一段，燭火算吃過 {_candlesCollected}/{_totalCandles}，狀態 {currentState}");
+    }
+
     /// <summary>★1016 把 X 小於 limitX、還沒被吃的燭火，安靜地算成已吃（不播受擊、不觸發懲罰），並同步怪物的大小。</summary>
     private void SilentlyCollectCandlesBehind(float limitX)
     {
@@ -982,10 +1253,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
         if (added == 0) return;
 
+        _chaseStepRamp = false;   // ★1119b 存檔點／靜默算吃：追逐音樂階梯直接對齊
         _candlesCollected = 0;
         foreach (var c in candles) if (c != null && c.isCollected) _candlesCollected++;
-        _currentScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+        _currentScaleMultiplier = CandleScaleMult(_candlesCollected);   // ★1118b
         ApplyCurrentScale();
+        SyncArms(false);
         Debug.Log($"【影子怪物】★1016 怪物身後的 {added} 根燭火算吃過（共 {_candlesCollected}/{_totalCandles}），大小 ×{_currentScaleMultiplier:F2}");
     }
 
@@ -1065,6 +1338,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             TriggerPunishment();
             EnterDoom();
         }
+        else ReactToMissedCandle(candle);   // ★1116 不是最後一根：當下就有反應
     }
 
     /// <summary>★1021 這一輪注定通不了關：開始 doomedRespawnSeconds 倒數，時間到就直接抓人重生。</summary>
@@ -1124,12 +1398,29 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (_candlesCollected != before + 1)
             Debug.LogWarning($"【影子怪物】★1102 燭火計數校正：累加是 {before + 1}，實際數到 {_candlesCollected}（{candle.gameObject.name}）");
         Debug.Log($"【影子怪物】燭火收集 {_candlesCollected}/{_totalCandles}（{candle.gameObject.name}）");
+        _chaseStepRamp = true;   // ★1119b 追逐音樂基準音量再降一階（平滑），見 LateUpdate／ChaseStepTarget
 
-        float targetScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+        float targetScaleMultiplier = TargetScaleMult();
+
+        // ★1118b 手臂：吃到燭火掉一隻（保留 gethit3 受擊，不縮小）。晚一點點（等受擊動作甩出去）才真的斷
+        SyncArms(true);
+
+        // ★1118 最後一根＋倒下演出：不縮小（維持原本大小才看得清楚倒下）。★1119 碰到的那一刻 DeathFinaleSequence 直接播 death1，沒有 gethit3 受擊、沒有震退
+        bool deathFinaleNow = deathFinale && _candlesCollected >= _totalCandles && candle == _lastCandleByX;
 
         // 觸發 gethit3 受擊動畫與漸漸變小 (Smooth Shrink)
-        if (_hitShrinkCoroutine != null) StopCoroutine(_hitShrinkCoroutine);
-        _hitShrinkCoroutine = StartCoroutine(HitAndSmoothShrinkRoutine(targetScaleMultiplier));
+        if (!deathFinaleNow)
+        {
+            if (_hitShrinkCoroutine != null) StopCoroutine(_hitShrinkCoroutine);
+            _hitShrinkCoroutine = StartCoroutine(HitAndSmoothShrinkRoutine(targetScaleMultiplier));
+        }
+
+        // ★1116 燭火反擊：爆光＋畫面震一下（每一根都有，含最後一根）
+        if (usePacingDirector)
+        {
+            SpawnLightBurst(candle.transform.position);
+            Shake(0.3f, 0.25f);
+        }
 
         if (candle == _lastCandleByX && _candlesCollected < _totalCandles)
         {
@@ -1145,11 +1436,15 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _finaleDash = false;
             _vanishDone = false;
             if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
-            _stateCoroutine = StartCoroutine(VanishSequence());
+            _stateCoroutine = StartCoroutine(deathFinaleNow ? DeathFinaleSequence(candle) : VanishSequence());
 
             // ★最後一根燭火＝結局。不等消散動畫演完，立刻接。
             if (playEndingAfterAllCandles) StartCoroutine(PlayEndingRoutine());
+            return;
         }
+
+        // ★1116 還沒收完：被光震退、喘息幾秒（追逐音樂、畫面壓迫一起放鬆）
+        if (usePacingDirector && !_finaleDash) StartCandleRecoil();
     }
 
     private static bool _endingFired;   // ★防重入：整場遊戲只進一次結局
@@ -1168,8 +1463,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (_pm != null) _pm.isCutsceneFrozen = true;
 
         // ★先讓怪物縮小消失演完，再轉場（最多等 6 秒保底，避免卡死）
-        float waited = 0f;
-        while (!_vanishDone && waited < 6f)
+        //   ★1118 倒下演出（她走上觀景台＋death1＋淡出）比較長，保底拉到 18 秒
+        float waited = 0f, maxWait = deathFinale ? (crumbleToOrbFinale ? 40f : 18f) : 6f;   // ★1119c 碎裂＋光球飛向鏡頭再多約 10 秒
+        if (deathFinale && crumbleToOrbFinale && comicBeforeCrumble && string.IsNullOrEmpty(endingCardId))
+            maxWait = float.PositiveInfinity;   // ★1119e 中間要看完結局漫畫（玩家自己翻），不設保底時間
+        while (!_vanishDone && waited < maxWait)
         {
             waited += Time.deltaTime;
             yield return null;
@@ -1184,11 +1482,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         EndCredits.EndingMode = true;
         if (string.IsNullOrEmpty(endingBookScene)) yield break;
+        if (EndingFade.Instance != null) yield break;   // ★1119c 碎裂演出已經開始白幕轉場
 
-        // 沒播卡的話用專案既有的轉場控制器蓋黑再切，別硬切
-        if (endingCardId == "" && SceneTransitionController.Instance != null)
+        // ★1118d 沒播卡：怪物倒下後畫面慢慢淡成全黑 → 載入繪本 → 從全黑淡入漫畫（不再用碎裂轉場）
+        if (string.IsNullOrEmpty(endingCardId))
         {
-            SceneTransitionController.Instance.TransitionToScene(endingBookScene);
+            EndingFade.Begin(endingBookScene, endingFadeOutSeconds, endingBlackHoldSeconds, endingFadeInSeconds);
             yield break;
         }
         SceneLoader.Load(endingBookScene);
@@ -1520,6 +1819,162 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         return dy <= VisualHalfHeight + candleReachYMargin;
     }
 
+    // ── ★1119 身體前緣碰燭台 ─────────────────────────────────────────────
+    //   怪物的 Pivot／視覺中心在身體中間，但牠是往前伸手的巨影：實測手在中心前方 16 公尺以上。
+    //   OverlapsCandle 用「中心 ±candleReachX(6)」判定，畫面上手早就蓋過燭台十公尺才受傷。
+    //   骨頭位置也不準（多出來的手臂頂點綁在別的骨頭上，畫面上的手比骨頭前面很多），
+    //   所以直接把當下的動畫網格烘焙出來，用真正畫在畫面上的頂點算最前緣。
+    //   被扯掉的手臂只是拿掉三角形、頂點還在，所以只算「還有三角形用到」的頂點。
+    [Tooltip("★1119b 只有身體（軀幹＋頭）算碰撞，手臂、腿、多出來的手臂伸過燭台都不算")]
+    public bool candleHitTorsoOnly = true;
+    [Tooltip("★1119 身體前緣多久重算一次（秒）。烘焙一次網格約 0.3 毫秒")]
+    public float candleFrontRefreshSeconds = 0.05f;
+
+    private class FrontMeshCache { public SkinnedMeshRenderer smr; public bool[] used; public int sig = -1; }
+    private readonly List<FrontMeshCache> _frontMeshes = new List<FrontMeshCache>();
+    private readonly List<Vector3> _frontWorld = new List<Vector3>();
+    private readonly List<Vector3> _frontTmp = new List<Vector3>();
+    private Mesh _frontBake;
+    private float _frontMeshesAt = -10f, _frontBakedAt = -10f;
+    private float _frontReachHold = -1f;
+
+    private static int MeshIndexSignature(Mesh m)
+    {
+        int sig = m.vertexCount * 31;
+        for (int s = 0; s < m.subMeshCount; s++) sig = sig * 17 + (int)m.GetIndexCount(s);
+        return sig;
+    }
+
+    private void RefreshFrontVertices()
+    {
+        if (Time.time - _frontBakedAt < Mathf.Max(0f, candleFrontRefreshSeconds) && _frontBakedAt >= 0f) return;
+        _frontBakedAt = Time.time;
+
+        if (Time.time - _frontMeshesAt > 1f || _frontMeshes.Count == 0)
+        {
+            _frontMeshesAt = Time.time;
+            var keep = new List<FrontMeshCache>();
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(false))
+            {
+                if (r == null || r.sharedMesh == null) continue;
+                var c = _frontMeshes.Find(x => x.smr == r) ?? new FrontMeshCache { smr = r };
+                keep.Add(c);
+            }
+            _frontMeshes.Clear(); _frontMeshes.AddRange(keep);
+        }
+
+        if (_frontBake == null) _frontBake = new Mesh { name = "MonsterFrontBake" };
+        _frontWorld.Clear();
+        foreach (var c in _frontMeshes)
+        {
+            var r = c.smr;
+            if (r == null || !r.enabled || !r.gameObject.activeInHierarchy || r.sharedMesh == null) continue;
+            Mesh sm = r.sharedMesh;
+            var shed = GetComponent<MonsterArmShedding>();
+            bool armsKnown = shed != null && shed.BodyRenderer == r;
+            int sig = MeshIndexSignature(sm) * 3 + (armsKnown ? 1 : 0);
+            if (c.used == null || c.sig != sig || c.used.Length != sm.vertexCount)
+            {
+                c.sig = sig;
+                c.used = new bool[sm.vertexCount];
+                for (int s = 0; s < sm.subMeshCount; s++)
+                    foreach (int i in sm.GetTriangles(s)) if (i >= 0 && i < c.used.Length) c.used[i] = true;
+                if (candleHitTorsoOnly) KeepTorsoVertices(r, sm, c.used, armsKnown ? shed : null);
+            }
+            // 實測：BakeMesh(useScale:false) 出來的頂點已經是世界尺寸（骨架本身帶縮放），只差位置和旋轉
+            r.BakeMesh(_frontBake, false);
+            _frontBake.GetVertices(_frontTmp);
+            Matrix4x4 m = Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one);
+            int n = Mathf.Min(_frontTmp.Count, c.used.Length);
+            for (int i = 0; i < n; i++) if (c.used[i]) _frontWorld.Add(m.MultiplyPoint3x4(_frontTmp[i]));
+        }
+    }
+
+    /// <summary>
+    /// ★1119b 只留軀幹＋頭的頂點：主要綁在 Hips／Spine／Neck／Head／Shoulder（鎖骨）骨頭上的才算，
+    /// 手臂、腿（Arm／ForeArm／Hand／UpLeg／Leg／Foot…）不算；多出來的手臂整塊綁在 Spine2 上，另外用 MonsterArmShedding 的分析排除。
+    /// </summary>
+    private static void KeepTorsoVertices(SkinnedMeshRenderer r, Mesh sm, bool[] mask, MonsterArmShedding shed)
+    {
+        Transform[] bones = r.bones;
+        BoneWeight[] bw = sm.boneWeights;
+        if (bones == null || bones.Length == 0 || bw == null || bw.Length != mask.Length)
+        {
+            // 沒有骨頭權重的網格（例如只綁在頭上的眼睛、牙齒用單一骨頭）：看它自己掛在哪根骨頭
+            Transform t = r.rootBone != null ? r.rootBone : r.transform;
+            if (!IsTorsoBone(t)) for (int i = 0; i < mask.Length; i++) mask[i] = false;
+            return;
+        }
+        var torso = new bool[bones.Length];
+        for (int b = 0; b < bones.Length; b++) torso[b] = IsTorsoBone(bones[b]);
+        for (int i = 0; i < mask.Length; i++)
+        {
+            if (!mask[i]) continue;
+            BoneWeight w = bw[i];
+            int bi = w.boneIndex0; float best = w.weight0;
+            if (w.weight1 > best) { best = w.weight1; bi = w.boneIndex1; }
+            if (w.weight2 > best) { best = w.weight2; bi = w.boneIndex2; }
+            if (w.weight3 > best) { bi = w.boneIndex3; }
+            bool keep = bi >= 0 && bi < torso.Length && torso[bi];
+            if (keep && shed != null && shed.IsExtraArmVertex(i)) keep = false;
+            mask[i] = keep;
+        }
+    }
+
+    private static bool IsTorsoBone(Transform t)
+    {
+        if (t == null) return false;
+        string n = t.name;
+        int colon = n.LastIndexOf(':');
+        if (colon >= 0) n = n.Substring(colon + 1);
+        return n.StartsWith("Hips") || n.StartsWith("Spine") || n.StartsWith("Neck") || n.StartsWith("Head")
+            || n.EndsWith("Shoulder");
+    }
+
+    /// <summary>★1119 怪物在 dir 方向（+1＝往 +X）、高度 yMin～yMax 之間最前面那個頂點的世界 X。找不到回傳 NaN。</summary>
+    private float FrontEdgeX(float dir, float yMin, float yMax)
+    {
+        RefreshFrontVertices();
+        float best = float.NaN;
+        for (int i = 0; i < _frontWorld.Count; i++)
+        {
+            Vector3 p = _frontWorld[i];
+            if (p.y < yMin || p.y > yMax) continue;
+            if (float.IsNaN(best) || p.x * dir > best * dir) best = p.x;
+        }
+        return best;
+    }
+
+    private float ChaseDir => (player != null && player.position.x < transform.position.x) ? -1f : 1f;
+
+    /// <summary>★1119 怪物身體最前緣（軀幹、頭）有沒有碰到這根燭台。身體中心已經整個越過燭台 candleReachX 就不算（那是已經走過去了）。</summary>
+    public bool FrontTouchesCandle(Vector3 candlePosition)
+    {
+        if (!candleHitByFrontEdge) return false;
+        float dir = ChaseDir;
+        float cx = VisualCenter.x;
+        if ((cx - candlePosition.x) * dir > candleReachX) return false;      // 身體已經整個走過去了
+        if ((candlePosition.x - cx) * dir > 80f) return false;              // 還很遠，不用烘焙網格
+        float yMin = candlePosition.y - candleFrontYMargin;
+        float yMax = candlePosition.y + candleBodyHeight + candleFrontYMargin;
+        float front = FrontEdgeX(dir, yMin, yMax);
+        if (float.IsNaN(front)) return false;
+        return (front - candlePosition.x) * dir >= -Mathf.Max(0f, candleFrontTouchMargin);
+    }
+
+    /// <summary>★1119 前緣離 Pivot 多遠（公尺，朝追逐方向）。手臂擺動會讓它前後晃，這裡取「快升慢降」的值，給「停在燭台前等」用。</summary>
+    private float FrontReachForHold(Vector3 candlePosition)
+    {
+        float dir = ChaseDir;
+        float yMin = candlePosition.y - candleFrontYMargin;
+        float yMax = candlePosition.y + candleBodyHeight + candleFrontYMargin;
+        float front = FrontEdgeX(dir, yMin, yMax);
+        float now = float.IsNaN(front) ? 0f : Mathf.Max(0f, (front - transform.position.x) * dir);
+        if (_frontReachHold < 0f || now > _frontReachHold) _frontReachHold = now;
+        else _frontReachHold = Mathf.MoveTowards(_frontReachHold, now, 1.5f * Time.deltaTime);
+        return _frontReachHold;
+    }
+
     private static void AccumulateBounds(ref Bounds acc, ref bool any, Bounds local, Matrix4x4 m)
     {
         Vector3 c = local.center, ex = local.extents;
@@ -1722,6 +2177,594 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _hitAnimLockUntil = Mathf.Max(_hitAnimLockUntil, Time.time + remaining);
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // ★1118 結局：怪物倒下（她走上觀景台看著牠 death1）
+    // ──────────────────────────────────────────────────────────────────────────
+    private bool _finaleCamOn;
+    private Transform _finaleCamDummy;
+    private readonly List<CinemachineCamera> _finaleVcams = new List<CinemachineCamera>();
+    private readonly List<Transform> _finaleOrigFollow = new List<Transform>();
+    private float _finaleCamYOffset, _finaleCamVelX;
+    private float _finaleCamMonsterX;
+    // ★1118c 倒下時的拉遠：怪物是半身站在玻璃橋下面的深坑裡，倒下去會躺到畫面外，所以倒下那一刻把鏡頭往下、拉遠，框住「她＋倒下的怪物」
+    private bool _finaleDeathFrame;
+    private float _finaleBodyH, _finaleSizeVel, _finaleYVel;
+    private readonly List<float> _finaleOrigLens = new List<float>();
+    private bool _finaleLensRestoring;
+    private readonly List<CinemachineDeathZoneFloor> _finaleDisabledFloors = new List<CinemachineDeathZoneFloor>();
+
+    private float _finaleExtraRight, _finaleExtraTop;
+    /// <summary>★1119d 倒下鏡頭在她右邊／上面多留幾公尺（白色光球繞她一圈時用），鏡頭會平滑拉開。</summary>
+    public void SetFinaleFrameExtra(float right, float top)
+    {
+        _finaleExtraRight = Mathf.Max(0f, right);
+        _finaleExtraTop = Mathf.Max(0f, top);
+    }
+
+    private void FinaleCamOn()
+    {
+        if (_finaleCamOn) return;
+        _finaleCamOn = true;
+        if (_finaleCamDummy == null) _finaleCamDummy = new GameObject("ShadowMonster_FinaleCamDummy").transform;
+        _finaleVcams.Clear(); _finaleOrigFollow.Clear(); _finaleOrigLens.Clear();
+        _finaleLensRestoring = false;
+        Vector3 start = player != null ? player.position : Vector3.zero;
+        bool first = true;
+        foreach (var v in FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None))
+        {
+            if (first && v.Follow != null) { start = v.Follow.position; first = false; }
+            _finaleVcams.Add(v);
+            _finaleOrigFollow.Add(v.Follow);
+            _finaleOrigLens.Add(v.Lens.OrthographicSize);
+            v.Follow = _finaleCamDummy;
+            // ★1118c 「鏡頭最低只能看到死亡區上面」的限制先關掉（倒下的怪物在橋下的深坑，要看得到）；鏡頭縮回去之後再開
+            foreach (var fl in v.GetComponents<CinemachineDeathZoneFloor>())
+                if (fl != null && fl.enabled) { fl.enabled = false; _finaleDisabledFloors.Add(fl); }
+        }
+        _finaleCamDummy.position = start;
+        _finaleCamYOffset = player != null ? start.y - player.position.y : 0f;
+        _finaleCamVelX = 0f;
+    }
+
+    private void FinaleCamOff(bool instant = false)
+    {
+        if (!_finaleCamOn) return;
+        _finaleCamOn = false;
+        _finaleDeathFrame = false;
+        _finaleAnchorInit = false;
+        if (_finaleDampingZeroed)
+        {   // ★1118d 還原 Cinemachine 的位置阻尼
+            for (int i = 0; i < _finaleVcams.Count && i < _finaleSavedDamping.Count; i++)
+            {
+                var f0 = _finaleVcams[i] != null ? _finaleVcams[i].GetComponent<CinemachineFollow>() : null;
+                if (f0 == null) continue;
+                var ts = f0.TrackerSettings; ts.PositionDamping = _finaleSavedDamping[i]; f0.TrackerSettings = ts;
+            }
+            _finaleDampingZeroed = false;
+            _finaleSavedDamping.Clear();
+        }
+        for (int i = 0; i < _finaleVcams.Count; i++)
+            if (_finaleVcams[i] != null) _finaleVcams[i].Follow = _finaleOrigFollow[i];
+        _finaleOrigFollow.Clear();
+        if (instant)
+        {
+            for (int i = 0; i < _finaleVcams.Count && i < _finaleOrigLens.Count; i++)
+            {
+                if (_finaleVcams[i] == null) continue;
+                var lens = _finaleVcams[i].Lens; lens.OrthographicSize = _finaleOrigLens[i]; _finaleVcams[i].Lens = lens;
+            }
+            _finaleVcams.Clear(); _finaleOrigLens.Clear(); _finaleLensRestoring = false;
+            RestoreFinaleFloors();
+        }
+        else
+        {
+            _finaleLensRestoring = _finaleVcams.Count > 0;   // 鏡頭大小慢慢縮回去（UpdateFinaleCam 裡做）
+            if (!_finaleLensRestoring) RestoreFinaleFloors();
+        }
+    }
+
+    private void RestoreFinaleFloors()
+    {
+        foreach (var fl in _finaleDisabledFloors) if (fl != null) fl.enabled = true;
+        _finaleDisabledFloors.Clear();
+    }
+
+    /// <summary>倒下演出的鏡頭：框住她和怪物（水平中點），高度跟著她。</summary>
+    private void UpdateFinaleCam()
+    {
+        // 演出結束後，鏡頭大小慢慢縮回原本的
+        if (!_finaleCamOn && _finaleLensRestoring)
+        {
+            bool done = true;
+            for (int i = 0; i < _finaleVcams.Count && i < _finaleOrigLens.Count; i++)
+            {
+                var v = _finaleVcams[i];
+                if (v == null) continue;
+                var lens = v.Lens;
+                lens.OrthographicSize = Mathf.SmoothDamp(lens.OrthographicSize, _finaleOrigLens[i], ref _finaleSizeVel, 0.9f);
+                if (Mathf.Abs(lens.OrthographicSize - _finaleOrigLens[i]) < 0.02f) lens.OrthographicSize = _finaleOrigLens[i]; else done = false;
+                v.Lens = lens;
+            }
+            if (done) { _finaleLensRestoring = false; _finaleVcams.Clear(); _finaleOrigLens.Clear(); RestoreFinaleFloors(); }
+        }
+        if (!_finaleCamOn || _finaleCamDummy == null || player == null) return;
+        float mid = (player.position.x + _finaleCamMonsterX) * 0.5f;
+        Vector3 p = _finaleCamDummy.position;
+        float targetY = player.position.y + _finaleCamYOffset;
+
+        if (_finaleDeathFrame && _finaleVcams.Count > 0 && _finaleVcams[0] != null && _finaleOrigLens.Count > 0)
+        {
+            // ★1118d 鏡頭底邊黏在怪物身體「最低的那一點」（站著＝腳、躺下＝背），背部以下不留空白。
+            //   左邊界＝身體最左（手伸出去）往外留一點、右邊＝她；高度由下往上算，多出來的空間只會在上面。
+            var cf = _finaleVcams[0].GetComponent<CinemachineFollow>();
+            Vector3 off = cf != null ? cf.FollowOffset : Vector3.zero;
+            float aspect = _mainCam != null ? Mathf.Max(0.5f, _mainCam.aspect) : 1.78f;
+
+            if (!_finaleAnchorInit)
+            {
+                // 進入的那一刻：從「鏡頭現在實際的位置／大小」接手，不跳
+                _finaleAnchorInit = true;
+                Vector3 cp = _mainCam != null ? _mainCam.transform.position : _finaleCamDummy.position + off;
+                float s0 = _finaleVcams[0].Lens.OrthographicSize;
+                _finaleBottomSm = cp.y - s0;
+                _finaleBottomVel = 0f;
+                _finaleLeftMin = float.PositiveInfinity;
+                _finaleMidSm = cp.x;
+                _finaleCamVelX = 0f;
+                // 位置阻尼歸零，之後由這裡自己做平滑（不然 Cinemachine 的阻尼會讓底邊慢半拍）
+                _finaleSavedDamping.Clear();
+                foreach (var v in _finaleVcams)
+                {
+                    var f0 = v != null ? v.GetComponent<CinemachineFollow>() : null;
+                    if (f0 == null) { _finaleSavedDamping.Add(Vector3.zero); continue; }
+                    var ts = f0.TrackerSettings;
+                    _finaleSavedDamping.Add(ts.PositionDamping);
+                    ts.PositionDamping = Vector3.zero;
+                    f0.TrackerSettings = ts;
+                }
+                _finaleDampingZeroed = true;
+            }
+
+            bool ok = MeasureFinaleBody();
+            float bodyBottom = ok ? _finaleBodyMinY + finaleBottomInset : transform.position.y - 1.5f;
+            float bodyLeft = ok ? _finaleBodyMinX : _finaleCamMonsterX - Mathf.Max(1f, _finaleBodyH) * finaleFallReach;
+            _finaleLeftMin = Mathf.Min(_finaleLeftMin, bodyLeft);   // 只往外長，不縮回來（手臂不會被切）
+            _finaleBottomSm = Mathf.SmoothDamp(_finaleBottomSm, bodyBottom, ref _finaleBottomVel, 0.3f);
+
+            float left = _finaleLeftMin - 3f;
+            float right = player.position.x + 4f + _finaleExtraRight;
+            float bottom = _finaleBottomSm;
+            float top = Mathf.Max(player.position.y + 8f + _finaleExtraTop, bottom + 2f);
+            float size = Mathf.Max((top - bottom) * 0.5f, (right - left) * 0.5f / aspect);
+            float maxSize = Mathf.Max(_finaleOrigLens[0], finaleMaxOrthoSize);
+            if (size > maxSize && !_finaleWarnedClamp) { _finaleWarnedClamp = true; Debug.LogWarning($"【影子怪物】★1118d 倒下鏡頭需要 {size:F1} 但上限 {maxSize:F1}（finaleMaxOrthoSize），會切到畫面"); }
+            size = Mathf.Clamp(size, _finaleOrigLens[0], maxSize);
+            float cur = Mathf.SmoothDamp(_finaleVcams[0].Lens.OrthographicSize, size, ref _finaleSizeVel, 0.6f);
+            for (int i = 0; i < _finaleVcams.Count; i++)
+            {
+                if (_finaleVcams[i] == null) continue;
+                var l = _finaleVcams[i].Lens; l.OrthographicSize = cur; _finaleVcams[i].Lens = l;
+            }
+            _finaleMidSm = Mathf.SmoothDamp(_finaleMidSm, (left + right) * 0.5f, ref _finaleCamVelX, 0.8f);
+            // 鏡頭中心 y ＝ 底邊 ＋ 「目前」的半高 → 半高怎麼變，底邊都黏在背上
+            p.x = _finaleMidSm - off.x;
+            p.y = bottom + cur - off.y;
+            _finaleCamDummy.position = p;
+            return;
+        }
+        else p.y = targetY;
+        p.x = Mathf.SmoothDamp(p.x, mid, ref _finaleCamVelX, 0.8f);
+        _finaleCamDummy.position = p;
+    }
+
+    // ★1118d 倒下鏡頭：量怪物身體真正的最低點／最左點（每兩個畫面對 Body 的頂點手動蒙皮一次）
+    private SkinnedMeshRenderer _finaleBodySmr;
+    private Vector3[] _finaleVerts; private BoneWeight[] _finaleBw; private Matrix4x4[] _finaleBind, _finaleSkin; private Mesh _finaleVertsMesh;
+    private readonly List<int> _finaleIdxTmp = new List<int>();
+    private bool[] _finaleUsed;
+    private Mesh _finaleUsedMesh;
+    private int _finaleUsedKey = -1;
+    private float _finaleBodyMinY, _finaleBodyMinX;
+    private bool _finaleBodyValid;
+    private int _finaleMeasureFrame = -999;
+    private bool _finaleAnchorInit, _finaleDampingZeroed, _finaleWarnedClamp;
+    private float _finaleBottomSm, _finaleBottomVel, _finaleLeftMin, _finaleMidSm;
+    private readonly List<Vector3> _finaleSavedDamping = new List<Vector3>();
+    [Tooltip("★1118d 倒下鏡頭的底邊比身體最低點再往上多少（公尺），避免背下面露出一條縫")]
+    public float finaleBottomInset = 0.05f;
+
+    /// <summary>身體最低／最左的世界座標；回傳 false＝量不到（網格不能讀），呼叫端改用保底框法。</summary>
+    private bool MeasureFinaleBody()
+    {
+        if (Time.frameCount - _finaleMeasureFrame < 2) return _finaleBodyValid;
+        _finaleMeasureFrame = Time.frameCount;
+        if (_finaleBodySmr == null)
+        {
+            int best = -1;
+            foreach (var s in GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (s == null || s.sharedMesh == null) continue;
+                if (s.name == "Body") { _finaleBodySmr = s; break; }
+                string n = s.name.ToLowerInvariant();
+                if (n.Contains("eye") || n.Contains("teeth") || n.Contains("tooth")) continue;
+                if (s.sharedMesh.vertexCount > best) { best = s.sharedMesh.vertexCount; _finaleBodySmr = s; }
+            }
+        }
+        if (_finaleBodySmr == null || _finaleBodySmr.sharedMesh == null || !_finaleBodySmr.sharedMesh.isReadable)
+        {
+            if (_finaleBodySmr != null)
+            {   // 網格不能讀：退而求其次用 renderer 的包圍盒
+                Bounds b = _finaleBodySmr.bounds;
+                _finaleBodyMinY = b.min.y; _finaleBodyMinX = b.min.x; _finaleBodyValid = true;
+                return true;
+            }
+            _finaleBodyValid = false; return false;
+        }
+        Mesh sm = _finaleBodySmr.sharedMesh;
+        // 掉手臂只拿掉三角形、頂點還留在陣列裡（綁在 Spine2，會跟著骨頭飛）→ 只算還有被三角形用到的頂點
+        int key = 0;
+        for (int s = 0; s < sm.subMeshCount; s++) key = key * 31 + (int)sm.GetIndexCount(s);
+        if (_finaleUsed == null || _finaleUsedMesh != sm || _finaleUsedKey != key || _finaleUsed.Length != sm.vertexCount)
+        {
+            _finaleUsed = new bool[sm.vertexCount];
+            for (int s = 0; s < sm.subMeshCount; s++)
+            {
+                sm.GetIndices(_finaleIdxTmp, s);
+                for (int i = 0; i < _finaleIdxTmp.Count; i++) _finaleUsed[_finaleIdxTmp[i]] = true;
+            }
+            _finaleUsedMesh = sm; _finaleUsedKey = key;
+        }
+        // 逐頂點手動蒙皮（骨頭世界矩陣 × bindpose，跟 MonsterArmShedding.DetachArm 一樣）：座標一定是世界座標，不用猜 BakeMesh 的縮放／座標系
+        if (_finaleVerts == null || _finaleVertsMesh != sm)
+        {
+            _finaleVerts = sm.vertices; _finaleBw = sm.boneWeights; _finaleBind = sm.bindposes; _finaleVertsMesh = sm;
+        }
+        Transform[] bones = _finaleBodySmr.bones;
+        if (_finaleBw == null || _finaleBw.Length != _finaleVerts.Length || bones == null || bones.Length != _finaleBind.Length) { _finaleBodyValid = false; return false; }
+        if (_finaleSkin == null || _finaleSkin.Length != bones.Length) _finaleSkin = new Matrix4x4[bones.Length];
+        for (int i = 0; i < bones.Length; i++) _finaleSkin[i] = bones[i] != null ? bones[i].localToWorldMatrix * _finaleBind[i] : Matrix4x4.identity;
+        float minY = float.PositiveInfinity, minX = float.PositiveInfinity;
+        int n2 = Mathf.Min(_finaleVerts.Length, _finaleUsed.Length);
+        for (int i = 0; i < n2; i++)
+        {
+            if (!_finaleUsed[i]) continue;
+            BoneWeight bw = _finaleBw[i];
+            Vector3 v = _finaleVerts[i], w = Vector3.zero;
+            if (bw.weight0 > 0f) w += _finaleSkin[bw.boneIndex0].MultiplyPoint3x4(v) * bw.weight0;
+            if (bw.weight1 > 0f) w += _finaleSkin[bw.boneIndex1].MultiplyPoint3x4(v) * bw.weight1;
+            if (bw.weight2 > 0f) w += _finaleSkin[bw.boneIndex2].MultiplyPoint3x4(v) * bw.weight2;
+            if (bw.weight3 > 0f) w += _finaleSkin[bw.boneIndex3].MultiplyPoint3x4(v) * bw.weight3;
+            if (w.y < minY) minY = w.y;
+            if (w.x < minX) minX = w.x;
+        }
+        if (float.IsInfinity(minY)) { _finaleBodyValid = false; return false; }
+        _finaleBodyMinY = minY; _finaleBodyMinX = minX; _finaleBodyValid = true;
+        return true;
+    }
+
+    /// <summary>測試／驗證用：目前量到的身體最低點與最左點。</summary>
+    public bool TryGetFinaleBodyExtents(out float minY, out float minX) { minY = _finaleBodyMinY; minX = _finaleBodyMinX; return _finaleBodyValid; }
+
+    private float _deathAnimSpeedSaved = -1f;   // ★1119b 倒下期間改過 Animator 速度時，存原本的速度（-1＝沒改）
+    private CandleVoiceDirector _voiceDirector;
+
+    // ★1119b 測試／驗證用：最近一次倒下演出的對齊結果
+    public float DebugDeathSpeed { get; private set; } = 1f;
+    public float DebugDeathVoiceEndUnscaled { get; private set; } = -1f;   // 最後一句語音預計結束（Time.unscaledTime），-1＝沒有可對齊的語音
+
+    private void RestoreDeathAnimSpeed()
+    {
+        if (_deathAnimSpeedSaved >= 0f && _animator != null) _animator.speed = _deathAnimSpeedSaved;
+        _deathAnimSpeedSaved = -1f;
+    }
+
+    /// <summary>
+    /// ★1119b 倒下動畫要用幾倍速，才會在「最後一句燭火語音」播完的那一刻剛好結束。
+    /// animLeft＝倒下動畫剩下的長度（秒，1× 時）。最後一句還在播＝剩餘時間；還在排隊＝前面那句播完＋間隔＋它的長度。
+    /// 沒語音檔、導演不在、已經播完／被停掉、剩不到 0.25 秒＝回傳 1（維持原本的速度）。結果夾在 finaleDeathSpeedRange，夾到會在 Console 提示。
+    /// </summary>
+    private float FinaleDeathSpeed(float animLeft)
+    {
+        DebugDeathSpeed = 1f; DebugDeathVoiceEndUnscaled = -1f;
+        if (_voiceDirector == null) _voiceDirector = FindFirstObjectByType<CandleVoiceDirector>();
+        if (_voiceDirector == null || _voiceDirector.voices == null || _voiceDirector.voices.Length == 0 || animLeft <= 0.05f)
+        {
+            Debug.Log("【影子怪物】★1119b 找不到燭火語音導演，倒下動畫維持 1×");
+            return 1f;
+        }
+        int idx = Mathf.Min(Mathf.Max(1, _totalCandles), _voiceDirector.voices.Length) - 1;   // 最後一根燭火對應的那一句（第 5 根＝voices[4]）
+        float endAt;
+        if (!_voiceDirector.TryGetExpectedEndTime(idx, out endAt))
+        {
+            Debug.Log($"【影子怪物】★1119b 最後一句語音（voices[{idx}]）沒在播也沒在排隊（沒放語音檔／已經播完／還沒點亮），倒下動畫維持 1×");
+            return 1f;
+        }
+        float remain = endAt - Time.unscaledTime;
+        DebugDeathVoiceEndUnscaled = endAt;
+        if (remain < 0.25f)
+        {
+            Debug.Log($"【影子怪物】★1119b 最後一句語音只剩 {remain:F2}s，倒下動畫維持 1×");
+            return 1f;
+        }
+        float lo = Mathf.Max(0.1f, Mathf.Min(finaleDeathSpeedRange.x, finaleDeathSpeedRange.y));
+        float hi = Mathf.Max(lo, Mathf.Max(finaleDeathSpeedRange.x, finaleDeathSpeedRange.y));
+        float raw = animLeft / remain;
+        float speed = Mathf.Clamp(raw, lo, hi);
+        if (!Mathf.Approximately(raw, speed))
+            Debug.LogWarning($"【影子怪物】★1119b 倒下動畫要對齊最後一句語音需要 {raw:F2}×（動畫剩 {animLeft:F2}s、語音剩 {remain:F2}s），超出 {lo:F2}～{hi:F2}，夾成 {speed:F2}×（動畫會比語音{(speed > raw ? "早" : "晚")}結束 {Mathf.Abs(animLeft / speed - remain):F2}s）");
+        else
+            Debug.Log($"【影子怪物】★1119b 倒下動畫對齊最後一句語音（voices[{idx}]）：動畫剩 {animLeft:F2}s、語音剩 {remain:F2}s → {speed:F2}×");
+        DebugDeathSpeed = speed;
+        return speed;
+    }
+
+    private IEnumerator DeathFinaleSequence(CandleCollectible candle)
+    {
+        RestoreDeathAnimSpeed();
+        DebugDeathSpeed = 1f; DebugDeathVoiceEndUnscaled = -1f;
+        // 1. 停追逐（Vanishing 狀態下 Update 不移動、不抓人），音樂、恐懼、減速一律收掉
+        currentState = MonsterState.Vanishing;
+        StopChaseBGM(false);   // ★1119b 先開始淡出；量到倒下動畫的實際長度（下面）後，會把淡出長度改成「剛好到動畫結束」
+        if (victoryReliefSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(victoryReliefSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(victoryReliefSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
+        }
+        if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;
+        RemoveFear();
+        UnlockCamera();
+        EnsurePlayerReference();
+
+        float candleX = candle != null ? candle.transform.position.x : (player != null ? player.position.x : transform.position.x);
+        float watchX = candleX + Mathf.Max(3f, finaleWatchOffsetX);
+
+        // 2. ★1119 碰到最後一根燭火的那一刻就直接倒下：不播受擊（gethit3）、不滑動、不震退，怪物就留在碰到的位置
+        float mx = transform.position.x;
+        transform.rotation = Quaternion.Euler(0f, 90f, 0f);   // 面向右邊（她要走去的觀景台方向），倒下途中不再轉向
+        _hitAnimLockUntil = 0f;                                // 前一根的受擊鎖若還在，別擋住倒下
+        if (_hitShrinkCoroutine != null) { StopCoroutine(_hitShrinkCoroutine); _hitShrinkCoroutine = null; }
+        _isHitShrinking = false;
+        _finaleCamMonsterX = mx;
+        FinaleCamOn();
+        Debug.Log($"【影子怪物】★1119 結局倒下演出開始：怪物 x={mx:F1} 當場倒下（不播受擊），她走到 x={watchX:F1}（燭火 x={candleX:F1}）");
+
+        // 3. 同一時間：怪物直接在 Generic 骨架上播 death1（★1118c 你做的兩隻手版本 Mixamo 動畫），她自動走上觀景台
+        float deathLen = 0f;
+        float deathEndAt = float.PositiveInfinity;   // 倒下動畫＋停留結束的時間（量到長度後才定）
+        if (_animator != null && !string.IsNullOrEmpty(deathAnimationName)
+            && _animator.runtimeAnimatorController != null && _animator.HasState(0, Animator.StringToHash(deathAnimationName)))
+        {
+            _animator.CrossFadeInFixedTime(deathAnimationName, 0.12f, 0, 0f);   // 短交叉淡入：從現在的姿勢接過去，不跳
+            _currentAnimName = deathAnimationName;
+            {   // 量站著時的高度，倒下鏡頭用
+                Bounds bb = new Bounds(transform.position, Vector3.zero); bool first = true;
+                foreach (var smr in GetComponentsInChildren<SkinnedMeshRenderer>())
+                { if (first) { bb = smr.bounds; first = false; } else bb.Encapsulate(smr.bounds); }
+                _finaleBodyH = bb.size.y;
+                _finaleCamMonsterX = transform.position.x;
+                _finaleDeathFrame = deathFrameCamera;
+                _finaleAnchorInit = false; _finaleWarnedClamp = false;
+            }
+        }
+        else
+        {
+            PlayAnimationByName(hitAnimationName, true);
+            deathLen = 1.2f;
+            deathEndAt = Time.time + deathLen + Mathf.Max(0f, deathHoldSeconds);
+            Debug.LogWarning("【影子怪物】★1118 找不到死亡動畫（death1 狀態），改播受擊後淡出");
+        }
+        float deathStart = Time.time;
+        bool deathMeasured = !float.IsPositiveInfinity(deathEndAt);
+
+        if (_pm != null) { _pm.scriptedMove = true; _pm.scriptedMoveInput = 0f; }
+        float t = 0f, stuckT = 0f, lastPx = player != null ? player.position.x : 0f;
+        bool arrived = false; float arriveAt = 0f;
+        // 「她走到、轉身看怪物」＋「倒下動畫＋停留」兩件都做完才往下（淡黑）；保底 12 秒
+        while (t < 12f)
+        {
+            t += Time.deltaTime;
+            if (!deathMeasured && t > 0.03f)
+            {   // 等交叉淡入走完（轉場中 IsName 對不上），再讀 death1 的實際長度；0.6 秒還讀不到就用 3 秒保底
+                AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(0);
+                bool onDeath = !_animator.IsInTransition(0) && info.IsName(deathAnimationName);
+                if (onDeath || t > 0.6f)
+                {
+                    deathLen = onDeath ? info.length : 3f;
+                    float left = onDeath ? deathLen * Mathf.Clamp01(1f - info.normalizedTime) : deathLen - t;
+                    // ★1119b 讓倒下動畫剛好和最後一句語音一起結束：調 Animator 速度（夾在 finaleDeathSpeedRange），1× ＝ 沒有語音可對齊
+                    float speed = FinaleDeathSpeed(left);
+                    if (!Mathf.Approximately(speed, 1f))
+                    {
+                        _deathAnimSpeedSaved = _animator.speed;
+                        _animator.speed = speed;
+                    }
+                    float realLeft = left / speed;   // 實際還要幾秒（Animator 速度已套用）
+                    deathEndAt = Time.time + realLeft + Mathf.Max(0f, deathHoldSeconds);
+                    deathMeasured = true;
+                    StopChaseBGM(false, Mathf.Max(finaleBgmFadeMinSeconds, realLeft));   // 追逐音樂：從現在淡到倒下動畫結束（最短 finaleBgmFadeMinSeconds）
+                    Debug.Log($"【影子怪物】★1119 怪物當場播 {deathAnimationName}（{deathLen:F2} 秒，Generic 骨架，無受擊），速度 {speed:F2}×，動畫＋停留預計 +{deathEndAt - deathStart:F2}s 結束；追逐音樂 {Mathf.Max(finaleBgmFadeMinSeconds, realLeft):F2}s 淡出");
+                }
+            }
+            if (_pm != null && player != null)
+            {
+                // 保險：她被卡住（碰撞接縫、擋路物）超過 1.2 秒沒前進，直接把她放到觀景台，不讓結局卡死
+                if (!arrived)
+                {
+                    stuckT = player.position.x > lastPx + 0.02f ? 0f : stuckT + Time.deltaTime;
+                    lastPx = player.position.x;
+                    if (stuckT > 1.2f && Mathf.Abs(watchX - player.position.x) > 0.5f)
+                    {
+                        Debug.LogWarning($"【影子怪物】★1118 她走到 x={player.position.x:F1} 被卡住，直接放到觀景台 x={watchX:F1}");
+                        _pm.WarpTo(new Vector3(watchX, player.position.y + 0.1f, player.position.z));
+                        _pm.scriptedMove = true; _pm.scriptedMoveInput = 0f;
+                        stuckT = 0f; lastPx = watchX;
+                    }
+                    float dx = watchX - player.position.x;
+                    if (Mathf.Abs(dx) < 0.25f)
+                    {
+                        arrived = true; arriveAt = t;
+                        _pm.scriptedMoveInput = 0f;
+                        _pm.SetFacingScripted(-1f);   // 她停下、轉身看向怪物
+                        Debug.Log($"【影子怪物】★1119 她走到觀景台（{t:F2}s）並轉身；倒下動畫＋停留預計 {Mathf.Max(0f, deathEndAt - Time.time):F2}s 後結束");
+                    }
+                    else _pm.scriptedMoveInput = Mathf.Sign(dx);
+                }
+            }
+            else arrived = true;   // 沒有玩家＝不用等
+            if (arrived && t >= arriveAt + 0.7f && deathMeasured && Time.time >= deathEndAt) break;
+            yield return null;
+        }
+        if (!arrived) Debug.LogWarning($"【影子怪物】★1119 保底時間到她還沒走到觀景台（x={(player != null ? player.position.x : 0f):F1}/{watchX:F1}），直接往下");
+        if (_pm != null) { _pm.scriptedMoveInput = 0f; if (!arrived) _pm.SetFacingScripted(-1f); }
+
+        // ★1118d 接結局漫畫時：倒下的怪物和框好的鏡頭就留在畫面上，由 PlayEndingRoutine 把整個畫面淡成全黑（不淡出怪物、不收鏡頭）
+        if (playEndingAfterAllCandles && !string.IsNullOrEmpty(endingBookScene))
+        {
+            if (_pm != null) _pm.scriptedMoveInput = 0f;
+            RestoreDeathAnimSpeed();
+            if (crumbleToOrbFinale && string.IsNullOrEmpty(endingCardId))
+            {
+                // ★1119c 碎裂 → 白色光球 → 飛向鏡頭全白；白幕（EndingFade）由碎裂演出自己開始，PlayEndingRoutine 看到就不再淡黑
+                EndCredits.EndingMode = true;
+                // ★1119e 先看結局漫畫，翻完回到這個畫面（倒下的怪物、她站在觀景台）才碎裂
+                if (comicBeforeCrumble) yield return EndingComicInterlude();
+                var crumble = GetComponent<MonsterDisintegrateFinale>();
+                if (crumble == null) crumble = gameObject.AddComponent<MonsterDisintegrateFinale>();
+                EndCredits.CreditsOnly = comicBeforeCrumble;   // 光球全白後進 Book：漫畫看過了，直接捲名單
+                yield return crumble.Play(SetVisualAlpha, endingBookScene, _mainCam != null ? _mainCam : Camera.main);
+            }
+            currentState = MonsterState.Dormant;
+            _vanishDone = true;
+            Debug.Log("【影子怪物】★1118d 怪物倒下停在畫面上，接結局淡黑");
+            yield break;
+        }
+        RestoreDeathAnimSpeed();
+
+        // 6. 淡出
+        float f = 0f, fade = Mathf.Max(0.1f, deathFadeSeconds);
+        while (f < fade)
+        {
+            f += Time.deltaTime;
+            SetVisualAlpha(1f - Mathf.Clamp01(f / fade));
+            yield return null;
+        }
+        SetVisualAlpha(0f);
+        FinaleCamOff();   // 鏡頭交還給她（慢慢回到跟著她）
+        if (_pm != null) _pm.scriptedMoveInput = 0f;   // 她維持站著看（scriptedMove 保持開著，結局漫畫前不會自己亂走）
+        currentState = MonsterState.Dormant;
+        _vanishDone = true;
+        Debug.Log("【影子怪物】★1118 怪物倒下、消散，接結局");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // ★1119e 結局漫畫插在「倒下」和「碎裂」中間：Book 場景疊加載入，玻璃館留著（怪物倒下的姿勢、她的位置、鏡頭都不動），
+    //   漫畫期間把玻璃館的鏡頭、聲音接收、UI、EventSystem 關掉、正在播的聲音暫停；翻完卸載 Book、全部還原。
+    // ──────────────────────────────────────────────────────────────────────────
+    private readonly List<Behaviour> _glassHidden = new List<Behaviour>();
+    private readonly List<AudioSource> _glassPaused = new List<AudioSource>();
+    private Scene _glassScene;
+
+    private IEnumerator EndingComicInterlude()
+    {
+        bool finished = false;
+        _glassScene = gameObject.scene;
+        EndCredits.EndingMode = true;
+        EndCredits.ComicFinishedHook = () => finished = true;
+        while (EndingFade.Instance != null) yield return null;
+        EndingFade.BeginCustom(LoadEndingComicAdditive, "疊加載入結局漫畫 " + endingBookScene,
+            endingFadeOutSeconds, endingBlackHoldSeconds, endingFadeInSeconds, Color.black);
+        Debug.Log("【影子怪物】★1119e 倒下演完 → 結局漫畫（翻完回玻璃館碎裂成光球）");
+        while (!finished) yield return null;
+
+        while (EndingFade.Instance != null) yield return null;
+        EndingFade.BeginCustom(UnloadEndingComic, "卸載結局漫畫、回玻璃館", 1.2f, 0.4f, 1.2f, Color.black);
+        while (EndingFade.Instance != null) yield return null;   // 等畫面完全淡回玻璃館
+        yield return new WaitForSeconds(0.5f);                    // 先讓玩家看到倒下的怪物，再開始碎
+        Debug.Log("【影子怪物】★1119e 回到玻璃館，開始碎裂");
+    }
+
+    private IEnumerator LoadEndingComicAdditive()
+    {
+        // 玻璃館鏡頭要在載入前關掉：PageBook 會拿現成的 Camera.main 來用，沒有才自己建一台。
+        // 但 Book 載入要好幾幀，這中間沒有任何鏡頭，畫面會閃一下「Display 1 No cameras rendering」，
+        // 所以載入期間放一台只畫黑色的暫代鏡頭（不標 MainCamera，PageBook 不會拿它），漫畫的鏡頭出現後再拆掉。
+        SetGlassSceneHidden(true, false);
+        SetGlassSceneHidden(true, true);
+        var placeholder = new GameObject("結局漫畫載入中（暫代黑色鏡頭）");
+        var phCam = placeholder.AddComponent<Camera>();
+        phCam.clearFlags = CameraClearFlags.SolidColor;
+        phCam.backgroundColor = Color.black;
+        phCam.cullingMask = 0;
+        phCam.depth = -100f;
+        AsyncOperation op = null;
+        try { op = SceneManager.LoadSceneAsync(endingBookScene, LoadSceneMode.Additive); }
+        catch (System.Exception e) { Debug.LogError($"【影子怪物】★1119e 疊加載入 {endingBookScene} 失敗：{e.Message}"); }
+        if (op != null) while (!op.isDone) yield return null;
+        for (int i = 0; i < 30 && Camera.allCamerasCount < 2; i++) yield return null;   // 等 PageBook 建好自己的鏡頭
+        Destroy(placeholder);
+        Scene book = SceneManager.GetSceneByName(endingBookScene);
+        if (book.IsValid() && book.isLoaded) SceneManager.SetActiveScene(book);
+        else
+        {
+            // 載不到漫畫：不要卡死，直接當作看完
+            Debug.LogError($"【影子怪物】★1119e 找不到 {endingBookScene} 場景，略過漫畫");
+            var hook = EndCredits.ComicFinishedHook; EndCredits.ComicFinishedHook = null;
+            hook?.Invoke();
+        }
+    }
+
+    private IEnumerator UnloadEndingComic()
+    {
+        if (_glassScene.IsValid() && _glassScene.isLoaded) SceneManager.SetActiveScene(_glassScene);
+        SetGlassSceneHidden(false, true);   // 先開回玻璃館的鏡頭再卸載 Book，中間才不會有沒鏡頭的幀
+        Scene book = SceneManager.GetSceneByName(endingBookScene);
+        if (book.IsValid() && book.isLoaded)
+        {
+            AsyncOperation op = SceneManager.UnloadSceneAsync(book);
+            if (op != null) while (!op.isDone) yield return null;
+        }
+        SetGlassSceneHidden(false, false);
+        yield return null;
+    }
+
+    private readonly List<Camera> _glassCams = new List<Camera>();
+
+    /// <summary>cameras＝true 只處理鏡頭；false 處理聲音接收、UI、EventSystem 和聲音（兩者分開，換場時隨時都有一台鏡頭在畫）。</summary>
+    private void SetGlassSceneHidden(bool hide, bool cameras)
+    {
+        if (hide)
+        {
+            if (cameras) _glassCams.Clear(); else { _glassHidden.Clear(); _glassPaused.Clear(); }
+            if (!_glassScene.IsValid()) return;
+            foreach (GameObject root in _glassScene.GetRootGameObjects())
+            {
+                if (cameras)
+                {
+                    foreach (var c in root.GetComponentsInChildren<Camera>()) if (c.enabled) { c.enabled = false; _glassCams.Add(c); }
+                    continue;
+                }
+                foreach (var l in root.GetComponentsInChildren<AudioListener>()) if (l.enabled) { l.enabled = false; _glassHidden.Add(l); }
+                foreach (var cv in root.GetComponentsInChildren<Canvas>()) if (cv.enabled && cv.isRootCanvas) { cv.enabled = false; _glassHidden.Add(cv); }
+                foreach (var es in root.GetComponentsInChildren<UnityEngine.EventSystems.EventSystem>()) if (es.enabled) { es.enabled = false; _glassHidden.Add(es); }
+                foreach (var a in root.GetComponentsInChildren<AudioSource>()) if (a.isPlaying) { a.Pause(); _glassPaused.Add(a); }
+            }
+            Debug.Log(cameras
+                ? $"【影子怪物】★1119e 漫畫載好，關掉玻璃館 {_glassCams.Count} 台鏡頭"
+                : $"【影子怪物】★1119e 玻璃館暫時隱藏：關掉 {_glassHidden.Count} 個聲音接收／UI，暫停 {_glassPaused.Count} 個聲音");
+        }
+        else if (cameras)
+        {
+            foreach (var c in _glassCams) if (c != null) c.enabled = true;
+            _glassCams.Clear();
+        }
+        else
+        {
+            foreach (var b in _glassHidden) if (b != null) b.enabled = true;
+            foreach (var a in _glassPaused) if (a != null) a.UnPause();
+            _glassHidden.Clear(); _glassPaused.Clear();
+        }
+    }
+
     private IEnumerator VanishSequence()
     {
         currentState = MonsterState.Vanishing;
@@ -1771,6 +2814,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void TriggerDevour()
     {
         if (currentState == MonsterState.Devouring) return;
+        if (_lungePhase != 0)
+        {
+            float cl = player != null ? Mathf.Abs(player.position.x - transform.position.x) : -1f;
+            Debug.Log($"【追逐節奏】★1118e 撲擊（{_lungeTag}）階段 {_lungePhase} 被抓到：離她 {cl:F1}m、怪物速度 {_lungeV:F1} m/s、規劃終點 X={_lungeXEnd:F1}、怪物 X={transform.position.x:F1}、她 X={(player != null ? player.position.x : 0f):F1}、撲擊中最近 {_lungeMinLag:F1}m");
+            _lungePhase = 0;
+        }
         currentState = MonsterState.Devouring;
         if (_stateCoroutine != null) StopCoroutine(_stateCoroutine);
         _stateCoroutine = StartCoroutine(ClawAttackSequence());
@@ -1986,6 +3035,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         _finaleDash = true;
         _finaleSpeed = -1f;
+        _finalePrevPx = float.NaN; _finaleApproach = -1f;
         _finaleStartTime = Time.time;
         if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;   // 別讓主角停在被減速的狀態
         Debug.Log($"【影子怪物】主角接近最後一根燭火，怪物開始追回距離到主角身後 {finaleStopDistance} 公尺（不攻擊）。（收集 {_candlesCollected}/{_totalCandles}、漏 {MissedCount()}、剩下 {remaining.name} X={remaining.transform.position.x:F1}、怪物 X={mx:F1}）");
@@ -2020,7 +3070,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         //   玩家已經走過燭火還沒點，就放行讓怪物衝過去，照漏點處理。
         if (rest != null && dir > 0f && !rest.IsLitByPlayer && player.position.x < rest.transform.position.x + finalePassMargin)
         {
-            float holdX = rest.transform.position.x - candleReachX - finaleWaitMargin;
+            // ★1119 燭台改成「手碰到就算」之後，要用手的位置來停，不然手會伸到燭台上方等她點
+            float reach = candleHitByFrontEdge ? Mathf.Max(candleReachX, FrontReachForHold(rest.transform.position) + candleFrontTouchMargin) : candleReachX;
+            float holdX = rest.transform.position.x - reach - finaleWaitMargin;
             targetX = transform.position.x >= holdX ? transform.position.x : Mathf.Min(targetX, holdX);
         }
         float gap = Mathf.Abs(targetX - transform.position.x);
@@ -2028,9 +3080,31 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         // 落後越多越快，越接近越緩：從「比主角快一點」平滑加到 finaleDashSpeed，不會突然暴衝
         float k = Mathf.Clamp01(gap / Mathf.Max(1f, finaleEaseDistance));
         float want = gap > 0.3f ? Mathf.Lerp(playerSpeed * 1.0f, Mathf.Max(finaleDashSpeed * difficultyScale, playerSpeed * 1.05f), k) : playerSpeed;
+        // ★1118e 她停下來點最後一根燭火時：原本怪物用「追趕速度」衝到她身後 finaleStopDistance 就一幀硬停——
+        //   現在跟一般燭火一樣，開始點的那一刻算一個固定逼近速度，剛好在放開那一刻走到目標，沒有「衝過去再煞住」
+        bool finaleLocked = IsPlayerLightingCandle() || CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time;
+        if (finaleLocked)
+        {
+            if (_finaleApproach < 0f)
+            {
+                float lockSec = Mathf.Max(0.5f, CandleAuraGlow.LightingReleaseAt + postLightGrace - Time.time);
+                _finaleApproach = Mathf.Clamp(Mathf.Max(0f, gap) / lockSec, 0.8f, Mathf.Max(0.8f, finaleDashSpeed));
+                Debug.Log($"【追逐節奏】★1118e 最後一根點燭火：離目標 {gap:F1}m、鎖定 {lockSec:F2}s → 固定逼近速度 {_finaleApproach:F2}m/s");
+            }
+            want = _finaleApproach;
+        }
+        else _finaleApproach = -1f;
         if (_finaleSpeed < 0f) _finaleSpeed = _smoothedChaseSpeed > 0f ? _smoothedChaseSpeed : playerSpeed * 0.98f;
         _finaleSpeed = Mathf.MoveTowards(_finaleSpeed, want, Mathf.Max(0.1f, finaleAccel) * Time.deltaTime);   // 速度只能慢慢升降
         float spd = _finaleSpeed;
+        // ★1118e 她站住（點燭火）、怪物抵達「身後 finaleStopDistance」時原本是從全速一幀硬停（實測 6 m/s → 0）。
+        //   這一關最後一根只嚇人不攻擊，怪物終究要停在她身後，但至少是減速進站：速度上限 ＝ √(2·a·剩餘距離)，a ＝ finaleStopDecel
+        float pdt = Mathf.Max(0.0001f, Time.deltaTime);
+        float pv = float.IsNaN(_finalePrevPx) ? playerSpeed : Mathf.Abs(player.position.x - _finalePrevPx) / pdt;
+        _finalePrevPx = player.position.x;
+        _finalePlayerV = Mathf.Lerp(_finalePlayerV, pv, 1f - Mathf.Exp(-8f * pdt));
+        if (_finalePlayerV < 1.5f)
+            spd = Mathf.Min(spd, Mathf.Sqrt(2f * Mathf.Max(1f, finaleStopDecel) * gap) + 0.15f);
         PlayAnimationByName(runAnimationName);
 
         float newX = Mathf.MoveTowards(transform.position.x, targetX, spd * Time.deltaTime);
@@ -2113,10 +3187,505 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         return _paceCap;
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★1116 追逐節奏導演
+    // ══════════════════════════════════════════════════════════════════════════
+    private float _nextDirectorLog;
+
+    /// <summary>★1116 重生／重置：節奏導演的狀態全部歸零（險些被抓的橋段重新可以觸發）。</summary>
+    private void ResetDirectorState()
+    {
+        _dirSpeed = -1f;
+        _playerPrevX = float.NaN;
+        _playerFwdSmooth = 0f;
+        _reliefStart = _surgeStart = _knockStart = -999f;
+        _reliefAmount = 0f;
+        _lungePhase = 0;
+        _beatDone = null;
+        _beatTriedIdx = -1;
+        _lungeLast = Time.time;          // ★1118e 重生／重置後從頭算隨機撲擊的冷卻
+        _lungeRandomWait = -1f;
+        _approachSpeed = -1f;
+    }
+
+    private void SetMonsterX(float x)
+    {
+        transform.position = new Vector3(x, transform.position.y, transform.position.z);
+    }
+
+    private void FaceTowardPlayer()
+    {
+        if (player.position.x < transform.position.x - 0.2f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+        else if (player.position.x > transform.position.x + 0.2f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+    }
+
+    /// <summary>原本的「怪物貼很近時她變慢」（照舊）。</summary>
+    private void ApplyPlayerSlowdown(float dist)
+    {
+        if (_pm == null) return;
+        if (dist < slowdownDistance) _pm.currentSpeed = _pm.baseSpeed * slowdownFactor;
+        else if (_pm.currentSpeed < _pm.baseSpeed) _pm.currentSpeed = _pm.baseSpeed;
+    }
+
+    /// <summary>★1116 吃到燭火：被光震退＋喘息。</summary>
+    private void StartCandleRecoil()
+    {
+        StartKnockback(candleKnockback);
+        StartRelief(1f);
+    }
+
+    private void StartKnockback(float distance)
+    {
+        _knockStart = Time.time;
+        _knockDone = 0f;
+        _knockDist = Mathf.Max(0f, distance);
+        _knockDir = player != null && player.position.x >= transform.position.x ? -1f : 1f;   // 往遠離她的方向退
+    }
+
+    private void StartRelief(float amount)
+    {
+        // 正在喘息又來一次：取比較大的那個，不會把剛開始的喘息縮短
+        if (Relief01 > amount) return;
+        _reliefStart = Time.time;
+        _reliefAmount = amount;
+    }
+
+    private void PlayMonsterRoar(float volume)
+    {
+        AudioClip clip = roarSFX;
+        if (clip == null)
+        {
+            if (_roarClip == null) _roarClip = Resources.Load<AudioClip>("Sfx/Glass_MonsterRoar");
+            clip = _roarClip;
+        }
+        if (clip == null) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip, volume);
+        else AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(volume));
+    }
+
+    private void PlayLungeSting()
+    {
+        if (_lungeClip == null) _lungeClip = Resources.Load<AudioClip>("Sfx/Glass_ChaseLunge");
+        if (_lungeClip == null) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(_lungeClip, 0.8f);
+        else AudioSource.PlayClipAtPoint(_lungeClip, Camera.main != null ? Camera.main.transform.position : transform.position, AudioManager.ScaleSfx(0.8f));
+    }
+
+    private static void Shake(float seconds, float power)
+    {
+        if (ScreenFeedbackManager.Instance != null) ScreenFeedbackManager.Instance.TriggerShake(seconds, power);
+    }
+
+    /// <summary>★1116 燭火被吃的那一刻爆一下光（暖色點光源，1 秒內退掉，自己銷毀）。</summary>
+    private void SpawnLightBurst(Vector3 pos)
+    {
+        if (candleBurstIntensity <= 0f) return;
+        GameObject go = new GameObject("CandleBurstLight");
+        go.transform.position = pos + new Vector3(0f, 1.5f, -3f);
+        Light l = go.AddComponent<Light>();
+        l.type = LightType.Point;
+        l.color = new Color(1f, 0.82f, 0.5f);
+        l.range = Mathf.Max(1f, candleBurstRange);
+        l.intensity = candleBurstIntensity;
+        go.AddComponent<FadeAndDestroyLight>().duration = 1f;
+    }
+
+    /// <summary>★1116 縮放倍率：吃一根縮一格，漏一根長回 missedRegrow。</summary>
+    private float TargetScaleMult()
+    {
+        if (shedArmsInsteadOfShrink) return 1f;   // ★1118b 不縮小也不因漏點長大：大小固定，變的是手臂數量
+        float m = 1f - shrinkPerCandle * _candlesCollected;
+        if (usePacingDirector) m += Mathf.Max(0f, missedRegrow) * MissedCount();
+        return Mathf.Clamp(m, minScaleMultiplier, 1f);
+    }
+
+    /// <summary>★1118b 吃到 count 根燭火時的大小倍率：掉手臂模式維持原大小，舊模式照 1 − 每根縮小量 × 根數。</summary>
+    private float CandleScaleMult(int count)
+    {
+        if (shedArmsInsteadOfShrink) return 1f;
+        return Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * count);
+    }
+
+    /// <summary>★1118b 手臂數量對齊「已吃燭火數」（最多掉 4 隻）。animate＝真的演一次手臂掉下去；不然直接換網格。</summary>
+    private void SyncArms(bool animate)
+    {
+        MonsterArmShedding sh = GetComponent<MonsterArmShedding>();
+        if (sh == null) return;
+        sh.SetShedCount(shedArmsInsteadOfShrink ? Mathf.Min(MonsterArmShedding.ArmCount, _candlesCollected) : 0, animate);
+    }
+
+    private IEnumerator GrowToRoutine(float targetMult, float seconds)
+    {
+        float start = _currentScaleMultiplier, t = 0f;
+        while (t < seconds)
+        {
+            t += Time.deltaTime;
+            _currentScaleMultiplier = Mathf.Lerp(start, targetMult, Mathf.SmoothStep(0f, 1f, t / seconds));
+            ApplyCurrentScale();
+            yield return null;
+        }
+        _currentScaleMultiplier = targetMult;
+        ApplyCurrentScale();
+        _hitShrinkCoroutine = null;
+    }
+
+    /// <summary>★1116 漏點燭火的當下：吼、長大、逼近幾秒、畫面震一下。</summary>
+    private void ReactToMissedCandle(CandleCollectible candle)
+    {
+        if (!usePacingDirector) return;
+        PlayMonsterRoar(1f);
+        Shake(0.5f, 0.35f);
+        _surgeStart = Time.time;
+        if (_hitShrinkCoroutine != null) StopCoroutine(_hitShrinkCoroutine);
+        _isHitShrinking = false;
+        _hitShrinkCoroutine = StartCoroutine(GrowToRoutine(TargetScaleMult(), 0.8f));
+        Debug.Log($"【追逐節奏】★1116 漏點 {candle.gameObject.name}：怪物吼、長大到 ×{TargetScaleMult():F2}、{missedSurgeSeconds:F0} 秒內逼近 {missedSurgeLag:F0} 公尺");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ★1118e 追逐撲擊
+    // ══════════════════════════════════════════════════════════════════════════
+    /// <summary>下一根還沒點的燭火離她多遠（她前方，公尺）。沒有＝無限大。</summary>
+    private float NextUnlitCandleAhead(float px)
+    {
+        float best = float.PositiveInfinity;
+        if (candles == null) return best;
+        foreach (var c in candles)
+        {
+            if (c == null || c.isCollected || c.missed || c.IsLitByPlayer) continue;
+            float d = c.transform.position.x - px;
+            if (d > -1f && d < best) best = d;
+        }
+        return best;
+    }
+
+    /// <summary>撲擊的規劃（純算術）：給起跑速度 v0、她的速度 vp、現在的落後 lag0，回傳各段時間／距離。tC 小於 0＝距離太近，撲不起來。</summary>
+    private void PlanLungeMath(float v0, float vp, float lag0, out float endLag, out float vEnd,
+                               out float tT, out float dT, out float tA, out float dA, out float tC, out float dC, out float tB, out float dB)
+    {
+        endLag = attackTriggerDistance + Mathf.Max(0f, lungeEndExtraLag);
+        float vPk = Mathf.Max(vp + 1f, lungePeakSpeed);
+        vEnd = Mathf.Clamp(vp * lungeEndSpeedFactor, 0.5f, vPk - 0.5f);
+        float aA = Mathf.Max(1f, lungeAccel), aB = Mathf.Max(1f, lungeBrakeDecel);
+        tT = Mathf.Max(0f, lungeTelegraphSeconds);
+        dT = v0 * tT;
+        tA = Mathf.Max(0f, (vPk - v0) / aA);
+        dA = (vPk * vPk - v0 * v0) / (2f * aA);
+        tB = (vPk - vEnd) / aB;
+        dB = (vPk * vPk - vEnd * vEnd) / (2f * aB);
+        // 相對閉合量 ＝ 怪物走的距離 − 她同時間走的距離；要閉合 lag0 − endLag
+        float closing = (dT - vp * tT) + (dA - vp * tA) + (dB - vp * tB);   // 預告＋加速＋煞車這三段本來就會多靠近她幾公尺
+        float need = (lag0 - endLag) - closing;
+        // ★1119 終點離她 14 公尺比導演後半段的距離（13.5～15）還遠：後半段的固定橋段會因為「距離太近」撲不出去。
+        //   太近時把終點縮短到剛好不用巡航（縮短量＝不夠的那幾公尺），但至少留 揮爪距離+1.5 公尺（絕不直接貼到她）
+        if (need < 0f)
+        {
+            float shorter = Mathf.Max(attackTriggerDistance + 1.5f, endLag + need);
+            endLag = Mathf.Min(endLag, shorter);
+            need = (lag0 - endLag) - closing;
+        }
+        tC = need / Mathf.Max(0.5f, vPk - vp);
+        dC = vPk * tC;
+    }
+
+    private string _lungeWhy = "";
+    private float _lungeEndLagPlanned;
+
+    /// <summary>★1118e 在「現在」規劃一次撲擊。成功＝開始撲，回傳 true；條件不合或距離太近回傳 false。</summary>
+    private bool TryStartLunge(string tag, bool checkConditions)
+    {
+        if (player == null) return false;
+        float px = player.position.x, mx = transform.position.x;
+        float side = px >= mx ? 1f : -1f;
+        float lag0 = Mathf.Abs(px - mx);
+        float vp = _playerFwdSmooth;
+        string why = null;
+        if (side < 0f) why = "她在怪物左邊";
+        else if (currentState != MonsterState.Chasing) why = "不是 Chasing";
+        else if (_revealActive || IsRevealRunning) why = "登場運鏡中";
+        else if (_finaleDash) why = "最後衝刺";
+        else if (PlayerRespawnSystem.IsAnyRespawning) why = "重生中";
+        else if (lag0 > lungeMaxLag) why = "太遠";
+        if (checkConditions && why == null)
+        {
+            if (IsPlayerLightingCandle() || CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time) why = "點燭火／放開寬限";
+            else if (vp < lungeMinPlayerSpeed) why = $"她沒在跑（{vp:F1}m/s）";
+            else if (Relief01 > 0.001f) why = "喘息中";
+            else if (Surge01 > 0.001f) why = "漏點逼近中";
+            else if (Time.time - _knockStart < candleKnockbackSeconds + 1f) why = "震退中";
+            else if (NextUnlitCandleAhead(px) < lungeNoCandleAhead) why = "前方 " + lungeNoCandleAhead.ToString("F0") + "m 內有沒點的燭火";
+        }
+        if (why != null) { _lungeWhy = why; return false; }
+
+        float v0 = Mathf.Max(_dirSpeed, Mathf.Max(1f, directorMinSpeed));
+        vp = Mathf.Max(vp, 0.5f);
+        PlanLungeMath(v0, vp, lag0, out float endLag, out float vEnd, out float tT, out float dT, out float tA, out float dA,
+                      out float tC, out float dC, out float tB, out float dB);
+        if (tC < 0f) { _lungeWhy = $"距離太近（lag {lag0:F1}m，需要 cruise {tC:F2}s）"; return false; }
+
+        float tToBrakeEnd = tT + tA + tC + tB;
+        _lungeSide = side;
+        _lungePlayerV = vp;
+        _lungeV0 = v0;
+        _lungeVEnd = vEnd;
+        _lungeXStart = mx;
+        _lungeEndLagPlanned = endLag;
+        _lungeXEnd = px + side * (vp * tToBrakeEnd - endLag);
+        _lungeXBrake = _lungeXEnd - side * dB;
+        _lungeLag0 = lag0;
+        _lungeMinLag = lag0;
+        _lungePlanLen = dT + dA + dC + dB;
+        _lungeTag = tag;
+        _lungeV = v0;
+        _lungePhase = 1;
+        _lungePhaseStart = Time.time;
+        _lungeLast = Time.time;
+        _lungeRandomWait = -1f;
+        _dirSpeed = v0;
+        PlayAnimationByName(runAnimationName);
+        PlayMonsterRoar(0.9f);
+        PlayLungeSting();
+        Debug.Log($"【追逐節奏】★1118e 撲擊（{tag}）規劃：lag0={lag0:F1}m 她 {vp:F1}m/s 怪物起跑 {v0:F1}m/s → 總路徑 {_lungePlanLen:F1}m（預告 {dT:F1}m/{tT:F2}s、加速 {dA:F1}m/{tA:F2}s、巡航 {dC:F1}m/{tC:F2}s@{Mathf.Max(vp + 1f, lungePeakSpeed):F0}m/s、煞車 {dB:F1}m/{tB:F2}s→{vEnd:F1}m/s、收尾 {vEnd * lungeRecoverySeconds:F1}m/{lungeRecoverySeconds:F1}s）" +
+                  $"｜怪物 X {mx:F1} → 煞車起點 {_lungeXBrake:F1} → 終點 X_end {_lungeXEnd:F1}（她預測 {px + side * vp * tToBrakeEnd:F1}，endLag {endLag:F1}m）");
+        return true;
+    }
+
+    private void EndLunge(string reason, bool relief)
+    {
+        if (_lungePhase == 0) return;
+        float lag = player != null ? Mathf.Abs(player.position.x - transform.position.x) : -1f;
+        Debug.Log($"【追逐節奏】★1118e 撲擊（{_lungeTag}）結束（{reason}）：離她 {lag:F1}m、撲擊中最近 {_lungeMinLag:F1}m、怪物實際走 {Mathf.Abs(transform.position.x - _lungeXStart):F1}m（規劃到煞車終點 {_lungePlanLen:F1}m）、沒被抓");
+        _lungePhase = 0;
+        if (relief)
+        {
+            StartRelief(Mathf.Clamp01(nearMissRecoverLag / Mathf.Max(0.1f, candleReliefLag)));
+            _dirSpeed = _lungeVEnd;
+        }
+    }
+
+    /// <summary>★1118e 測試鍵／測試腳本：不看冷卻與觸發位置，立刻照現況規劃撲擊（checkConditions=false 連安全條件也略過）。</summary>
+    public bool TesterTriggerLunge(bool checkConditions = true)
+    {
+        bool ok = TryStartLunge("測試", checkConditions);
+        if (!ok) Debug.Log($"【追逐節奏】★1118e 測試撲擊沒開始：{_lungeWhy}");
+        return ok;
+    }
+
+    /// <summary>★1118e 追逐撲擊：固定位置＋隨機。回傳 true＝這一幀由撲擊接管。</summary>
+    private bool RunLunge(float px, float lag, float side, float dt)
+    {
+        if (_lungePhase == 0)
+        {
+            if (!useNearMissBeats && !useRandomLunges) return false;
+            if (currentState != MonsterState.Chasing || _revealActive || side < 0f) return false;
+
+            // 固定位置：到了就試，條件不合（停、點燭火…）在 12 公尺內每幀再試，過了就放棄這一次
+            if (useNearMissBeats && nearMissBeatsX != null && nearMissBeatsX.Length > 0)
+            {
+                if (_beatDone == null || _beatDone.Length != nearMissBeatsX.Length) _beatDone = new bool[nearMissBeatsX.Length];
+                for (int i = 0; i < nearMissBeatsX.Length; i++)
+                {
+                    if (_beatDone[i] || px < nearMissBeatsX[i]) continue;
+                    if (px - nearMissBeatsX[i] > 12f)
+                    {
+                        _beatDone[i] = true;
+                        Debug.Log($"【追逐節奏】★1118e 固定撲擊 #{i + 1}（X={nearMissBeatsX[i]:F0}）放棄：{_lungeWhy}");
+                        continue;
+                    }
+                    if (TryStartLunge($"固定 #{i + 1} X={nearMissBeatsX[i]:F0}", true)) { _beatDone[i] = true; return RunLungeStep(px, dt); }
+                    break;   // 先到的這個還在等條件，後面的不用看
+                }
+            }
+            // 隨機額外撲擊
+            if (useRandomLunges)
+            {
+                if (_lungeRandomWait < 0f) _lungeRandomWait = Random.Range(Mathf.Min(randomLungeCooldownMin, randomLungeCooldownMax), Mathf.Max(randomLungeCooldownMin, randomLungeCooldownMax));
+                if (Time.time - _lungeLast >= _lungeRandomWait && TryStartLunge("隨機", true)) return RunLungeStep(px, dt);
+            }
+            return false;
+        }
+        return RunLungeStep(px, dt);
+    }
+
+    private bool RunLungeStep(float px, float dt)
+    {
+        // 被別的流程打斷（登場、重生、狀態改變）：直接放棄
+        if (currentState != MonsterState.Chasing || _revealActive || PlayerRespawnSystem.IsAnyRespawning) { EndLunge("被打斷", false); return false; }
+        float s = _lungeSide;
+        float mx = transform.position.x;
+        float vPk = Mathf.Max(_lungePlayerV + 1f, lungePeakSpeed);
+        float aA = Mathf.Max(1f, lungeAccel), aB = Mathf.Max(1f, lungeBrakeDecel);
+        float elapsed = Time.time - _lungePhaseStart;
+        FaceTowardPlayer();
+
+        if (_lungePhase == 1)   // 預告：吼，速度不變
+        {
+            _lungeV = _lungeV0;
+            if (elapsed >= Mathf.Max(0f, lungeTelegraphSeconds)) { _lungePhase = 2; _lungePhaseStart = Time.time; }
+        }
+        else if (_lungePhase == 2)   // 加速
+        {
+            _lungeV = Mathf.MoveTowards(_lungeV, vPk, aA * dt);
+            if (_lungeV >= vPk - 0.001f) { _lungePhase = 3; _lungePhaseStart = Time.time; }
+        }
+        if (_lungePhase == 3)   // 巡航：到煞車起點為止
+        {
+            _lungeV = vPk;
+            if ((_lungeXBrake - mx) * s <= 0f) EnterLungeBrake();
+        }
+        else if (_lungePhase == 2 && (_lungeXBrake - mx) * s <= 0f) EnterLungeBrake();   // 加速段還沒到頂就到煞車點（極短路徑）
+
+        if (_lungePhase == 4)   // 煞車：速度只看「離終點多遠」，v = sqrt(vEnd² + 2·a·剩餘距離)，平滑降到 vEnd
+        {
+            float rem = (_lungeXEnd - mx) * s;
+            _lungeV = Mathf.Min(_lungeV, Mathf.Sqrt(_lungeVEnd * _lungeVEnd + 2f * aB * Mathf.Max(0f, rem)));
+            _lungeV = Mathf.Max(_lungeV, _lungeVEnd);
+            float step = _lungeV * dt;
+            if (rem - step <= 0f)
+            {
+                SetMonsterX(_lungeXEnd);
+                _lungeV = _lungeVEnd;
+                _lungePhase = 5;
+                _lungePhaseStart = Time.time;
+                float lagEnd = Mathf.Abs(px - _lungeXEnd);
+                _lungeMinLag = Mathf.Min(_lungeMinLag, lagEnd);
+                Debug.Log($"【追逐節奏】★1118e 撲擊（{_lungeTag}）煞車結束：離她 {lagEnd:F1}m（預期約 {_lungeEndLagPlanned:F1}m）、怪物實際走 {Mathf.Abs(_lungeXEnd - _lungeXStart):F1}m（規劃 {_lungePlanLen:F1}m）、速度 {_lungeV:F1}m/s、撲擊中最近 {_lungeMinLag:F1}m");
+                _dirSpeed = _lungeV;
+                DebugLag = lagEnd; DebugSpeed = _lungeV; DebugPace = "撲擊4";
+                return true;
+            }
+            SetMonsterX(mx + s * step);
+        }
+        else if (_lungePhase == 5)   // 收尾：以煞車結束速度繼續往前，不停
+        {
+            _lungeV = _lungeVEnd;
+            SetMonsterX(mx + s * _lungeV * dt);
+            if (!_isHitShrinking && elapsed > 0.45f) PlayAnimationByName(_lungeV > Mathf.Max(0.01f, chaseSpeed) * 1.05f ? runAnimationName : walkAnimationName);
+            if (elapsed >= Mathf.Max(0f, lungeRecoverySeconds)) EndLunge("收尾完", true);
+        }
+        else if (_lungePhase != 0) SetMonsterX(mx + s * _lungeV * dt);
+
+        if (_lungePhase != 0)
+        {
+            float lagNow = Mathf.Abs(player.position.x - transform.position.x);
+            _lungeMinLag = Mathf.Min(_lungeMinLag, lagNow);
+            _dirSpeed = _lungeV;
+            DebugLag = lagNow; DebugSpeed = _lungeV; DebugPace = "撲擊" + _lungePhase;
+        }
+        return true;
+    }
+
+    private void EnterLungeBrake()
+    {
+        _lungePhase = 4;
+        _lungePhaseStart = Time.time;
+        _lungeV = Mathf.Max(_lungeV, _lungeVEnd);
+        PlayAnimationByName(attackAnimationName, true);   // 煞車一開始就揮爪：減速看起來是為了踩穩出爪
+        if (attackSFX != null)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFXAt(attackSFX, transform.position, sfxVolume);
+            else AudioSource.PlayClipAtPoint(attackSFX, transform.position, AudioManager.ScaleSfx(sfxVolume));
+        }
+        Shake(0.45f, 0.4f);
+    }
+
+    /// <summary>★1116 照節奏曲線追：她跑就跟在曲線的距離，停下就逼近；吃燭火震退、漏點逼近、固定橋段險些被抓。</summary>
+    private void DirectorMove()
+    {
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+        if (_animator != null && _animator.cullingMode != AnimatorCullingMode.AlwaysAnimate)
+            _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+        float px = player.position.x;
+        float mx = transform.position.x;
+        float side = px >= mx ? 1f : -1f;
+        float lag = Mathf.Abs(px - mx);
+
+        // 她往前（遠離怪物）走多快，平滑過（重生瞬移那一幀不算）
+        float vx = float.IsNaN(_playerPrevX) ? 0f : (px - _playerPrevX) / dt * side;
+        _playerPrevX = px;
+        _playerForwardSpeed = Mathf.Clamp(vx, 0f, 15f);
+        _playerFwdSmooth = Mathf.Lerp(_playerFwdSmooth, _playerForwardSpeed, 1f - Mathf.Exp(-6f * dt));
+
+        FaceTowardPlayer();
+        ApplyPlayerSlowdown(lag);
+
+        // 停著多久：撲擊、重生、登場運鏡都不算她停著。
+        // ★1119 點燭火（她被鎖住）不再豁免——怪物不會因為她在點燭火就放過她，停著的壓力照算（只是點燭火當下的速度由下面固定住）
+        bool busy = IsPlayerLightingCandle() || CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time;
+        UpdatePlayerProgress();
+        if (_lungePhase != 0 || PlayerRespawnSystem.IsAnyRespawning || _revealActive) _lastProgressTime = Time.time;
+
+        // 1. 被燭火的光震退
+        float kt = (Time.time - _knockStart) / Mathf.Max(0.05f, candleKnockbackSeconds);
+        if (kt >= 0f && kt < 1f)
+        {
+            if (_lungePhase != 0) EndLunge("被燭火震退打斷", false);
+            float want = _knockDist * (1f - (1f - kt) * (1f - kt));
+            SetMonsterX(mx + _knockDir * (want - _knockDone));
+            _knockDone = want;
+            _dirSpeed = 0f;
+            return;
+        }
+
+        // 2. ★1118e 追逐撲擊（固定位置＋隨機）：路徑在觸發那一刻定好，不看她之後在哪、也沒有免疫
+        if (RunLunge(px, lag, side, dt)) return;
+
+        // 3. 節奏曲線：該離她多遠
+        float p = (float.IsNaN(_firstCandleX) || _lastCandleByX == null) ? 0f
+                : Mathf.InverseLerp(_firstCandleX, _lastCandleByX.transform.position.x, px);
+        float movingFloor = attackTriggerDistance + Mathf.Max(0.5f, directorMinMovingLag);
+        float target = Mathf.Max(Mathf.Lerp(directorLagStart, directorLagEnd, p), movingFloor);
+        target += candleReliefLag * Relief01;
+        target = Mathf.Max(target - missedSurgeLag * Surge01, movingFloor);
+        float stall = Time.time - _lastProgressTime - Mathf.Max(0f, stallGraceSeconds);
+        if (stall > 0f) target -= stall * Mathf.Max(0f, stallCloseRate);   // 她停著：一路縮到揮爪距離以內
+
+        float desired;
+        if (busy)
+        {
+            // ★1119 點燭火時她動不了：怪物照樣追，速度＝開始點的那一刻的速度（至少 lightingPressureSpeed），整段鎖定期間不放慢、不盤旋、不等她。
+            //   ＝取消 ★1118e「算好剛好在放開時離她 揮爪距離+2.5 公尺」的做法：她離怪物近時那會變成約 1 m/s，看起來像怪物在等她點完。
+            //   點燭火離怪物太近就是會被抓（CheckCatch 照常運作）。
+            if (_approachSpeed < 0f)
+            {
+                _approachSpeed = Mathf.Max(_dirSpeed, lightingPressureSpeed);
+                Debug.Log($"【追逐節奏】★1119 點燭火：離她 {lag:F1}m、怪物維持 {_approachSpeed:F2}m/s 照樣追（開始時 {_dirSpeed:F1}m/s、下限 {lightingPressureSpeed:F1}m/s）");
+            }
+            desired = _approachSpeed;
+        }
+        else desired = Mathf.Clamp(_playerFwdSmooth + directorGain * (lag - target), directorMinSpeed, directorMaxSpeed);
+        // ★1119 她停著：不再照「離目標多遠」比例爬行（越靠近越慢＝像在放水），停越久衝越快，一路衝到抓到為止（最後一刻交給子彈時間）
+        if (!busy && stall > 0f && _lungePhase == 0)
+            desired = Mathf.Max(desired, Mathf.Min(Mathf.Max(0f, stallChaseMaxSpeed), stall * Mathf.Max(0f, stallChaseAccel)));
+        // ★1119 她站著不動（不在喘息、不在點燭火）：怪物不再為了「回到跟隨距離」減速，原本多快就照樣衝過來
+        if (!busy && _lungePhase == 0 && Relief01 <= 0f && _playerFwdSmooth < 0.5f && _dirSpeed > 0f)
+            desired = Mathf.Max(desired, Mathf.Min(_dirSpeed, directorMaxSpeed));
+        if (!busy) _approachSpeed = -1f;
+        if (_dirSpeed < 0f) _dirSpeed = desired;
+        _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, Mathf.Max(0.1f, directorAccel) * dt);
+
+        if (!_isHitShrinking)
+            PlayAnimationByName(_dirSpeed > Mathf.Max(0.01f, chaseSpeed) * 1.05f ? runAnimationName : walkAnimationName);
+
+        DebugLag = lag; DebugSpeed = _dirSpeed; DebugPace = busy ? "點燭" : (stall > 0f ? "她停著" : (Relief01 > 0f ? "喘息" : (Surge01 > 0f ? "漏點逼近" : "導演")));
+        if ((Application.isEditor || TesterMode.Enabled) && Time.time >= _nextDirectorLog)
+        {
+            _nextDirectorLog = Time.time + 2f;
+            Debug.Log($"【追逐節奏】進度 {p * 100f:F0}% | 離她 {lag:F1}m 目標 {target:F1}m | 怪物 {_dirSpeed:F1} m/s 她 {_playerFwdSmooth:F1} m/s | {DebugPace}" +
+                      (stall > 0f ? $"（停了 {stall + stallGraceSeconds:F1}s）" : ""));
+        }
+
+        if (lag <= attackTriggerDistance) return;   // 進到揮爪距離：Update 的 CheckCatch 出爪
+        SetMonsterX(Mathf.MoveTowards(mx, px, _dirSpeed * dt));
+    }
+
     private void MoveTowardPlayer(float speed)
     {
         if (player == null) return;
-        if (_finaleDash) { FinaleDashMove(); return; }
+        if (_finaleDash) { if (_lungePhase != 0) EndLunge("最後衝刺接管", false); FinaleDashMove(); return; }
+        if (usePacingDirector && (currentState == MonsterState.Chasing || currentState == MonsterState.Appearing)) { DirectorMove(); return; }   // ★1116
 
         if (_animator != null && _animator.cullingMode != AnimatorCullingMode.AlwaysAnimate)
             _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -2438,6 +4007,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             if (c == null) { nullSlots++; continue; }
             _totalCandles++;
+            if (float.IsNaN(_firstCandleX) || c.transform.position.x < _firstCandleX) _firstCandleX = c.transform.position.x;   // ★1116 節奏曲線的起點
             if (_lastCandleByX == null || c.transform.position.x > _lastCandleByX.transform.position.x)
                 _lastCandleByX = c;
         }
@@ -2564,6 +4134,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
 
         _haloPs.Play();
+        // ★1119 紅光錨在身體中心骨上（不跟物件原點、粒子不留在世界座標裡拖尾巴）
+        if (GetComponent<MonsterGlowAnchor>() == null) gameObject.AddComponent<MonsterGlowAnchor>();
         Debug.Log("【影子怪物】強效光暈（2D貼圖 + 粒子 + 光源）建立完成。");
     }
 
@@ -2607,9 +4179,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         }
     }
 
+    /// <summary>★1116 目前顯示的透明度（0＝看不見）：眼罩紅光跟著它淡入淡出。</summary>
+    public float VisualAlpha { get; private set; }
+
+    /// <summary>★1116 最後一根燭火（X 最大的那根）。</summary>
+    public CandleCollectible LastCandle => _lastCandleByX;
+
+    /// <summary>★1116 外部壓低追逐音樂（1＝不壓）：熄燈時音樂退後，只剩腳步和呼吸。</summary>
+    [System.NonSerialized] public float externalBgmDuck = 1f;
+
     private void SetVisualAlpha(float alpha)
     {
         EnsureInitialized();
+        VisualAlpha = Mathf.Max(0f, alpha);
 
         bool showVisuals = alpha > 0.001f;
 
@@ -2681,6 +4263,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _hitAnimLockUntil = 0f;
         _finaleDash = false;
         _currentAnimName = "";
+        RestoreDeathAnimSpeed();   // ★1119b 倒下對齊語音時改過的 Animator 速度
+        _chaseStepRamp = false;    // ★1119b 追逐音樂的燭火階梯：重置後依存檔點保留的燭火數直接對齊，不緩降
         _chaseTimer = 0f;  // 重置追逐計時，確保下次出場先播 walk4
 
         // 立即停止追逐背景音樂
@@ -2691,10 +4275,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _doomed = false;          // ★1021 倒數與注定失敗的標記一起清掉（漏掉的燭火在下面 ResetToInitialState 時刷新，數量自動重算）
         _doomRoutine = null;
         _currentScaleMultiplier = 1f;
+        { var shd = GetComponent<MonsterArmShedding>(); if (shd != null) shd.SetShedCount(0, false); }   // ★1118b 手臂先全部長回來，下面依存檔點前的燭火再掉
         _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;
+        ResetDirectorState();
 
         RemoveFear();
         UnlockCamera();
+        FinaleCamOff(true);            // ★1118 結局倒下演出：鏡頭、她的自動走路一律還原
+        if (_pm != null) { _pm.scriptedMove = false; _pm.scriptedMoveInput = 0f; }
         RevealCancel();   // ★StopAllCoroutines 會把演出砍在半路，這裡要把鏡頭與控制權還回去
 
         transform.position = _initialPosition;
@@ -2718,8 +4306,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
             _candlesCollected = 0;
             foreach (var c in candles) if (c != null && c.isCollected) _candlesCollected++;
-            _currentScaleMultiplier = Mathf.Max(minScaleMultiplier, 1f - shrinkPerCandle * _candlesCollected);
+            _currentScaleMultiplier = CandleScaleMult(_candlesCollected);   // ★1118b
             ApplyCurrentScale();
+            SyncArms(false);   // ★1118b 存檔點前保留的燭火＝那幾隻手臂已經掉了
         }
 
         Debug.Log($"【影子怪物】已完整重置至初始狀態（存檔點前 {_candlesCollected} 根燭火保留為已完成，其餘刷新）。");
@@ -2743,7 +4332,6 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             _chaseAudioSource.minDistance = 5f;
             _chaseAudioSource.maxDistance = 60f;
         }
-
         if (chaseBGM == null)
         {
 #if UNITY_EDITOR
@@ -2774,7 +4362,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         Debug.Log($"🎵【影子怪物】追逐背景音樂啟動淡入播放（{_chaseAudioSource.clip.name}，音量 {chaseBGMVolume}）");
     }
 
-    public void StopChaseBGM(bool immediate = false)
+    /// <param name="fadeSeconds">淡出秒數；小於 0 ＝ 用 chaseBGMFadeOutDuration</param>
+    public void StopChaseBGM(bool immediate = false, float fadeSeconds = -1f)
     {
         if (_chaseAudioSource == null) return;
 
@@ -2783,13 +4372,63 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (immediate)
         {
             _chaseAudioSource.Stop();
-            _chaseAudioSource.volume = 0f;
+            SetChaseBase(0f);
             _chaseAudioSource.pitch = 1.0f;
+            _chaseBgmFadeCoroutine = null;
         }
         else
         {
-            _chaseBgmFadeCoroutine = StartCoroutine(FadeChaseBgmRoutine(0f, chaseBGMFadeOutDuration, false));
+            _chaseBgmFadeCoroutine = StartCoroutine(FadeChaseBgmRoutine(0f, fadeSeconds >= 0f ? fadeSeconds : chaseBGMFadeOutDuration, false));
         }
+    }
+
+    // ★1119b 追逐音樂音量的唯一出口：所有地方（淡入淡出、逼近緊張度、燭火喘息、熄燈）都只算「邏輯音量」_chaseBase，
+    //   真正寫進 AudioSource 的是 _chaseBase × 燭火階梯倍率（_chaseStepMul），所以幾個倍率是相乘、不會互相打架。
+    private float _chaseBase;            // 邏輯音量（不含燭火階梯）
+    private float _chaseStepMul = 1f;    // 燭火階梯倍率：1 − chaseBgmStepPerCandle × 已吃燭火數（最多 總數−1 根）
+    private bool _chaseStepRamp;         // true＝剛撞到燭火，平滑降到新音量；false＝直接對齊（重生、存檔點、測試鍵）
+
+    /// <summary>目前已吃的燭火數換算出的階梯倍率目標（最後一根不算，它改走淡出）。</summary>
+    private float ChaseStepTarget()
+    {
+        int cap = Mathf.Max(0, _totalCandles - 1);
+        int n = Mathf.Clamp(_candlesCollected, 0, cap);
+        return Mathf.Clamp01(1f - Mathf.Max(0f, chaseBgmStepPerCandle) * n);
+    }
+
+    /// <summary>測試／驗證用：追逐音樂的邏輯音量、燭火階梯倍率、實際 AudioSource 音量。</summary>
+    public float DebugChaseBase { get { return _chaseBase; } }
+    public float DebugChaseStepMul { get { return _chaseStepMul; } }
+    public float DebugChaseSourceVolume { get { return _chaseAudioSource != null ? _chaseAudioSource.volume : -1f; } }
+    public bool DebugChasePlaying { get { return _chaseAudioSource != null && _chaseAudioSource.isPlaying; } }
+
+    private void SetChaseBase(float v)
+    {
+        _chaseBase = Mathf.Max(0f, v);
+        ApplyChaseVolume();
+    }
+
+    private void ApplyChaseVolume()
+    {
+        if (_chaseAudioSource != null) _chaseAudioSource.volume = _chaseBase * _chaseStepMul;
+    }
+
+    void LateUpdate()
+    {
+        if (_chaseAudioSource == null) return;
+        float target = ChaseStepTarget();
+        if (_chaseStepRamp && !Mathf.Approximately(_chaseStepMul, target))
+        {
+            // 撞到燭火：用 chaseBgmStepRampSeconds 秒平滑降到新的階梯（降一階的速度；一次降多階就照比例）
+            float rate = Mathf.Max(0.0001f, chaseBgmStepPerCandle) / Mathf.Max(0.05f, chaseBgmStepRampSeconds);
+            _chaseStepMul = Mathf.MoveTowards(_chaseStepMul, target, rate * Time.deltaTime);
+        }
+        else
+        {
+            _chaseStepMul = target;   // 重生／存檔點／測試鍵跳關：直接對齊
+            _chaseStepRamp = false;
+        }
+        ApplyChaseVolume();
     }
 
     private IEnumerator FadeChaseBgmRoutine(float targetVolume, float duration, bool playIfStarting)
@@ -2798,12 +4437,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         if (playIfStarting && !_chaseAudioSource.isPlaying)
         {
-            _chaseAudioSource.volume = 0f;
+            SetChaseBase(0f);
             _chaseAudioSource.pitch = 1.0f;
             _chaseAudioSource.Play();
         }
 
-        float startVol = _chaseAudioSource.volume;
+        float startVol = _chaseBase;
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -2811,11 +4450,11 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float scaledTargetVolume = targetVolume * AudioManager.BgmVolume;
-            _chaseAudioSource.volume = Mathf.Lerp(startVol, scaledTargetVolume, t);
+            SetChaseBase(Mathf.Lerp(startVol, scaledTargetVolume, t));
             yield return null;
         }
 
-        _chaseAudioSource.volume = targetVolume * AudioManager.BgmVolume;
+        SetChaseBase(targetVolume * AudioManager.BgmVolume);
 
         if (!playIfStarting && targetVolume <= 0.001f)
         {
@@ -2832,16 +4471,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         float bgmVolume = AudioManager.BgmVolume;
         float dist = Mathf.Abs(player.position.x - transform.position.x);
+        // ★1116 吃到燭火後的喘息：追逐音樂降下來幾秒（漏點逼近時不降）
+        float duck = usePacingDirector ? 1f - candleReliefBgmDuck * Relief01 : 1f;
+        duck *= Mathf.Clamp01(externalBgmDuck);
         if (dist < 8.5f)
         {
             // 怪物越靠近，追逐音樂音量與緊張度稍微提高
             float t = Mathf.InverseLerp(8.5f, 2.5f, dist);
-            _chaseAudioSource.volume = Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t) * bgmVolume;
+            SetChaseBase(Mathf.Lerp(chaseBGMVolume, Mathf.Min(1f, chaseBGMVolume * 1.25f), t) * bgmVolume * duck);
             _chaseAudioSource.pitch = Mathf.Lerp(1.0f, 1.05f, t);
         }
         else
         {
-            _chaseAudioSource.volume = Mathf.MoveTowards(_chaseAudioSource.volume, chaseBGMVolume * bgmVolume, Time.unscaledDeltaTime * 0.5f);
+            SetChaseBase(Mathf.MoveTowards(_chaseBase, chaseBGMVolume * bgmVolume * duck, Time.unscaledDeltaTime * (usePacingDirector ? 1.5f : 0.5f)));
             _chaseAudioSource.pitch = Mathf.MoveTowards(_chaseAudioSource.pitch, 1.0f, Time.deltaTime * 0.5f);
         }
     }

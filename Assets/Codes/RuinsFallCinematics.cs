@@ -53,6 +53,18 @@ public class RuinsFallCinematics : MonoBehaviour
 
     [Header("④ 墜落旁白")]
     public Line[] lines = new Line[0];
+    [Header("★1120 墜落速度跟著旁白")]
+    [Tooltip("沒播旁白時墜落速度是原本的幾倍（播旁白時維持原本速度）。1＝全程原本速度")]
+    public float silentFallSpeedMultiplier = 4f;
+    [Tooltip("下一句旁白開始前幾秒先減速。0＝人聲開始的那一刻才減速（變速點跟人聲對齊）")]
+    public float slowDownBeforeLineSeconds = 0f;
+    [Tooltip("速度切換的俐落程度：加減速度再乘這個倍數。1＝跟著倍率放大而已（切換約 1～2 秒）；5＝約 0.4 秒內切完，玩家明顯感覺到變快／變慢")]
+    public float speedSwitchSharpness = 5f;
+    [Tooltip("還有旁白沒講完時，剩下的通道不夠用原本速度講完就先不加速，確保旁白都在天空裡講完（不會拖到落地之後）")]
+    public bool keepNarrationInSky = true;
+    [Tooltip("上面那個估算多留的距離（公尺）")]
+    public float narrationDistanceMargin = 6f;
+
     [Tooltip("墜落開始後幾秒播第一句")]
     public float firstLineDelay = 1f;
     [Tooltip("上一句播完隔幾秒播下一句")]
@@ -71,6 +83,7 @@ public class RuinsFallCinematics : MonoBehaviour
     private bool _narrationDone;
     private int _nextLine;
     private float _nextLineTime = -1f;
+    private float _voiceEndTime = -1f;
 
     private void Start()
     {
@@ -111,6 +124,79 @@ public class RuinsFallCinematics : MonoBehaviour
         UpdateParallax();
         UpdateFallCamera();
         UpdateNarration();
+        UpdateFallSpeed();
+    }
+
+    /// <summary>★1120 播旁白（以及下一句開始前 slowDownBeforeLineSeconds 秒）時維持原本速度，其餘時間 silentFallSpeedMultiplier 倍。</summary>
+    private void UpdateFallSpeed()
+    {
+        if (player == null) return;
+        if (!player.IsInControlledFall) { player.ruinsFallSpeedMultiplier = 1f; player.ruinsFallAccelMultiplier = 1f; return; }
+        // 加減速也跟著倍率放大，不然原本的加速度太小，4 倍速要好幾秒才加得上去、人聲前也來不及慢下來
+        player.ruinsFallAccelMultiplier = Mathf.Max(1f, silentFallSpeedMultiplier) * Mathf.Max(1f, speedSwitchSharpness);
+        // 第一句開始後到最後一句講完都算「在講」（句間的短停頓也維持原本速度，整段旁白是一個區段）
+        bool speaking = Time.time < _voiceEndTime || (_nextLine > 0 && !_narrationDone);
+        bool lineSoon = !_narrationDone && lines != null && lines.Length > 0 &&
+                        (_nextLineTime < 0f
+                            ? player.ControlledFallSeconds >= firstLineDelay - Mathf.Max(0f, slowDownBeforeLineSeconds)
+                            : Time.time >= _nextLineTime - Mathf.Max(0f, slowDownBeforeLineSeconds));
+        bool fast = !(speaking || lineSoon);
+
+        // 保護：還有旁白沒講完時，剩下的通道要夠用「原本速度」把旁白講完；不夠就先不加速，
+        //   不然加速把通道掉完、旁白會拖到傳送進廢墟、落地之後才講完
+        if (fast && !_narrationDone && keepNarrationInSky)
+        {
+            float relayY = RelayTopY();
+            if (!float.IsNaN(relayY))
+            {
+                float remain = NarrationRemainingSeconds();
+                float fallSec = player.ControlledFallSeconds;
+                float need = remain * player.RuinsFallBaseSpeedAt(fallSec + remain) + Mathf.Max(0f, narrationDistanceMargin);
+                float left = player.transform.position.y - relayY;
+                if (left < need) fast = false;
+            }
+        }
+        player.ruinsFallSpeedMultiplier = fast ? Mathf.Max(0.1f, silentFallSpeedMultiplier) : 1f;
+        player.ruinsFallFastMultiplier = Mathf.Max(1f, silentFallSpeedMultiplier);   // ★1120 給落下動作對照：全速＝這個倍率
+    }
+
+    /// <summary>★1120 從現在到最後一句旁白講完還要幾秒（照目前的排程：句長＋句間空檔）。</summary>
+    private float NarrationRemainingSeconds()
+    {
+        if (_narrationDone || lines == null) return Mathf.Max(0f, _voiceEndTime - Time.time);
+        float now = Time.time;
+        float end = Mathf.Max(now, _voiceEndTime);
+        float next = _nextLineTime < 0f ? now + Mathf.Max(0f, firstLineDelay - player.ControlledFallSeconds) : _nextLineTime;
+        for (int i = _nextLine; i < lines.Length; i++)
+        {
+            float len = lines[i] != null && lines[i].clip != null ? lines[i].clip.length : 0f;
+            next = Mathf.Max(next, now);
+            end = next + len;
+            next = end + Mathf.Max(0f, lineGap);
+        }
+        return Mathf.Max(0f, end - now);
+    }
+
+    private Collider[] _relayCols;
+    /// <summary>★1120 主角下方、墜落通道裡的接力傳送（白霧進廢墟）觸發區頂端高度；找不到回傳 NaN。</summary>
+    private float RelayTopY()
+    {
+        if (_relayCols == null)
+        {
+            var list = new System.Collections.Generic.List<Collider>();
+            foreach (SkyDiveTeleportTrigger t in FindObjectsByType<SkyDiveTeleportTrigger>(FindObjectsSortMode.None))
+                if (t != null && t.keepControlledFall) { Collider c = t.GetComponent<Collider>(); if (c != null) list.Add(c); }
+            _relayCols = list.ToArray();
+        }
+        float py = player.transform.position.y, px = player.transform.position.x, best = float.NaN;
+        foreach (Collider c in _relayCols)
+        {
+            if (c == null || !c.enabled) continue;
+            Bounds b = c.bounds;
+            if (px < b.min.x || px > b.max.x || b.max.y > py) continue;
+            if (float.IsNaN(best) || b.max.y > best) best = b.max.y;
+        }
+        return best;
     }
 
     private void UpdateParallax()
@@ -175,6 +261,7 @@ public class RuinsFallCinematics : MonoBehaviour
             VoiceSubtitle.Show(line.subtitle, len, st);
         }
         _nextLine++;
+        _voiceEndTime = Time.time + len;
         _nextLineTime = Time.time + len + Mathf.Max(0f, lineGap);
         if (_nextLine >= lines.Length) _narrationDone = true;
     }

@@ -83,6 +83,15 @@ public class EndCredits : MonoBehaviour
     /// </summary>
     public static bool EndingMode;
 
+    /// <summary>
+    /// ★1119e 玻璃館結局改成「倒下 → 結局漫畫 → 回玻璃館碎裂成光球 → 名單」：
+    ///   漫畫是疊加載入的，翻完最後一頁時不捲名單，改呼叫這個（由 ShadowMonsterController 設定，呼叫一次後清掉）。
+    /// </summary>
+    public static System.Action ComicFinishedHook;
+    /// <summary>★1119e 進 Book 場景後不翻漫畫、直接從全黑開始捲名單（光球飛向鏡頭全白之後用）。</summary>
+    public static bool CreditsOnly;
+    private bool _startBlack;
+
     // ══════════════════════════════════════════
     // 版面
     // ══════════════════════════════════════════
@@ -170,6 +179,21 @@ public class EndCredits : MonoBehaviour
     {
         // ★結局模式：從玻璃館進來，直接翻到結尾漫畫，並讓名單自動接上
         if (!EndingMode || book == null) return;
+
+        if (CreditsOnly)
+        {
+            // ★1119e 漫畫已經看過了：直接從全黑捲名單（白幕淡掉後底下就是黑幕）
+            CreditsOnly = false;
+            ExhibitMode ex = book.GetComponent<ExhibitMode>();
+            if (ex == null) ex = Object.FindObjectOfType<ExhibitMode>();
+            if (ex != null) ex.enabled = false;
+            BookTransitionManager.isChapterMode = false;
+            armOnLastPage = false;
+            _startBlack = true;
+            StartCoroutine(Roll());
+            Debug.Log("🎬【結局】★1119e 漫畫已看過，直接捲名單 → " + sceneAfterCredits);
+            return;
+        }
 
         // 1　關掉畢展自動翻頁：不然玩家看得慢一點就被丟回第一頁，結局毀了
         ExhibitMode exhibit = book.GetComponent<ExhibitMode>();
@@ -310,15 +334,24 @@ public class EndCredits : MonoBehaviour
         if (_rolling || !_armed || book == null) return;
         if (book.IsBusy) return;
 
-        if (autoRollAfterSeconds > 0f && Time.unscaledTime - _armedAt >= autoRollAfterSeconds)
+        bool go = autoRollAfterSeconds > 0f && Time.unscaledTime - _armedAt >= autoRollAfterSeconds;
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (!go && NextPressed()) go = true;
+#endif
+        if (!go) return;
+
+        if (EndingMode && ComicFinishedHook != null)
         {
-            StartCoroutine(Roll());
+            // ★1119e 漫畫翻完：回玻璃館（碎裂成光球），名單之後才捲
+            var hook = ComicFinishedHook;
+            ComicFinishedHook = null;
+            _armed = false;
+            armOnLastPage = false;
+            Debug.Log("🎬【結局】★1119e 結局漫畫翻完，回玻璃館");
+            hook();
             return;
         }
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-        if (NextPressed()) StartCoroutine(Roll());
-#endif
+        StartCoroutine(Roll());
     }
 
 #if ENABLE_LEGACY_INPUT_MANAGER
@@ -344,11 +377,15 @@ public class EndCredits : MonoBehaviour
 
         Build();
         _canvas.enabled = true;
-        SetCurtainAlpha(0f);
         SetContainerY(-540f);
 
-        // 黑幕淡入
-        yield return Fade(0f, 1f, curtainIn);
+        // 黑幕淡入（★1119e 只播名單＝一開始就全黑）
+        if (_startBlack) SetCurtainAlpha(1f);
+        else
+        {
+            SetCurtainAlpha(0f);
+            yield return Fade(0f, 1f, curtainIn);
+        }
 
         // ★結局黑幕卡（人稱階梯的收束）：「那是我的形狀」→ 標題卡「育　言」→ 才捲名單。
         //   畫面此時已全黑，卡片不做黑幕進出；播完瞬間收掉它的層，底下就是我們的黑幕，接得無縫。
@@ -399,6 +436,8 @@ public class EndCredits : MonoBehaviour
     public static void FinalEndingCleanup()
     {
         EndingMode = false;
+        ComicFinishedHook = null;
+        CreditsOnly = false;
         Time.timeScale = 1f;
 
         PlayerRespawnSystem.IsAnyRespawning = false;

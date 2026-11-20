@@ -97,6 +97,7 @@ public class BreakableGlassFloor : MonoBehaviour, IResettable
     {
         if (isTriggered) return;
         if (CandlePlatformGuard.IsHeld(this)) return;   // ★1110 燭火還沒點燃完成：這片先不崩落（見 CandlePlatformGuard）
+        if (GlassBridgeCollapse.Owns(this)) return;   // ★1117 碎橋衝刺接管：由崩塌前緣一塊一塊碎（見 GlassBridgeCollapse）
         isTriggered = true;
         RestoreShimmer();   // ★1101 碎片用原本的顏色
 
