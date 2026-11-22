@@ -17,11 +17,7 @@
 
 </div>
 
-<!--
-  宣傳影片位置：在 GitHub 網頁上按右上角鉛筆（Edit this file），把「20秒宣傳影片_育言.mp4」
-  直接拖進編輯框，GitHub 會自動上傳並貼上一行連結。把那一行貼在下面這個註解的後面，
-  再刪掉這整段註解，按 Commit changes 就會在首頁直接播放。
--->
+https://github.com/user-attachments/assets/6a8a383b-0c4f-4167-8570-9d12ffea02b7
 
 ---
 
