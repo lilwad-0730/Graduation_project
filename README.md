@@ -6,37 +6,23 @@
 **把「說不出口的情緒」做成可以走過去的關卡。**
 一款以產後憂鬱為主題的 2D 橫向捲軸敘事冒險遊戲。
 
-![Unity](https://img.shields.io/badge/Unity-6000.4.0f1-black?logo=unity)
-![Render](https://img.shields.io/badge/Render-URP%202D-blue)
-![Language](https://img.shields.io/badge/Language-C%23-512BD4)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20WebGL-lightgrey)
-![Input](https://img.shields.io/badge/Input-Keyboard%20%7C%20Gamepad-green)
-![Scripts](https://img.shields.io/badge/Scripts-260%2B-orange)
+![Unity](https://img.shields.io/badge/Unity-6000.4.0f1-4b5563?style=flat-square&logo=unity)
+![Render](https://img.shields.io/badge/Render-URP%202D-4b5563?style=flat-square)
+![Language](https://img.shields.io/badge/Language-C%23-4b5563?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20WebGL-4b5563?style=flat-square)
+![Input](https://img.shields.io/badge/Input-Keyboard%20%7C%20Gamepad-4b5563?style=flat-square)
+![Scripts](https://img.shields.io/badge/Scripts-260%2B-4b5563?style=flat-square)
 
-[下載遊玩](#下載遊玩) ・ [操作](#操作) ・ [關卡](#關卡) ・ [技術架構](#技術架構) ・ [開發指南](#開發指南) ・ [常見問題](#常見問題)
+<a href="#下載遊玩"><img src="https://img.shields.io/badge/%E4%B8%8B%E8%BC%89%E9%81%8A%E7%8E%A9-2b2d31?style=for-the-badge" alt="下載遊玩"></a>
+<a href="#操作"><img src="https://img.shields.io/badge/%E6%93%8D%E4%BD%9C-2b2d31?style=for-the-badge" alt="操作"></a>
+<a href="#關卡"><img src="https://img.shields.io/badge/%E9%97%9C%E5%8D%A1-2b2d31?style=for-the-badge" alt="關卡"></a>
+<a href="#技術架構"><img src="https://img.shields.io/badge/%E6%8A%80%E8%A1%93%E6%9E%B6%E6%A7%8B-2b2d31?style=for-the-badge" alt="技術架構"></a>
+<a href="#開發指南"><img src="https://img.shields.io/badge/%E9%96%8B%E7%99%BC%E6%8C%87%E5%8D%97-2b2d31?style=for-the-badge" alt="開發指南"></a>
+<a href="#常見問題"><img src="https://img.shields.io/badge/%E5%B8%B8%E8%A6%8B%E5%95%8F%E9%A1%8C-2b2d31?style=for-the-badge" alt="常見問題"></a>
 
 </div>
 
 https://github.com/user-attachments/assets/6a8a383b-0c4f-4167-8570-9d12ffea02b7
-
----
-
-## 目錄
-
-1. [專案簡介](#專案簡介)
-2. [設計理念](#設計理念)
-3. [下載遊玩](#下載遊玩)
-4. [操作](#操作)
-5. [關卡](#關卡)
-6. [技術架構](#技術架構)
-7. [穩定性與保護機制](#穩定性與保護機制)
-8. [開發指南](#開發指南)
-9. [打包與發佈](#打包與發佈)
-10. [協作流程](#協作流程)
-11. [常見問題](#常見問題)
-12. [路線圖](#路線圖)
-13. [團隊](#團隊)
-14. [授權](#授權)
 
 ---
 
