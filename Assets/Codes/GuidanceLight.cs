@@ -289,6 +289,12 @@ public class GuidanceLight : MonoBehaviour, IResettable
         {
             _flightSavedConstraints = _flightLockedRb.constraints;
             _flightSavedUseGravity = _flightLockedRb.useGravity;
+            // ★1125 別把別人凍住的狀態（巨石演出的 FreezeAll 等）存成「正常」，放手時會把玩家永遠凍住
+            if ((_flightSavedConstraints & (RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY)) != 0)
+            {
+                _flightSavedConstraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+                _flightSavedUseGravity = !pm.isUnderwater;
+            }
             Vector3 v = _flightLockedRb.linearVelocity;
             _flightLockedRb.linearVelocity = new Vector3(0f, v.y, 0f);
             _flightLockedRb.angularVelocity = Vector3.zero;

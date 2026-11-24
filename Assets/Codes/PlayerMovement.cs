@@ -1332,6 +1332,24 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private float _badConstraintSince = -1f;
+
+    /// <summary>★1125 沒有任何鎖定在抓玩家，剛體卻凍著 X／Y 位置 → 持續 0.4 秒就還原（見 Update 裡的說明）。</summary>
+    private void WatchRigidbodyConstraints()
+    {
+        if (rb == null || rb.isKinematic) { _badConstraintSince = -1f; return; }
+        bool someoneHolding = isCutsceneFrozen || freezeHorizontal || isStrictLockingX || PlayerCutsceneHold.IsHeld
+                              || IsHardCutsceneLocked || PlayerRespawnSystem.IsAnyRespawning || _standUpLocked || _candleLightLocked;
+        bool frozenXY = (rb.constraints & (RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY)) != 0;
+        if (someoneHolding || !frozenXY) { _badConstraintSince = -1f; return; }
+        if (_badConstraintSince < 0f) { _badConstraintSince = Time.unscaledTime; return; }
+        if (Time.unscaledTime - _badConstraintSince < 0.4f) return;
+        Debug.LogWarning("【約束看門狗】沒有任何演出在鎖玩家，但剛體 X／Y 軸被凍住（" + rb.constraints + "），強制還原成標準約束，玩家恢復能左右動。");
+        rb.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+        rb.useGravity = !isUnderwater;
+        _badConstraintSince = -1f;
+    }
+
     void Update()
     {
         // 刷新水下狀態 (三層判定)
@@ -1348,6 +1366,10 @@ public class PlayerMovement : MonoBehaviour
             isStrictLockingX = false;
         }
         _lastFramePos = transform.position;
+
+        // ★1125 約束看門狗：沒有任何演出／鎖定在抓玩家，剛體卻還凍著 X 或 Y（演出鎖疊在一起、某段演出沒放手造成），
+        //   玩家就會「只能上下動」或整個不動。持續 0.4 秒就強制還原成標準約束。
+        WatchRigidbodyConstraints();
 
         // 補強組件檢索
         if (playerCollider == null) playerCollider = GetComponent<Collider>();
@@ -1810,7 +1832,13 @@ public class PlayerMovement : MonoBehaviour
             }
 
             // 【最高層級】：如果正在播 Falling 動畫，且位於掉落區，啟動絕對 X 軸鎖死
-            if (isFalling && isInDropZone)
+            // ★1125 水下沒有「落地」可以解除，X 軸鎖死一旦在水裡生效就永遠不會放開 → 水下一律不鎖
+            if (isUnderwater && isStrictLockingX)
+            {
+                isStrictLockingX = false;
+                Debug.Log("【最高規則解除】水下不鎖 X 軸。");
+            }
+            if (isFalling && isInDropZone && !isUnderwater)
             {
                 if (!isStrictLockingX)
                 {

@@ -1,0 +1,172 @@
+{
+ "sheets": [
+  {
+   "name": "stick_left",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "stick_right",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "stick_up",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "stick_down",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "key_Shift",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_S",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_D",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_A",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_W",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_Space",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "key_E",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "btn_A",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "btn_X",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "btn_Y",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "btn_B",
+   "frames": 12,
+   "w": 192,
+   "h": 192,
+   "fps": 9
+  },
+  {
+   "name": "plus",
+   "frames": 1,
+   "w": 192,
+   "h": 192,
+   "fps": 1
+  },
+  {
+   "name": "line_stick_left",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_light_stick_left",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_stick_right",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_light_stick_right",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_stick_up",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_light_stick_up",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_stick_down",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  },
+  {
+   "name": "line_light_stick_down",
+   "frames": 16,
+   "w": 192,
+   "h": 192,
+   "fps": 10
+  }
+ ]
+}

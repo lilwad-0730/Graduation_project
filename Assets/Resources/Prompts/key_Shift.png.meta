@@ -1,0 +1,754 @@
+fileFormatVersion: 2
+guid: 79c90f33b38455a419d9243f5cbd17e2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -596740536208536210
+    second: key_Shift_0
+  - first:
+      213: -7005869149990836317
+    second: key_Shift_1
+  - first:
+      213: -1495370389211891271
+    second: key_Shift_2
+  - first:
+      213: -7474271280743631559
+    second: key_Shift_3
+  - first:
+      213: 2486773448262098024
+    second: key_Shift_4
+  - first:
+      213: -1703033607182404464
+    second: key_Shift_5
+  - first:
+      213: 6627820523639295427
+    second: key_Shift_6
+  - first:
+      213: 7215557794956406352
+    second: key_Shift_7
+  - first:
+      213: -8548628044726833039
+    second: key_Shift_8
+  - first:
+      213: 2901514108801774331
+    second: key_Shift_9
+  - first:
+      213: 6442103877707662210
+    second: key_Shift_10
+  - first:
+      213: -386777020902665338
+    second: key_Shift_11
+  - first:
+      213: 6056643778687815932
+    second: key_Shift_12
+  - first:
+      213: -5769892507440708414
+    second: key_Shift_13
+  - first:
+      213: -1846254714512725345
+    second: key_Shift_14
+  - first:
+      213: 7007919311341267600
+    second: key_Shift_15
+  - first:
+      213: 7408801812839428862
+    second: key_Shift_16
+  - first:
+      213: -3121803882008312902
+    second: key_Shift_17
+  - first:
+      213: 1441040624366041491
+    second: key_Shift_18
+  - first:
+      213: -4066297642933877612
+    second: key_Shift_19
+  - first:
+      213: 7203256829385524883
+    second: key_Shift_20
+  - first:
+      213: -1963442114012517506
+    second: key_Shift_21
+  - first:
+      213: 3893894764678877347
+    second: key_Shift_22
+  - first:
+      213: 176334614843810691
+    second: key_Shift_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: key_Shift_0
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6dc63cd4a3f7b7f0800000000000000
+      internalID: -596740536208536210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_1
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a7ade3702726ce90800000000000000
+      internalID: -7005869149990836317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_2
+      rect:
+        serializedVersion: 2
+        x: 466
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b93367cd806f3be0800000000000000
+      internalID: -1495370389211891271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_3
+      rect:
+        serializedVersion: 2
+        x: 658
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9353f5cdedd064890800000000000000
+      internalID: -7474271280743631559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_4
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86c1984964bc28220800000000000000
+      internalID: 2486773448262098024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_5
+      rect:
+        serializedVersion: 2
+        x: 1042
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 094375315fb9d58e0800000000000000
+      internalID: -1703033607182404464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_6
+      rect:
+        serializedVersion: 2
+        x: 1234
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cd409a86afbafb50800000000000000
+      internalID: 6627820523639295427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_7
+      rect:
+        serializedVersion: 2
+        x: 1426
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05e6da8b59fc22460800000000000000
+      internalID: 7215557794956406352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_8
+      rect:
+        serializedVersion: 2
+        x: 1618
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1707d1df51c2d5980800000000000000
+      internalID: -8548628044726833039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_9
+      rect:
+        serializedVersion: 2
+        x: 1810
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf2f9e585bf344820800000000000000
+      internalID: 2901514108801774331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_10
+      rect:
+        serializedVersion: 2
+        x: 2002
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2838ee45853f66950800000000000000
+      internalID: 6442103877707662210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_11
+      rect:
+        serializedVersion: 2
+        x: 2194
+        y: 146
+        width: 28
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68310d54954e1aaf0800000000000000
+      internalID: -386777020902665338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_12
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 33
+        width: 130
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf054cf5d658d0450800000000000000
+      internalID: 6056643778687815932
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_13
+      rect:
+        serializedVersion: 2
+        x: 223
+        y: 33
+        width: 130
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c40fcda5593defa0800000000000000
+      internalID: -5769892507440708414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_14
+      rect:
+        serializedVersion: 2
+        x: 415
+        y: 33
+        width: 130
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9a24987e19c066e0800000000000000
+      internalID: -1846254714512725345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_15
+      rect:
+        serializedVersion: 2
+        x: 607
+        y: 33
+        width: 130
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09aa81feb71214160800000000000000
+      internalID: 7007919311341267600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_16
+      rect:
+        serializedVersion: 2
+        x: 799
+        y: 33
+        width: 130
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef27099cef951d660800000000000000
+      internalID: 7408801812839428862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_17
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 33
+        width: 130
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab3857ac8ef1da4d0800000000000000
+      internalID: -3121803882008312902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_18
+      rect:
+        serializedVersion: 2
+        x: 1183
+        y: 33
+        width: 130
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 399be3a10da9ff310800000000000000
+      internalID: 1441040624366041491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_19
+      rect:
+        serializedVersion: 2
+        x: 1375
+        y: 33
+        width: 130
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4940be186db9197c0800000000000000
+      internalID: -4066297642933877612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_20
+      rect:
+        serializedVersion: 2
+        x: 1567
+        y: 33
+        width: 130
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3964e6dfbeb17f360800000000000000
+      internalID: 7203256829385524883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_21
+      rect:
+        serializedVersion: 2
+        x: 1759
+        y: 33
+        width: 130
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7bed31dcc370c4e0800000000000000
+      internalID: -1963442114012517506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_22
+      rect:
+        serializedVersion: 2
+        x: 1951
+        y: 33
+        width: 130
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a0107168a4e90630800000000000000
+      internalID: 3893894764678877347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: key_Shift_23
+      rect:
+        serializedVersion: 2
+        x: 2143
+        y: 33
+        width: 130
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 383ee5fd567727200800000000000000
+      internalID: 176334614843810691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      key_Shift_0: -596740536208536210
+      key_Shift_1: -7005869149990836317
+      key_Shift_10: 6442103877707662210
+      key_Shift_11: -386777020902665338
+      key_Shift_12: 6056643778687815932
+      key_Shift_13: -5769892507440708414
+      key_Shift_14: -1846254714512725345
+      key_Shift_15: 7007919311341267600
+      key_Shift_16: 7408801812839428862
+      key_Shift_17: -3121803882008312902
+      key_Shift_18: 1441040624366041491
+      key_Shift_19: -4066297642933877612
+      key_Shift_2: -1495370389211891271
+      key_Shift_20: 7203256829385524883
+      key_Shift_21: -1963442114012517506
+      key_Shift_22: 3893894764678877347
+      key_Shift_23: 176334614843810691
+      key_Shift_3: -7474271280743631559
+      key_Shift_4: 2486773448262098024
+      key_Shift_5: -1703033607182404464
+      key_Shift_6: 6627820523639295427
+      key_Shift_7: 7215557794956406352
+      key_Shift_8: -8548628044726833039
+      key_Shift_9: 2901514108801774331
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

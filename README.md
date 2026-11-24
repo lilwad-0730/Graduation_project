@@ -89,6 +89,8 @@ https://github.com/user-attachments/assets/6a8a383b-0c4f-4167-8570-9d12ffea02b7
 
 PlayStation 與 Switch Pro 手把按鍵位置相同（Unity Input System 自動對應）。
 
+遊戲內的操作提示（背景線條畫與文字）會依你**最後使用的輸入裝置**自動切換：動鍵盤或滑鼠顯示 WASD、Shift、空白鍵；動手把顯示搖桿與 A / X / Y 按鈕。手把版線條畫由 `Tools/make_pad_hints.py` 從鍵盤版產生。
+
 ## 關卡
 
 | 場景 | 主題 | 主要機制 |

@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: d3302ce415345204b916549f5050084d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2073797442356043049
+    second: stick_left_0
+  - first:
+      213: -2723949287209536669
+    second: stick_left_1
+  - first:
+      213: 5554361945317365233
+    second: stick_left_2
+  - first:
+      213: -137371148622096234
+    second: stick_left_3
+  - first:
+      213: -2097479512405113343
+    second: stick_left_4
+  - first:
+      213: 8693012747424645182
+    second: stick_left_5
+  - first:
+      213: 6520016445016727303
+    second: stick_left_6
+  - first:
+      213: 3387675400645332858
+    second: stick_left_7
+  - first:
+      213: 925802361200619892
+    second: stick_left_8
+  - first:
+      213: 56229258834747450
+    second: stick_left_9
+  - first:
+      213: 8359842861468216837
+    second: stick_left_10
+  - first:
+      213: -624800028288479166
+    second: stick_left_11
+  - first:
+      213: 9047031017427470695
+    second: stick_left_12
+  - first:
+      213: -27222321944078768
+    second: stick_left_13
+  - first:
+      213: -2518100141969346084
+    second: stick_left_14
+  - first:
+      213: 4423858501285937855
+    second: stick_left_15
+  - first:
+      213: 7377430539566036432
+    second: stick_left_16
+  - first:
+      213: -2366326473066465415
+    second: stick_left_17
+  - first:
+      213: 1908295034564360812
+    second: stick_left_18
+  - first:
+      213: -204719653930740733
+    second: stick_left_19
+  - first:
+      213: 8979790351595459195
+    second: stick_left_20
+  - first:
+      213: 4589230588391359299
+    second: stick_left_21
+  - first:
+      213: -7665295725861674629
+    second: stick_left_22
+  - first:
+      213: 2691515138008150241
+    second: stick_left_23
+  - first:
+      213: -4209352811205759818
+    second: stick_left_24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: stick_left_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d22140b6346833e0800000000000000
+      internalID: -2073797442356043049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_1
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36372bd2e86923ad0800000000000000
+      internalID: -2723949287209536669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_2
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f5d690d2ce051d40800000000000000
+      internalID: 5554361945317365233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_3
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6981efb0ba5f71ef0800000000000000
+      internalID: -137371148622096234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_4
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1060f631f7144e2e0800000000000000
+      internalID: -2097479512405113343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_5
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3040364909c3a870800000000000000
+      internalID: 8693012747424645182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_6
+      rect:
+        serializedVersion: 2
+        x: 1187
+        y: 33
+        width: 118
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70f5de68960cb7a50800000000000000
+      internalID: 6520016445016727303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_7
+      rect:
+        serializedVersion: 2
+        x: 1378
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7f4bc504d0730f20800000000000000
+      internalID: 3387675400645332858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_8
+      rect:
+        serializedVersion: 2
+        x: 1570
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 471b497a75c19dc00800000000000000
+      internalID: 925802361200619892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_9
+      rect:
+        serializedVersion: 2
+        x: 1762
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3024d68634c7c000800000000000000
+      internalID: 56229258834747450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_10
+      rect:
+        serializedVersion: 2
+        x: 1954
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50ee5e74ac0240470800000000000000
+      internalID: 8359842861468216837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_11
+      rect:
+        serializedVersion: 2
+        x: 2146
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24016324fa34457f0800000000000000
+      internalID: -624800028288479166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_12
+      rect:
+        serializedVersion: 2
+        x: 2340
+        y: 33
+        width: 117
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76984b1f6c28d8d70800000000000000
+      internalID: 9047031017427470695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_13
+      rect:
+        serializedVersion: 2
+        x: 2535
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 056df8241794f9ff0800000000000000
+      internalID: -27222321944078768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_14
+      rect:
+        serializedVersion: 2
+        x: 2727
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd17e092349ed0dd0800000000000000
+      internalID: -2518100141969346084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_15
+      rect:
+        serializedVersion: 2
+        x: 2919
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb28db94ed3b46d30800000000000000
+      internalID: 4423858501285937855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_16
+      rect:
+        serializedVersion: 2
+        x: 1005
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d5b3f90df5e16660800000000000000
+      internalID: 7377430539566036432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_17
+      rect:
+        serializedVersion: 2
+        x: 1197
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 977354e2c9e192fd0800000000000000
+      internalID: -2366326473066465415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_18
+      rect:
+        serializedVersion: 2
+        x: 1389
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6ab9dd2930ab7a10800000000000000
+      internalID: 1908295034564360812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_19
+      rect:
+        serializedVersion: 2
+        x: 1581
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 304dae43f80b82df0800000000000000
+      internalID: -204719653930740733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_20
+      rect:
+        serializedVersion: 2
+        x: 1773
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b72d3507fbf9e9c70800000000000000
+      internalID: 8979790351595459195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_21
+      rect:
+        serializedVersion: 2
+        x: 1965
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3438c65c7e830bf30800000000000000
+      internalID: 4589230588391359299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_22
+      rect:
+        serializedVersion: 2
+        x: 2157
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b71e1b956266f9590800000000000000
+      internalID: -7665295725861674629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_23
+      rect:
+        serializedVersion: 2
+        x: 2349
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e0ff8cf1ce2a5520800000000000000
+      internalID: 2691515138008150241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_left_24
+      rect:
+        serializedVersion: 2
+        x: 2541
+        y: 1
+        width: 73
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bce9c99bef5595c0800000000000000
+      internalID: -4209352811205759818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      stick_left_0: -2073797442356043049
+      stick_left_1: -2723949287209536669
+      stick_left_10: 8359842861468216837
+      stick_left_11: -624800028288479166
+      stick_left_12: 9047031017427470695
+      stick_left_13: -27222321944078768
+      stick_left_14: -2518100141969346084
+      stick_left_15: 4423858501285937855
+      stick_left_16: 7377430539566036432
+      stick_left_17: -2366326473066465415
+      stick_left_18: 1908295034564360812
+      stick_left_19: -204719653930740733
+      stick_left_2: 5554361945317365233
+      stick_left_20: 8979790351595459195
+      stick_left_21: 4589230588391359299
+      stick_left_22: -7665295725861674629
+      stick_left_23: 2691515138008150241
+      stick_left_24: -4209352811205759818
+      stick_left_3: -137371148622096234
+      stick_left_4: -2097479512405113343
+      stick_left_5: 8693012747424645182
+      stick_left_6: 6520016445016727303
+      stick_left_7: 3387675400645332858
+      stick_left_8: 925802361200619892
+      stick_left_9: 56229258834747450
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -27,6 +27,13 @@ public class CollectibleNote : MonoBehaviour
 
     void Start()
     {
+        // ★1125 這張紙這一輪已經撿過了（場景重載、重生後復活的紙）→ 直接拿掉，不再出現、不再算
+        if (StoryCardNoteHook.WasPicked(transform.position))
+        {
+            if (transform.parent != null && transform.parent.name.EndsWith("_Parent")) Destroy(transform.parent.gameObject);
+            else Destroy(gameObject);
+            return;
+        }
         FitColliderToSprite();
         if (warmGlow) UnderwaterHintGlow.AddNoteGlow(gameObject);
     }
@@ -87,21 +94,43 @@ public class CollectibleNote : MonoBehaviour
         Gizmos.DrawWireCube(box.center, box.size);
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other) { TryPickBy(other); }
+    void OnTriggerStay(Collider other) { TryPickBy(other); }
+
+    private void TryPickBy(Collider other)
     {
         if (_isCollected) return;
+        if (PlayerRespawnSystem.IsAnyRespawning) return;   // 重生黑幕中被傳送經過不算
 
         // 必須是主角的碰撞箱接觸到便條紙邊界才觸發
         if (other.CompareTag("Player") || other.name == "Player" || other.GetComponentInParent<PlayerMovement>() != null)
         {
+            if (!ReallyTouching(other)) return;
             CollectItem();
         }
+    }
+
+    /// <summary>
+    /// ★1125 玩家的身體框很大（約 2×3 公尺），再加上紙的觸發框，離紙還有一個身位就被撿走，看起來像「提早觸發」。
+    /// 觸發框只負責「在附近」，真的撿到要玩家身體（縮小一圈）碰到看得見的那張紙（外加一點點寬容）。
+    /// </summary>
+    private bool ReallyTouching(Collider player)
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null || sr.sprite == null) return true;
+        Bounds paper = sr.bounds;
+        paper.Expand(new Vector3(0.35f, 0.35f, 0f));
+        Bounds body = player.bounds;
+        body.size = new Vector3(body.size.x * 0.6f, body.size.y * 0.7f, body.size.z);
+        return paper.min.x <= body.max.x && paper.max.x >= body.min.x
+            && paper.min.y <= body.max.y && paper.max.y >= body.min.y;
     }
 
     public void CollectItem()
     {
         if (_isCollected) return;
         _isCollected = true;
+        StoryCardNoteHook.OnNotePicked(this);   // ★1125 日誌張數／日誌卡只從這裡算，撿到才算、每張只算一次
         UnderwaterCheckpoint.MarkHere(this, "撿到日誌 " + gameObject.name);
         UnderwaterMemoryPulseDirector.NotifyNoteCollected(transform.position);
 

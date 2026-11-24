@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: 970d7945f9e412b428e87c8758631f9c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2897845601730993294
+    second: stick_right_0
+  - first:
+      213: 6143641804879649159
+    second: stick_right_1
+  - first:
+      213: -203823027663281628
+    second: stick_right_2
+  - first:
+      213: -2430118995835925751
+    second: stick_right_3
+  - first:
+      213: -4767417268264558468
+    second: stick_right_4
+  - first:
+      213: -2890241015722835909
+    second: stick_right_5
+  - first:
+      213: -1854325014674580651
+    second: stick_right_6
+  - first:
+      213: 963890138030758757
+    second: stick_right_7
+  - first:
+      213: -7085578836388456745
+    second: stick_right_8
+  - first:
+      213: -5796366613866122553
+    second: stick_right_9
+  - first:
+      213: -8663772334435990668
+    second: stick_right_10
+  - first:
+      213: 4640689197619209990
+    second: stick_right_11
+  - first:
+      213: -897587045626340969
+    second: stick_right_12
+  - first:
+      213: 4170055666938090165
+    second: stick_right_13
+  - first:
+      213: -8527769633447694163
+    second: stick_right_14
+  - first:
+      213: -9213453055645758473
+    second: stick_right_15
+  - first:
+      213: -8910182923215039259
+    second: stick_right_16
+  - first:
+      213: -118653484443577809
+    second: stick_right_17
+  - first:
+      213: 2140315378907091466
+    second: stick_right_18
+  - first:
+      213: 6100323372298142107
+    second: stick_right_19
+  - first:
+      213: 902729328945950090
+    second: stick_right_20
+  - first:
+      213: 2301900270428698674
+    second: stick_right_21
+  - first:
+      213: -7420529369589862876
+    second: stick_right_22
+  - first:
+      213: 1228246777421206369
+    second: stick_right_23
+  - first:
+      213: 662496552591996208
+    second: stick_right_24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: stick_right_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8c9a19a837373820800000000000000
+      internalID: 2897845601730993294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_1
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 789571fcba9924550800000000000000
+      internalID: 6143641804879649159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_2
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 422e5174900eb2df0800000000000000
+      internalID: -203823027663281628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_3
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90b454b06ab764ed0800000000000000
+      internalID: -2430118995835925751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_4
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c70270dd04bb6ddb0800000000000000
+      internalID: -4767417268264558468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_5
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b30839efb1dc3e7d0800000000000000
+      internalID: -2890241015722835909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_6
+      rect:
+        serializedVersion: 2
+        x: 1191
+        y: 33
+        width: 118
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55b533a493d1446e0800000000000000
+      internalID: -1854325014674580651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_7
+      rect:
+        serializedVersion: 2
+        x: 1383
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56b53df39fc606d00800000000000000
+      internalID: 963890138030758757
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_8
+      rect:
+        serializedVersion: 2
+        x: 1575
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d65a0dd697faad90800000000000000
+      internalID: -7085578836388456745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_9
+      rect:
+        serializedVersion: 2
+        x: 1767
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c27390764b2f8fa0800000000000000
+      internalID: -5796366613866122553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_10
+      rect:
+        serializedVersion: 2
+        x: 1959
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4730617e6f814c780800000000000000
+      internalID: -8663772334435990668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_11
+      rect:
+        serializedVersion: 2
+        x: 2151
+        y: 33
+        width: 119
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 607e511ec3a076040800000000000000
+      internalID: 4640689197619209990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_12
+      rect:
+        serializedVersion: 2
+        x: 2343
+        y: 33
+        width: 117
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 799137e66512b83f0800000000000000
+      internalID: -897587045626340969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_13
+      rect:
+        serializedVersion: 2
+        x: 2535
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b2137109830fd930800000000000000
+      internalID: 4170055666938090165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_14
+      rect:
+        serializedVersion: 2
+        x: 2727
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da0bcff43b647a980800000000000000
+      internalID: -8527769633447694163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_15
+      rect:
+        serializedVersion: 2
+        x: 2919
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fb4f77c24d332080800000000000000
+      internalID: -9213453055645758473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_16
+      rect:
+        serializedVersion: 2
+        x: 1034
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e4140ae6dba85480800000000000000
+      internalID: -8910182923215039259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_17
+      rect:
+        serializedVersion: 2
+        x: 1226
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f22d068d8457a5ef0800000000000000
+      internalID: -118653484443577809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_18
+      rect:
+        serializedVersion: 2
+        x: 1418
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a02101b4f7de3bd10800000000000000
+      internalID: 2140315378907091466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_19
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9108d449c3b8a450800000000000000
+      internalID: 6100323372298142107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_20
+      rect:
+        serializedVersion: 2
+        x: 1802
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8d6624ba83278c00800000000000000
+      internalID: 902729328945950090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_21
+      rect:
+        serializedVersion: 2
+        x: 1994
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2383747991ef1ff10800000000000000
+      internalID: 2301900270428698674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_22
+      rect:
+        serializedVersion: 2
+        x: 2186
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42e2e30aadbf40990800000000000000
+      internalID: -7420529369589862876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_23
+      rect:
+        serializedVersion: 2
+        x: 2378
+        y: 1
+        width: 74
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16395b0cfeb9b0110800000000000000
+      internalID: 1228246777421206369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_right_24
+      rect:
+        serializedVersion: 2
+        x: 2572
+        y: 1
+        width: 71
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 035ba22ca19a13900800000000000000
+      internalID: 662496552591996208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      stick_right_0: 2897845601730993294
+      stick_right_1: 6143641804879649159
+      stick_right_10: -8663772334435990668
+      stick_right_11: 4640689197619209990
+      stick_right_12: -897587045626340969
+      stick_right_13: 4170055666938090165
+      stick_right_14: -8527769633447694163
+      stick_right_15: -9213453055645758473
+      stick_right_16: -8910182923215039259
+      stick_right_17: -118653484443577809
+      stick_right_18: 2140315378907091466
+      stick_right_19: 6100323372298142107
+      stick_right_2: -203823027663281628
+      stick_right_20: 902729328945950090
+      stick_right_21: 2301900270428698674
+      stick_right_22: -7420529369589862876
+      stick_right_23: 1228246777421206369
+      stick_right_24: 662496552591996208
+      stick_right_3: -2430118995835925751
+      stick_right_4: -4767417268264558468
+      stick_right_5: -2890241015722835909
+      stick_right_6: -1854325014674580651
+      stick_right_7: 963890138030758757
+      stick_right_8: -7085578836388456745
+      stick_right_9: -5796366613866122553
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

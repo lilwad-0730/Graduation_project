@@ -82,6 +82,14 @@ public static class PlayerCutsceneHold
                     _savedConstraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
                     Debug.LogWarning("[PlayerCutsceneHold] 接手時玩家已經是 FreezeAll，改用 PlayerMovement 的標準約束當還原值，避免把凍結狀態存成正常狀態。");
                 }
+                // ★1125 水下收完日誌後只能上下動的根因：光絮飛行鎖（BeginPlayerFlightLock）會先把 X 軸凍住，
+                //   這時巨石演出接手，把「X 已凍」存成正常狀態，放手時又還原回去 → X 軸永遠凍住。
+                //   正常狀態只該是 FreezeRotation＋FreezePositionZ，X／Y 位置凍結一律不當成要還原的狀態。
+                if ((_savedConstraints & (RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY)) != 0)
+                {
+                    _savedConstraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionZ;
+                    Debug.LogWarning("[PlayerCutsceneHold] 接手時玩家 X／Y 軸已被別的演出凍住，還原值改用標準約束，避免放手後永遠不能左右動。");
+                }
             }
 
             _anim = pm.animator;

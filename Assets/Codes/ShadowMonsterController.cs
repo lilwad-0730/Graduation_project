@@ -1014,6 +1014,14 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         PlayerRespawnSystem.OnResettablesReset -= HandleResettablesReset;
     }
 
+    private int _assistCheckpoint = -99;
+    private int _deathsAtCheckpoint = 0;
+
+    /// <summary>★1125 連死協助等級：第 1 次死＝0（照原本），之後每多死一次 +1，最高 4。</summary>
+    public int AssistLevel { get { return Mathf.Clamp(_deathsAtCheckpoint - 1, 0, 4); } }
+    private float EffectiveMaxSpeed { get { return directorMaxSpeed * (1f - 0.07f * AssistLevel); } }
+    private float EffectiveSpawnGap { get { return spawnDistanceBehindPlayer + 8f * AssistLevel; } }
+
     /// <summary>
     /// ★1016 重生的黑幕中、全場景重置完之後：如果追逐已經過了中途存檔點，
     /// 她會在存檔點重生（不會踩到起點的觸發區），由這裡安排「等她動了再從身後出場」。
@@ -1024,6 +1032,16 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (currentState != MonsterState.Dormant) return;
 
         bool fromCheckpoint = useChaseCheckpoints && _chaseCheckpointIndex >= 0;
+
+        // ★1125 連死放水：同一個存檔點（或同一段起點）連續死亡，每多死一次就多一級協助，換到新的存檔點才歸零。
+        //   起因：測試時 #3 存檔點（x=229.5）一路死下去，怪物每次都從 45 公尺外用 8 m/s 衝來，最後一段還有固定撲擊，
+        //   連死三次以上就像「永遠過不了關」。協助內容見 AssistLevel／EffectiveMaxSpeed／EffectiveSpawnGap。
+        if (_chaseEverActivated)
+        {
+            if (_assistCheckpoint == _chaseCheckpointIndex) _deathsAtCheckpoint++;
+            else { _assistCheckpoint = _chaseCheckpointIndex; _deathsAtCheckpoint = 1; }
+            Debug.Log($"【影子怪物】★1125 在存檔點 #{_chaseCheckpointIndex + 1} 已死 {_deathsAtCheckpoint} 次，協助等級 {AssistLevel}（≥1 怪物慢一點、離遠一點；≥2 不撲擊）");
+        }
         // ★1016 追逐開始過之後死掉：不靠觸發區重新開追。
         //   她如果是站在觸發區裡被抓（例如一開追就站著不動），重生點又在觸發區裡，
         //   她從頭到尾都「在觸發區裡面」，不會再有「進入」事件，怪物就永遠不會再出現（1016 實測）。
@@ -1184,12 +1202,12 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _smoothedChaseSpeed = -1f; _paceCap = -1f; _paceBusyPrev = false;   // 每次重新開追都從當下的目標速度起步
         _dirSpeed = -1f; _playerPrevX = float.NaN; _playerFwdSmooth = 0f;   // ★1116
         _lungePhase = 0; _lungeLast = Time.time; _lungeRandomWait = -1f; _approachSpeed = -1f;   // ★1118e 撲擊冷卻從開追起算
-        if (repositionOnActivate && player != null && spawnDistanceBehindPlayer > 0f)
+        if (repositionOnActivate && player != null && EffectiveSpawnGap > 0f)
         {
             Vector3 sp = transform.position;
-            sp.x = player.position.x - spawnDistanceBehindPlayer;   // 主角往 +X 前進，怪物在 -X 那側
+            sp.x = player.position.x - EffectiveSpawnGap;   // 主角往 +X 前進，怪物在 -X 那側（★1125 連死時離遠一點）
             transform.position = sp;
-            Debug.Log($"【影子怪物】開場定位：主角 x={player.position.x:F1}，怪物擺到 x={sp.x:F1}（後方 {spawnDistanceBehindPlayer} 單位）");
+            Debug.Log($"【影子怪物】開場定位：主角 x={player.position.x:F1}，怪物擺到 x={sp.x:F1}（後方 {EffectiveSpawnGap} 單位、協助 {AssistLevel}）");
         }
 
         // ★1016 從中途存檔點重生時，怪物身後（牠再也走不到）的燭火算牠吃過，
@@ -3478,6 +3496,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         {
             if (!useNearMissBeats && !useRandomLunges) return false;
             if (currentState != MonsterState.Chasing || _revealActive || side < 0f) return false;
+            if (AssistLevel >= 2) return false;   // ★1125 在同一個存檔點連死 3 次以上：先不撲擊，讓她有機會過去
 
             // 固定位置：到了就試，條件不合（停、點燭火…）在 12 公尺內每幀再試，過了就放棄這一次
             if (useNearMissBeats && nearMissBeatsX != null && nearMissBeatsX.Length > 0)
@@ -3655,13 +3674,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             }
             desired = _approachSpeed;
         }
-        else desired = Mathf.Clamp(_playerFwdSmooth + directorGain * (lag - target), directorMinSpeed, directorMaxSpeed);
+        else desired = Mathf.Clamp(_playerFwdSmooth + directorGain * (lag - target), directorMinSpeed, EffectiveMaxSpeed);
         // ★1119 她停著：不再照「離目標多遠」比例爬行（越靠近越慢＝像在放水），停越久衝越快，一路衝到抓到為止（最後一刻交給子彈時間）
         if (!busy && stall > 0f && _lungePhase == 0)
             desired = Mathf.Max(desired, Mathf.Min(Mathf.Max(0f, stallChaseMaxSpeed), stall * Mathf.Max(0f, stallChaseAccel)));
         // ★1119 她站著不動（不在喘息、不在點燭火）：怪物不再為了「回到跟隨距離」減速，原本多快就照樣衝過來
         if (!busy && _lungePhase == 0 && Relief01 <= 0f && _playerFwdSmooth < 0.5f && _dirSpeed > 0f)
-            desired = Mathf.Max(desired, Mathf.Min(_dirSpeed, directorMaxSpeed));
+            desired = Mathf.Max(desired, Mathf.Min(_dirSpeed, EffectiveMaxSpeed));
         if (!busy) _approachSpeed = -1f;
         if (_dirSpeed < 0f) _dirSpeed = desired;
         _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, Mathf.Max(0.1f, directorAccel) * dt);

@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: 9004f9319cd339243ab652947b311e3e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7136682883738511945
+    second: stick_down_0
+  - first:
+      213: -5251049106278038174
+    second: stick_down_1
+  - first:
+      213: 4785039087096261783
+    second: stick_down_2
+  - first:
+      213: 2845371735111988494
+    second: stick_down_3
+  - first:
+      213: -8580380830797483040
+    second: stick_down_4
+  - first:
+      213: -4210839956736525217
+    second: stick_down_5
+  - first:
+      213: -7113081828463875523
+    second: stick_down_6
+  - first:
+      213: -4543588808119239951
+    second: stick_down_7
+  - first:
+      213: 5691187325155808820
+    second: stick_down_8
+  - first:
+      213: -246234942893256738
+    second: stick_down_9
+  - first:
+      213: -3987798886518176553
+    second: stick_down_10
+  - first:
+      213: -6539997733051843973
+    second: stick_down_11
+  - first:
+      213: -912927097484963293
+    second: stick_down_12
+  - first:
+      213: -2957153476340580795
+    second: stick_down_13
+  - first:
+      213: 7597296119208363752
+    second: stick_down_14
+  - first:
+      213: -728688435539722369
+    second: stick_down_15
+  - first:
+      213: 412202969864901851
+    second: stick_down_16
+  - first:
+      213: 5749233419073901118
+    second: stick_down_17
+  - first:
+      213: 3202611029278113471
+    second: stick_down_18
+  - first:
+      213: 8549877092113673186
+    second: stick_down_19
+  - first:
+      213: -3786022150052560380
+    second: stick_down_20
+  - first:
+      213: 3822255266005104238
+    second: stick_down_21
+  - first:
+      213: 692461378490852712
+    second: stick_down_22
+  - first:
+      213: 6242998589559151664
+    second: stick_down_23
+  - first:
+      213: 444024814412126054
+    second: stick_down_24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: stick_down_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94a28df55479a0360800000000000000
+      internalID: 7136682883738511945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_1
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2654a2ab8a68027b0800000000000000
+      internalID: -5251049106278038174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_2
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79c6bbe82bfd76240800000000000000
+      internalID: 4785039087096261783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_3
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e057945848acc7720800000000000000
+      internalID: 2845371735111988494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_4
+      rect:
+        serializedVersion: 2
+        x: 807
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e3bebe581d5ce880800000000000000
+      internalID: -8580380830797483040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_5
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 33
+        width: 114
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5cb2bc8e571095c0800000000000000
+      internalID: -4210839956736525217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_6
+      rect:
+        serializedVersion: 2
+        x: 1113
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3aef1483c1494d90800000000000000
+      internalID: -7113081828463875523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_7
+      rect:
+        serializedVersion: 2
+        x: 1191
+        y: 33
+        width: 114
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fabc9e4d0ee1f0c0800000000000000
+      internalID: -4543588808119239951
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_8
+      rect:
+        serializedVersion: 2
+        x: 1305
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4361e1218b82bfe40800000000000000
+      internalID: 5691187325155808820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_9
+      rect:
+        serializedVersion: 2
+        x: 1383
+        y: 33
+        width: 114
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: edf0f81cf92359cf0800000000000000
+      internalID: -246234942893256738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_10
+      rect:
+        serializedVersion: 2
+        x: 1497
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d4c26d7a0e78a8c0800000000000000
+      internalID: -3987798886518176553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_11
+      rect:
+        serializedVersion: 2
+        x: 1575
+        y: 33
+        width: 114
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7ab59156b24d35a0800000000000000
+      internalID: -6539997733051843973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_12
+      rect:
+        serializedVersion: 2
+        x: 1689
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 322949844a1a453f0800000000000000
+      internalID: -912927097484963293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_13
+      rect:
+        serializedVersion: 2
+        x: 1767
+        y: 33
+        width: 114
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54e7868b49416f6d0800000000000000
+      internalID: -2957153476340580795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_14
+      rect:
+        serializedVersion: 2
+        x: 1881
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e64ed671940f6960800000000000000
+      internalID: 7597296119208363752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_15
+      rect:
+        serializedVersion: 2
+        x: 1959
+        y: 33
+        width: 114
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7f38b78abd23e5f0800000000000000
+      internalID: -728688435539722369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_16
+      rect:
+        serializedVersion: 2
+        x: 2073
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd4982aca6078b500800000000000000
+      internalID: 412202969864901851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_17
+      rect:
+        serializedVersion: 2
+        x: 2151
+        y: 33
+        width: 114
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3254ba755169cf40800000000000000
+      internalID: 5749233419073901118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_18
+      rect:
+        serializedVersion: 2
+        x: 2265
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbebed153c5f17c20800000000000000
+      internalID: 3202611029278113471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_19
+      rect:
+        serializedVersion: 2
+        x: 2343
+        y: 33
+        width: 114
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2eb6fa48ae347a670800000000000000
+      internalID: 8549877092113673186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_20
+      rect:
+        serializedVersion: 2
+        x: 2457
+        y: 67
+        width: 26
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4024b5ae9e8557bc0800000000000000
+      internalID: -3786022150052560380
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_21
+      rect:
+        serializedVersion: 2
+        x: 2535
+        y: 33
+        width: 114
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e66b91bc9e06b0530800000000000000
+      internalID: 3822255266005104238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_22
+      rect:
+        serializedVersion: 2
+        x: 2649
+        y: 68
+        width: 26
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 865ef9574fd1c9900800000000000000
+      internalID: 692461378490852712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_23
+      rect:
+        serializedVersion: 2
+        x: 2727
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03c10ffe32693a650800000000000000
+      internalID: 6242998589559151664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stick_down_24
+      rect:
+        serializedVersion: 2
+        x: 2919
+        y: 33
+        width: 114
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6675e76573e792600800000000000000
+      internalID: 444024814412126054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      stick_down_0: 7136682883738511945
+      stick_down_1: -5251049106278038174
+      stick_down_10: -3987798886518176553
+      stick_down_11: -6539997733051843973
+      stick_down_12: -912927097484963293
+      stick_down_13: -2957153476340580795
+      stick_down_14: 7597296119208363752
+      stick_down_15: -728688435539722369
+      stick_down_16: 412202969864901851
+      stick_down_17: 5749233419073901118
+      stick_down_18: 3202611029278113471
+      stick_down_19: 8549877092113673186
+      stick_down_2: 4785039087096261783
+      stick_down_20: -3786022150052560380
+      stick_down_21: 3822255266005104238
+      stick_down_22: 692461378490852712
+      stick_down_23: 6242998589559151664
+      stick_down_24: 444024814412126054
+      stick_down_3: 2845371735111988494
+      stick_down_4: -8580380830797483040
+      stick_down_5: -4210839956736525217
+      stick_down_6: -7113081828463875523
+      stick_down_7: -4543588808119239951
+      stick_down_8: 5691187325155808820
+      stick_down_9: -246234942893256738
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

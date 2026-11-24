@@ -51,6 +51,7 @@ public class StoryCardNoteHook : MonoBehaviour
     public static void ResetCount()
     {
         _picked = 0; _shown = 0; _pending = 0;
+        _pickedKeys.Clear(); _shownIds.Clear();
         _hasLastFirePos = false; _hasLastCard = false; _lastCardTime = -999f;
     }
     private bool _fired;
@@ -59,31 +60,44 @@ public class StoryCardNoteHook : MonoBehaviour
     private static Vector3 _lastFirePos;
     private static bool _hasLastFirePos;
 
-    private void OnTriggerEnter(Collider other)
+    /// <summary>
+    /// ★1125 日誌張數與日誌卡改成「紙真的被撿到」才算：由 CollectibleNote.CollectItem 呼叫（單一入口）。
+    /// 以前這支自己也有一個觸發框，跟紙本身的觸發框各算各的，先碰到的那個就把卡翻開了（水下提早出卡的根因）。
+    /// 每張紙只算一次（用紙的位置記下來），撿過的不會再算；最多 maxDiaries 張，D1/D2/D3 各只翻一次，不會重複。
+    /// </summary>
+    public static void OnNotePicked(CollectibleNote note)
     {
-        if (_fired) return;
-        // ★死亡防護：重生流程中經過不觸發
+        if (note == null) return;
         if (PlayerRespawnSystem.IsAnyRespawning) return;
-        if (!IsPlayer(other)) return;
-
-        _fired = true;
-        if (_hasLastFirePos && (transform.position - _lastFirePos).sqrMagnitude < 2.5f * 2.5f) return;
-        _lastFirePos = transform.position;
+        string key = KeyOf(note.transform.position);
+        if (_pickedKeys.Contains(key)) return;
+        _pickedKeys.Add(key);
+        // 外層容器＋內層紙兩份腳本：離上次算的點 2.5 公尺內視為同一張
+        if (_hasLastFirePos && (note.transform.position - _lastFirePos).sqrMagnitude < 2.5f * 2.5f) return;
+        _lastFirePos = note.transform.position;
         _hasLastFirePos = true;
-        if (_picked >= maxDiaries) return;
+        if (_picked >= 3) return;
 
         _picked++;
-        PlayerMovement pm = other.GetComponentInParent<PlayerMovement>();
-        if (SpacingEnabled && !SpacingOk(transform.position))
+        PlayerMovement pm = Object.FindAnyObjectByType<PlayerMovement>();
+        if (StoryCardPlayer.Instance == null) return;
+        if (SpacingEnabled && !SpacingOk(note.transform.position))
         {
             // ★1024 太近：先欠著，等她游遠一點再出（Pacer 每幀看）
             _pending++;
-            Debug.Log("【日誌卡】★1024 第 " + _picked + " 張紙離上一張卡太近（" + Mathf.RoundToInt((transform.position - _lastCardPos).magnitude) + " 公尺），卡片欠著，游遠一點再出");
+            Debug.Log("【日誌卡】★1024 第 " + _picked + " 張紙離上一張卡太近（" + Mathf.RoundToInt((note.transform.position - _lastCardPos).magnitude) + " 公尺），卡片欠著，游遠一點再出");
             Pacer.Ensure();
             return;
         }
-        ShowNext(pm, transform.position);
+        ShowNext(pm, note.transform.position);
     }
+
+    private static readonly System.Collections.Generic.HashSet<string> _pickedKeys = new System.Collections.Generic.HashSet<string>();
+    private static readonly System.Collections.Generic.HashSet<int> _shownIds = new System.Collections.Generic.HashSet<int>();
+    private static string KeyOf(Vector3 p) { return Mathf.RoundToInt(p.x * 2f) + "," + Mathf.RoundToInt(p.y * 2f); }
+
+    /// <summary>這張紙這一輪已經被撿過了嗎（撿過的紙不會再出現、不會再算）。</summary>
+    public static bool WasPicked(Vector3 pos) { return _pickedKeys.Contains(KeyOf(pos)); }
 
     private static bool SpacingOk(Vector3 at)
     {
@@ -95,7 +109,9 @@ public class StoryCardNoteHook : MonoBehaviour
     private static void ShowNext(PlayerMovement pm, Vector3 at)
     {
         if (_shown >= _picked) return;
+        if (_shownIds.Contains(_shown + 1)) { _shown++; return; }   // ★1125 這張卡已經翻過，絕不重複
         _shown++;
+        _shownIds.Add(_shown);
         _lastCardPos = at; _lastCardTime = Time.time; _hasLastCard = true;
         string cardId = "D" + _shown;
         StoryCardPlayer.Instance.PlayFrozen(cardId, pm);
