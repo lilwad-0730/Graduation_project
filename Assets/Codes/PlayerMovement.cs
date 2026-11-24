@@ -2185,7 +2185,7 @@ public class PlayerMovement : MonoBehaviour
                 + " x=" + transform.position.x.ToString("F1"));
         }
 
-        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked)
+        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked && !IsDraggingNoJump)
         {
             // 陸地標準跳躍
             if (IsHoldingCrate) ReleaseObject();   // ★1116 抓著鏡箱起跳＝放手（不然箱子會跟著她飛起來）
@@ -2497,6 +2497,8 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private bool IsHoldingCrate => pulledObject != null && pulledObject.GetComponent<MirrorCrate>() != null;
+    // 拖拉非鏡箱物件（如方石）時禁止陸地跳躍
+    private bool IsDraggingNoJump => pulledObject != null && !IsHoldingCrate;
 
     private void UpdateCrateGrab()
     {

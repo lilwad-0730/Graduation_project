@@ -71,6 +71,9 @@ public class TeleportTrigger : MonoBehaviour
     [Tooltip("防跳過警戒線【向上延伸高度】(米，預設 30m，可直接在 Inspector 自由增減)")]
     public float checkYUp = 30f;
 
+    [Tooltip("防跳過警戒線會放在此名稱物件（需有 Renderer）的右側；留空或場景中找不到則維持原本的階梯右緣")]
+    public string bypassLineAnchorName = "CloudPlatform_15 (1)";
+
     [Header("✨ 光絮 (GuidanceLight) 聯動設定")]
     [Tooltip("要聯動的光絮 (留空的話，程式會自動在場景中尋找)")]
     public GuidanceLight guidanceLight;
@@ -89,6 +92,8 @@ public class TeleportTrigger : MonoBehaviour
     private bool _teleportTriggered = false;
     private float _retryAfter = 0f;
     private PlayerMovement _cachedPlayer;
+    private Renderer _bypassAnchor;
+    private float _nextAnchorLookupTime = 0f;
 
     private static Canvas _whiteFadeCanvas;
     private static Image _whiteFadeImage;
@@ -189,7 +194,7 @@ public class TeleportTrigger : MonoBehaviour
                 if (playerPos.y >= (stairY - checkYDown) && playerPos.y <= (stairY + checkYUp))
                 {
                     // 計算防跳過警戒線 X
-                    float failSafeLineX = GetRightEdgeX();
+                    float failSafeLineX = GetBypassLineX();
 
                     // 若玩家 X 軸已經徹底越過階梯右側防線，且未踩中階梯
                     if (playerPos.x > failSafeLineX)
@@ -233,6 +238,32 @@ public class TeleportTrigger : MonoBehaviour
         }
 
         return transform.position.x + (transform.lossyScale.x * 0.5f) + bypassOffsetX;
+    }
+
+    /// <summary>
+    /// 防跳過警戒線的 X：優先放在 bypassLineAnchorName 物件右側，找不到則用階梯右緣
+    /// </summary>
+    private float GetBypassLineX()
+    {
+        float stairEdgeX = GetRightEdgeX();
+
+        if (!string.IsNullOrEmpty(bypassLineAnchorName) && _bypassAnchor == null)
+        {
+            // Play Mode 下找不到時每秒最多重試一次，避免每幀 GameObject.Find
+            if (!Application.isPlaying || Time.unscaledTime >= _nextAnchorLookupTime)
+            {
+                if (Application.isPlaying) _nextAnchorLookupTime = Time.unscaledTime + 1f;
+                GameObject anchorGo = GameObject.Find(bypassLineAnchorName);
+                if (anchorGo != null) _bypassAnchor = anchorGo.GetComponent<Renderer>();
+            }
+        }
+
+        if (_bypassAnchor != null)
+        {
+            return Mathf.Max(stairEdgeX, _bypassAnchor.bounds.max.x + bypassOffsetX);
+        }
+
+        return stairEdgeX;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -618,7 +649,7 @@ public class TeleportTrigger : MonoBehaviour
         if (enableBypassDeathCheck)
         {
             Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.85f);
-            float lineX = GetRightEdgeX();
+            float lineX = GetBypassLineX();
             Vector3 top = new Vector3(lineX, transform.position.y + checkYUp, transform.position.z);
             Vector3 bot = new Vector3(lineX, transform.position.y - checkYDown, transform.position.z);
             Gizmos.DrawLine(top, bot);

@@ -63,6 +63,16 @@ public class StoryCardPlayer : MonoBehaviour
     [Tooltip("fontAsset 沒指定時，從 Resources 這個路徑載字型（可留空）")]
     public string fontResourcePath = "";
     public float fontSize = 48f;
+    [Tooltip("置中故事文字是否加上淡淡的柔和陰影（TMP SDF Underlay）")]
+    public bool textShadow = true;
+    [Tooltip("陰影顏色（含透明度）。越透明越淡")]
+    public Color textShadowColor = new Color(0f, 0f, 0f, 0.35f);
+    [Tooltip("陰影偏移（TMP Underlay 單位，範圍 -1..1）。X 正＝向右，Y 負＝向下")]
+    public Vector2 textShadowOffset = new Vector2(0.6f, -0.6f);
+    [Range(0f, 1f), Tooltip("陰影柔化程度。越大越模糊")]
+    public float textShadowSoftness = 0.45f;
+    [Tooltip("陰影膨脹量。越大陰影越粗")]
+    public float textShadowDilate = 0.1f;
     [Tooltip("TMP lineSpacing。65 ＝ 1.65 倍行距")]
     public float lineSpacing = 65f;
     [Tooltip("TMP characterSpacing。2 ＝ +2%")]
@@ -1185,11 +1195,19 @@ public class StoryCardPlayer : MonoBehaviour
         _photoBuilt = true;
     }
 
+    private static StoryCardFontConfig _fontConfig;
+
     private void ApplyTextStyle()
     {
         if (_label == null) return;
 
-        TMP_FontAsset f = fontAsset;
+        // 文字卡專用字型：優先用 Resources/StoryCardFontConfig 指定的字型（不動共用的 fontAsset 欄位）
+        if (_fontConfig == null) _fontConfig = Resources.Load<StoryCardFontConfig>("StoryCardFontConfig");
+        TMP_FontAsset f = _fontConfig != null ? _fontConfig.font : null;
+        if (f == null || f.atlasTextures == null || f.atlasTextures.Length == 0 || f.atlasTextures[0] == null)
+        {
+            f = fontAsset;
+        }
         // 檢查字型是否有效（防範 m_AtlasTextures 未指派拋出例外崩潰）
         bool isFontValid = f != null && f.atlasTextures != null && f.atlasTextures.Length > 0 && f.atlasTextures[0] != null;
 
@@ -1224,6 +1242,30 @@ public class StoryCardPlayer : MonoBehaviour
         _label.enableWordWrapping = false;
         _label.overflowMode = TextOverflowModes.Overflow;
         _label.raycastTarget = false;
+
+        // 陰影只寫在這個 label 自己的材質實例（fontMaterial 會回傳實例）；
+        // 不能動字型資產的共用材質，因為語音字幕也用同一個 LXGW 字型。
+        // 必須在指定字型之後做，因為換字型會重置材質。
+        ShaderUtilities.GetShaderPropertyIDs();
+        Material m = _label.fontMaterial;
+        if (m != null && m.HasProperty(ShaderUtilities.ID_UnderlayColor))
+        {
+            if (textShadow)
+            {
+                m.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+                m.SetColor(ShaderUtilities.ID_UnderlayColor, textShadowColor);
+                m.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, textShadowOffset.x);
+                m.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, textShadowOffset.y);
+                m.SetFloat(ShaderUtilities.ID_UnderlaySoftness, textShadowSoftness);
+                m.SetFloat(ShaderUtilities.ID_UnderlayDilate, textShadowDilate);
+            }
+            else
+            {
+                m.DisableKeyword(ShaderUtilities.Keyword_Underlay);
+            }
+            _label.UpdateMeshPadding(); // Underlay 需要額外的網格邊距
+            _label.SetMaterialDirty();
+        }
     }
 
     // ══════════════════════════════════════════

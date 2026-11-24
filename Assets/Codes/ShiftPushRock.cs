@@ -148,6 +148,9 @@ public class ShiftPushRock : MonoBehaviour
                 if (pc != null && rc != null && !pc.transform.IsChildOf(transform)) Physics.IgnoreCollision(pc, rc, true);
     }
 
+    // 棉花城的台階是單向平台（玩家可從下方穿過），拖石頭時不該被台階的側面擋住
+    private static bool IsOneWay(Collider c) => c != null && c.GetComponentInParent<OneWayPlatform3D>() != null;
+
     private void GuardWhileGrabbed()
     {
         if (_playerRb == null || _rockCols == null || _rockCols.Length == 0) return;
@@ -170,6 +173,7 @@ public class ShiftPushRock : MonoBehaviour
                 if (gh.collider.transform.IsChildOf(transform)) continue;
                 if (gh.collider.GetComponentInParent<PlayerMovement>() != null) continue;
                 if (gh.normal.y < 0.5f) continue;   // 陡壁不算地面（由下面的擋牆處理）
+                if (IsOneWay(gh.collider) && gh.point.y > b.min.y + 0.15f) continue;   // 單向台階：高過石頭底邊就不當地面，石頭不會從下方或側面爬上去
                 if (gh.point.y > groundTop) groundTop = gh.point.y;
             }
         }
@@ -195,6 +199,7 @@ public class ShiftPushRock : MonoBehaviour
             if (o == null || o.isTrigger) continue;
             if (o.transform.IsChildOf(transform)) continue;
             if (o.GetComponentInParent<PlayerMovement>() != null) continue;
+            if (IsOneWay(o)) continue;
             _playerRb.linearVelocity = new Vector3(0f, _playerRb.linearVelocity.y, _playerRb.linearVelocity.z);
             return;
         }
@@ -235,6 +240,7 @@ public class ShiftPushRock : MonoBehaviour
         {
             if (h.collider == null || h.collider.transform.IsChildOf(transform)) continue;
             if (h.collider.GetComponentInParent<PlayerMovement>() != null) continue;
+            if (IsOneWay(h.collider) && h.distance <= 0f) continue;   // 放開時已經重疊的單向台階略過，讓它落到下面真正的地面
             if (h.distance < best) best = h.distance;
         }
         if (best < float.MaxValue)
@@ -253,12 +259,140 @@ public class ShiftPushRock : MonoBehaviour
         return p != null && p.GetComponentInParent<PlayerMovement>() != null;
     }
 
+    // ───────── 斜坡視覺傾斜（只動畫面，不動物理）─────────
+    // 石頭的剛體鎖了旋轉、抓著時又是 kinematic，物理上絕對不能轉（碰撞框一轉，推牆／卡縫的判斷全部會變）。
+    // 所以只轉「貼圖」：把圖搬到子物件（跟 RollingRockVisual 同一套做法），子物件用世界座標轉角度、位置微調，
+    // 根物件的 transform / Collider / Rigidbody 完全不碰。石頭本身世界縮放是等比的，轉世界角度不會歪斜。
+    [Header("斜坡視覺傾斜（只轉貼圖，物理不變）")]
+    [Tooltip("勾選＝石頭被拖到斜坡上時，貼圖跟著坡面傾斜（只對名稱開頭是 square_rock 的石頭有效）")]
+    public bool tiltVisualOnSlope = true;
+    [Tooltip("貼圖最大傾斜角度（度）")]
+    public float maxVisualTilt = 50f;
+    [Tooltip("貼圖傾斜跟上坡面的速度（越大越快）")]
+    public float visualTiltSpeed = 12f;
+
+    private static readonly RaycastHit[] _slopeHits = new RaycastHit[16];
+    private SpriteRenderer _rootSr, _visualSr;
+    private Transform _visual;
+    private Collider _slopeCol;
+    private bool _hasSample;
+    private Vector3 _lastSamplePos;
+    private float _tgtAngle, _angle;
+    private Vector3 _tgtOffset, _offset;
+
+    private void LateUpdate()
+    {
+        if (!tiltVisualOnSlope || !gameObject.name.StartsWith("square_rock", System.StringComparison.Ordinal))
+        {
+            if (_visual != null && _visual.gameObject.activeSelf) SetVisualActive(false);
+            return;
+        }
+        if (_rootSr == null) _rootSr = GetComponent<SpriteRenderer>();
+        if (_rootSr == null) return;
+        if (_visual == null) CreateVisual();
+        if (_visual == null) return;
+        if (!_visual.gameObject.activeSelf) { _visual.gameObject.SetActive(true); _hasSample = false; }
+        _rootSr.enabled = false;
+        _visualSr.sprite = _rootSr.sprite;
+        _visualSr.color = _rootSr.color;
+        _visualSr.sortingOrder = _rootSr.sortingOrder;
+
+        if (_slopeCol == null) _slopeCol = GetComponent<Collider>() != null ? GetComponent<Collider>() : GetComponentInChildren<Collider>();
+        if (_slopeCol == null) return;
+
+        bool first = !_hasSample;
+        if (first || (transform.position - _lastSamplePos).sqrMagnitude >= 0.001f * 0.001f)
+        {
+            SampleSlope(_slopeCol.bounds);
+            _lastSamplePos = transform.position;
+            _hasSample = true;
+        }
+        float k = first ? 1f : 1f - Mathf.Exp(-visualTiltSpeed * Time.deltaTime);
+        _angle = Mathf.Lerp(_angle, _tgtAngle, k);
+        _offset = Vector3.Lerp(_offset, _tgtOffset, k);
+        _visual.position = transform.position + _offset;
+        _visual.rotation = Quaternion.Euler(0f, 0f, _angle);
+    }
+
+    private void CreateVisual()
+    {
+        GameObject go = new GameObject(name + "_SlopeVisual");
+        go.layer = gameObject.layer;
+        _visual = go.transform;
+        _visual.SetParent(transform, false);
+        _visual.localPosition = Vector3.zero;
+        _visual.localRotation = Quaternion.identity;
+        _visual.localScale = Vector3.one;
+        _visualSr = go.AddComponent<SpriteRenderer>();
+        _visualSr.sprite = _rootSr.sprite;
+        _visualSr.color = _rootSr.color;
+        _visualSr.sharedMaterial = _rootSr.sharedMaterial;
+        _visualSr.sortingLayerID = _rootSr.sortingLayerID;
+        _visualSr.sortingOrder = _rootSr.sortingOrder;
+        _visualSr.flipX = _rootSr.flipX;
+        _visualSr.flipY = _rootSr.flipY;
+        _visualSr.drawMode = _rootSr.drawMode;
+        _visualSr.size = _rootSr.size;
+        _visualSr.maskInteraction = _rootSr.maskInteraction;
+        _hasSample = false;
+    }
+
+    private void SetVisualActive(bool on)
+    {
+        if (_visual != null) _visual.gameObject.SetActive(on);
+        if (_rootSr != null) _rootSr.enabled = !on;
+    }
+
+    // 往下各射兩條線（石頭左右兩側），取各自最高的有效地面；兩條都打到才更新角度與位置偏移
+    private void SampleSlope(Bounds b)
+    {
+        float yL, yR, xL = b.center.x - b.extents.x * 0.9f, xR = b.center.x + b.extents.x * 0.9f;
+        bool hitL = SlopeRay(xL, b, out yL), hitR = SlopeRay(xR, b, out yR);
+        if (hitL && hitR)
+        {
+            float a = Mathf.Clamp(Mathf.Atan2(yR - yL, xR - xL) * Mathf.Rad2Deg, -maxVisualTilt, maxVisualTilt);
+            if (Mathf.Abs(a) < 1f) a = 0f;
+            float r = a * Mathf.Deg2Rad;
+            Vector2 m = new Vector2((xL + xR) * 0.5f, (yL + yR) * 0.5f);
+            Vector2 want = m + new Vector2(-Mathf.Sin(r), Mathf.Cos(r)) * b.extents.y;
+            Vector3 off = new Vector3(want.x - b.center.x, want.y - b.center.y, 0f) * Mathf.Clamp01(Mathf.Abs(a) / 3f);
+            _tgtAngle = a;
+            _tgtOffset = Vector3.ClampMagnitude(off, b.size.y);
+        }
+        else if (!hitL && !hitR)
+        {
+            _tgtAngle = 0f;
+            _tgtOffset = Vector3.zero;
+        }
+        // 只打到一條（走到邊緣）：維持目前目標，不要突然跳
+    }
+
+    private bool SlopeRay(float x, Bounds b, out float groundY)
+    {
+        groundY = float.MinValue;
+        float len = b.extents.y + b.size.x * 1.3f + 0.5f;
+        int n = Physics.RaycastNonAlloc(new Vector3(x, b.center.y, b.center.z), Vector3.down, _slopeHits, len, ~0, QueryTriggerInteraction.Ignore);
+        bool any = false;
+        for (int i = 0; i < n; i++)
+        {
+            RaycastHit h = _slopeHits[i];
+            if (h.collider == null || h.collider.isTrigger) continue;
+            if (h.collider.transform.IsChildOf(transform)) continue;
+            if (h.collider.GetComponentInParent<PlayerMovement>() != null) continue;
+            if (h.distance <= 0f || h.normal.y < 0.5f) continue;   // 射線起點在碰撞框裡面會回報 0
+            if (h.point.y > groundY) { groundY = h.point.y; any = true; }
+        }
+        return any;
+    }
+
     private void OnDisable()
     {
         // 這個規則被關掉（或物件被移除）：把我固定住的石頭放回去，變回可以直接推
         SetIgnorePlayer(false);
         if (_rb != null && _weFroze && !IsGrabbed()) _rb.isKinematic = false;
         _weFroze = false;
+        // 視覺子物件收起來、還原根物件的貼圖（重新啟用時 LateUpdate 會再切過去）
+        if (_visual != null) SetVisualActive(false);
     }
 
     // 玩家頂著石頭、又沒按 Shift：一段時間後提示一次
