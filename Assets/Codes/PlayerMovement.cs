@@ -2185,8 +2185,10 @@ public class PlayerMovement : MonoBehaviour
                 + " x=" + transform.position.x.ToString("F1"));
         }
 
-        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked && !IsDraggingNoJump)
+        if (!IsControlLocked && !isUnderwater && _jumpPressed && isGrounded && !IsJumpBlocked && !IsDraggingNoJump
+            && Time.fixedTime != _lastJumpFixedTime)   // ★1126 同一個物理步只准起跳一次（手把新舊輸入各觸發一次會疊成兩倍跳躍力）
         {
+            _lastJumpFixedTime = Time.fixedTime;
             // 陸地標準跳躍
             if (IsHoldingCrate) ReleaseObject();   // ★1116 抓著鏡箱起跳＝放手（不然箱子會跟著她飛起來）
             isJumping = true;
@@ -2593,10 +2595,64 @@ public class PlayerMovement : MonoBehaviour
             if (crate)
             {
                 pulledObject.GetComponent<MirrorCrate>().EndHold();
-                SetCrateIgnorePlayer(pulledObject, false);   // ★1116 放手：恢復碰撞（可以站上去、沒按 Shift 會被擋住）
+                // ★1126 放手時箱子如果還跟她的身體疊在一起（玻璃地板碎掉、她往下掉被迫放手），立刻恢復碰撞
+                //   會讓物理引擎把她「彈出去」，LOG 看到上升速度 16.6（正常跳 8）→ 玻璃館怪物逼近時突然飛很高。
+                //   改成：疊著就先繼續忽略，等兩個分開再恢復；放手後 0.6 秒內上升速度不准超過正常跳躍。
+                if (CrateOverlapsMe(pulledObject)) StartCoroutine(RestoreCrateCollisionWhenSeparated(pulledObject));
+                else SetCrateIgnorePlayer(pulledObject, false);   // ★1116 放手：恢復碰撞（可以站上去、沒按 Shift 會被擋住）
+                _crateReleaseGuardUntil = Time.time + 0.6f;
                 if (Application.isEditor || TesterMode.Enabled) Debug.Log($"【鏡箱】放手 {pulledObject.name}（x={pulledObject.transform.position.x:F1}）");
             }
             pulledObject = null;
+        }
+    }
+
+    private float _crateReleaseGuardUntil = -1f;
+    private float _lastJumpFixedTime = -1f;
+
+    /// <summary>★1126 箱子任何一個實體碰撞框跟她的碰撞框有沒有疊在一起（有就不能馬上恢復碰撞）。</summary>
+    private bool CrateOverlapsMe(GameObject crateObj)
+    {
+        if (crateObj == null) return false;
+        Collider[] mine = GetComponents<Collider>();
+        foreach (Collider cc in crateObj.GetComponentsInChildren<Collider>(true))
+        {
+            if (cc == null || cc.isTrigger || !cc.enabled) continue;
+            foreach (Collider pc in mine)
+            {
+                if (pc == null || pc.isTrigger || !pc.enabled) continue;
+                Vector3 dir; float dist;
+                if (Physics.ComputePenetration(pc, pc.transform.position, pc.transform.rotation,
+                                               cc, cc.transform.position, cc.transform.rotation, out dir, out dist) && dist > 0.01f)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>★1126 等箱子跟她分開才恢復碰撞（最多等 5 秒；5 秒後還疊著就繼續等，絕不在疊著時硬恢復）。</summary>
+    private System.Collections.IEnumerator RestoreCrateCollisionWhenSeparated(GameObject crateObj)
+    {
+        float t = 0f;
+        while (crateObj != null && pulledObject != crateObj && CrateOverlapsMe(crateObj))
+        {
+            t += Time.deltaTime;
+            if (t > 5f && Mathf.Repeat(t, 5f) < Time.deltaTime)
+                Debug.LogWarning("【鏡箱】★1126 放手後箱子還疊在她身上，先不恢復碰撞（避免把她彈飛）");
+            yield return new WaitForFixedUpdate();
+        }
+        if (crateObj != null && pulledObject != crateObj) SetCrateIgnorePlayer(crateObj, false);
+    }
+
+    /// <summary>★1126 放手鏡箱後短時間內，不是自己跳的上升速度最多到正常跳躍力（擋住任何物理彈飛）。</summary>
+    private void GuardCrateReleaseLaunch()
+    {
+        if (rb == null || rb.isKinematic || Time.time > _crateReleaseGuardUntil) return;
+        float cap = isJumping ? jumpForce * 1.05f : 3f;   // 3＝走斜坡的正常上升速度也不會被壓到
+        if (rb.linearVelocity.y > cap)
+        {
+            Debug.LogWarning($"【鏡箱】★1126 放手後被彈起 vy={rb.linearVelocity.y:F1} → 壓回 {cap:F1}");
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, cap, rb.linearVelocity.z);
         }
     }
 
@@ -3061,6 +3117,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         if (_controlledFall) { ControlledFallStep(); return; }   // ★1012 墜落期間速度由固定曲線決定
+        GuardCrateReleaseLaunch();   // ★1126 放手鏡箱被物理彈飛的保險
 
         if (isUnderwater && rb != null && !rb.isKinematic)
         {
