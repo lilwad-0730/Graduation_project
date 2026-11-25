@@ -23,7 +23,8 @@ using TMPro;
 ///
 /// 【日誌照片頁】
 ///   水下 D1–D3 撿日誌時，會先出一頁「夾在日誌裡的舊照片」
-///   （照片＋日期＋筆刷符號），再出原句文字頁。
+///   （照片＋日期，照片在畫面正中），再出原句文字頁。
+///   ★11/25 拿掉頁面下方的筆刷符號（玩家看起來像「1」）：三頁的 glyphResource 都留空。
 ///   素材放 Assets/Resources/Diary/（diary_photo_1..3、diary_glyph_1..3、
 ///   diary_paper）。缺哪個檔就自動略過哪個，永遠不會卡住流程。
 ///   要換成 AI 生成的正式照片：同檔名覆蓋 PNG 即可，程式不用動。
@@ -203,6 +204,10 @@ public class StoryCardPlayer : MonoBehaviour
     private DiaryPhotoPage _pendingPhoto;   // 這一次播放要先出的照片頁（沒有＝null）
     private CanvasGroup _photoGroup;
     private Image _photoImg;
+    // 相片停的位置（1920×1080 參考解析度）。★11/25 拿掉筆刷符號後，相片從 (0,150) 移到畫面正中。
+    // 不是 (0,0)：相片圖切出來的範圍連陰影一起算（陰影偏右下），
+    // 往右 7、往下 10，相紙本身才會剛好在正中間（三張圖一樣）。
+    private static readonly Vector2 PhotoRestPos = new Vector2(7f, -10f);
     private Image _glyphImg;
     private TextMeshProUGUI _dateLabel;
     private bool _photoBuilt;
@@ -972,7 +977,7 @@ public class StoryCardPlayer : MonoBehaviour
             if (_photoGroup != null) _photoGroup.alpha = k;
             if (pr != null && drop > 0.01f)
             {
-                pr.anchoredPosition = new Vector2(0f, 150f - drop * (1f - e));
+                pr.anchoredPosition = new Vector2(PhotoRestPos.x, PhotoRestPos.y - drop * (1f - e));
                 pr.localRotation = Quaternion.Euler(0f, 0f, tiltDeg * (1f + 0.7f * (1f - e)));
             }
             yield return null;
@@ -980,7 +985,7 @@ public class StoryCardPlayer : MonoBehaviour
         if (_photoGroup != null) _photoGroup.alpha = 1f;
         if (pr != null)
         {
-            pr.anchoredPosition = new Vector2(0f, 150f);
+            pr.anchoredPosition = PhotoRestPos;
             pr.localRotation = Quaternion.Euler(0f, 0f, tiltDeg);
         }
     }
@@ -1120,6 +1125,7 @@ public class StoryCardPlayer : MonoBehaviour
 
     /// <summary>
     /// 照片頁的三件東西：相片（含烙好的白邊）、白邊上的日期、頁面下方的筆刷符號。
+    /// （★11/25 起三頁都不放筆刷符號，相片在畫面正中；符號的物件還在，glyphResource 有填才會顯示）
     /// 位置全部照 1920×1080 參考解析度排，CanvasScaler 會自己縮。
     /// </summary>
     private void EnsurePhotoBuilt()
@@ -1154,7 +1160,7 @@ public class StoryCardPlayer : MonoBehaviour
             pr.anchorMax = new Vector2(0.5f, 0.5f);
             pr.pivot = new Vector2(0.5f, 0.5f);
             pr.sizeDelta = new Vector2(720f, 720f);
-            pr.anchoredPosition = new Vector2(0f, 150f);
+            pr.anchoredPosition = PhotoRestPos;
         }
 
         // 日期：寫在相紙下緣白邊上，跟著相片一起微傾
@@ -1378,7 +1384,7 @@ public class StoryCardPlayer : MonoBehaviour
         DiaryPhotoPage d1 = new DiaryPhotoPage();
         d1.cardId = "D1";
         d1.photoResource = "Diary/diary_photo_1";   // 夕陽草原，兩個人在跳舞
-        d1.glyphResource = "Diary/diary_glyph_1";   // 兩形依偎
+        d1.glyphResource = "";   // ★11/25 拿掉（原本 Diary/diary_glyph_1，兩形依偎；遊戲裡看起來像「1」）
         d1.dateText = "1998.6.21";
         d1.tiltDegrees = -2.4f;
         d1.paperResource = "Diary/diary_paper_1";   // 平整微黃，一道攤平的摺痕
@@ -1387,7 +1393,7 @@ public class StoryCardPlayer : MonoBehaviour
         DiaryPhotoPage d2 = new DiaryPhotoPage();
         d2.cardId = "D2";
         d2.photoResource = "Diary/diary_photo_3";   // 全家福，光帶橫過整排臉
-        d2.glyphResource = "Diary/diary_glyph_3";   // 一排形，唯獨她那形有鬆脫的線頭
+        d2.glyphResource = "";   // ★11/25 拿掉（原本 Diary/diary_glyph_3，一排形，唯獨她那形有鬆脫的線頭）
         d2.dateText = "2004.1.22";
         d2.tiltDegrees = 1.8f;
         d2.paperResource = "Diary/diary_paper_2";   // 十字摺痕、狐斑增生
@@ -1396,7 +1402,7 @@ public class StoryCardPlayer : MonoBehaviour
         DiaryPhotoPage d3 = new DiaryPhotoPage();
         d3.cardId = "D3";
         d3.photoResource = "Diary/diary_photo_2";   // 窗光裡的三個人（她抱著孩子）
-        d3.glyphResource = "Diary/diary_glyph_2";   // 三形，小的被抱著
+        d3.glyphResource = "";   // ★11/25 拿掉（原本 Diary/diary_glyph_2，三形，小的被抱著）
         d3.dateText = "2003.11.3";
         d3.tiltDegrees = -1.2f;
         d3.paperResource = "Diary/diary_paper_3";   // 乾水漬、邊角最深、右緣裂縫透光
