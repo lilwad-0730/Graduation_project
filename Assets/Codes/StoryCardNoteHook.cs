@@ -16,6 +16,8 @@ using UnityEngine;
 ///   而且上一張卡出現還不到 maxWaitSeconds（40 秒），這張卡先「欠著」：紙照常算一張（通關巨石的張數不變），
 ///   等她再游遠一點（離上一張卡 20 公尺）或時間到了，卡片才在她身邊翻開（世界暫停、氣不會減）。
 ///   這樣三張卡一定都會看到，只是不會連著出。
+///   ★1126 改：欠著的卡不再於半路自己翻開（玩家會以為沒碰到日誌就出卡），改成下一張碰到的紙才出；
+///   三張撿完還欠著的，巨石消散演出前補出。
 ///   關掉：StoryCardNoteHook.SpacingEnabled = false（回到撿到就出）。
 ///
 /// 【為什麼不用 StoryCardTrigger】紙被撿到 0.35 秒後會被 Destroy，
@@ -45,7 +47,7 @@ public class StoryCardNoteHook : MonoBehaviour
     /// <summary>目前已撿到幾張日誌（給通關巨石等系統判斷；跟有沒有翻開卡片無關）。</summary>
     public static int PickedCount => _picked;
     /// <summary>★1024 欠著還沒出的卡。</summary>
-    public static int PendingCount => _pending;
+    public static int PendingCount => Mathf.Max(0, _picked - _shown);
 
     /// <summary>進入有日誌的關卡時歸零（同一輪重生不會歸零）。</summary>
     public static void ResetCount()
@@ -76,20 +78,36 @@ public class StoryCardNoteHook : MonoBehaviour
         if (_hasLastFirePos && (note.transform.position - _lastFirePos).sqrMagnitude < 2.5f * 2.5f) return;
         _lastFirePos = note.transform.position;
         _hasLastFirePos = true;
-        if (_picked >= 3) return;
 
-        _picked++;
-        PlayerMovement pm = Object.FindAnyObjectByType<PlayerMovement>();
+        // ★1126 卡片只在「碰到紙的那一刻」出現，絕不在空曠水裡自己跳出來。
+        //   以前太近的卡會「欠著」，等她游遠就在半路翻開 → 玩家看起來就是「沒碰到日誌卡就出來了」（提早觸發）。
+        //   現在：太近的卡留到「下一張碰到的紙」才出；欠兩張以上一定當場出一張；
+        //   三張都撿完還欠著的，巨石消散演出前補出（FlushPending）。
+        bool counts = _picked < 3;
+        if (counts) _picked++;
+        int owed = _picked - _shown;
+        if (owed <= 0) return;
         if (StoryCardPlayer.Instance == null) return;
-        if (SpacingEnabled && !SpacingOk(note.transform.position))
+        PlayerMovement pm = Object.FindAnyObjectByType<PlayerMovement>();
+        if (SpacingEnabled && counts && owed < 2 && !SpacingOk(note.transform.position))
         {
-            // ★1024 太近：先欠著，等她游遠一點再出（Pacer 每幀看）
-            _pending++;
-            Debug.Log("【日誌卡】★1024 第 " + _picked + " 張紙離上一張卡太近（" + Mathf.RoundToInt((note.transform.position - _lastCardPos).magnitude) + " 公尺），卡片欠著，游遠一點再出");
-            Pacer.Ensure();
+            Debug.Log("【日誌卡】★1126 第 " + _picked + " 張紙離上一張卡太近（" + Mathf.RoundToInt((note.transform.position - _lastCardPos).magnitude) + " 公尺），這張卡留到下一張碰到的紙再出");
             return;
         }
+        Debug.Log("【日誌卡】★1126 碰到紙 " + note.name + " → 翻開 D" + (_shown + 1) + "（已撿 " + _picked + " 張）");
         ShowNext(pm, note.transform.position);
+    }
+
+    /// <summary>★1126 三張都撿完、還有卡沒翻（最後兩張太近）→ 巨石消散演出前在這裡補出，保證三張都看得到。</summary>
+    public static bool FlushPending()
+    {
+        if (_picked - _shown <= 0) return false;
+        StoryCardPlayer sp = StoryCardPlayer.Instance;
+        if (sp == null || sp.IsPlaying) return false;
+        PlayerMovement pm = Object.FindAnyObjectByType<PlayerMovement>();
+        Debug.Log("【日誌卡】★1126 巨石演出前補出還沒翻的卡 D" + (_shown + 1));
+        ShowNext(pm, pm != null ? pm.transform.position : Vector3.zero);
+        return true;
     }
 
     private static readonly System.Collections.Generic.HashSet<string> _pickedKeys = new System.Collections.Generic.HashSet<string>();
@@ -125,32 +143,4 @@ public class StoryCardNoteHook : MonoBehaviour
         return other.GetComponentInParent<PlayerMovement>() != null;
     }
 
-    /// <summary>★1024 欠著的卡：每幀看她離上一張卡多遠，夠遠（或等夠久）就在她身邊翻開。場景物件，換場景自己消失。</summary>
-    private sealed class Pacer : MonoBehaviour
-    {
-        private static Pacer _one;
-        public static void Ensure()
-        {
-            if (_one != null) return;
-            GameObject go = new GameObject("[日誌卡間隔]");
-            go.hideFlags = HideFlags.HideInHierarchy;
-            _one = go.AddComponent<Pacer>();
-        }
-        private PlayerMovement _pm;
-        private void Update()
-        {
-            if (_pending <= 0) { Destroy(gameObject); _one = null; return; }
-            if (Time.timeScale <= 0f) return;                                // 世界暫停中（別的卡片、設定選單）
-            if (PlayerRespawnSystem.IsAnyRespawning) return;
-            StoryCardPlayer sp = StoryCardPlayer.Instance;
-            if (sp == null || sp.IsPlaying) return;
-            if (_pm == null) _pm = FindAnyObjectByType<PlayerMovement>();
-            if (_pm == null) return;
-            if (_pm.isCutsceneFrozen) return;                                // 別的演出中
-            if (!SpacingOk(_pm.transform.position)) return;
-            _pending--;
-            Debug.Log("【日誌卡】★1024 游夠遠了，補出欠著的卡 D" + (_shown + 1));
-            ShowNext(_pm, _pm.transform.position);
-        }
-    }
 }

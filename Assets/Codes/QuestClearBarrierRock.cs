@@ -251,6 +251,9 @@ public class QuestClearBarrierRock : MonoBehaviour
         //   看起來就像「這顆巨石根本沒有機制」。改成等卡片播完再開始，兩段演出依序播放。
         if (StoryCardPlayer.Instance != null)
         {
+            // ★1126 最後兩張日誌靠太近、還有一張卡沒翻 → 先在這裡補出，三張一定都看得到
+            while (StoryCardPlayer.Instance.IsPlaying) yield return null;
+            if (StoryCardNoteHook.FlushPending()) yield return null;
             while (StoryCardPlayer.Instance.IsPlaying)
             {
                 yield return null;
