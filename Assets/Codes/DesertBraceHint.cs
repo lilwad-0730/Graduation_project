@@ -103,7 +103,9 @@ public class DesertBraceHint : MonoBehaviour
         }
 
         // 「按住 S」：還沒學會，風要來或正在吹
-        if (!_learned && windComing && !bracing) InputHint.Show(KeyBrace, braceText);
+        //   ★1125 硬撐冷卻中（頭上圖示灰色）按 S 沒有作用：不能這時候還叫她「按住 S 硬撐」
+        bool braceReady = _pet == null || _pet.BraceReady;
+        if (!_learned && windComing && !bracing && braceReady) InputHint.Show(KeyBrace, braceText);
         else InputHint.Hide(KeyBrace);
 
         // 「放開 S」：風停了還撐著

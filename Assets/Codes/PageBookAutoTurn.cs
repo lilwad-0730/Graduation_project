@@ -178,7 +178,7 @@ public class PageBookAutoTurn : MonoBehaviour
         {
             _shownFor = 0f;
             // ★1021 往後翻到一定程度，就先把「下一頁」的倒數圈亮出來（滿的、還沒開始倒）：翻完立刻接著倒數，不用等翻完才冒出來
-            bool nextIsLast = IsLastIndex(_book.Index + 1, chapter);
+            bool nextIsLast = IsLastIndex(_book.NextShownIndex(), chapter);   // ★1125 略過跳過的頁
             bool showEarly = _turnDir > 0 && _turnStart >= 0f
                              && Time.unscaledTime - _turnStart >= _book.turnSeconds * showRingAtTurnProgress
                              && !(ending && nextIsLast);

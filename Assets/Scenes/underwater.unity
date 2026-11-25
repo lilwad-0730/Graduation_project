@@ -2561,6 +2561,7 @@ MonoBehaviour:
   levelMusic: {fileID: 8300000, guid: 754d27807c1f00440ab1dc92657fa79b, type: 3}
   playOnStart: 1
   stopOnExit: 0
+  waitUntilLanded: 0
 --- !u!65 &133857320
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5395,6 +5396,8 @@ MonoBehaviour:
   maxSlopeVisualAngle: 30
   slopeVisualTiltSpeed: 10
   pushingSlopeTiltKeep: 0.2
+  pushAlignToSlope: 1
+  pushingSlopeMaxAngle: 40
   slopeVisualGapFactor: 1
   isGrounded: 0
   isStrictLockingX: 0
@@ -5418,6 +5421,9 @@ MonoBehaviour:
   pushDetectionDistance: 0.35
   logWindBlockDebug: 0
   isPushing: 0
+  requireShiftToPushBoulder: 1
+  lockTurnWhilePushingBoulder: 1
+  boulderTurnLockReleaseGap: 1
   lightCandleAnimState: LightCandle
   lightAnimPlaySeconds: 1.5
   lightAnimYawOffset: 15
@@ -5458,8 +5464,29 @@ MonoBehaviour:
   ruinsFallAcceleration: 12
   ruinsFallBrakeDistance: 9
   ruinsFallLandingSpeed: 6
+  ruinsFallDurationScale: 1.5
   ruinsFallBrakeGraceSeconds: 0.6
   controlledFallAnimDelay: 0.3
+  ruinsFallAccelerating: 1
+  ruinsFallRampStartMult: 0.53
+  ruinsFallRampEndMult: 1.25
+  ruinsFallRampSecondsPerScale: 9.6
+  ruinsDropFastAfterRelay: 1
+  ruinsDropSpeed: 14
+  ruinsDropAcceleration: 45
+  fallAnimFollowsFallSpeed: 1
+  playStandUpOnRuinsLanding: 1
+  standUpAnimState: StandUp
+  standUpBlendInSeconds: 0.2
+  standUpBlendOutSeconds: 0.3
+  standUpHeadClearance: 0.25
+  standUpMaxChestLift: 35
+  standUpMaxNeckLift: 60
+  playLookAroundAfterStandUp: 1
+  lookAroundAnimState: LookAround
+  lookAroundSeconds: 5.75
+  lookAroundBlendInSeconds: 0.8
+  lookAroundBlendOutSeconds: 0.8
   ruinsIntroHandBackSeconds: 1
   ruinsIntroCloseupBlendSeconds: 1
   waterDetectionMode: 0
@@ -5500,6 +5527,8 @@ MonoBehaviour:
   currentSwimStamina: 0
   isSwimExhausted: 0
   isSwimming: 0
+  ruinsStartFallImmediately: 1
+  crateGrabDistance: 0.6
 --- !u!65 &381597747
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12774,6 +12803,11 @@ MonoBehaviour:
   fontAsset: {fileID: 11400000, guid: 8427bab51d56e584abc8c18d812578c4, type: 2}
   fontResourcePath: 
   fontSize: 48
+  textShadow: 1
+  textShadowColor: {r: 0, g: 0, b: 0, a: 0.35}
+  textShadowOffset: {x: 0.6, y: -0.6}
+  textShadowSoftness: 0.45
+  textShadowDilate: 0.1
   lineSpacing: 65
   characterSpacing: 2
   blockWidth: 1200
@@ -17308,7 +17342,7 @@ Transform:
   m_GameObject: {fileID: 1116007483}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.34, y: -4.49, z: -11.06}
+  m_LocalPosition: {x: 12.34, y: -4.49, z: -11.059999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -24613,7 +24647,7 @@ Transform:
   m_GameObject: {fileID: 1228229073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.34, y: -4.49, z: -11.06}
+  m_LocalPosition: {x: 12.34, y: -4.49, z: -11.059999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

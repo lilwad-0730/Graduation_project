@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// 可以先找掩體、或先按住 ⬇/S 硬撐——被動石化才不會變成「不知道為什麼突然不能動」。
 ///
 /// ★ 不影響推力時序：推力仍然與風痕同時到（WindGustSystem.windupSeconds 預設 0）。
-///   這支只在「風平的最後一秒」畫東西，起風後就自己隱藏。
+///   這支只在「風平的最後 telegraphSeconds 秒（★1125 起預設 2 秒）」畫東西，起風後就自己隱藏。
 ///
 /// ★ 不動場景檔：進 desert（有 WindGustSystem 的場景）時自動生成，離開就消失，
 ///   所以不會跟任何人的場景存檔衝突。要整包關掉：WindTelegraphFX.Enabled = false，

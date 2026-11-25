@@ -78,6 +78,29 @@ public class PlayerPetrification : MonoBehaviour, IResettable
     [Tooltip("主動石化的按鍵（↓ 方向鍵恆定支援，這裡設第二顆鍵）")]
     public KeyCode braceKey = KeyCode.S;
 
+    [Header("⏳ ★1125 硬撐冷卻（只管主動硬撐，風暴被動石化不受影響）")]
+    [Tooltip("打勾＝主動硬撐用完要冷卻：放開 S（硬撐結束）後能量歸零，靠「實際走路」把能量走滿才能再硬撐。取消＝回到原本（隨時可以硬撐）")]
+    public bool braceCooldownEnabled = true;
+    [Tooltip("★1125 冷卻 CD：要「走路」走滿幾秒才充滿。只算落地、沒石化、沒被演出鎖住、而且有按左右鍵時『往按的方向』真的有走出去的時間，被風吹退、原地踏步不算")]
+    [Min(0.1f)]
+    public float braceRechargeWalkSeconds = 7f;
+
+    private float _braceCharge = 1f;          // 0～1，1＝可以硬撐
+    private bool _braceDeniedHold = false;    // 這一次按住 S 已經被拒絕過（放開前就算冷卻好了也不會自己石化，要重新按）
+    private float _rechargeLastX = float.NaN; // 上一幀的 x（算實際走的距離）
+    private float _lastGroundedTime = -99f;   // 地面偵測走路時偶爾會閃一下，給 0.12 秒寬限
+
+    /// <summary>硬撐能量 0～1（1＝就緒）。冷卻沒開時永遠 1。</summary>
+    public float BraceCharge01 => braceCooldownEnabled ? _braceCharge : 1f;
+    /// <summary>現在能不能開始硬撐（冷卻好了）。</summary>
+    public bool BraceReady => !braceCooldownEnabled || _braceCharge >= 1f;
+    /// <summary>給頭上圖示（PetrifyCooldownIcon）讀的靜態入口；場景裡沒有玩家時就當就緒。</summary>
+    public static float CurrentBraceCharge01 => _instance != null ? _instance.BraceCharge01 : 1f;
+    public static bool CurrentBraceReady => _instance == null || _instance.BraceReady;
+    public static bool CurrentIsBracing => _instance != null && _instance._bracing;
+    /// <summary>冷卻機制是否生效（硬撐功能開著、冷卻也開著）；關掉＝頭上圖示不顯示。</summary>
+    public static bool CurrentCooldownActive => _instance != null && _instance.holdToPetrify && _instance.braceCooldownEnabled;
+
     [Header("🎵 石化與解石音效 (Petrification SFX)")]
     [Tooltip("主角被石化時播放的音效 (例如 石化.mp3)")]
     public AudioClip petrifySFX;
@@ -255,6 +278,7 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         if (holdToPetrify && IsPetrifyAllowedInCurrentScene() && DesertOrbDirector.BraceAllowed)
         {
             bool holding = Input.GetKey(braceKey) || Input.GetKey(KeyCode.DownArrow) || PadInput.DownHeld;   // ★1115 手把搖桿下
+            if (!holding) _braceDeniedHold = false;
             if (holding && !isPetrified)
             {
                 EnsureComponents();
@@ -265,7 +289,16 @@ public class PlayerPetrification : MonoBehaviour, IResettable
                     && !playerMovement.isCutsceneFrozen
                     && !PlayerMovement.IsHardCutsceneLocked
                     && !PlayerRespawnSystem.IsAnyRespawning;
-                if (canBrace) BeginBrace();
+                if (canBrace && BraceReady && !_braceDeniedHold) BeginBrace();
+                else if (!BraceReady && !_braceDeniedHold && playerMovement != null
+                         && !playerMovement.isUnderwater && !playerMovement.isCutsceneFrozen
+                         && !PlayerMovement.IsHardCutsceneLocked)
+                {
+                    // ★1125 冷卻中按 S：不石化，圖示抖一下＋輕輕悶響，每次按下只提示一次（按著不放不會一直吵）
+                    _braceDeniedHold = true;
+                    Debug.Log($"⏳【石化系統】硬撐冷卻中（能量 {_braceCharge * 100f:F0}%）：按 S 沒有作用，要繼續走路把能量走滿。");
+                    PetrifyCooldownIcon.NotifyDenied();
+                }
             }
             else if (!holding && isPetrified && _bracing)
             {
@@ -278,6 +311,40 @@ public class PlayerPetrification : MonoBehaviour, IResettable
             // 立刻放人，不能讓玩家永遠卡在石頭裡。
             EndBrace();
         }
+
+        // 4. ★1125 硬撐冷卻：靠走路充能
+        UpdateBraceRecharge();
+    }
+
+    /// <summary>
+    /// ★1125 冷卻充能：累計「她實際走出去的水平距離」。
+    /// 條件：冷卻開著、還沒滿、沒石化、落地（0.12 秒寬限）、沒被演出／重生鎖住、有按左右鍵，
+    /// 而且位移方向跟按的方向一致（被風吹退、被推開都不算）；單幀位移太大（傳送、重生）直接丟掉。
+    /// 被動風暴石化不碰這個能量。
+    /// </summary>
+    private void UpdateBraceRecharge()
+    {
+        float x = transform.position.x;
+        float signedDx = float.IsNaN(_rechargeLastX) ? 0f : x - _rechargeLastX;
+        _rechargeLastX = x;
+
+        if (playerMovement != null && playerMovement.isGrounded) _lastGroundedTime = Time.time;
+        if (!braceCooldownEnabled || _braceCharge >= 1f) return;
+        if (braceRechargeWalkSeconds <= 0.01f) { _braceCharge = 1f; return; }
+
+        float dt = Time.deltaTime;
+        if (dt <= 0f || playerMovement == null) return;
+        if (isPetrified || !playerMovement.enabled || playerMovement.isCutsceneFrozen || playerMovement.IsControlLocked
+            || PlayerMovement.IsHardCutsceneLocked || PlayerRespawnSystem.IsAnyRespawning) return;
+        if (Time.time - _lastGroundedTime > 0.12f) return;
+
+        float input = playerMovement.CurrentMoveInput;
+        if (Mathf.Abs(input) < 0.05f) return;
+        if (signedDx * Mathf.Sign(input) <= 0f) return;          // 沒往按的方向走（被風吹退、原地踏步）
+        if (Mathf.Abs(signedDx) / dt > 20f) return;              // 傳送／重生瞬移
+
+        _braceCharge = Mathf.Min(1f, _braceCharge + dt / braceRechargeWalkSeconds);
+        if (_braceCharge >= 1f) Debug.Log("⏳【石化系統】硬撐能量充滿，可以再硬撐了。");
     }
 
     /// <summary>玩家按住 ⬇/S：主動石化硬撐（不計次、不會因此死亡）。</summary>
@@ -312,6 +379,14 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         _bracing = false;
         isPetrified = false;
         graceTimer = 0.3f;
+
+        // ★1125 硬撐結束＝開始冷卻：能量歸零，要走路才充得回來
+        if (braceCooldownEnabled)
+        {
+            _braceCharge = 0f;
+            _rechargeLastX = transform.position.x;
+            Debug.Log($"⏳【石化系統】硬撐結束，開始冷卻：要走路走滿 {braceRechargeWalkSeconds:F1} 秒才能再硬撐。");
+        }
 
         if (unpetrifySFX != null)
         {
@@ -718,6 +793,9 @@ public class PlayerPetrification : MonoBehaviour, IResettable
         isPetrified = false;
         currentPetrifyCount = 0;
         _bracing = false;
+        _braceCharge = 1f;              // ★1125 重生／場景重置／開局：硬撐能量回滿
+        _braceDeniedHold = false;
+        _rechargeLastX = float.NaN;
 
         // 給予短暫保護，避免重生瞬間與畫面切換穿幫（秒數看 respawnGraceDuration，預設 0.5）
         graceTimer = respawnGraceDuration;

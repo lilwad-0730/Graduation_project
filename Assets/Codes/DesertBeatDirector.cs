@@ -96,7 +96,8 @@ public class DesertBeatDirector : MonoBehaviour
     [Tooltip("打開＝改風的節奏：吹 Wind Blow Seconds 秒、停 Wind Pause Seconds 秒（原本吹 2.5、停 3.5）。風吹時鳥不放行、她要躲或撐，停的時候才走得動，所以吹得久＝整段變長")]
     public bool lengthenWind = true;
     public float windBlowSeconds = 3.0f;
-    public float windPauseSeconds = 3.0f;
+    // ★1125 風的頻率 ×0.8：週期 6 秒→7.5 秒（吹 3 不變、停 3→4.5）；前兆 2 秒包含在停風裡（停 4.5 ≥ 前兆 2 + 0.5）
+    public float windPauseSeconds = 4.5f;
     private bool _walkSpeedApplied = false;
 
     [Header("★1006 鳥攻擊排程（Request Queue：偵測 → 排隊 → 放行）")]

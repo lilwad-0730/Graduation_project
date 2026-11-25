@@ -55,6 +55,31 @@ public class PageBook : MonoBehaviour
     /// <summary>★1023 往前翻的上限（0 起算，含）；-1＝不限。主選單的「故事到目前為止」用：她走到哪一章，書就開到哪一頁。</summary>
     [System.NonSerialized] public int maxPage = -1;
 
+    // ★1125 播放時要跳過的頁（用頁面檔名，不含副檔名）。
+    //   圖檔還留在 Resources/Pages，頁碼不會位移（StoryCardZoneHook、結局插卡、故事進度都用寫死的頁碼）；
+    //   只是翻頁（章節轉場、結局、自由翻）時直接略過。要恢復這一頁：從清單拿掉即可。
+    public static readonly System.Collections.Generic.HashSet<string> SkippedPages =
+        new System.Collections.Generic.HashSet<string> { "044_掉-3" };
+
+    /// <summary>★1125 這一頁是不是要跳過的。</summary>
+    public bool IsSkipped(int i)
+    {
+        if (pages == null || i < 0 || i >= pages.Length || pages[i] == null) return false;
+        return SkippedPages.Contains(pages[i].name);
+    }
+
+    /// <summary>★1125 從 from 往 dir（+1/-1）走一步，遇到跳過的頁繼續走。回傳可能超出範圍（&lt;0 或 ≥ 頁數）＝那個方向沒有可顯示的頁。</summary>
+    public int StepFrom(int from, int dir)
+    {
+        int n = pages != null ? pages.Length : 0;
+        int j = from + (dir >= 0 ? 1 : -1);
+        while (j >= 0 && j < n && IsSkipped(j)) j += (dir >= 0 ? 1 : -1);
+        return j;
+    }
+
+    /// <summary>★1125 往後翻會停在哪一頁（已略過跳過的頁）；超出頁數＝目前已是最後一頁。</summary>
+    public int NextShownIndex() { return StepFrom(index, +1); }
+
     enum Mode { Idle, Turning, Dragging }
 
     Mode mode = Mode.Idle;
@@ -263,11 +288,12 @@ public class PageBook : MonoBehaviour
 
         if (dir > 0)
         {
-            bool last = index >= pages.Length - 1;
-            if (maxPage >= 0 && index >= maxPage && !BookTransitionManager.isChapterMode) return false;   // ★1023 還沒玩到的章節不給翻
+            int nextIdx = StepFrom(index, +1);   // ★1125 略過跳過的頁
+            bool last = nextIdx >= pages.Length;
+            if (maxPage >= 0 && (index >= maxPage || nextIdx > maxPage) && !BookTransitionManager.isChapterMode) return false;   // ★1023 還沒玩到的章節不給翻
             if (BookTransitionManager.isChapterMode && BookTransitionManager.chapterEndPage >= 0)
             {
-                if (index >= BookTransitionManager.chapterEndPage)
+                if (index >= BookTransitionManager.chapterEndPage || nextIdx > BookTransitionManager.chapterEndPage)
                 {
                     BookTransitionManager.CompleteChapterAndLoadNext();
                     return false;
@@ -282,7 +308,7 @@ public class PageBook : MonoBehaviour
                 }
                 if (!loopAtEnd) return false;
             }
-            toIdx = last ? 0 : index + 1;
+            toIdx = last ? Mathf.Max(0, StepFrom(-1, +1)) : nextIdx;
             SetTex(curlMat, Page(index));
             SetTex(underMat, Page(toIdx));
             commitAtOne = true;
@@ -293,7 +319,8 @@ public class PageBook : MonoBehaviour
             int backStop = Mathf.Max(0, minPage);
             if (BookTransitionManager.isChapterMode && !BookTransitionManager.allowFlipBackBeforeChapter) backStop = Mathf.Max(backStop, BookTransitionManager.chapterStartPage);   // ★1021 允許往回翻時不擋
             if (index <= backStop) return false;   // 結局／章節轉場：最多翻回本段第一頁
-            toIdx = index - 1;
+            toIdx = StepFrom(index, -1);   // ★1125 往回也略過跳過的頁
+            if (toIdx < backStop || toIdx < 0) return false;
             SetTex(curlMat, Page(toIdx));
             SetTex(underMat, Page(index));
             commitAtOne = false;
@@ -325,6 +352,17 @@ public class PageBook : MonoBehaviour
         int highest = Mathf.Max(0, PageCount - 1);
         if (maxPage >= 0 && !BookTransitionManager.isChapterMode) highest = Mathf.Min(highest, Mathf.Max(0, maxPage));   // ★1023
         i = Mathf.Clamp(i, lowest, highest);   // Home 在結局／章節模式只回到本段第一頁
+        if (IsSkipped(i))   // ★1125 目標是跳過的頁：先往後找下一張可顯示的，範圍內沒有再往前找
+        {
+            int j = i;
+            while (j <= highest && IsSkipped(j)) j++;
+            if (j > highest)
+            {
+                j = i;
+                while (j >= lowest && IsSkipped(j)) j--;
+            }
+            if (j >= lowest && j <= highest) i = j;
+        }
         if (i == index) return;
         if (animate) { if (i > index) Next(); else Prev(); return; }
         index = i;

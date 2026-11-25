@@ -58,7 +58,8 @@ public class WindGustSystem : MonoBehaviour, IResettable
 
     [Header("🌫️ 起風前兆（遠處沙塵線）")]
     [Tooltip("起風前幾秒開始出現遠處逼近的沙塵線。0 = 不預告。\n★這只是視覺預告，不會延後推力——風痕與推力仍然同時到（那個由 windupSeconds 管，預設 0）")]
-    public float telegraphSeconds = 1.0f;
+    // ★1125 前兆拉長到 2 秒（1→2）：沙塵線與低鳴早一秒出現，玩家有足夠時間找掩體／按 S。只是視覺預告，不延後推力
+    public float telegraphSeconds = 2.0f;
 
     [Header("視覺與音效回饋")]
     [Tooltip("吹風時啟動的風力粒子系統 (可為空，系統自動搜尋)")]

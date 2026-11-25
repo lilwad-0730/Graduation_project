@@ -84,7 +84,9 @@ public class WorldKeyPromptDirector : MonoBehaviour
 
         foreach (MirrorCrate c in FindObjectsByType<MirrorCrate>(FindObjectsInactive.Exclude))
         {
-            if (c == null || !_done.Add(c.transform)) continue;
+            if (c == null) continue;
+            if (CrateLineKeyHint.Handles(c)) continue;   // ★1125 玻璃館鏡箱改由線條畫動畫（CrateLineKeyHint）負責，不再貼貼紙提示
+            if (!_done.Add(c.transform)) continue;
             WorldKeyPrompt.Attach(IdOf("mirrorCrate", c.transform), c.transform,
                 new[] { "key_Shift", "plus", "key_D" }, new[] { "btn_X", "plus", "stick_right" },
                 8f, 2.0f, 1.9f, 2, GrabPressed, null);
@@ -93,7 +95,9 @@ public class WorldKeyPromptDirector : MonoBehaviour
 
         foreach (RollingRockVisual b in FindObjectsByType<RollingRockVisual>(FindObjectsInactive.Exclude))
         {
-            if (b == null || !_done.Add(b.transform)) continue;
+            if (b == null) continue;
+            if (BoulderLineKeyHint.Handles(b)) continue;   // ★1125 廢墟巨石改由線條畫動畫（BoulderLineKeyHint）負責，不再貼貼紙提示
+            if (!_done.Add(b.transform)) continue;
             WorldKeyPrompt.Attach(IdOf("boulder", b.transform), b.transform,
                 new[] { "key_Shift", "plus", "key_D" }, new[] { "btn_X", "plus", "stick_right" },
                 10f, 2.4f, 2.3f, 3, GrabPressed, null);
@@ -102,7 +106,9 @@ public class WorldKeyPromptDirector : MonoBehaviour
 
         foreach (CandleAuraGlow cd in FindObjectsByType<CandleAuraGlow>(FindObjectsInactive.Exclude))
         {
-            if (cd == null || !_done.Add(cd.transform)) continue;
+            if (cd == null) continue;
+            if (CandleLineKeyHint.Handles(cd)) continue;   // ★1125 玻璃館燭火改由線條畫動畫（CandleLineKeyHint）負責，不再貼貼紙提示
+            if (!_done.Add(cd.transform)) continue;
             CandleAuraGlow cc = cd;
             WorldKeyPrompt.Attach(IdOf("candle", cd.transform), cd.transform,
                 new[] { "key_S" }, new[] { "btn_Y" },

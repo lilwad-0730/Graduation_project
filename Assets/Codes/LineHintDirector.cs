@@ -200,7 +200,9 @@ public class LineHintDirector : MonoBehaviour
         }
 
         // ── 4　★1020 廢墟：修毅「回頭看狼」右邊接「按住 D 把巨石推上坡」──
-        if (LaterLevels && FindAnyObjectByType<BoulderChallengeController>() != null)
+        // ★1125 巨石上方改放「按住 Shift 線條畫動畫」（BoulderLineKeyHint），這兩張大圖（回頭看狼右邊、山坡腳前面）就不放了；
+        //   修毅的「回頭看狼」圖不受影響。關掉新提示（Enabled＝false）會放回來
+        if (LaterLevels && !BoulderLineKeyHint.Enabled && FindAnyObjectByType<BoulderChallengeController>() != null)
         {
             RuinsLookBackHint lb = null;
             float wait = 0f;
@@ -214,11 +216,13 @@ public class LineHintDirector : MonoBehaviour
         }
 
         // ── 5　★1020 玻璃館：鏡牆後、第一根燭火前「碰到每一根燭火，黑影變小、消失」──
-        if (LaterLevels && FindAnyObjectByType<ShadowMonsterTriggerZone>() != null)
+        // ★1125 每根燭火上方改放「按 S 線條畫動畫」（CandleLineKeyHint），這張大圖就不放了；關掉新提示（Enabled＝false）會放回來
+        if (LaterLevels && !CandleLineKeyHint.Enabled && FindAnyObjectByType<ShadowMonsterTriggerZone>() != null)
             PlaceGlassCandles(behindZ);
 
         // ── 6　★1116 玻璃館：鏡箱上方「SHIFT＋D 把箱子推到牆邊、踩上去翻牆」──
-        if (LaterLevels)
+        // ★1125 鏡箱上方改放「按住 Shift 線條畫動畫」（CrateLineKeyHint），這張大圖就不放了；關掉新提示（Enabled＝false）會放回來
+        if (LaterLevels && !CrateLineKeyHint.Enabled)
         {
             MirrorCrate crate = FindAnyObjectByType<MirrorCrate>();
             if (crate != null) PlaceGlassCrate(crate, behindZ);

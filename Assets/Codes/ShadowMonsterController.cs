@@ -322,6 +322,32 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     public float finaleMaxSeconds = 25f;
     private float _finaleStartTime;
 
+    [Header("★1125 最後一根燭火：不等她、不衝刺，給 1~2 秒緩衝")]
+    [Tooltip("打開＝最後一根：怪物不再衝刺到她身後、也不再停在燭火前等她點完。\n" +
+             "倒數第二根～最後一根之間用接近她的步調慢慢逼近，開始點燭火那一刻算好速度，剛好在「點燭時間＋緩衝秒數」後走到出爪距離；\n" +
+             "點完還沒被抓＝結局、沒點完就被抓＝死亡重生。關掉＝舊做法（衝刺、停在燭火前等她點完、只嚇人不攻擊）")]
+    public bool finaleNoWait = true;
+
+    [Range(1f, 2f)]
+    [Tooltip("最後一根：她點完燭火之後，怪物還要再多走幾秒才會走到出爪距離（秒）。越大越寬鬆。\n" +
+             "怪物抵達出爪距離的時間 ＝ 開始點燭火 ＋ 點燭時間 ＋ 這個值；那時還沒點完就被抓")]
+    public float finaleGraceSeconds = 1.5f;
+
+    [Tooltip("最後一根：預計點燭火時怪物逼近的速度（公尺/秒）。用來決定「她走到燭火那一刻，怪物該落後多遠」＝出爪距離 ＋ 這個速度 ×（點燭時間＋緩衝）。\n" +
+             "怪物在進場時會自己調快慢（不超過下面的上限）去對準那個落後距離")]
+    public float finaleLightSpeed = 4f;
+
+    [Tooltip("最後一根：怪物的最低速度（公尺/秒），不會比這慢，看起來不會停住")]
+    public float finaleLightSpeedMin = 3f;
+
+    [Tooltip("最後一根：怪物的最高速度 ＝ 主角速度 × 這個倍率（建議 1.1～1.2，追回距離時只是慢慢收近、不衝刺）")]
+    public float finaleCloseSpeedFactor = 1.15f;
+
+    private float _fnwSpeed = -1f;          // 最後一根（不等版）怪物目前速度
+    private float _fnwLightStart = -1f;     // 她開始點最後一根的時間（<0＝還沒開始）
+    private float _fnwDeadline;             // 怪物預定抵達出爪距離的時間
+    private float _fnwNextLog;
+
     [Header("★1016 重生後：不在黑幕裡出場，等她動了才從身後出現")]
     [Tooltip("重生點就在觸發區旁邊，重生的黑幕期間她一被放回去就踩到觸發區，怪物在黑幕裡就出場開追，畫面一亮牠已經貼上來。\n" +
              "打開＝黑幕期間先不出場，等重生完成、她開始移動（或等 respawnAppearMaxWait 秒）才從她身後 spawnDistanceBehindPlayer 公尺出現。\n" +
@@ -467,6 +493,26 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     [Tooltip("怪物加速／減速（公尺/秒²）")]
     public float directorAccel = 4f;
 
+    // ★1125b 點燭火緩衝（試玩回饋：前期怪物太快，燭火還沒亮她就被抓）
+    //   Root Cause：★1119 點燭火時怪物維持「開始點那一刻的速度」（約等於她的跑速 6～8 m/s）。
+    //   第一根開始點時離她約 20 m、出爪距離 10 m，點 1.5 秒＋放開寬限 0.8 秒要走 14～18 m，
+    //   不是在燭火亮的前後就被抓，她只要多猶豫半秒（按 S 前停一下）就在燭火亮之前被抓。
+    //   做法：開始點燭火（非最後一根）那一刻，把固定逼近速度改成「剛好在 剩餘鎖定＋放開寬限＋緩衝 之後才走到出爪距離」
+    //   的速度，下限 candleGraceMinSpeed（看得出來在追、絕不站著等），上限仍是原本的速度。她早就停在原地、怪物已經很近就照樣會被抓（公平）。
+    //   緩衝秒數隨進度從 candleGraceStartSeconds（第一根）收到 candleGraceEndSeconds（最後一根前），後面幾根的壓力比前面大。
+    [Header("★1125b 點燭火緩衝：讓她看得到燭火亮起來")]
+    [Tooltip("打勾＝開始點燭火（非最後一根）時，算好怪物的逼近速度，讓牠在「燭火點完＋放開寬限＋緩衝」之後才走到出爪距離。取消＝★1119 的舊做法（維持開始點那一刻的速度）。\n" +
+             "也會讓撲擊避開「撲擊還沒跑完她就走到燭火」的位置（最後一根不受影響，照 ★1125 finaleNoWait）")]
+    public bool useCandleGrace = true;
+    [Tooltip("第一根燭火（進度 0%）：點完燭火＋放開寬限之後，怪物還要再多走幾秒才走到出爪距離（秒）。越大越寬鬆")]
+    public float candleGraceStartSeconds = 1.5f;
+    [Tooltip("最後一根之前（進度 100%）的緩衝秒數。進度中間用線性內插；比開頭小＝後面幾根壓力變大")]
+    public float candleGraceEndSeconds = 1.0f;
+    [Tooltip("點燭火期間怪物的最低逼近速度（公尺/秒）。不會比這慢，看起來不會停住等她；她停得太久、怪物已經很近就仍會被抓")]
+    public float candleGraceMinSpeed = 2.5f;
+    [Tooltip("點燭火開始那一刻，怪物降到逼近速度的減速度（公尺/秒²）。比 directorAccel 大，才不會因為慢慢減速而在鎖定期間多走好幾公尺")]
+    public float candleGraceBrake = 8f;
+
     // ★1118e 追逐撲擊（取代 ★1116 的「撲到 attack+1.8 公尺就硬停、揮空氣、而且那段時間不抓人」）
     //   Root Cause：舊版撲過來後用 MoveTowards 在固定距離硬停，而且撲＋揮期間 CheckCatch 直接略過——
     //   看起來就是「怪物故意在碰到她之前停下來」。
@@ -560,8 +606,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     /// <summary>★1118e 撲擊進行中（預告／加速／巡航／煞車／收尾）。</summary>
     public bool IsLunging => _lungePhase != 0;
     /// <summary>★1119 現在碰到她會不會被抓（給子彈時間判斷「快被抓到」用）。</summary>
-    public bool CanCatchNow => !_revealActive && !_finaleDash &&
+    public bool CanCatchNow => !_revealActive && !FinaleScareOnly && !FinaleEndingWins() &&
         (currentState == MonsterState.Chasing || currentState == MonsterState.Punishing || currentState == MonsterState.Appearing);
+
+    /// <summary>★1125 舊的最後衝刺（finaleNoWait 關掉）：只嚇人、不攻擊。</summary>
+    private bool FinaleScareOnly => _finaleDash && !finaleNoWait;
+
+    /// <summary>★1125 最後一根已經點亮、還在等怪物碰到它觸發結局：這時不准抓人（結局贏，不會同時結局又死亡）。</summary>
+    private bool FinaleEndingWins()
+    {
+        if (!_finaleDash || !finaleNoWait) return false;
+        CandleCollectible rest = FinaleRemainingCandle();
+        return rest != null && rest.IsLitByPlayer;
+    }
     /// <summary>★1118e 撲擊階段：0＝沒有、1＝預告、2＝加速、3＝巡航、4＝煞車＋揮爪、5＝收尾。</summary>
     public int LungePhase => _lungePhase;
     /// <summary>★1118e 撲擊現在的速度（公尺/秒）。</summary>
@@ -1128,7 +1185,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void CheckCollisionCatch(GameObject go)
     {
         if (_revealActive) return;   // ★登場運鏡期間主角是凍住的，不能被吃
-        if (_finaleDash) return;     // ★最後衝刺只嚇人，不攻擊
+        if (FinaleScareOnly) return;     // ★最後衝刺只嚇人，不攻擊（★1125 finaleNoWait 開著時不擋）
+        if (FinaleEndingWins()) return;  // ★1125 最後一根她已點亮：結局優先
         if (currentState != MonsterState.Chasing && currentState != MonsterState.Punishing && currentState != MonsterState.Appearing) return;
         if (go.CompareTag("Player") || go.GetComponent<PlayerMovement>() != null || go.name.ToLower().Contains("player"))
         {
@@ -3056,6 +3114,17 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _finalePrevPx = float.NaN; _finaleApproach = -1f;
         _finaleStartTime = Time.time;
         if (_pm != null) _pm.currentSpeed = _pm.baseSpeed;   // 別讓主角停在被減速的狀態
+        _fnwSpeed = -1f; _fnwLightStart = -1f; _fnwDeadline = 0f; _fnwNextLog = 0f;
+        if (finaleNoWait)
+        {
+            CandleAuraGlow ra = remaining.GetComponent<CandleAuraGlow>();
+            float ps = FinalePlayerSpeed();
+            float dur = ra != null ? ra.LightDuration : 1.5f;
+            float catchR = Mathf.Max(1f, attackTriggerDistance);
+            float gt = catchR + Mathf.Max(0.5f, finaleLightSpeed) * (dur + finaleGraceSeconds);
+            Debug.Log($"【追逐節奏】★1125 最後一根開始（不等她版）：怪物落後 {Mathf.Abs(player.position.x - mx):F1}m、她離燭火 {cx - player.position.x:F1}m、點燭 {dur:F2}s＋緩衝 {finaleGraceSeconds:F1}s、出爪距離 {catchR:F1}m → 她開始點燭那一刻目標落後 {gt:F1}m（逼近 {finaleLightSpeed:F1}m/s）；她 {ps:F1}m/s、怪物速度範圍 {finaleLightSpeedMin:F1}～{ps * finaleCloseSpeedFactor:F1}m/s");
+            return;
+        }
         Debug.Log($"【影子怪物】主角接近最後一根燭火，怪物開始追回距離到主角身後 {finaleStopDistance} 公尺（不攻擊）。（收集 {_candlesCollected}/{_totalCandles}、漏 {MissedCount()}、剩下 {remaining.name} X={remaining.transform.position.x:F1}、怪物 X={mx:F1}）");
     }
 
@@ -3080,6 +3149,8 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             if (!_finaleDash) return;   // 定案後衝刺已被關掉（收完或進懲罰）
             rest = FinaleRemainingCandle();
         }
+
+        if (finaleNoWait) { FinaleNoWaitMove(rest); return; }   // ★1125 新做法；關掉 finaleNoWait 才走下面舊的衝刺＋等她點完
 
         float dir = player.position.x >= transform.position.x ? 1f : -1f;
         float targetX = player.position.x - dir * finaleStopDistance;
@@ -3130,6 +3201,107 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         if (player.position.x > transform.position.x + 0.2f) transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         else if (player.position.x < transform.position.x - 0.2f) transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+    }
+
+    private float FinalePlayerSpeed() { return (_pm != null && _pm.baseSpeed > 0.1f) ? _pm.baseSpeed : 5f; }
+
+    /// <summary>
+    /// ★1125 最後一根燭火（不等她版）：沒有衝刺、不停在燭火前等。
+    ///  1. 還沒開始點：用「她走到燭火那一刻，怪物剛好落後 出爪距離＋逼近速度×(點燭時間＋緩衝)」當目標，微調快慢（最低 finaleLightSpeedMin、最高她的速度×finaleCloseSpeedFactor）。
+    ///  2. 她開始點：算好「剛好在 點燭時間＋緩衝 之後走到出爪距離」的速度，之後每幀依剩餘時間微調（只為了抵銷起伏，平常就是固定速度）；不會停、不會等。
+    ///  3. 點完（燭火亮了）：維持速度繼續走，直到碰到燭火觸發結局；這段不抓人（FinaleEndingWins）。
+    ///  4. 走到出爪距離還沒點完：停在出爪距離，由 CheckCatch 抓人（跟前面的追逐同一條路）。
+    ///  5. 她走過燭火還沒點：照她的步調跟著走，走到燭火邊 → 漏點 → 懲罰（舊流程）。
+    /// </summary>
+    private void FinaleNoWaitMove(CandleCollectible rest)
+    {
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+        float px = player.position.x, mx = transform.position.x;
+        float dir = px >= mx ? 1f : -1f;
+        float gap = Mathf.Abs(px - mx);
+        float pSpd = FinalePlayerSpeed();
+        float catchR = Mathf.Max(1f, attackTriggerDistance);
+        float vMin = Mathf.Max(0.5f, finaleLightSpeedMin);
+        float vMax = Mathf.Max(vMin, pSpd * Mathf.Max(1f, finaleCloseSpeedFactor));
+        float grace = Mathf.Clamp(finaleGraceSeconds, 1f, 2f);
+        CandleAuraGlow aura = rest != null ? rest.GetComponent<CandleAuraGlow>() : null;
+        bool lit = rest != null && rest.IsLitByPlayer;
+        bool lighting = aura != null && aura.IsLighting;
+        float cx = rest != null ? rest.transform.position.x : px;
+
+        if (_fnwSpeed < 0f) _fnwSpeed = Mathf.Clamp(_dirSpeed > 0f ? _dirSpeed : pSpd * 0.98f, vMin, vMax);   // 從導演最後的速度接續，不跳速
+
+        float want;
+        string phase;
+        if (lighting)
+        {
+            phase = "點燭中";
+            if (_fnwLightStart < 0f)
+            {
+                float rem = Mathf.Max(0.1f, CandleAuraGlow.LightingReleaseAt - Time.time);
+                _fnwLightStart = Time.time;
+                _fnwDeadline = Time.time + rem + grace;
+                float v0 = Mathf.Clamp((gap - catchR) / (rem + grace), vMin, vMax);
+                float eta = (gap - catchR) / Mathf.Max(0.01f, v0);
+                Debug.Log($"【追逐節奏】★1125 最後一根開始點燭：怪物落後 {gap:F1}m、點燭 {rem:F2}s＋緩衝 {grace:F1}s、出爪距離 {catchR:F1}m → 固定逼近速度 {v0:F2}m/s（範圍 {vMin:F1}～{vMax:F1}），預計 {eta:F2}s 後抵達出爪距離（點完後還剩 {eta - rem:F2}s 緩衝）" +
+                          (eta < rem + 0.3f ? " ★太近：速度已壓到下限仍來不及緩衝，進場落後距離不夠" : ""));
+            }
+            float remain = Mathf.Max(0.05f, _fnwDeadline - Time.time);
+            want = Mathf.Clamp((gap - catchR) / remain, vMin, vMax);
+        }
+        else if (lit)
+        {
+            phase = "已點亮";
+            want = _fnwSpeed;   // 她點完了：維持原速繼續走，直到碰到燭火觸發結局
+        }
+        else
+        {
+            if (_fnwLightStart >= 0f)
+            {
+                _fnwLightStart = -1f;
+                Debug.Log("【追逐節奏】★1125 最後一根點到一半被中斷，重新算");
+            }
+            if (rest == null || px > cx + finalePassMargin)
+            {
+                phase = "她走過了";
+                want = Mathf.Min(pSpd, vMax);   // 她已經過了燭火還沒點：照她的步調跟著，走到燭火邊就是漏點（舊流程）
+            }
+            else
+            {
+                phase = "進場";
+                float dur = aura != null ? aura.LightDuration : 1.5f;
+                float gt = catchR + Mathf.Max(0.5f, finaleLightSpeed) * (dur + grace);       // 她開始點燭那一刻，怪物目標落後多遠
+                float spotX = cx - (aura != null ? aura.lightRangeX : 2f);                    // 她最早能開始點的位置
+                float tReach = Mathf.Max(1f, Mathf.Max(0f, spotX - px) / pSpd);               // 她走到點燭位置要多久（至少 1 秒，避免已在範圍內時大幅變速）
+                want = Mathf.Clamp(pSpd - (gt - gap) / tReach, vMin, vMax);                   // 落差要在 tReach 內補上：相對速度 ＝ 她的速度 − 怪物速度
+            }
+        }
+
+        _fnwSpeed = Mathf.MoveTowards(_fnwSpeed, want, Mathf.Max(0.1f, directorAccel) * dt);
+        float spd = _fnwSpeed;
+
+        FaceTowardPlayer();
+        if (!_isHitShrinking) PlayAnimationByName(spd > Mathf.Max(0.01f, chaseSpeed) * 1.05f ? runAnimationName : walkAnimationName);
+
+        // 還沒點亮：停在出爪距離（CheckCatch 會抓人）；已點亮：朝她走，路上碰到燭火就觸發結局
+        float stopGap = Mathf.Max(0.5f, catchR - 0.1f);
+        float nx = mx;
+        if (lit) nx = Mathf.MoveTowards(mx, px, spd * dt);
+        else if (gap > stopGap) nx = Mathf.MoveTowards(mx, px - dir * stopGap, spd * dt);
+        // 保險：燭火還沒點、她也還沒走過去時，怪物中心絕不進到燭火 candleReachX 之內（不然燭火被判漏掉、卡死）。
+        // 正常情況出爪距離（≥8m）會先到，這行只是防呆
+        if (!lit && rest != null && dir > 0f && px <= cx + finalePassMargin)
+            nx = Mathf.Min(nx, Mathf.Max(mx, cx - candleReachX - 0.5f));
+        SetMonsterX(nx);
+
+        DebugLag = gap; DebugSpeed = spd; DebugPace = "最後一根" + phase;
+        if ((Application.isEditor || TesterMode.Enabled) && Time.time >= _fnwNextLog)
+        {
+            _fnwNextLog = Time.time + 1f;
+            Debug.Log($"【追逐節奏】★1125 最後一根[{phase}] 落後 {gap:F1}m、怪物 {spd:F2}m/s（目標 {want:F2}）" +
+                      (_fnwLightStart >= 0f && !lit ? $"、距預定抵達 {_fnwDeadline - Time.time:F2}s" : ""));
+        }
     }
 
     /// <summary>★1104 實際安全距離：至少要比揮爪起手距離（場景裡實際用的怪物是 10 公尺）再多 6 公尺，不然「放開時還有 9 公尺」其實已經在爪子範圍內。</summary>
@@ -3442,6 +3614,13 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         if (tC < 0f) { _lungeWhy = $"距離太近（lag {lag0:F1}m，需要 cruise {tC:F2}s）"; return false; }
 
         float tToBrakeEnd = tT + tA + tC + tB;
+        if (checkConditions && useCandleGrace)
+        {
+            // ★1125b 撲擊（含收尾）還沒跑完她就走到下一根燭火：她一停下點燭火，固定路徑的怪物就會直接撞上來（★1118e 路徑假設她一直跑），先不撲
+            float aheadC = NextUnlitCandleAhead(px);
+            float needAhead = vp * (tToBrakeEnd + Mathf.Max(0f, lungeRecoverySeconds)) + 3f;
+            if (aheadC < needAhead) { _lungeWhy = $"撲擊要跑 {tToBrakeEnd + lungeRecoverySeconds:F1}s（她約走 {needAhead - 3f:F0}m），前方燭火只剩 {aheadC:F0}m"; return false; }
+        }
         _lungeSide = side;
         _lungePlayerV = vp;
         _lungeV0 = v0;
@@ -3669,8 +3848,22 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             //   點燭火離怪物太近就是會被抓（CheckCatch 照常運作）。
             if (_approachSpeed < 0f)
             {
-                _approachSpeed = Mathf.Max(_dirSpeed, lightingPressureSpeed);
-                Debug.Log($"【追逐節奏】★1119 點燭火：離她 {lag:F1}m、怪物維持 {_approachSpeed:F2}m/s 照樣追（開始時 {_dirSpeed:F1}m/s、下限 {lightingPressureSpeed:F1}m/s）");
+                float oldApproach = Mathf.Max(_dirSpeed, lightingPressureSpeed);
+                _approachSpeed = oldApproach;
+                if (useCandleGrace && !_finaleDash)
+                {
+                    // ★1125b 讓她看得到燭火亮起來：速度算到「剩餘鎖定＋放開寬限＋緩衝」之後才走到出爪距離，但不低於 candleGraceMinSpeed、不高於原本的速度
+                    float remain = Mathf.Max(0f, CandleAuraGlow.LightingReleaseAt + postLightGrace - Time.time);
+                    float grace = Mathf.Max(0f, Mathf.Lerp(candleGraceStartSeconds, candleGraceEndSeconds, p));
+                    float total = remain + grace;
+                    float distToCatch = lag - attackTriggerDistance;
+                    float v0 = Mathf.Max(0f, _dirSpeed);
+                    float vMin = Mathf.Min(oldApproach, Mathf.Max(0.5f, candleGraceMinSpeed));
+                    _approachSpeed = SolveCandleApproachSpeed(v0, distToCatch, total, vMin, oldApproach);
+                    Debug.Log($"【追逐節奏】★1125b 點燭火緩衝：離她 {lag:F1}m（出爪距離 {attackTriggerDistance:F1}m、還差 {distToCatch:F1}m）、進度 {p * 100f:F0}%、剩餘鎖定＋放開寬限 {remain:F2}s＋緩衝 {grace:F2}s＝{total:F2}s → 怪物逼近 {_approachSpeed:F2}m/s（原本 {oldApproach:F2}m/s、下限 {vMin:F1}m/s、開始時 {_dirSpeed:F1}m/s）、她不動的話約 {ApproachEta(v0, _approachSpeed, distToCatch):F2}s 後走到出爪距離");
+                }
+                else
+                    Debug.Log($"【追逐節奏】★1119 點燭火：離她 {lag:F1}m、怪物維持 {_approachSpeed:F2}m/s 照樣追（開始時 {_dirSpeed:F1}m/s、下限 {lightingPressureSpeed:F1}m/s）");
             }
             desired = _approachSpeed;
         }
@@ -3683,7 +3876,9 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
             desired = Mathf.Max(desired, Mathf.Min(_dirSpeed, EffectiveMaxSpeed));
         if (!busy) _approachSpeed = -1f;
         if (_dirSpeed < 0f) _dirSpeed = desired;
-        _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, Mathf.Max(0.1f, directorAccel) * dt);
+        float dirAcc = Mathf.Max(0.1f, directorAccel);
+        if (busy && useCandleGrace && !_finaleDash && desired < _dirSpeed) dirAcc = Mathf.Max(dirAcc, candleGraceBrake);   // ★1125b 開始點燭火降到逼近速度要快一點，不然減速那一秒就多走好幾公尺
+        _dirSpeed = Mathf.MoveTowards(_dirSpeed, desired, dirAcc * dt);
 
         if (!_isHitShrinking)
             PlayAnimationByName(_dirSpeed > Mathf.Max(0.01f, chaseSpeed) * 1.05f ? runAnimationName : walkAnimationName);
@@ -3698,6 +3893,53 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
 
         if (lag <= attackTriggerDistance) return;   // 進到揮爪距離：Update 的 CheckCatch 出爪
         SetMonsterX(Mathf.MoveTowards(mx, px, _dirSpeed * dt));
+    }
+
+    // ★1125b 點燭火緩衝的算術：怪物從 v0 照加／減速度（變慢用 candleGraceBrake）調到 v 再維持，T 秒內走了多遠
+    private float ApproachRampAccel(float v0, float v)
+    {
+        float a = Mathf.Max(0.1f, directorAccel);
+        return v >= v0 ? a : Mathf.Max(a, candleGraceBrake);
+    }
+
+    private float ApproachCovered(float v0, float v, float T)
+    {
+        float a = ApproachRampAccel(v0, v);
+        float tr = Mathf.Abs(v - v0) / a;
+        if (T <= tr)
+        {
+            float vT = v0 + Mathf.Sign(v - v0) * a * T;
+            return (v0 + vT) * 0.5f * T;
+        }
+        return (v0 + v) * 0.5f * tr + v * (T - tr);
+    }
+
+    /// <summary>★1125b 怪物從 v0 調到 v 之後，走 dist 公尺要幾秒（記錄用）。</summary>
+    private float ApproachEta(float v0, float v, float dist)
+    {
+        if (dist <= 0f) return 0f;
+        float a = ApproachRampAccel(v0, v);
+        float tr = Mathf.Abs(v - v0) / a;
+        float dr = (v0 + v) * 0.5f * tr;
+        if (dist >= dr) return tr + (dist - dr) / Mathf.Max(0.01f, v);
+        float A = 0.5f * Mathf.Sign(v - v0) * a;   // 0.5·A·t² + v0·t = dist（A 可能是負的＝減速）
+        if (Mathf.Abs(A) < 1e-4f) return dist / Mathf.Max(0.01f, v0);
+        return (-v0 + Mathf.Sqrt(Mathf.Max(0f, v0 * v0 + 4f * A * dist))) / (2f * A);
+    }
+
+    /// <summary>★1125b 找一個 vMin～vMax 之間最大的速度，讓怪物在 T 秒內走不到 dist 公尺（＝T 秒之後才走到出爪距離）。vMax 本來就夠慢就用 vMax，連 vMin 都太快就用 vMin（她停太久／怪物太近）。</summary>
+    private float SolveCandleApproachSpeed(float v0, float dist, float T, float vMin, float vMax)
+    {
+        if (vMax <= vMin) return vMax;
+        if (ApproachCovered(v0, vMax, T) <= dist) return vMax;
+        if (ApproachCovered(v0, vMin, T) >= dist) return vMin;
+        float lo = vMin, hi = vMax;
+        for (int i = 0; i < 24; i++)
+        {
+            float mid = (lo + hi) * 0.5f;
+            if (ApproachCovered(v0, mid, T) > dist) hi = mid; else lo = mid;
+        }
+        return lo;
     }
 
     private void MoveTowardPlayer(float speed)
@@ -3897,13 +4139,19 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
     private void CheckCatch()
     {
         if (player == null || currentState == MonsterState.Devouring) return;
-        if (_finaleDash) return;   // ★最後衝刺只嚇人，不攻擊
+        if (FinaleScareOnly) return;   // ★最後衝刺只嚇人，不攻擊（★1125 finaleNoWait 開著時不擋）
+        if (FinaleEndingWins()) return;   // ★1125 最後一根她已點亮：結局優先，不能同一幀又抓人
 
         float xDist = Mathf.Abs(transform.position.x - player.position.x);
 
         // ★ 核心修復：純粹以水平 X 軸距離為準 (不受怪物腳底 Pivot 與主角走道 Y 軸高差影響)！
         if (xDist <= attackTriggerDistance)
         {
+            if (_finaleDash && finaleNoWait)
+                Debug.Log($"【追逐節奏】★1125 最後一根：怪物走到出爪距離（離她 {xDist:F1}m），" +
+                          (_fnwLightStart >= 0f
+                              ? $"距開始點燭 {Time.time - _fnwLightStart:F2}s（預定 {_fnwDeadline - _fnwLightStart:F2}s）、燭火已點亮={FinaleRemainingCandle()?.IsLitByPlayer}"
+                              : "她還沒開始點燭") + "→ 抓人");
             if (CandleAuraGlow.LightingReleaseAt + postLightGrace > Time.time)
                 Debug.LogWarning($"【怪物節奏】★點燭火期間被抓：距離 {xDist:F1}m、節奏調節={smartPacing}、調節後速度 {DebugSpeed:F1}、狀態 {DebugPace}");
             TriggerDevour();
@@ -4281,6 +4529,7 @@ public class ShadowMonsterController : MonoBehaviour, IResettable
         _isHitShrinking = false;
         _hitAnimLockUntil = 0f;
         _finaleDash = false;
+        _fnwSpeed = -1f; _fnwLightStart = -1f; _fnwDeadline = 0f; _fnwNextLog = 0f;   // ★1125 最後一根（不等版）狀態歸零
         _currentAnimName = "";
         RestoreDeathAnimSpeed();   // ★1119b 倒下對齊語音時改過的 Animator 速度
         _chaseStepRamp = false;    // ★1119b 追逐音樂的燭火階梯：重置後依存檔點保留的燭火數直接對齊，不緩降
